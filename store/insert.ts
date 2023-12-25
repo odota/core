@@ -215,7 +215,7 @@ export async function insertPlayerCache(
   );
 }
 
-function createMatchCopy(match: any): Match {
+function createMatchCopy<T>(match: any): T {
   // Makes a deep copy of the original match
   const copy = JSON.parse(JSON.stringify(match));
   return copy;
@@ -408,41 +408,56 @@ export async function insertMatch(
   async function updateCassandraPlayerCaches(match: InsertMatchInput) {
     // Add the 10 player_match rows indexed by player
     // We currently do this on all types
-    const copy = createMatchCopy(match);
+    const copy = createMatchCopy<Match>(match);
     if (average_rank) {
       copy.average_rank = average_rank;
     }
     await insertPlayerCache(copy, pgroup, options.type);
   }
   async function upsertMatchBlobs(match: InsertMatchInput) {
-    // This is meant to eventually replace the cassandra match/player_match tables
-    // It's a table holding data for each possible stage of ingestion, api/gcdata/replay/meta etc.
+    // The table holds data for each possible stage of ingestion, api/gcdata/replay/meta etc.
     // We store a match blob in the row for each stage
     // in buildMatch we can assemble the data from all these pieces
     // After some retention period we stick the assembled blob in match archive and delete it
-    const copy = createMatchCopy(match);
-    copy.players.forEach((p) => {
-      // There are a bunch of fields in the API response we also don't use, e.g. "scaled_hero_damage"
-      delete p.scaled_hero_damage;
-      delete p.scaled_tower_damage;
-      delete p.scaled_hero_healing;
-      // We can keep scepter/shard/moonshard from API and then we're not as reliant on permanent_buffs from GC
-      // delete p.aghanims_scepter;
-      // delete p.aghanims_shard;
-      // delete p.moonshard;
-    });
-    await cassandra.execute(
-      `INSERT INTO match_blobs(match_id, ${options.type}) VALUES(?, ?)`,
-      [copy.match_id, JSON.stringify(copy)],
-      {
-        prepare: true,
-      },
-    );
-    if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
-      fs.writeFileSync(
-        './json/' + match.match_id + '_' + options.type + '.json',
-        JSON.stringify(copy, null, 2),
+    await upsertBlob(options.type, match);
+    // NOTE: apparently the Steam API started deleting some fields on old matches, like HD/TD/ability builds
+    // Currently this means fullhistory could overwrite the blob later and we could lose some data
+    // We can store this data in a separate blob column to preserve it
+    if (options.origin === 'scanner' && options.type === 'api') {
+      const apiExtraBlob = {
+        match_id: match.match_id, 
+        players: (match.players as ApiPlayer[]).map(p => ({
+          player_slot: p.player_slot,
+          hero_damage: p.hero_damage,
+          tower_damage: p.tower_damage,
+          hero_healing: p.hero_healing,
+          // Also gold, gold_spent but we don't care about these
+          ability_upgrades_arr: p.ability_upgrades_arr
+        }),
+      )};
+      // await upsertBlob('apiextra', apiExtraBlob);
+      // average_rank should be stored in a new blob column since it's not part of API data
+      // We could also store the ranks of the players in the game instead of looking it up at view time
+      // That's probably better anyway since it's more accurate to show their rank at the time of the match
+      if (ranksBlob) {
+        // await upsertBlob('ranks', ranksBlob);
+      }
+    }
+    async function upsertBlob(type: DataType, blob: { match_id: number }) {
+      const matchId = blob.match_id;
+      await cassandra.execute(
+        `INSERT INTO match_blobs(match_id, ${type}) VALUES(?, ?)`,
+        [matchId, JSON.stringify(blob)],
+        {
+          prepare: true,
+        },
       );
+      if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
+        fs.writeFileSync(
+          './json/' + matchId + '_' +type + '.json',
+          JSON.stringify(blob, null, 2),
+        );
+      }
     }
   }
   async function upsertMatchCassandra(match: InsertMatchInput) {
@@ -694,6 +709,13 @@ export async function insertMatch(
         );
         delete newP.ability_upgrades;
       }
+      delete newP.scaled_hero_damage;
+      delete newP.scaled_tower_damage;
+      delete newP.scaled_hero_healing;
+      // We can keep scepter/shard/moonshard from API and then we're not as reliant on permanent_buffs from GC
+      // delete p.aghanims_scepter;
+      // delete p.aghanims_shard;
+      // delete p.moonshard;
       return newP as any;
     }),
   };
@@ -714,17 +736,14 @@ export async function insertMatch(
   }
 
   let average_rank: number | undefined = undefined;
+  let ranksBlob: any = undefined;
   // Only fetch the average_rank if this is a fresh match since otherwise it won't be accurate
   if (options.origin === 'scanner' && options.type === 'api') {
-    const { avg } = await getMatchRankTier(match.players);
+    const { avg, players } = await getMatchRankTier(match.players);
     if (avg) {
       average_rank = avg;
     }
-    // Note: average_rank should be stored in a new blob column since it's not part of API data
-    // Currently, requesting a parse will overwrite it if DISABLE_REAPI is off.
-    // We don't rely on this field yet so it might be OK
-    // We could also store the ranks of the players in the game instead of looking it up at view time
-    // That's probably better anyway since it's more accurate to show their rank at the time of the match
+    ranksBlob = { match_id: match.match_id, average_rank, players };
   }
 
   await upsertMatchPostgres(match);

@@ -11,7 +11,6 @@ import redis from './redis';
 import cassandra from './cassandra';
 import type { PutObjectCommandOutput } from '@aws-sdk/client-s3';
 import { isDataComplete, redisCount } from '../util/utility';
-import { saveApiData } from './getApiData';
 
 const matchArchive = new Archive('match');
 const playerArchive = new Archive('player');

@@ -24,6 +24,9 @@
         "hero_damage": 12234,
         "tower_damage": 537,
         "hero_healing": 0,
+        "scaled_hero_damage": 5639,
+        "scaled_tower_damage": 39,
+        "scaled_hero_healing": 0,
         "level": 19,
         "ability_upgrades": [
           {

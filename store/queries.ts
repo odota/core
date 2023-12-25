@@ -492,7 +492,7 @@ export async function getProPeers(
 }
 
 export async function getMatchRankTier(
-  players: { account_id?: number | null }[],
+  players: { account_id?: number | null, player_slot: number }[],
 ) {
   const result = await Promise.all(
     players.map(async (player) => {
@@ -503,13 +503,17 @@ export async function getMatchRankTier(
         .first()
         .from('rank_tier')
         .where({ account_id: player.account_id });
-      return row ? row.rating : null;
+      return row ? row.rating : undefined;
     }),
   );
   // Remove undefined/null values
   const filt = result.filter(Boolean);
   const avg = averageMedal(filt.map((r) => Number(r))) || null;
-  return { avg, num: filt.length };
+  return { avg, num: filt.length, players: result.map((r, i) => ({
+      player_slot: players[i].player_slot,
+      rank_tier: r
+    })
+  )};
 }
 
 export async function getItemTimings(req: Request): Promise<any[]> {
