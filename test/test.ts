@@ -169,7 +169,7 @@ describe(c.blue('[TEST] replay parse'), async function () {
   });
   it('should have gcdata in buildMatch', async () => {
     // ensure gcdata got inserted
-    const match = await buildMatch(matchData.match_id, {}) as ParsedMatch;
+    const match = (await buildMatch(matchData.match_id, {})) as ParsedMatch;
     assert.ok(match);
     assert.ok(match.players);
     assert.ok(match.players[0]);
@@ -178,7 +178,7 @@ describe(c.blue('[TEST] replay parse'), async function () {
   });
   it('should have parse data in buildMatch', async () => {
     // ensure parse data got inserted
-    const match = await buildMatch(matchData.match_id, {}) as ParsedMatch;
+    const match = (await buildMatch(matchData.match_id, {})) as ParsedMatch;
     assert.ok(match);
     assert.ok(match.players);
     assert.ok(match.players[0]);

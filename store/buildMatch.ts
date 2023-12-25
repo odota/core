@@ -40,7 +40,7 @@ async function extendPlayerData(
     .where({ account_id: p.account_id || null });
   p.is_subscriber = Boolean(subscriber?.status);
   // Note: Type is bad here, we're adding properties that shouldn't be there but changing will affect external API
-  return p as (Player | ParsedPlayer);
+  return p as Player | ParsedPlayer;
 }
 async function prodataInfo(matchId: number): Promise<AnyDict> {
   const result = await db
@@ -90,7 +90,10 @@ async function prodataInfo(matchId: number): Promise<AnyDict> {
   return final;
 }
 
-async function buildMatch(matchId: number, options: { meta?: string }): Promise<Match | ParsedMatch | null> {
+async function buildMatch(
+  matchId: number,
+  options: { meta?: string },
+): Promise<Match | ParsedMatch | null> {
   if (!matchId || !Number.isInteger(matchId) || matchId <= 0) {
     return null;
   }
@@ -192,8 +195,17 @@ async function buildMatch(matchId: number, options: { meta?: string }): Promise<
   await addPlayerBenchmarks(matchResult);
 
   // Save in cache
-  if (matchResult && 'version' in matchResult && matchResult.version && config.ENABLE_MATCH_CACHE) {
-    await redis.setex(key, config.MATCH_CACHE_SECONDS, JSON.stringify(matchResult));
+  if (
+    matchResult &&
+    'version' in matchResult &&
+    matchResult.version &&
+    config.ENABLE_MATCH_CACHE
+  ) {
+    await redis.setex(
+      key,
+      config.MATCH_CACHE_SECONDS,
+      JSON.stringify(matchResult),
+    );
   }
   return matchResult;
 }

@@ -447,53 +447,53 @@ export async function insertMatch(
   }
   async function upsertMatchCassandra(match: InsertMatchInput) {
     if (options.forceLegacy) {
-    const cleaned = await cleanRowCassandra(cassandra, 'matches', match);
-    const obj: any = serialize(cleaned);
-    if (!Object.keys(obj).length) {
-      return;
-    }
-    const query = util.format(
-      'INSERT INTO matches (%s) VALUES (%s)',
-      Object.keys(obj).join(','),
-      Object.keys(obj)
-        .map(() => '?')
-        .join(','),
-    );
-    const arr = Object.keys(obj).map((k) =>
-      obj[k] === 'true' || obj[k] === 'false' ? JSON.parse(obj[k]) : obj[k],
-    );
-    await cassandra.execute(query, arr, {
-      prepare: true,
-    });
-    await Promise.all(
-      match.players.map(async (p) => {
-        const pm = { ...p, match_id: match.match_id };
-        const cleanedPm = await cleanRowCassandra(
-          cassandra,
-          'player_matches',
-          pm,
-        );
-        const obj2: any = serialize(cleanedPm);
-        if (!Object.keys(obj2).length) {
-          return;
-        }
-        const query2 = util.format(
-          'INSERT INTO player_matches (%s) VALUES (%s)',
-          Object.keys(obj2).join(','),
-          Object.keys(obj2)
-            .map(() => '?')
-            .join(','),
-        );
-        const arr2 = Object.keys(obj2).map((k) =>
-          obj2[k] === 'true' || obj2[k] === 'false'
-            ? JSON.parse(obj2[k])
-            : obj2[k],
-        );
-        await cassandra.execute(query2, arr2, {
-          prepare: true,
-        });
-      }),
-    );
+      const cleaned = await cleanRowCassandra(cassandra, 'matches', match);
+      const obj: any = serialize(cleaned);
+      if (!Object.keys(obj).length) {
+        return;
+      }
+      const query = util.format(
+        'INSERT INTO matches (%s) VALUES (%s)',
+        Object.keys(obj).join(','),
+        Object.keys(obj)
+          .map(() => '?')
+          .join(','),
+      );
+      const arr = Object.keys(obj).map((k) =>
+        obj[k] === 'true' || obj[k] === 'false' ? JSON.parse(obj[k]) : obj[k],
+      );
+      await cassandra.execute(query, arr, {
+        prepare: true,
+      });
+      await Promise.all(
+        match.players.map(async (p) => {
+          const pm = { ...p, match_id: match.match_id };
+          const cleanedPm = await cleanRowCassandra(
+            cassandra,
+            'player_matches',
+            pm,
+          );
+          const obj2: any = serialize(cleanedPm);
+          if (!Object.keys(obj2).length) {
+            return;
+          }
+          const query2 = util.format(
+            'INSERT INTO player_matches (%s) VALUES (%s)',
+            Object.keys(obj2).join(','),
+            Object.keys(obj2)
+              .map(() => '?')
+              .join(','),
+          );
+          const arr2 = Object.keys(obj2).map((k) =>
+            obj2[k] === 'true' || obj2[k] === 'false'
+              ? JSON.parse(obj2[k])
+              : obj2[k],
+          );
+          await cassandra.execute(query2, arr2, {
+            prepare: true,
+          });
+        }),
+      );
     }
   }
   async function telemetry(match: InsertMatchInput) {

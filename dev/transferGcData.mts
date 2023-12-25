@@ -3,7 +3,11 @@
 
 const { db } = await import('../store/db.js');
 
-const matches = (await db.raw(`select match_id from matches where (cluster is null OR replay_salt is null)`)).rows;
+const matches = (
+  await db.raw(
+    `select match_id from matches where (cluster is null OR replay_salt is null)`,
+  )
+).rows;
 for (let i = 0; i < matches.length; i++) {
   const gcdata = (
     await db.raw(

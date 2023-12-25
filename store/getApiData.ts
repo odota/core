@@ -31,7 +31,10 @@ export async function readApiData(
  * @param matchId
  * @returns Error message string
  */
-export async function saveApiData(matchId: number, forceLegacy = false): Promise<string | null> {
+export async function saveApiData(
+  matchId: number,
+  forceLegacy = false,
+): Promise<string | null> {
   let body;
   try {
     // Try the steam API
@@ -40,7 +43,7 @@ export async function saveApiData(matchId: number, forceLegacy = false): Promise
         match_id: matchId,
       }).url,
     );
-  } catch(e) {
+  } catch (e) {
     console.log(e);
     // Expected exception here if invalid match ID
     return 'Failed to get data from Steam API';
@@ -78,7 +81,9 @@ export async function tryFetchApiData(
  * @param matchId
  * @returns
  */
-export async function getOrFetchApiData(matchId: number): Promise<{data: ApiMatch | undefined, error: string | null}> {
+export async function getOrFetchApiData(
+  matchId: number,
+): Promise<{ data: ApiMatch | undefined; error: string | null }> {
   if (!matchId || !Number.isInteger(matchId) || matchId <= 0) {
     throw new Error('invalid match_id');
   }
@@ -88,7 +93,7 @@ export async function getOrFetchApiData(matchId: number): Promise<{data: ApiMatc
     redisCount(redis, 'reapi');
     if (config.DISABLE_REAPI) {
       // If high load, we can disable refetching
-      return {data: saved, error: null};
+      return { data: saved, error: null };
     }
   }
   // If we got here we don't have it saved or want to refetch

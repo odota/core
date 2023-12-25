@@ -1,11 +1,16 @@
 import cassandra from '../store/cassandra';
 import db from '../store/db';
-import { deleteFromLegacy, doArchiveFromLegacy } from '../store/getArchivedData';
+import {
+  deleteFromLegacy,
+  doArchiveFromLegacy,
+} from '../store/getArchivedData';
 
-const stream = db.raw('SELECT match_id from parsed_matches WHERE is_archived IS NULL').stream();
+const stream = db
+  .raw('SELECT match_id from parsed_matches WHERE is_archived IS NULL')
+  .stream();
 stream.on('readable', async () => {
   let row;
-  while(row = stream.read()) {
+  while ((row = stream.read())) {
     // console.log(row);
     await doArchiveFromLegacy(row.match_id.toString());
   }
@@ -43,4 +48,3 @@ stream.on('error', function (e) {
   console.error(e);
   process.exit(1);
 });
-

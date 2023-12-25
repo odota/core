@@ -57,13 +57,13 @@ export async function saveParseData(
   try {
     // Make a HEAD request for the replay to see if it's available
     await axios.head(url, { timeout: 5000 });
-  } catch(e) {
+  } catch (e) {
     if (axios.isAxiosError(e)) {
       console.log(e.message);
     }
     return 'Replay not found';
   }
-  
+
   // Pipelined for efficiency, but timings:
   // DL: 2967ms (curl http://replay152.valve.net/570/7503212404_1277518156.dem.bz2)
   // bunzip: 6716ms (bunzip2 7503212404_1277518156.dem.bz2)
@@ -98,7 +98,11 @@ export async function getOrFetchParseData(
   matchId: number,
   url: string,
   extraData: ExtraData,
-): Promise<{data: ParserMatch | undefined, skipParse: boolean, error: string | null }> {
+): Promise<{
+  data: ParserMatch | undefined;
+  skipParse: boolean;
+  error: string | null;
+}> {
   let skipParse = false;
   // Check if match is already parsed
   if (await checkIsParsed(matchId)) {

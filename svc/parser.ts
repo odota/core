@@ -42,7 +42,7 @@ async function parseProcessor(job: ParseJob) {
     apiTime = Date.now() - apiStart;
 
     const { leagueid, duration, start_time } = apiMatch;
-    if (!leagueid && (Date.now() / 1000 - start_time) > 30 * 24 * 60 * 60) {
+    if (!leagueid && Date.now() / 1000 - start_time > 30 * 24 * 60 * 60) {
       redisCount(redis, 'oldparse');
       if (config.DISABLE_OLD_PARSE) {
         // Valve doesn't keep non-league replays for more than a few weeks.
@@ -66,13 +66,17 @@ async function parseProcessor(job: ParseJob) {
     );
 
     const parseStart = Date.now();
-    let { error: parseError, skipParse } = await getOrFetchParseData(matchId, url, {
-      start_time,
-      duration,
-      leagueid,
-      pgroup,
-      origin: job.origin,
-    });
+    let { error: parseError, skipParse } = await getOrFetchParseData(
+      matchId,
+      url,
+      {
+        start_time,
+        duration,
+        leagueid,
+        pgroup,
+        origin: job.origin,
+      },
+    );
     if (parseError) {
       console.log('[PARSER] %s: %s', matchId, parseError);
       log('fail', parseError);
@@ -89,13 +93,16 @@ async function parseProcessor(job: ParseJob) {
     throw e;
   }
 
-  function log(type: 'fail' | 'crash' | 'success' | 'skip', error?: string | null) {
+  function log(
+    type: 'fail' | 'crash' | 'success' | 'skip',
+    error?: string | null,
+  ) {
     const end = Date.now();
     const colors: Record<typeof type, 'yellow' | 'red' | 'green' | 'gray'> = {
-      'fail': 'yellow',
-      'crash': 'red',
-      'success': 'green',
-      'skip': 'gray',
+      fail: 'yellow',
+      crash: 'red',
+      success: 'green',
+      skip: 'gray',
     };
     const message = c[colors[type]](
       `[${new Date().toISOString()}] [parser] [${type}: ${
@@ -115,8 +122,4 @@ async function parseProcessor(job: ParseJob) {
     }
   }
 }
-runReliableQueue(
-  'parse',
-  Number(PARSER_PARALLELISM),
-  parseProcessor,
-);
+runReliableQueue('parse', Number(PARSER_PARALLELISM), parseProcessor);

@@ -316,7 +316,9 @@ app.route('/subscribeSuccess').get(async (req, res) => {
     return res.status(400).json({ error: 'no account ID' });
   }
   // look up the checkout session id: https://stripe.com/docs/payments/checkout/custom-success-page
-  const session = await stripe.checkout.sessions.retrieve(req.query.session_id as string);
+  const session = await stripe.checkout.sessions.retrieve(
+    req.query.session_id as string,
+  );
   const customer = await stripe.customers.retrieve(session.customer as string);
   const accountId = req.user.account_id;
   // associate the customer id with the steam account ID (req.user.account_id)

@@ -1,7 +1,5 @@
 import fs from 'fs';
-const { getPlayerMatchesWithMetadata } = await import(
-  '../store/queries.js'
-);
+const { getPlayerMatchesWithMetadata } = await import('../store/queries.js');
 const { doArchivePlayerMatches } = await import('../store/getArchivedData.js');
 
 // Write player blob to archive

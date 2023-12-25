@@ -62,9 +62,12 @@ export async function buildStatus() {
     incomplete_archive_last_day: async () =>
       getRedisCountDay(redis, 'incomplete_archive'),
     build_match_last_day: async () => getRedisCountDay(redis, 'build_match'),
-    get_player_matches_last_day: async () => getRedisCountDay(redis, 'player_matches'),
-    match_cache_hit_last_day: async () => getRedisCountDay(redis, 'match_cache_hit'),
-    player_cache_hit_last_day: async () => getRedisCountDay(redis, 'player_cache_hit'),
+    get_player_matches_last_day: async () =>
+      getRedisCountDay(redis, 'player_matches'),
+    match_cache_hit_last_day: async () =>
+      getRedisCountDay(redis, 'match_cache_hit'),
+    player_cache_hit_last_day: async () =>
+      getRedisCountDay(redis, 'player_cache_hit'),
     error_last_day: async () => getRedisCountDay(redis, '500_error'),
     web_crash_last_day: async () => getRedisCountDay(redis, 'web_crash'),
     fullhistory_last_day: async () => getRedisCountDay(redis, 'fullhistory'),

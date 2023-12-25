@@ -908,7 +908,7 @@ export async function eachLimitPromise(
 export async function parallelPromise<T>(
   obj: Record<keyof T, () => Promise<any>>,
 ): Promise<T> {
-  const result = {...obj} as T;
+  const result = { ...obj } as T;
   await Promise.all(
     Object.entries<() => Promise<any>>(obj).map(async ([key, func]) => {
       const val = await func();

@@ -97,44 +97,44 @@ const parameters = {
 };
 
 const schemas = {
-...BenchmarksResponse,
-...DistributionsResponse,
-...HeroDurationsResponse,
-...HeroItemPopularityResponse,
-...HeroMatchupsResponse,
-...HeroObjectResponse,
-...HeroStatsResponse,
-...LeagueObjectResponse,
-...MatchObjectResponse,
-...MatchResponse,
-...MetadataResponse,
-...ParsedMatchesResponse,
-...PlayerCountsResponse,
-...PlayerHeroesResponse,
-...PlayerMatchesResponse,
-...PlayerObjectResponse,
-...PlayerPeersResponse,
-...PlayerProsResponse,
-...PlayerRankingsResponse,
-...PlayerRatingsResponse,
-...PlayerRecentMatchesResponse,
-...PlayersResponse,
-...PlayerTotalsResponse,
-...PlayerWardMapResponse,
-...PlayerWinLossResponse,
-...PlayerWordCloudResponse,
-...PublicMatchesResponse,
-...RankingsResponse,
-...RecordsResponse,
-...ScenarioItemTimingsResponse,
-...ScenarioLaneRolesResponse,
-...ScenarioMiscResponse,
-...SchemaResponse,
-...SearchResponse,
-...TeamHeroesResponse,
-...TeamMatchObjectResponse,
-...TeamObjectResponse,
-...TeamPlayersResponse,
+  ...BenchmarksResponse,
+  ...DistributionsResponse,
+  ...HeroDurationsResponse,
+  ...HeroItemPopularityResponse,
+  ...HeroMatchupsResponse,
+  ...HeroObjectResponse,
+  ...HeroStatsResponse,
+  ...LeagueObjectResponse,
+  ...MatchObjectResponse,
+  ...MatchResponse,
+  ...MetadataResponse,
+  ...ParsedMatchesResponse,
+  ...PlayerCountsResponse,
+  ...PlayerHeroesResponse,
+  ...PlayerMatchesResponse,
+  ...PlayerObjectResponse,
+  ...PlayerPeersResponse,
+  ...PlayerProsResponse,
+  ...PlayerRankingsResponse,
+  ...PlayerRatingsResponse,
+  ...PlayerRecentMatchesResponse,
+  ...PlayersResponse,
+  ...PlayerTotalsResponse,
+  ...PlayerWardMapResponse,
+  ...PlayerWinLossResponse,
+  ...PlayerWordCloudResponse,
+  ...PublicMatchesResponse,
+  ...RankingsResponse,
+  ...RecordsResponse,
+  ...ScenarioItemTimingsResponse,
+  ...ScenarioLaneRolesResponse,
+  ...ScenarioMiscResponse,
+  ...SchemaResponse,
+  ...SearchResponse,
+  ...TeamHeroesResponse,
+  ...TeamMatchObjectResponse,
+  ...TeamObjectResponse,
+  ...TeamPlayersResponse,
 };
 
 const playerParamNames = [
@@ -1546,7 +1546,10 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           // By default, auto-parsed matches have priority 0
           // Requests have priority 1
           let priority = 1;
-          if (req.user?.account_id && await isSubscriber(req.user.account_id)) {
+          if (
+            req.user?.account_id &&
+            (await isSubscriber(req.user.account_id))
+          ) {
             // Give subscribers higher parse priority
             priority = -3;
           } else if (req.query.api_key) {
@@ -1558,7 +1561,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
           } else if (req.headers.origin === config.UI_HOST) {
             // Give UI requests priority
             priority = 0;
-          } 
+          }
           const parseJob = await queue.addReliableJob(
             {
               name: 'parse',

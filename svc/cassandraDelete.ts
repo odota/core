@@ -80,7 +80,7 @@ async function start() {
 
       const funcs = parsedIds.map((id) => () => doArchiveFromLegacy(id));
       await eachLimitPromise(funcs, 10);
-    } catch(e) {
+    } catch (e) {
       // Just log and try again
       console.error(e);
     }

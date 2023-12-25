@@ -219,11 +219,7 @@ export async function getPlayerMatchesWithMetadata(
   queryObj: QueryObj,
 ): Promise<[ParsedPlayerMatch[], PlayerMatchesMetadata | null]> {
   // Validate accountId
-  if (
-    !accountId ||
-    !Number.isInteger(accountId) ||
-    accountId <= 0
-  ) {
+  if (!accountId || !Number.isInteger(accountId) || accountId <= 0) {
     return [[], null];
   }
   redisCount(redis, 'player_matches');
