@@ -41,7 +41,7 @@ async function start() {
   // TODO (archiveblob) Implement a cleanup for the blobstore to remove unparsed matches and archive parsed ones
   while (true) {
     try {
-      const rand = randomNumber(1, 7500000000);
+      const rand = randomNumber(1000000000, 6300000000);
       const page = [];
       for (let i = 0; i < 500; i++) {
         page.push(rand + i);
