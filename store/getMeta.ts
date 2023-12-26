@@ -42,7 +42,7 @@ export async function getMetaFromUrl(url: string) {
   try {
     // Timings:
     // DL: 1072ms (curl http://replay152.valve.net/570/7503212404_1277518156.meta.bz2)
-    // bunzip2: 13ms bunzip2 7503212404_1277518156.meta.bz2()
+    // bunzip2: 13ms (bunzip2 7503212404_1277518156.meta.bz2)
     // parse: ~50ms
     // We pipeline them here for efficiency
     // If we want to cache meta files, we can cache the bz2 versions and it won't add very much parse time
