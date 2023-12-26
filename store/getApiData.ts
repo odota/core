@@ -2,7 +2,7 @@ import config from '../config';
 import { generateJob, getSteamAPIData, redisCount } from '../util/utility';
 import cassandra from './cassandra';
 import { insertMatch } from './insert';
-import type { ApiMatch } from './pgroup';
+import { getPGroup, type ApiMatch } from './pgroup';
 import redis from './redis';
 
 /**
@@ -34,7 +34,7 @@ export async function readApiData(
 export async function saveApiData(
   matchId: number,
   forceLegacy = false,
-): Promise<string | null> {
+): Promise<{ error: string | null, pgroup: PGroup | undefined }> {
   let body;
   try {
     // Try the steam API
@@ -46,15 +46,18 @@ export async function saveApiData(
   } catch (e) {
     console.log(e);
     // Expected exception here if invalid match ID
-    return 'Failed to get data from Steam API';
+    return { error: 'Failed to get data from Steam API', pgroup: undefined };
   }
   // match details response
   const match = body.result;
-  await insertMatch(match, {
+  const { pgroup } = await insertMatch(match, {
     type: 'api',
     forceLegacy,
+    // Don't overwrite the blob since it might have less data
+    // But we still want to compute a new pgroup and update player_caches
+    ifNotExists: true,
   });
-  return null;
+  return { error: null, pgroup };
 }
 
 /**
@@ -83,7 +86,7 @@ export async function tryFetchApiData(
  */
 export async function getOrFetchApiData(
   matchId: number,
-): Promise<{ data: ApiMatch | undefined; error: string | null }> {
+): Promise<{ data: ApiMatch | undefined; error: string | null, pgroup: PGroup | undefined }> {
   if (!matchId || !Number.isInteger(matchId) || matchId <= 0) {
     throw new Error('invalid match_id');
   }
@@ -93,18 +96,18 @@ export async function getOrFetchApiData(
     redisCount(redis, 'reapi');
     if (config.DISABLE_REAPI) {
       // If high load, we can disable refetching
-      return { data: saved, error: null };
+      return { data: saved, error: null, pgroup: getPGroup(saved) };
     }
   }
   // If we got here we don't have it saved or want to refetch
-  const error = await saveApiData(matchId);
+  const { error, pgroup } = await saveApiData(matchId);
   if (error) {
     // We caught an exception from Steam API due to invalid ID
-    return { data: undefined, error };
+    return { data: undefined, error, pgroup };
   }
   const result = await readApiData(matchId);
   if (!result) {
     throw new Error('[APIDATA]: Could not get API data for match ' + matchId);
   }
-  return { data: result, error: null };
+  return { data: result, error: null, pgroup };
 }

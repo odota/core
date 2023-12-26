@@ -34,9 +34,11 @@ async function parseProcessor(job: ParseJob) {
     const matchId = job.match_id;
     // Fetch the API data
     const apiStart = Date.now();
-    let { data: apiMatch, error: apiError } = await getOrFetchApiData(matchId);
-    if (apiError || !apiMatch) {
-      log('fail', apiError);
+    // The pgroup is used to update player_caches on insert.
+    // Since currently gcdata and parse data have no knowledge of anonymity, we pass it from API data
+    let { data: apiMatch, error: apiError, pgroup } = await getOrFetchApiData(matchId);
+    if (apiError || !apiMatch || !pgroup) {
+      log('fail', apiError || 'Missing API data or pgroup');
       return false;
     }
     apiTime = Date.now() - apiStart;
@@ -51,13 +53,6 @@ async function parseProcessor(job: ParseJob) {
         return true;
       }
     }
-
-    // We need pgroup for the next jobs
-    // NOTE: This will be static as of the original insert and the players who were anonymous will not have their aggregations updated
-    // If we want to update aggregations we need to do the api insert with ifNotExists to update player_caches with basic data (like fullhistory)
-    // Then return a pgroup based on that fetch for the parsed data, not the cached one
-    // We would also need to enable refetching gcdata and parsed data
-    const pgroup = getPGroup(apiMatch);
 
     // Fetch the gcdata and construct a replay URL
     const gcStart = Date.now();

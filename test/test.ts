@@ -150,11 +150,11 @@ describe(c.blue('[TEST] replay parse'), async function () {
     // We could do this with a real pro match but we'd have to upload a new replay file
     // This also means it should trigger auto-parse as a "pro match"
     console.log('inserting and parsing:', matchData.match_id);
-    const job = await insertMatch(matchData, {
+    const { parseJob } = await insertMatch(matchData, {
       type: 'api',
       origin: 'scanner',
     });
-    assert.ok(job);
+    assert.ok(parseJob);
     console.log('waiting for replay parse');
     await new Promise((resolve) => setTimeout(resolve, 20000));
   });

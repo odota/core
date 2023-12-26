@@ -176,8 +176,9 @@ export async function insertPlayerCache(
         return;
       }
       if (type === 'api') {
-        // We only need this once on the original API insert
-        // In the future we might update it with the improved version from gc
+        // We currently update this for the non-anonymous players in the match
+        // It'll reflect the current anonymity state of the players at insertion time
+        // This might lead to changes in peers counts after a fullhistory update or parse request
         playerMatch.heroes = pgroup;
       }
       computeMatchData(playerMatch as ParsedPlayerMatch);
@@ -765,5 +766,5 @@ export async function insertMatch(
   await decideScenarios(match);
   await postParsedMatch(match);
   const parseJob = await decideReplayParse(match);
-  return parseJob;
+  return { parseJob, pgroup };
 }
