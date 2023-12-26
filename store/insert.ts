@@ -445,7 +445,6 @@ export async function insertMatch(
           prepare: true,
         },
       );
-      console.log(result.rows?.[0]?.['[applied]']);
       if (result.rows?.[0]?.['[applied]'] === false) {
         // Store a blob that tracks which players played this game
         // This can change from Steam API as players toggle privacy settings
