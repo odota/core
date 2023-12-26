@@ -79,6 +79,7 @@ async function doTeams() {
         console.log(e);
       }
     }
+    await new Promise(resolve => setTimeout(resolve, 1000));
   }
 }
-invokeIntervalAsync(doTeams, 60 * 60 * 1000);
+invokeIntervalAsync(doTeams, 12 * 60 * 60 * 1000);
