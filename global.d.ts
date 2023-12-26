@@ -32,6 +32,7 @@ type QueryObj = {
   having?: number;
   // Number of results to fetch from the database (before filter/sort)
   dbLimit?: number;
+  isPrivate?: boolean;
 };
 
 type StringDict = { [key: string]: string };
