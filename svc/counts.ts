@@ -246,7 +246,7 @@ async function updateHeroCounts(match: Match) {
 }
 
 async function updateBenchmarks(match: Match) {
-  if (match.match_id % 100 < Number(config.BENCHMARKS_SAMPLE_PERCENT)) {
+  if (match.match_id % 100 < Number(config.BENCHMARKS_SAMPLE_PERCENT) && isSignificant(match)) {
     for (let i = 0; i < match.players.length; i += 1) {
       const p = match.players[i];
       // only do if all players have heroes
