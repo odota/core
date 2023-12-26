@@ -11,6 +11,8 @@
     "typecheck": "tsc --project tsconfig.json --noEmit",
     "lint": "eslint . --ext .js,.mjs --ignore-path .gitignore",
     "lintfix": "eslint . --ext .js,.mjs --ignore-path .gitignore --fix",
+    "request": "curl -X POST localhost:5000/api/request/7490235544",
+    "fullhistory": "curl -X POST localhost:5000/api/players/88367253/refresh",
     "rediskeys": "redis-cli keys '*' | cut -d':' -f1 | sort | uniq -c",
     "resetpicks": "redis-cli keys 'picks_*' | xargs redis-cli del",
     "resetrecords": "redis-cli keys 'records*' | xargs redis-cli del",

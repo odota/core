@@ -38,6 +38,7 @@ async function processMatch(matchId: string) {
   const match = body.result;
   await insertMatch(match, {
     type: 'api',
+    ifNotExists: true,
   });
 }
 

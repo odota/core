@@ -132,9 +132,9 @@ export async function doArchiveFromBlob(matchId: number) {
     return;
   }
   if (metadata?.has_api && !metadata?.has_gcdata && !metadata?.has_parsed) {
-    // if it only contains API data, delete the entire row
+    // if it only contains API data, delete the api data
     await cassandra.execute(
-      'DELETE from match_blobs WHERE match_id = ?',
+      'DELETE api from match_blobs WHERE match_id = ?',
       [matchId],
       {
         prepare: true,
@@ -154,7 +154,7 @@ export async function doArchiveFromBlob(matchId: number) {
         `UPDATE parsed_matches SET is_archived = TRUE WHERE match_id = ?`,
         [matchId],
       );
-      // Delete the row (there might be gcdata, but we'll have it in the archive blob)
+      // Delete the row (there might be other columns, but we'll have it all in the archive blob)
       // This will also also clear the gcdata cache for this match
       await cassandra.execute(
         'DELETE from match_blobs WHERE match_id = ?',

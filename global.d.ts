@@ -348,7 +348,7 @@ type ProPlayer = {
   account_id: number;
 };
 
-type DataType = 'api' | 'parsed' | 'gcdata' | 'meta';
+type DataType = 'api' | 'parsed' | 'gcdata' | 'meta' | 'identity' | 'ranks';
 type DataOrigin = 'scanner';
 
 type CommonInsertOptions = {
@@ -357,6 +357,7 @@ type CommonInsertOptions = {
   pgroup?: PGroup;
   endedAt?: number;
   forceLegacy?: boolean;
+  ifNotExists?: boolean;
 };
 
 type ApiInsertOptions = {

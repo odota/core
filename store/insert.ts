@@ -419,39 +419,44 @@ export async function insertMatch(
     // We store a match blob in the row for each stage
     // in buildMatch we can assemble the data from all these pieces
     // After some retention period we stick the assembled blob in match archive and delete it
-    await upsertBlob(options.type, match);
+
     // NOTE: apparently the Steam API started deleting some fields on old matches, like HD/TD/ability builds
     // Currently this means fullhistory could overwrite the blob later and we could lose some data
-    // We can store this data in a separate blob column to preserve it
-    if (options.origin === 'scanner' && options.type === 'api') {
-      const apiExtraBlob = {
-        match_id: match.match_id, 
-        players: (match.players as ApiPlayer[]).map(p => ({
-          player_slot: p.player_slot,
-          hero_damage: p.hero_damage,
-          tower_damage: p.tower_damage,
-          hero_healing: p.hero_healing,
-          // Also gold, gold_spent but we don't care about these
-          ability_upgrades_arr: p.ability_upgrades_arr
-        }),
-      )};
-      // await upsertBlob('apiextra', apiExtraBlob);
-      // average_rank should be stored in a new blob column since it's not part of API data
-      // We could also store the ranks of the players in the game instead of looking it up at view time
-      // That's probably better anyway since it's more accurate to show their rank at the time of the match
-      if (ranksBlob) {
-        // await upsertBlob('ranks', ranksBlob);
-      }
+    // So add the ifNotExists option to avoid overwriting
+    // We still want to update the identity blob
+
+    let copy = createMatchCopy<typeof match>(match);
+    await upsertBlob(options.type, copy, options.ifNotExists);
+
+    // average_rank should be stored in a new blob column since it's not part of API data
+    // We could also store the ranks of the players in the game instead of looking it up at view time
+    // That's probably better anyway since it's more accurate to show their rank at the time of the match
+    if (ranksBlob) {
+      // await upsertBlob('ranks', ranksBlob);
     }
-    async function upsertBlob(type: DataType, blob: { match_id: number }) {
+
+    async function upsertBlob(type: DataType, blob: { match_id: number, players: { player_slot: number }[] }, ifNotExists = false) {
       const matchId = blob.match_id;
-      await cassandra.execute(
-        `INSERT INTO match_blobs(match_id, ${type}) VALUES(?, ?)`,
+      const result = await cassandra.execute(
+        `INSERT INTO match_blobs(match_id, ${type}) VALUES(?, ?) ${ifNotExists ? 'IF NOT EXISTS' : ''}`,
         [matchId, JSON.stringify(blob)],
         {
           prepare: true,
         },
       );
+      console.log(result.rows?.[0]?.['[applied]']);
+      if (result.rows?.[0]?.['[applied]'] === false) {
+        // Store a blob that tracks which players played this game
+        // This can change from Steam API as players toggle privacy settings
+        // Write this if we didn't apply the change, since that means we are reinserting and the privacy setting probably changed
+        if (options.type === 'api') {
+          const identityBlob = { match_id: copy.match_id, players: copy.players.map(p => ({
+            player_slot: p.player_slot,
+            account_id: p.account_id,
+          }))};
+          await upsertBlob('identity', identityBlob, false);
+        }
+      }
       if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
         fs.writeFileSync(
           './json/' + matchId + '_' +type + '.json',

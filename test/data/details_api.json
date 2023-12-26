@@ -149,6 +149,9 @@
         "hero_damage": 6380,
         "tower_damage": 6579,
         "hero_healing": 0,
+        "scaled_hero_damage": 5639,
+        "scaled_tower_damage": 39,
+        "scaled_hero_healing": 0,
         "level": 23,
         "ability_upgrades": [
           {
@@ -291,6 +294,9 @@
         "hero_damage": 9324,
         "tower_damage": 2136,
         "hero_healing": 0,
+        "scaled_hero_damage": 5639,
+        "scaled_tower_damage": 39,
+        "scaled_hero_healing": 0,
         "level": 18,
         "ability_upgrades": [
           {
@@ -408,6 +414,9 @@
         "hero_damage": 27014,
         "tower_damage": 3523,
         "hero_healing": 0,
+        "scaled_hero_damage": 5639,
+        "scaled_tower_damage": 39,
+        "scaled_hero_healing": 0,
         "level": 25,
         "ability_upgrades": [
           {
@@ -560,6 +569,9 @@
         "hero_damage": 5590,
         "tower_damage": 396,
         "hero_healing": 753,
+        "scaled_hero_damage": 5639,
+        "scaled_tower_damage": 39,
+        "scaled_hero_healing": 0,
         "level": 15,
         "ability_upgrades": [
           {
@@ -662,6 +674,9 @@
         "hero_damage": 8266,
         "tower_damage": 220,
         "hero_healing": 0,
+        "scaled_hero_damage": 5639,
+        "scaled_tower_damage": 39,
+        "scaled_hero_healing": 0,
         "level": 15,
         "ability_upgrades": [
           {
@@ -764,6 +779,9 @@
         "hero_damage": 9827,
         "tower_damage": 0,
         "hero_healing": 0,
+        "scaled_hero_damage": 5639,
+        "scaled_tower_damage": 39,
+        "scaled_hero_healing": 0,
         "level": 11,
         "ability_upgrades": [
           {
@@ -846,6 +864,9 @@
         "hero_damage": 15657,
         "tower_damage": 339,
         "hero_healing": 305,
+        "scaled_hero_damage": 5639,
+        "scaled_tower_damage": 39,
+        "scaled_hero_healing": 0,
         "level": 21,
         "ability_upgrades": [
           {
@@ -978,6 +999,9 @@
         "hero_damage": 10818,
         "tower_damage": 388,
         "hero_healing": 665,
+        "scaled_hero_damage": 5639,
+        "scaled_tower_damage": 39,
+        "scaled_hero_healing": 0,
         "level": 15,
         "ability_upgrades": [
           {
@@ -1080,6 +1104,9 @@
         "hero_damage": 2707,
         "tower_damage": 148,
         "hero_healing": 0,
+        "scaled_hero_damage": 5639,
+        "scaled_tower_damage": 39,
+        "scaled_hero_healing": 0,
         "level": 19,
         "ability_upgrades": [
           {

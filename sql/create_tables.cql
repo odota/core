@@ -199,6 +199,8 @@ CREATE TABLE IF NOT EXISTS match_blobs (
   api text,
   gcdata text,
   parsed text,
+  identity text,
+  ranks text,
 );
 
 ALTER TABLE matches WITH compaction = { 'class' :  'LeveledCompactionStrategy'  };

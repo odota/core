@@ -53,6 +53,10 @@ async function parseProcessor(job: ParseJob) {
     }
 
     // We need pgroup for the next jobs
+    // NOTE: This will be static as of the original insert and the players who were anonymous will not have their aggregations updated
+    // If we want to update aggregations we need to do the api insert with ifNotExists to update player_caches with basic data (like fullhistory)
+    // Then return a pgroup based on that fetch for the parsed data, not the cached one
+    // We would also need to enable refetching gcdata and parsed data
     const pgroup = getPGroup(apiMatch);
 
     // Fetch the gcdata and construct a replay URL
@@ -89,6 +93,7 @@ async function parseProcessor(job: ParseJob) {
     return true;
   } catch (e: any) {
     log('crash', e?.message);
+    await new Promise(resolve => setTimeout(resolve, 1000));
     // Rethrow the exception
     throw e;
   }

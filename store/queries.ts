@@ -592,7 +592,7 @@ export async function getMatchDataFromBlobWithMetadata(
   backfill: boolean,
 ): Promise<[Match | ParsedMatch | null, GetMatchDataMetadata | null]> {
   const result = await cassandra.execute(
-    'SELECT api, gcdata, parsed from match_blobs WHERE match_id = ?',
+    'SELECT api, gcdata, parsed, identity, ranks from match_blobs WHERE match_id = ?',
     [matchId],
     {
       prepare: true,
@@ -608,6 +608,8 @@ export async function getMatchDataFromBlobWithMetadata(
   let parsed: ParsedMatch | undefined = row?.parsed
     ? JSON.parse(row.parsed)
     : undefined;
+  let identity: any = row?.identity ? JSON.parse(row.identity) : undefined;
+  let ranks: any = row?.ranks ? JSON.parse(row.ranks) : undefined;
 
   let odData: GetMatchDataMetadata = {
     has_api: Boolean(api),
@@ -646,17 +648,27 @@ export async function getMatchDataFromBlobWithMetadata(
     ...parsed,
     ...gcdata,
     ...api,
-    players: api?.players.map((apiPlayer: any) => {
+    ...identity,
+    ...ranks,
+    players: api?.players.map((apiPlayer) => {
       const gcPlayer = gcdata?.players.find(
-        (gcp: any) => gcp.player_slot === apiPlayer.player_slot,
+        (gcp) => gcp.player_slot === apiPlayer.player_slot,
       );
       const parsedPlayer = parsed?.players.find(
-        (pp: any) => pp.player_slot === apiPlayer.player_slot,
+        (pp) => pp.player_slot === apiPlayer.player_slot,
+      );
+      const identityPlayer = identity?.players.find(
+        (ip: any) => ip.player_slot === apiPlayer.player_slot,
+      );
+      const ranksPlayer = ranks?.players.find(
+        (rp: any) => rp.player_slot === apiPlayer.player_slot,
       );
       return {
         ...parsedPlayer,
         ...gcPlayer,
         ...apiPlayer,
+        ...identityPlayer,
+        ...ranksPlayer,
       };
     }),
   };

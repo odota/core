@@ -165,6 +165,7 @@ describe(c.blue('[TEST] replay parse'), async function () {
     assert.ok(match.players);
     assert.ok(match.players[0]);
     assert.equal(match.players[0].kills, 8);
+    assert.equal(match.players[0].hero_damage, 12234);
     assert.ok(match.start_time);
   });
   it('should have gcdata in buildMatch', async () => {
