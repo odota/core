@@ -65,7 +65,7 @@ export async function doArchiveFromLegacy(matchId: number) {
     return;
   }
   if (!isDataComplete(match)) {
-    console.log('data incomplete for match: ' + matchId);
+    // console.log('data incomplete for match: ' + matchId);
     await deleteFromLegacy(matchId);
     return;
   }
@@ -86,7 +86,7 @@ export async function doArchiveFromLegacy(matchId: number) {
   const playerMatches = await getPlayerMatchDataFromLegacy(matchId);
   if (!playerMatches.length) {
     // We couldn't find players for this match, some data was corrupted and we only have match level parsed data
-    console.log('no players for match, deleting:', matchId);
+    // console.log('no players for match, deleting:', matchId);
     if (Number(matchId) < 7000000000) {
       // Just delete it from postgres and cassandra
       await db.raw('DELETE from parsed_matches WHERE match_id = ?', [
@@ -97,17 +97,18 @@ export async function doArchiveFromLegacy(matchId: number) {
     return;
   }
 
+  // Add to parsed_matches if not present
+  await db.raw(
+    'INSERT INTO parsed_matches(match_id) VALUES(?) ON CONFLICT DO NOTHING',
+    [matchId],
+  );
+
   const blob = Buffer.from(
     JSON.stringify({ ...match, players: match.players || playerMatches }),
   );
   const result = await matchArchive.archivePut(matchId.toString(), blob);
   redisCount(redis, 'match_archive_write');
   if (result) {
-    // Add to parsed_matches if not present
-    await db.raw(
-      'INSERT INTO parsed_matches(match_id) VALUES(?) ON CONFLICT DO NOTHING',
-      [matchId],
-    );
     // Mark the match archived
     await db.raw(
       `UPDATE parsed_matches SET is_archived = TRUE WHERE match_id = ?`,
@@ -173,14 +174,14 @@ export async function doArchiveFromBlob(matchId: number) {
 }
 
 export async function deleteFromLegacy(id: number) {
-  await Promise.all([
-    cassandra.execute('DELETE from player_matches where match_id = ?', [id], {
-      prepare: true,
-    }),
-    cassandra.execute('DELETE from matches where match_id = ?', [id], {
-      prepare: true,
-    }),
-  ]);
+  // await Promise.all([
+  //   cassandra.execute('DELETE from player_matches where match_id = ?', [id], {
+  //     prepare: true,
+  //   }),
+  //   cassandra.execute('DELETE from matches where match_id = ?', [id], {
+  //     prepare: true,
+  //   }),
+  // ]);
 }
 
 export async function readArchivedPlayerMatches(
