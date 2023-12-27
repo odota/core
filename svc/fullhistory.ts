@@ -9,7 +9,7 @@ import {
 } from '../util/utility';
 import db from '../store/db';
 import redis from '../store/redis';
-import queue from '../store/queue';
+import { runQueue } from '../store/queue';
 import { getPlayerMatches } from '../store/queries';
 import { insertMatch } from '../store/insert';
 const apiKeys = config.STEAM_API_KEY.split(',');
@@ -133,7 +133,7 @@ async function processFullHistory(job: FullHistoryJob) {
   await updatePlayer(player);
   console.timeEnd('doFullHistory: ' + player.account_id.toString());
 }
-queue.runQueue(
+runQueue(
   'fhQueue',
   Number(config.FULLHISTORY_PARALLELISM),
   processFullHistory,

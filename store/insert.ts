@@ -3,7 +3,7 @@ import constants from 'dotaconstants';
 import util from 'util';
 import fs from 'fs';
 import config from '../config';
-import queue from './queue';
+import { addJob, addReliableJob } from './queue';
 import { computeMatchData } from '../util/compute';
 import db from './db';
 import redis from './redis';
@@ -553,7 +553,7 @@ export async function insertMatch(
   async function decideCounts(match: InsertMatchInput) {
     // We only do this if fresh match
     if (options.origin === 'scanner' && options.type === 'api') {
-      await queue.addJob({
+      await addJob({
         name: 'countsQueue',
         data: match as ApiMatch,
       });
@@ -574,7 +574,7 @@ export async function insertMatch(
     });
     await Promise.all(
       arr.map((p) =>
-        queue.addJob({
+        addJob({
           name: 'mmrQueue',
           data: {
             match_id: match.match_id,
@@ -617,7 +617,7 @@ export async function insertMatch(
       match.game_mode !== 19 &&
       match.match_id % 100 < Number(config.GCDATA_PERCENT)
     ) {
-      await queue.addJob({
+      await addJob({
         name: 'gcQueue',
         data: {
           match_id: match.match_id,
@@ -634,7 +634,7 @@ export async function insertMatch(
       options.type === 'parsed' &&
       match.match_id % 100 < Number(config.SCENARIOS_SAMPLE_PERCENT)
     ) {
-      await queue.addJob({
+      await addJob({
         name: 'scenariosQueue',
         data: match.match_id.toString(),
       });
@@ -682,7 +682,7 @@ export async function insertMatch(
     }
     // We might have to try several times since it might be too soon
     let attempts = 30;
-    const job = await queue.addReliableJob(
+    const job = await addReliableJob(
       {
         name: 'parse',
         data: {

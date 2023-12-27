@@ -4,7 +4,7 @@ import redis from '../store/redis';
 import db from '../store/db';
 import { getMatchRankTier } from '../store/queries';
 import { upsertPlayer, bulkIndexPlayer, upsert } from '../store/insert';
-import queue from '../store/queue';
+import { runQueue } from '../store/queue';
 import config from '../config';
 import { benchmarks } from '../util/benchmarksUtil';
 import {
@@ -321,4 +321,4 @@ async function processCounts(match: Match) {
   await updateHeroCounts(match);
   await updateBenchmarks(match);
 }
-queue.runQueue('countsQueue', 1, processCounts);
+runQueue('countsQueue', 1, processCounts);

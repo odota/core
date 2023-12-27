@@ -2,7 +2,7 @@ import constants from 'dotaconstants';
 import moment from 'moment';
 import pg from 'pg';
 import config from '../config';
-import queue from '../store/queue';
+import { addJob, addReliableJob, getReliableJob } from '../store/queue';
 import { search } from '../store/search';
 import { searchES } from '../store/searchES';
 import buildMatch from '../store/buildMatch';
@@ -980,7 +980,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => '/players/:account_id/refresh',
         func: async (req, res, cb) => {
-          const length = await queue.addJob({
+          const length = await addJob({
             name: 'fhQueue',
             data: {
               account_id: Number(req.params.account_id),
@@ -1507,7 +1507,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => '/request/:jobId',
         func: async (req, res, cb) => {
-          const job = await queue.getReliableJob(req.params.jobId);
+          const job = await getReliableJob(req.params.jobId);
           if (job) {
             return res.json({ ...job, jobId: job.id });
           }
@@ -1565,7 +1565,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
             // Give UI requests priority
             priority = 0;
           }
-          const parseJob = await queue.addReliableJob(
+          const parseJob = await addReliableJob(
             {
               name: 'parse',
               data: { match_id: Number(matchId) },

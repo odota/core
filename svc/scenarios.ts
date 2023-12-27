@@ -1,10 +1,10 @@
 // Processes a queue of jobs to collect stats on specific scenario data
 import util from 'util';
-import queue from '../store/queue';
 import buildMatch from '../store/buildMatch';
 import db from '../store/db';
 import su from '../util/scenariosUtil';
 import { epochWeek } from '../util/utility';
+import { runQueue } from '../store/queue';
 
 const { scenarioChecks } = su;
 type ScenariosKey = keyof typeof scenarioChecks;
@@ -53,4 +53,4 @@ async function processScenarios(matchID: string) {
     });
   });
 }
-queue.runQueue('scenariosQueue', 1, processScenarios);
+runQueue('scenariosQueue', 1, processScenarios);

@@ -20,7 +20,7 @@ function generatePercentiles(arr: string[]) {
   return result;
 }
 
-export async function countDay(prefix: MetricName) {
+async function countDay(prefix: MetricName) {
   // Get counts for last 24 hour keys (including current partial hour)
   const keyArr = [];
   for (let i = 0; i < 24; i += 1) {
@@ -35,7 +35,7 @@ export async function countDay(prefix: MetricName) {
   return counts.reduce((a, b) => Number(a) + Number(b), 0);
 }
 
-export async function countLastHour(prefix: MetricName) {
+async function countLastHour(prefix: MetricName) {
   // Get counts for previous full hour (not current)
   const result = await redis.get(
     `${prefix}:v2:${moment().startOf('hour').subtract(1, 'hour').format('X')}`,

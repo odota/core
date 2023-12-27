@@ -1,5 +1,5 @@
 // Processes a queue of requests to update MMR/rank medal for players
-import queue from '../store/queue';
+import { runQueue } from '../store/queue';
 import db from '../store/db';
 import redis from '../store/redis';
 import { insertPlayerRating, upsertPlayer } from '../store/insert';
@@ -39,7 +39,7 @@ async function processMmr(job: MmrJob) {
   }
   await new Promise((resolve) => setTimeout(resolve, 1));
 }
-queue.runQueue(
+runQueue(
   'mmrQueue',
   Number(config.MMR_PARALLELISM) * getRetrieverCount(),
   processMmr,

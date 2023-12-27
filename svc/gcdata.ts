@@ -1,7 +1,7 @@
 // Processes a queue of requests for gcdata (replay salts) without parsing
 // The parser will also request gcdata if needed
 import { getOrFetchGcData } from '../store/getGcData';
-import queue from '../store/queue';
+import { runQueue } from '../store/queue';
 import config from '../config';
 import { getRetrieverCount } from '../util/utility';
 
@@ -13,7 +13,7 @@ async function processGcData(job: GcDataJob) {
 }
 
 console.log('[GCDATA] starting');
-queue.runQueue(
+runQueue(
   'gcQueue',
   Number(config.GCDATA_PARALLELISM) * getRetrieverCount(),
   processGcData,

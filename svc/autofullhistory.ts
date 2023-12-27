@@ -1,6 +1,6 @@
 // Randomly requests history refreshes for users to fill in missing matches
 import db from '../store/db';
-import queue from '../store/queue';
+import { addJob } from '../store/queue';
 import { invokeIntervalAsync } from '../util/utility';
 
 async function doAutoFullHistory() {
@@ -10,7 +10,7 @@ async function doAutoFullHistory() {
   console.log(result.rows);
   await Promise.all(
     result.rows.map((row: any) =>
-      queue.addJob({
+      addJob({
         name: 'fhQueue',
         data: {
           account_id: row.account_id,

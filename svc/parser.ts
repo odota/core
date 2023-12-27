@@ -8,14 +8,13 @@
 import express from 'express';
 import { getOrFetchGcDataWithRetry } from '../store/getGcData';
 import config from '../config';
-import queue from '../store/queue';
+import { runReliableQueue } from '../store/queue';
 import c from 'ansi-colors';
 import { buildReplayUrl, redisCount } from '../util/utility';
 import redis from '../store/redis';
 import { getOrFetchApiData } from '../store/getApiData';
 import { checkIsParsed, saveParseData } from '../store/getParsedData';
 
-const { runReliableQueue } = queue;
 const { PORT, PARSER_PORT, PARSER_PARALLELISM } = config;
 const app = express();
 app.get('/healthz', (req, res) => {

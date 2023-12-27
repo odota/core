@@ -5,7 +5,7 @@ import { Redis } from 'ioredis';
 import config from '../config';
 import { Client } from 'pg';
 
-async function runQueue(
+export async function runQueue(
   queueName: QueueName,
   parallelism: number,
   processor: (job: any) => Promise<void>,
@@ -43,7 +43,7 @@ async function runQueue(
   });
 }
 
-async function runReliableQueue(
+export async function runReliableQueue(
   queueName: QueueName,
   parallelism: number,
   processor: (job: any) => Promise<boolean>,
@@ -102,12 +102,12 @@ async function runReliableQueue(
   });
 }
 
-async function addJob(input: QueueInput) {
+export async function addJob(input: QueueInput) {
   const { name, data } = input;
   return redis.rpush(name, JSON.stringify(data));
 }
 
-async function addReliableJob(
+export async function addReliableJob(
   input: QueueInput,
   options: ReliableQueueOptions,
 ) {
@@ -129,17 +129,10 @@ async function addReliableJob(
   );
   return result.rows[0];
 }
-async function getReliableJob(jobId: string) {
+
+export async function getReliableJob(jobId: string) {
   const result = await db.raw('SELECT * FROM queue WHERE id = ?', [
     Number(jobId),
   ]);
   return result.rows[0];
 }
-
-export default {
-  runQueue,
-  runReliableQueue,
-  addReliableJob,
-  getReliableJob,
-  addJob,
-};
