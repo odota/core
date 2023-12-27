@@ -1456,7 +1456,7 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         func: async (req, res, cb) => {
           const result = await redis.get('health:v2');
           if (!result) {
-            return res.status(404).json(result);
+            return res.json(result);
           }
           const data = JSON.parse(result);
           if (!req.params.metric) {
