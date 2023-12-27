@@ -1,7 +1,7 @@
 import constants from 'dotaconstants';
 import util from 'util';
 import config from '../config';
-import su from '../util/scenariosUtil';
+import { teamScenariosQueryParams, metadata } from '../util/scenariosUtil';
 import { filterMatches } from '../util/filter';
 import db from './db';
 import redis from './redis';
@@ -552,7 +552,7 @@ export async function getLaneRoles(req: Request): Promise<any[]> {
 }
 export async function getTeamScenarios(req: Request): Promise<any[]> {
   const scenario =
-    (su.teamScenariosQueryParams.includes(req.query.scenario as string) &&
+    (teamScenariosQueryParams.includes(req.query.scenario as string) &&
       req.query.scenario) ||
     '';
   const result = await db.raw(
@@ -567,7 +567,7 @@ export async function getTeamScenarios(req: Request): Promise<any[]> {
 }
 export async function getMetadata(req: Request) {
   const obj = {
-    scenarios: async () => su.metadata,
+    scenarios: async () => metadata,
     banner: async () => redis.get('banner'),
     user: async () => req.user,
     isSubscriber: async () => {

@@ -10,7 +10,7 @@ const timings = [7.5, 10, 12, 15, 20, 25, 30].map((x) => x * 60);
 const gameDurationBucket = [15, 30, 45, 60, 90].map((x) => x * 60);
 const negativeWords = ['ff', 'report', 'gg', 'end', 'noob'];
 const positiveWords = ['gl', 'glhf', 'hf', 'good luck', 'have fun'];
-const teamScenariosQueryParams = [
+export const teamScenariosQueryParams = [
   'pos_chat_1min',
   'neg_chat_1min',
   'courier_kill',
@@ -30,7 +30,7 @@ function buildTeamScenario(
     },
   ];
 }
-const scenarioChecks = {
+export const scenarioChecks = {
   scenarios: [
     function itemTimings(match: ParsedMatch) {
       const rows: any[] = [];
@@ -156,7 +156,7 @@ const matchProperties: (keyof ParsedMatch)[] = [
   'chat',
   'radiant_win',
 ];
-const metadata = {
+export const metadata = {
   itemCost,
   timings,
   gameDurationBucket,
@@ -165,15 +165,9 @@ const metadata = {
 /**
  * Make sure the match object has all required properties.
  * */
-function validateMatchProperties(match: ParsedMatch) {
+export function validateMatchProperties(match: ParsedMatch) {
   return matchProperties.every(
     (property) => match[property] !== undefined && match[property] !== null,
   );
 }
-export default {
-  scenarioChecks,
-  validateMatchProperties,
-  teamScenariosQueryParams,
-  itemCost,
-  metadata,
-};
+

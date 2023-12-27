@@ -2,11 +2,10 @@
 import util from 'util';
 import buildMatch from '../store/buildMatch';
 import db from '../store/db';
-import su from '../util/scenariosUtil';
+import { scenarioChecks, validateMatchProperties } from '../util/scenariosUtil';
 import { epochWeek } from '../util/utility';
 import { runQueue } from '../store/queue';
 
-const { scenarioChecks } = su;
 type ScenariosKey = keyof typeof scenarioChecks;
 
 // Processors generally get back job objects but this one uses a string
@@ -17,15 +16,15 @@ async function processScenarios(matchID: string) {
   if (!match || !('version' in match)) {
     return;
   }
-  if (!su.validateMatchProperties(match)) {
+  if (!validateMatchProperties(match)) {
     console.error(
       `Skipping scenario checks for match ${matchID}. Invalid match object.`,
     );
     return;
   }
   const currentWeek = epochWeek();
-  Object.keys(su.scenarioChecks).forEach((table) => {
-    su.scenarioChecks[table as ScenariosKey].forEach(async (scenarioCheck) => {
+  Object.keys(scenarioChecks).forEach((table) => {
+    scenarioChecks[table as ScenariosKey].forEach(async (scenarioCheck) => {
       const rows = scenarioCheck(match);
       for (let i = 0; i < rows.length; i++) {
         let row = rows[i];
