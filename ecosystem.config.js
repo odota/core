@@ -36,10 +36,11 @@ let arr = [
     name: 'scanner',
     group: 'backend',
   },
-  {
-    name: 'fullhistory',
-    group: 'backend',
-  },
+  // Deployed separately
+  // {
+  //   name: 'fullhistory',
+  //   group: 'backend',
+  // },
   {
     name: 'autofullhistory',
     group: 'backend',
@@ -68,10 +69,6 @@ let arr = [
     name: 'heroes',
     group: 'backend',
   },
-  // {
-  //   name: 'herostats',
-  //   group: 'backend',
-  // },
   // {
   //   name: 'items',
   //   group: 'backend',
