@@ -420,6 +420,7 @@ type MetricName =
   | 'retriever_player'
   | 'fullhistory'
   | 'fullhistory_skip'
+  | 'fullhistory_op'
   | 'match_archive_read'
   | 'match_archive_write'
   | 'auto_parse'

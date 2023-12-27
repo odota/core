@@ -66,6 +66,7 @@ export async function buildStatus() {
     meta_parsed_last_day: async () => countDay('meta_parse'),
     fullhistory_last_day: async () => countDay('fullhistory'),
     fullhistory_skips_last_day: async () => countDay('fullhistory_skip'),
+    fullhistory_ops_last_day: async () => countDay('fullhistory_op'),
     // gen_api_key_invalid_last_day: async () => getRedisCountDay('gen_api_key_invalid'),
     steam_api_calls_last_day: async () => countDay('steam_api_call'),
     steam_proxy_calls_last_day: async () => countDay('steam_proxy_call'),

@@ -126,6 +126,9 @@ async function processFullHistory(job: FullHistoryJob) {
     const matchId = docs[i].match_id;
     delete match_ids[matchId];
   }
+  if (Object.keys(match_ids).length > 0) {
+    redisCount(redis, 'fullhistory_op');
+  }
   // make api_details requests for matches
   const promiseFuncs = Object.keys(match_ids).map(
     (matchId) => () => processMatch(matchId),
