@@ -69,7 +69,7 @@ async function start() {
     const result = await redis.get('match_seq_num');
     const numResult = Number(result);
     await scanApi(numResult);
-  } else if (config.NODE_ENV !== 'production') {
+  } else if (config.NODE_ENV === 'development') {
     // Never do this in production to avoid skipping sequence number if we didn't pull .env properly
     const container = generateJob('api_history', {});
     // Just get the approximate current seq num

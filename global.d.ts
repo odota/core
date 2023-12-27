@@ -293,7 +293,6 @@ type MmrJob = {
 
 type GcDataJob = {
   match_id: number;
-  pgroup: PGroup;
 };
 
 type CountsJob = import('./store/pgroup').ApiMatch;
@@ -420,6 +419,7 @@ type MetricName =
   | 'skip_seq_num'
   | 'retriever_player'
   | 'fullhistory'
+  | 'fullhistory_skip'
   | 'match_archive_read'
   | 'match_archive_write'
   | 'auto_parse'

@@ -28,6 +28,7 @@ async function updatePlayer(player: FullHistoryJob) {
     });
   console.log('got full match history for %s', player.account_id);
   redisCount(redis, 'fullhistory');
+  await redis.setex('fh_complete:' + player.account_id, 60 * 60 * 8, '1');
 }
 
 async function processMatch(matchId: string) {
@@ -50,6 +51,12 @@ async function processFullHistory(job: FullHistoryJob) {
   ) {
     return;
   }
+  // If this player has already recently been processed, don't do it again
+  if (config.NODE_ENV !== 'development' && await redis.get('fh_complete:' + player.account_id)) {
+    redisCount(redis, 'fullhistory_skip');
+    return;
+  }
+  
   console.time('doFullHistory: ' + player.account_id.toString());
   // if test or only want last 100 (no paging), set short_history
   // const heroArray = job.short_history || config.NODE_ENV === 'test' ? ['0'] : Object.keys(constants.heroes);
@@ -133,6 +140,7 @@ async function processFullHistory(job: FullHistoryJob) {
   await updatePlayer(player);
   console.timeEnd('doFullHistory: ' + player.account_id.toString());
 }
+
 runQueue(
   'fhQueue',
   Number(config.FULLHISTORY_PARALLELISM),

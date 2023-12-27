@@ -621,7 +621,6 @@ export async function insertMatch(
         name: 'gcQueue',
         data: {
           match_id: match.match_id,
-          pgroup,
         },
       });
     }
