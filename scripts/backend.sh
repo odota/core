@@ -1,5 +1,7 @@
 #!/bin/bash
-sudo docker run -d --name backend --restart=always --net=host --log-opt max-size=1g -e PROVIDER=gce -e GROUP=backend howardc93/core:latest sh -c "npm start"
+sudo iptables -w -A INPUT -p tcp --dport 80 -j ACCEPT
+
+sudo docker run -d --name backend --restart=always --net=host --log-opt max-size=1g -e PROVIDER=gce -e GROUP=backend -e FRONTEND_PORT=80 howardc93/core:latest sh -c "npm start"
 sudo docker start backend
 sudo docker logs -f backend || true
 sudo reboot
