@@ -28,7 +28,6 @@ async function updatePlayer(player: FullHistoryJob) {
     });
   console.log('got full match history for %s', player.account_id);
   redisCount(redis, 'fullhistory');
-  await redis.setex('fh_complete:' + player.account_id, 60 * 60 * 8, '1');
 }
 
 async function processMatch(matchId: string) {
@@ -49,11 +48,6 @@ async function processFullHistory(job: FullHistoryJob) {
     Number(player.account_id) === 0 ||
     Number.isNaN(Number(player.account_id))
   ) {
-    return;
-  }
-  // If this player has already recently been processed, don't do it again
-  if (config.NODE_ENV !== 'development' && await redis.get('fh_complete:' + player.account_id)) {
-    redisCount(redis, 'fullhistory_skip');
     return;
   }
   

@@ -980,12 +980,19 @@ The OpenDota API offers 50,000 free calls per month and a rate limit of 60 reque
         },
         route: () => '/players/:account_id/refresh',
         func: async (req, res, cb) => {
+          const playerId = req.params.account_id;
+          // If this player has already recently been queued, don't do it again
+          if (config.NODE_ENV !== 'development' && await redis.get('fh_queue:' + playerId)) {
+            redisCount(redis, 'fullhistory_skip');
+            return res.json({ length: 0 });
+          }
           const length = await addJob({
             name: 'fhQueue',
             data: {
               account_id: Number(req.params.account_id),
             },
           });
+          await redis.setex('fh_queue:' + playerId, 60 * 60 * 1, '1');
           return res.json({
             length,
           });
