@@ -43,7 +43,10 @@ const whitelistedPaths = [
   '/login',
   '/logout',
   '/return',
-  '/api/admin/apiMetrics',
+  '/admin/apiMetrics',
+  '/healthz',
+  '/subscribeSuccess',
+  '/manageSub',
   '/keys', // API Key management
 ];
 const pathCosts: NumberDict = {
