@@ -76,8 +76,8 @@ export async function buildStatus() {
     incomplete_archive_last_day: async () => countDay('incomplete_archive'),
     parseQueue: async () => {
       // It's slow to count in postgres so use the value saved by monitor
-      const data = await redis.hget('health', 'parseDelay');
-      return data ? JSON.parse(data)?.metric : null;
+      const result = await redis.get('health:v2');
+      return result ? JSON.parse(result)?.parseDelay?.metric : null;
     },
     fhQueue: async () => redis.llen('fhQueue'),
     gcQueue: async () => redis.llen('gcQueue'),
@@ -87,8 +87,8 @@ export async function buildStatus() {
     // benchmarksQueue: async () => redis.llen('parsedBenchmarksQueue'),
     seqNumDelay: async () => {
       // It's slow to query Steam API so use the value saved by monitor
-      const data = await redis.hget('health', 'seqNumDelay');
-      return data ? JSON.parse(data)?.metric : null;
+      const result = await redis.get('health:v2');
+      return result ? JSON.parse(result)?.seqNumDelay?.metric : null;
     },
     api_hits_last_day: async () => countDay('api_hits'),
     api_hits_ui_last_day: async () => countDay('api_hits_ui'),
@@ -141,12 +141,8 @@ export async function buildStatus() {
       return generatePercentiles(arr ?? []);
     },
     health: async () => {
-      const result = await redis.hgetall('health');
-      const response = result || {};
-      Object.keys(response).forEach((key) => {
-        response[key] = JSON.parse(response[key]);
-      });
-      return response;
+      const result = await redis.get('health:v2');
+      return result ? JSON.parse(result) : null;
     },
   };
   return parallelPromise<{

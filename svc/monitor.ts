@@ -17,15 +17,17 @@ const health = {
   gcDelay,
 };
 
+type Metric = {
+  metric: number;
+  threshold: number;
+  timestamp?: number;
+};
 setInterval(async () => {
+  const result: Record<string, Metric> = {};
   const arr = Object.entries(health);
   for (let i = 0; i < arr.length; i++) {
     const [key, value] = arr[i];
-    let final: {
-      metric: number;
-      threshold: number;
-      timestamp?: number;
-    } = {
+    let final: Metric = {
       metric: 1,
       threshold: 1,
       timestamp: Math.floor(Date.now() / 1000),
@@ -37,9 +39,10 @@ setInterval(async () => {
     } catch (e) {
       console.log('[%s] error: %s', key, e);
     }
-    await redis.hset('health', key, JSON.stringify(final));
+    result[key] = final;
   }
-  await redis.expire('health', 900);
+  await redis.set('health:v2', JSON.stringify(result));
+  await redis.expire('health:v2', 900);
 }, 10000);
 
 async function steamApi() {
