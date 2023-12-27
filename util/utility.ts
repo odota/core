@@ -236,7 +236,7 @@ function getSteamAPIDataCallback(url: string | GetDataOptions, cb: ErrorCb) {
         if (res?.statusCode == 429) {
           redisCount(null, 'steam_429');
         }
-        const backoff = res?.statusCode === 429 ? 2000 : 1000;
+        const backoff = res?.statusCode === 429 ? 3000 : 1000;
         return setTimeout(() => {
           getSteamAPIDataCallback(url, cb);
         }, backoff);
