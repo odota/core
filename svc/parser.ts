@@ -12,9 +12,8 @@ import queue from '../store/queue';
 import c from 'ansi-colors';
 import { buildReplayUrl, redisCount } from '../util/utility';
 import redis from '../store/redis';
-import { getPGroup } from '../store/pgroup';
 import { getOrFetchApiData } from '../store/getApiData';
-import { getOrFetchParseData } from '../store/getParsedData';
+import { checkIsParsed, saveParseData } from '../store/getParsedData';
 
 const { runReliableQueue } = queue;
 const { PORT, PARSER_PORT, PARSER_PARALLELISM } = config;
@@ -32,16 +31,28 @@ async function parseProcessor(job: ParseJob) {
   try {
     redisCount(redis, 'parser_job');
     const matchId = job.match_id;
+
+    // Check if match is already parsed
+    // Doing the check early means we don't update API or gcdata either if already parsed
+    if (await checkIsParsed(matchId)) {
+      redisCount(redis, 'reparse');
+      if (config.DISABLE_REPARSE) {
+        // If high load, we can disable parsing already parsed matches
+        log('skip');
+        return true;
+      }
+    }
+
     // Fetch the API data
     const apiStart = Date.now();
     // The pgroup is used to update player_caches on insert.
     // Since currently gcdata and parse data have no knowledge of anonymity, we pass it from API data
     let { data: apiMatch, error: apiError, pgroup } = await getOrFetchApiData(matchId);
+    apiTime = Date.now() - apiStart;
     if (apiError || !apiMatch || !pgroup) {
       log('fail', apiError || 'Missing API data or pgroup');
       return false;
     }
-    apiTime = Date.now() - apiStart;
 
     const { leagueid, duration, start_time } = apiMatch;
     if (!leagueid && Date.now() / 1000 - start_time > 30 * 24 * 60 * 60) {
@@ -65,7 +76,7 @@ async function parseProcessor(job: ParseJob) {
     );
 
     const parseStart = Date.now();
-    let { error: parseError, skipParse } = await getOrFetchParseData(
+    let parseError = await saveParseData(
       matchId,
       url,
       {
@@ -76,15 +87,15 @@ async function parseProcessor(job: ParseJob) {
         origin: job.origin,
       },
     );
+    parseTime = Date.now() - parseStart;
     if (parseError) {
       console.log('[PARSER] %s: %s', matchId, parseError);
       log('fail', parseError);
       return false;
     }
-    parseTime = Date.now() - parseStart;
 
-    // Log successful/skipped parse and timing
-    log(skipParse ? 'skip' : 'success');
+    // Log successful parse and timing
+    log('success');
     return true;
   } catch (e: any) {
     log('crash', e?.message);

@@ -103,21 +103,23 @@ export async function getOrFetchParseData(
   skipParse: boolean;
   error: string | null;
 }> {
-  let skipParse = false;
-  // Check if match is already parsed
-  if (await checkIsParsed(matchId)) {
+  const saved = await readParseData(matchId);
+  if (saved) {
     redisCount(redis, 'reparse');
     if (config.DISABLE_REPARSE) {
       // If high load, we can disable parsing already parsed matches
-      skipParse = true;
+      return { data: saved, skipParse: true, error: null };
     }
   }
-  let error = null;
-  if (!skipParse) {
-    error = await saveParseData(matchId, url, extraData);
+  const error = await saveParseData(matchId, url, extraData);
+  if (error) {
+    return { data: undefined, skipParse: false, error };
   }
-  // We don't currently need the data so don't read it
-  return { data: undefined, skipParse, error };
+  const result = await readParseData(matchId);
+  if (!result) {
+    throw new Error('[PARSEDATA]: Could not get data for match ' + matchId);
+  }
+  return { data: result, skipParse: false, error };
 }
 
 export async function checkIsParsed(matchId: number) {
