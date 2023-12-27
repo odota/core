@@ -348,7 +348,7 @@ app.route('/manageSub').post(async (req, res) => {
   return res.json(session);
 });
 // Admin endpoints middleware
-api.use('/admin*', (req, res, cb) => {
+app.use('/admin*', (req, res, cb) => {
   if (req.user && admins.includes(Number(req.user.account_id))) {
     return cb();
   }
@@ -356,12 +356,13 @@ api.use('/admin*', (req, res, cb) => {
     error: 'Access Denied',
   });
 });
-api.get('/admin/apiMetrics', async (req, res, cb) => {
+app.get('/admin/apiMetrics', async (req, res, cb) => {
   try {
     const startTime = moment().startOf('month').format('YYYY-MM-DD');
     const endTime = moment().endOf('month').format('YYYY-MM-DD');
-    const [topAPI, topAPIIP, numAPIUsers, topUsersIP, numUsersIP] =
+    const [topRequests, topUsersKey, numUsersKey, topUsersIP, numUsersIP] =
       await Promise.all([
+        redis.zrevrange('request_usage_count', 0, 19, 'WITHSCORES'),
         db.raw(
           `
     SELECT
@@ -389,31 +390,6 @@ api.get('/admin/apiMetrics', async (req, res, cb) => {
         db.raw(
           `
     SELECT
-        ip,
-        ARRAY_AGG(DISTINCT account_id) as account_ids,
-        ARRAY_AGG(DISTINCT api_key) as api_keys,
-        SUM(usage) as usage_count
-    FROM (
-        SELECT
-        account_id,
-        api_key,
-        ip,
-        MAX(usage_count) as usage
-        FROM api_key_usage
-        WHERE
-        timestamp >= ?
-        AND timestamp <= ?
-        GROUP BY account_id, api_key, ip
-    ) as t1
-    GROUP BY ip
-    ORDER BY usage_count DESC
-    LIMIT 10
-    `,
-          [startTime, endTime],
-        ),
-        db.raw(
-          `
-    SELECT
         COUNT(DISTINCT account_id)
     FROM api_key_usage
     WHERE
@@ -422,13 +398,13 @@ api.get('/admin/apiMetrics', async (req, res, cb) => {
     `,
           [startTime, endTime],
         ),
-        redis.zrevrange('user_usage_count', 0, 24, 'WITHSCORES'),
+        redis.zrevrange('user_usage_count', 0, 19, 'WITHSCORES'),
         redis.zcard('user_usage_count'),
       ]);
     return res.json({
-      topAPI: topAPI.rows,
-      topAPIIP: topAPIIP.rows,
-      numAPIUsers: numAPIUsers.rows,
+      topRequests,
+      topUsersKey: topUsersKey.rows,
+      numUsersKey: numUsersKey.rows?.[0]?.count,
       topUsersIP,
       numUsersIP,
     });
