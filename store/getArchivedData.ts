@@ -174,14 +174,14 @@ export async function doArchiveFromBlob(matchId: number) {
 }
 
 export async function deleteFromLegacy(id: number) {
-  // await Promise.all([
-  //   cassandra.execute('DELETE from player_matches where match_id = ?', [id], {
-  //     prepare: true,
-  //   }),
-  //   cassandra.execute('DELETE from matches where match_id = ?', [id], {
-  //     prepare: true,
-  //   }),
-  // ]);
+  await Promise.all([
+    cassandra.execute('DELETE from player_matches where match_id = ?', [id], {
+      prepare: true,
+    }),
+    cassandra.execute('DELETE from matches where match_id = ?', [id], {
+      prepare: true,
+    }),
+  ]);
 }
 
 export async function readArchivedPlayerMatches(
