@@ -233,6 +233,9 @@ function getSteamAPIDataCallback(url: string | GetDataOptions, cb: ErrorCb) {
           res?.statusCode,
           target,
         );
+        if (res?.statusCode == 429) {
+          redisCount(null, 'steam_429');
+        }
         const backoff = res?.statusCode === 429 ? 2000 : 1000;
         return setTimeout(() => {
           getSteamAPIDataCallback(url, cb);
@@ -807,6 +810,11 @@ export function getRandomRetrieverUrl({
   return urls[Math.floor(Math.random() * urls.length)];
 }
 
+/**
+ * Increments an hourly Redis counter for the metric
+ * @param redis The Redis instance (null to dynamic import the default redis)
+ * @param prefix The counter name
+ */
 export async function redisCount(redis: Redis | null, prefix: MetricName) {
   const redisToUse = redis ?? (await import('../store/redis.js')).redis;
   const key = `${prefix}:v2:${moment().startOf('hour').format('X')}`;
@@ -816,27 +824,7 @@ export async function redisCount(redis: Redis | null, prefix: MetricName) {
     moment().startOf('hour').add(1, 'day').format('X'),
   );
 }
-export async function getRedisCountDay(redis: Redis, prefix: MetricName) {
-  // Get counts for last 24 hour keys (including current partial hour)
-  const keyArr = [];
-  for (let i = 0; i < 24; i += 1) {
-    keyArr.push(
-      `${prefix}:v2:${moment()
-        .startOf('hour')
-        .subtract(i, 'hour')
-        .format('X')}`,
-    );
-  }
-  const counts = await redis.mget(...keyArr);
-  return counts.reduce((a, b) => Number(a) + Number(b), 0);
-}
-export async function getRedisCountHour(redis: Redis, prefix: MetricName) {
-  // Get counts for previous full hour (not current)
-  const result = await redis.get(
-    `${prefix}:v2:${moment().startOf('hour').subtract(1, 'hour').format('X')}`,
-  );
-  return Number(result);
-}
+
 /**
  * invokes a function immediately, waits for callback, waits the delay, and then calls it again
  * Ignores exceptions, but logs them

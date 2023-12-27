@@ -411,6 +411,7 @@ type MetricName =
   | 'parsed'
   | 'steam_api_call'
   | 'steam_proxy_call'
+  | 'steam_429'
   | 'web_crash'
   | '500_error'
   | 'api_hits_ui'

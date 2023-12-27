@@ -1,7 +1,6 @@
+import moment from 'moment';
 import redis from '../store/redis';
 import {
-  getRedisCountDay,
-  getRedisCountHour,
   parallelPromise,
 } from '../util/utility';
 
@@ -21,66 +20,60 @@ function generatePercentiles(arr: string[]) {
   return result;
 }
 
+export async function countDay(prefix: MetricName) {
+  // Get counts for last 24 hour keys (including current partial hour)
+  const keyArr = [];
+  for (let i = 0; i < 24; i += 1) {
+    keyArr.push(
+      `${prefix}:v2:${moment()
+        .startOf('hour')
+        .subtract(i, 'hour')
+        .format('X')}`,
+    );
+  }
+  const counts = await redis.mget(...keyArr);
+  return counts.reduce((a, b) => Number(a) + Number(b), 0);
+}
+
+export async function countLastHour(prefix: MetricName) {
+  // Get counts for previous full hour (not current)
+  const result = await redis.get(
+    `${prefix}:v2:${moment().startOf('hour').subtract(1, 'hour').format('X')}`,
+  );
+  return Number(result);
+}
+
 export async function buildStatus() {
   const obj = {
     user_players: async () => redis.zcard('visitors'),
     tracked_players: async () => redis.zcard('tracked'),
-    matches_last_day: async () => getRedisCountDay(redis, 'added_match'),
-    matches_prev_hour: async () => getRedisCountHour(redis, 'added_match'),
-    auto_parse_last_day: async () => getRedisCountDay(redis, 'auto_parse'),
-    requests_last_day: async () => getRedisCountDay(redis, 'request'),
-    requests_api_key_last_day: async () =>
-      getRedisCountDay(redis, 'request_api_key'),
-    retriever_matches_last_day: async () =>
-      getRedisCountDay(redis, 'retriever'),
-    retriever_players_last_day: async () =>
-      getRedisCountDay(redis, 'retriever_player'),
-    parse_jobs_last_day: async () => getRedisCountDay(redis, 'parser_job'),
-    parse_fails_last_day: async () => getRedisCountDay(redis, 'parser_fail'),
-    parse_crashes_last_day: async () => getRedisCountDay(redis, 'parser_crash'),
-    parse_skips_last_day: async () => getRedisCountDay(redis, 'parser_skip'),
-    parsed_matches_last_day: async () => getRedisCountDay(redis, 'parser'),
-    reapi_last_day: async () => getRedisCountDay(redis, 'reapi'),
-    regcdata_last_day: async () => getRedisCountDay(redis, 'regcdata'),
-    reparse_last_day: async () => getRedisCountDay(redis, 'reparse'),
-    oldparse_last_day: async () => getRedisCountDay(redis, 'oldparse'),
-    meta_parsed_last_day: async () => getRedisCountDay(redis, 'meta_parse'),
-    // gen_api_key_invalid_last_day: async () =>
-    //   getRedisCountDay(redis, 'gen_api_key_invalid'),
-    steam_api_calls_last_day: async () =>
-      getRedisCountDay(redis, 'steam_api_call'),
-    steam_proxy_calls_last_day: async () =>
-      getRedisCountDay(redis, 'steam_proxy_call'),
-    steam_api_backfill_last_day: async () =>
-      getRedisCountDay(redis, 'steam_api_backfill'),
-    steam_gc_backfill_last_day: async () =>
-      getRedisCountDay(redis, 'steam_gc_backfill'),
-    match_archive_read_last_day: async () =>
-      getRedisCountDay(redis, 'match_archive_read'),
-    match_archive_write_last_day: async () =>
-      getRedisCountDay(redis, 'match_archive_write'),
-    incomplete_archive_last_day: async () =>
-      getRedisCountDay(redis, 'incomplete_archive'),
-    build_match_last_day: async () => getRedisCountDay(redis, 'build_match'),
-    get_player_matches_last_day: async () =>
-      getRedisCountDay(redis, 'player_matches'),
-    match_cache_hit_last_day: async () =>
-      getRedisCountDay(redis, 'match_cache_hit'),
-    player_cache_hit_last_day: async () =>
-      getRedisCountDay(redis, 'player_cache_hit'),
-    error_last_day: async () => getRedisCountDay(redis, '500_error'),
-    web_crash_last_day: async () => getRedisCountDay(redis, 'web_crash'),
-    fullhistory_last_day: async () => getRedisCountDay(redis, 'fullhistory'),
-    skip_seq_num_last_day: async () => getRedisCountDay(redis, 'skip_seq_num'),
-    api_hits_last_day: async () => getRedisCountDay(redis, 'api_hits'),
-    api_hits_ui_last_day: async () => getRedisCountDay(redis, 'api_hits_ui'),
-    // scanner_exception_last_day: async () =>
-    //   getRedisCountDay(redis, 'scanner_exception'),
-    seqNumDelay: async () => {
-      // It's slow to query Steam API so use the value saved by monitor
-      const data = await redis.hget('health', 'seqNumDelay');
-      return data ? JSON.parse(data)?.metric : null;
-    },
+    matches_last_day: async () => countDay('added_match'),
+    matches_prev_hour: async () => countLastHour('added_match'),
+    auto_parse_last_day: async () => countDay('auto_parse'),
+    requests_last_day: async () => countDay('request'),
+    requests_api_key_last_day: async () => countDay('request_api_key'),
+    retriever_matches_last_day: async () => countDay('retriever'),
+    retriever_players_last_day: async () => countDay('retriever_player'),
+    parse_jobs_last_day: async () => countDay('parser_job'),
+    parse_fails_last_day: async () => countDay('parser_fail'),
+    parse_crashes_last_day: async () => countDay('parser_crash'),
+    parse_skips_last_day: async () => countDay('parser_skip'),
+    parsed_matches_last_day: async () => countDay('parser'),
+    reapi_last_day: async () => countDay('reapi'),
+    regcdata_last_day: async () => countDay('regcdata'),
+    reparse_last_day: async () => countDay('reparse'),
+    oldparse_last_day: async () => countDay('oldparse'),
+    meta_parsed_last_day: async () => countDay('meta_parse'),
+    fullhistory_last_day: async () => countDay('fullhistory'),
+    // gen_api_key_invalid_last_day: async () => getRedisCountDay('gen_api_key_invalid'),
+    steam_api_calls_last_day: async () => countDay('steam_api_call'),
+    steam_proxy_calls_last_day: async () => countDay('steam_proxy_call'),
+    steam_429_last_day: async () => countDay('steam_429'),
+    steam_api_backfill_last_day: async () => countDay('steam_api_backfill'),
+    // steam_gc_backfill_last_day: async () => getRedisCountDay('steam_gc_backfill'),
+    match_archive_read_last_day: async () => countDay('match_archive_read'),
+    match_archive_write_last_day: async () => countDay('match_archive_write'),
+    incomplete_archive_last_day: async () => countDay('incomplete_archive'),
     parseQueue: async () => {
       // It's slow to count in postgres so use the value saved by monitor
       const data = await redis.hget('health', 'parseDelay');
@@ -92,6 +85,21 @@ export async function buildStatus() {
     countsQueue: async () => redis.llen('countsQueue'),
     scenariosQueue: async () => redis.llen('scenariosQueue'),
     // benchmarksQueue: async () => redis.llen('parsedBenchmarksQueue'),
+    seqNumDelay: async () => {
+      // It's slow to query Steam API so use the value saved by monitor
+      const data = await redis.hget('health', 'seqNumDelay');
+      return data ? JSON.parse(data)?.metric : null;
+    },
+    api_hits_last_day: async () => countDay('api_hits'),
+    api_hits_ui_last_day: async () => countDay('api_hits_ui'),
+    build_match_last_day: async () => countDay('build_match'),
+    get_player_matches_last_day: async () => countDay('player_matches'),
+    match_cache_hit_last_day: async () => countDay('match_cache_hit'),
+    player_cache_hit_last_day: async () => countDay('player_cache_hit'),
+    error_last_day: async () => countDay('500_error'),
+    web_crash_last_day: async () => countDay('web_crash'),
+    skip_seq_num_last_day: async () => countDay('skip_seq_num'),
+    // scanner_exception_last_day: async () => getRedisCountDay('scanner_exception'),
     retriever: async () => {
       const results = await redis.zrangebyscore(
         'retrieverCounts',

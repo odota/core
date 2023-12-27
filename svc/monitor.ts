@@ -7,17 +7,20 @@ import cassandra from '../store/cassandra';
 const apiKey = config.STEAM_API_KEY.split(',')[0];
 
 const health = {
-  steamApi,
+  // steamApi,
+  postgresUsage,
+  redisUsage,
+  cassandraUsage,
   seqNumDelay,
   parseDelay,
+  fhDelay,
   gcDelay,
-  postgresUsage,
-  cassandraUsage,
-  redisUsage,
 };
 
-setInterval(() => {
-  Object.entries(health).forEach(async ([key, value]) => {
+setInterval(async () => {
+  const arr = Object.entries(health);
+  for (let i = 0; i < arr.length; i++) {
+    const [key, value] = arr[i];
     let final: {
       metric: number;
       threshold: number;
@@ -25,17 +28,18 @@ setInterval(() => {
     } = {
       metric: 1,
       threshold: 1,
+      timestamp: Math.floor(Date.now() / 1000),
     };
     try {
       final = await value();
-      final.timestamp = Math.floor(Number(new Date()) / 1000);
+      final.timestamp = Math.floor(Date.now() / 1000);
       console.log('[%s]: %s', key, JSON.stringify(final));
     } catch (e) {
       console.log('[%s] error: %s', key, e);
     }
     await redis.hset('health', key, JSON.stringify(final));
-    await redis.expire('health', 900);
-  });
+  }
+  await redis.expire('health', 900);
 }, 10000);
 
 async function steamApi() {
@@ -72,11 +76,18 @@ async function parseDelay() {
   );
   return {
     metric: result.rows[0].count,
-    threshold: 5000,
+    threshold: 10000,
   };
 }
 async function gcDelay() {
   const result = await redis.llen('gcQueue');
+  return {
+    metric: result,
+    threshold: 100000,
+  };
+}
+async function fhDelay() {
+  const result = await redis.llen('fhQueue');
   return {
     metric: result,
     threshold: 100000,
