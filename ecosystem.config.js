@@ -3,11 +3,11 @@
  */
 require('dotenv').config();
 
+const dev = process.env.NODE_ENV === 'development';
+const prod = process.env.NODE_ENV === 'production';
+
 let arr = [
-  {
-    name: 'web',
-    group: 'web',
-  },
+  // Services in non-backend groups are deployed separately
   {
     name: 'retriever',
     group: 'retriever',
@@ -19,6 +19,16 @@ let arr = [
   {
     name: 'parser',
     group: 'parser',
+  },
+  {
+    name: 'fullhistory',
+    group: 'fullhistory',
+  },
+  {
+    name: 'web',
+    group: 'backend',
+    exec_mode: 'cluster',
+    instances: prod ? 2 : 1,
   },
   {
     name: 'apiadmin',
@@ -36,11 +46,10 @@ let arr = [
     name: 'scanner',
     group: 'backend',
   },
-  // Deployed separately
-  // {
-  //   name: 'fullhistory',
-  //   group: 'backend',
-  // },
+  {
+    name: 'backupscanner',
+    group: 'disabled',
+  },
   {
     name: 'autofullhistory',
     group: 'backend',
@@ -69,10 +78,10 @@ let arr = [
     name: 'heroes',
     group: 'backend',
   },
-  // {
-  //   name: 'items',
-  //   group: 'backend',
-  // },
+  {
+    name: 'items',
+    group: 'disabled',
+  },
   {
     name: 'leagues',
     group: 'backend',
@@ -117,10 +126,8 @@ arr = arr.filter(
 );
 
 const apps = arr.map((app) => {
-  const dev = process.env.NODE_ENV === 'development';
   // In production, we can use the built files directly
   // This makes the pm2 memory metrics work
-  const prod = process.env.NODE_ENV === 'production';
   const prodScript = `build/svc/${app.name}.js`;
   const devScript = `svc/${app.name}.ts`;
   const script = prod ? prodScript : devScript;
@@ -128,8 +135,8 @@ const apps = arr.map((app) => {
     ...app,
     watch: dev ? true : false,
     ignore_watch: ['.git', 'node_modules', 'build', 'json'],
-    exec_mode: 'fork',
-    instances: 1,
+    exec_mode: app.exec_mode ?? 'fork',
+    instances: app.instances ?? 1,
     script,
     interpreter:
       script.endsWith('.ts') || script.endsWith('.mts')
