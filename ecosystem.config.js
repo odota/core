@@ -22,7 +22,7 @@ let arr = [
   },
   {
     name: 'fullhistory',
-    group: 'fullhistory',
+    group: 'backend',
   },
   {
     name: 'web',
