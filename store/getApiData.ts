@@ -38,11 +38,12 @@ export async function saveApiData(
   let body;
   try {
     // Try the steam API
-    body = await getSteamAPIData(
-      generateJob('api_details', {
+    body = await getSteamAPIData({
+      url: generateJob('api_details', {
         match_id: matchId,
       }).url,
-    );
+      proxy: true,
+    });
   } catch (e) {
     console.log(e);
     // Expected exception here if invalid match ID
