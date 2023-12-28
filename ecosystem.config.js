@@ -2,6 +2,7 @@
  * PM2 configuration file
  */
 require('dotenv').config();
+const os = require('os');
 
 const dev = process.env.NODE_ENV === 'development';
 const prod = process.env.NODE_ENV === 'production';
@@ -22,13 +23,13 @@ let arr = [
   },
   {
     name: 'fullhistory',
-    group: 'backend',
+    group: 'fullhistory',
   },
   {
     name: 'web',
     group: 'backend',
     exec_mode: 'cluster',
-    instances: prod ? 2 : 1,
+    instances: prod ? os.cpus().length : 1,
   },
   {
     name: 'apiadmin',
