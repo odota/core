@@ -1,4 +1,4 @@
-import populate from './populate.mjs';
+import populate from './populate.js';
 /**
  * A processor to compute teamfights that occurred given an event stream
  * */

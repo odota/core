@@ -1,4 +1,4 @@
-import performanceOthers from './performanceOthers.mjs';
+import performanceOthers from './performanceOthers.js';
 function populate(e, container, meta) {
   let t;
   switch (e.type) {

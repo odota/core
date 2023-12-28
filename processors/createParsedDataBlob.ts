@@ -1,14 +1,14 @@
 import { Console } from 'console';
 import readline from 'readline';
-import processAllPlayers from './processAllPlayers.mjs';
-import processTeamfights from './processTeamfights.mjs';
-import processParsedData from './processParsedData.mjs';
-import processMetadata from './processMetadata.mjs';
-import processExpand from './processExpand.mjs';
-import processDraftTimings from './processDraftTimings.mjs';
-import parseSchema from './parseSchema.mjs';
+import processAllPlayers from './processAllPlayers.js';
+import processTeamfights from './processTeamfights.js';
+import processParsedData from './processParsedData.js';
+import processMetadata from './processMetadata.js';
+import processExpand from './processExpand.js';
+import processDraftTimings from './processDraftTimings.js';
+import parseSchema from './parseSchema.js';
 
-function createParsedDataBlob(entries, matchId) {
+function createParsedDataBlob(entries: any[], matchId: string) {
   const logConsole = new Console(process.stderr);
   logConsole.time('metadata');
   const meta = processMetadata(entries);
@@ -33,13 +33,13 @@ function createParsedDataBlob(entries, matchId) {
   parsedData.radiant_xp_adv = ap.radiant_xp_adv;
   return parsedData;
 }
-const entries = [];
+const entries: any[] = [];
 let complete = false;
 const matchId = process.argv[2];
 const parseStream = readline.createInterface({
   input: process.stdin,
 });
-parseStream.on('line', (e) => {
+parseStream.on('line', (e: any) => {
   e = JSON.parse(e);
   entries.push(e);
   if (e.type === 'epilogue') {
@@ -49,7 +49,7 @@ parseStream.on('line', (e) => {
 parseStream.on('close', () => {
   if (complete) {
     const parsedData = createParsedDataBlob(entries, matchId);
-    process.stdout.write(JSON.stringify(parsedData), null, (err) => {
+    process.stdout.write(JSON.stringify(parsedData), undefined, (err) => {
       process.exit(Number(err));
     });
   } else {

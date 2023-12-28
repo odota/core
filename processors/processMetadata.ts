@@ -1,7 +1,7 @@
 /**
  * Given an event stream, extracts metadata such as game zero time and hero to slot/ID mappings.
  * */
-function processMetadata(entries) {
+function processMetadata(entries: any[]) {
   const heroToSlot = {};
   const slotToPlayerslot = {};
   const heroIdToSlot = {};
@@ -47,6 +47,7 @@ function processMetadata(entries) {
     slot_to_playerslot: slotToPlayerslot,
     hero_id_to_slot: heroIdToSlot,
     ability_levels: abilityLevels,
+    match_id: '',
   };
 }
 export default processMetadata;
