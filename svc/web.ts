@@ -20,6 +20,7 @@ import db from '../store/db';
 import redis from '../store/redis';
 import config from '../config';
 import {
+  getEndOfDay,
   getEndOfMonth,
   getStartOfBlockMinutes,
   redisCount,
@@ -163,7 +164,7 @@ app.use((req, res, cb) => {
     .expireat('rate_limit', getStartOfBlockMinutes(1, 1));
   if (!res.locals.isAPIRequest) {
     // not API request so check previous usage
-    command.zscore('user_usage_count', res.locals.usageIdentifier);
+    command.zscore('ip_usage_count', res.locals.usageIdentifier);
   }
   command.exec((err, resp) => {
     if (err) {
@@ -181,7 +182,7 @@ app.use((req, res, cb) => {
     });
     if (!res.locals.isAPIRequest) {
       res.set(
-        'X-Rate-Limit-Remaining-Month',
+        'X-Rate-Limit-Remaining-Day',
         (Number(config.API_FREE_LIMIT) - Number(prevUsage)).toString(),
       );
     }
@@ -228,8 +229,8 @@ app.use((req, res, cb) => {
           .expireat('usage_count', getEndOfMonth());
       } else {
         multi
-          .zincrby('user_usage_count', 1, res.locals.usageIdentifier)
-          .expireat('user_usage_count', getEndOfMonth());
+          .zincrby('ip_usage_count', 1, res.locals.usageIdentifier)
+          .expireat('ip_usage_count', getEndOfDay());
       }
       multi.exec((err, res) => {
         if (config.NODE_ENV === 'development') {
@@ -401,8 +402,8 @@ app.get('/admin/apiMetrics', async (req, res, cb) => {
     `,
           [startTime, endTime],
         ),
-        redis.zrevrange('user_usage_count', 0, 19, 'WITHSCORES'),
-        redis.zcard('user_usage_count'),
+        redis.zrevrange('ip_usage_count', 0, 19, 'WITHSCORES'),
+        redis.zcard('ip_usage_count'),
       ]);
     return res.json({
       topRequests,

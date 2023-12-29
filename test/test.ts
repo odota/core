@@ -628,7 +628,7 @@ describe(c.blue('[TEST] api limits'), () => {
     config.API_FREE_LIMIT = '10';
     await redis
       .multi()
-      .del('user_usage_count')
+      .del('ip_usage_count')
       .del('usage_count')
       .sadd('api_keys', 'KEY')
       .exec();
