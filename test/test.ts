@@ -668,11 +668,6 @@ describe(c.blue('[TEST] api limits'), () => {
     assert.equal(keys.length, 1);
     assert.equal(Number(res[keys[0]]), 25);
   });
-
-  after(() => {
-    config.ENABLE_API_LIMIT = '';
-    config.API_FREE_LIMIT = '50000';
-  });
 });
 
 async function testWhiteListedRoutes(key: string) {
