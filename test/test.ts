@@ -640,7 +640,7 @@ describe(c.blue('[TEST] api limits'), () => {
     await testRateCheckedRoute();
     const res = await supertest(app).get('/api/matches/1781962623');
     assert.equal(res.statusCode, 429);
-    assert.equal(res.body.error, 'monthly api limit exceeded');
+    assert.equal(res.body.error, 'daily api limit exceeded');
     await testWhiteListedRoutes('');
   });
 
