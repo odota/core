@@ -198,7 +198,7 @@ app.use((req, res, cb) => {
       Number(prevUsage) >= Number(config.API_FREE_LIMIT)
     ) {
       return res.status(429).json({
-        error: 'monthly api limit exceeded',
+        error: 'daily api limit exceeded',
       });
     }
     return cb();
