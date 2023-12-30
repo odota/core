@@ -194,9 +194,11 @@ function getSteamAPIDataCallback(url: string | GetDataOptions, cb: ErrorCb) {
       // choose a steam api host
       const apiHosts = config.STEAM_API_HOST.split(',');
       parse.host = apiHosts[Math.floor(Math.random() * apiHosts.length)];
-      redisCount(null, 'steam_proxy_call');
-    } else {
+    }
+    if (parse.host === 'api.steampowered.com') {
       redisCount(null, 'steam_api_call');
+    } else {
+      redisCount(null, 'steam_proxy_call');
     }
   }
   const target = urllib.format(parse);
