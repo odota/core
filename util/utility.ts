@@ -434,6 +434,9 @@ export function getStartOfBlockMinutes(size: number, offset: number) {
 export function getEndOfMonth() {
   return moment().endOf('month').unix();
 }
+export function getEndOfDay() {
+  return moment().endOf('day').unix();
+}
 /**
  * Finds the arithmetic mean of the input array
  * */

@@ -628,7 +628,7 @@ describe(c.blue('[TEST] api limits'), () => {
     config.API_FREE_LIMIT = '10';
     await redis
       .multi()
-      .del('user_usage_count')
+      .del('ip_usage_count')
       .del('usage_count')
       .sadd('api_keys', 'KEY')
       .exec();
@@ -667,11 +667,6 @@ describe(c.blue('[TEST] api limits'), () => {
     const keys = Object.keys(res);
     assert.equal(keys.length, 1);
     assert.equal(Number(res[keys[0]]), 25);
-  });
-
-  after(() => {
-    config.ENABLE_API_LIMIT = '';
-    config.API_FREE_LIMIT = '50000';
   });
 });
 
