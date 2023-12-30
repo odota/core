@@ -356,7 +356,6 @@ type CommonInsertOptions = {
   skipParse?: boolean;
   pgroup?: PGroup;
   endedAt?: number;
-  forceLegacy?: boolean;
   ifNotExists?: boolean;
 };
 

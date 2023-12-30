@@ -33,7 +33,6 @@ export async function readApiData(
  */
 export async function saveApiData(
   matchId: number,
-  forceLegacy = false,
 ): Promise<{ error: string | null, pgroup: PGroup | undefined }> {
   let body;
   try {
@@ -53,7 +52,6 @@ export async function saveApiData(
   const match = body.result;
   const { pgroup } = await insertMatch(match, {
     type: 'api',
-    forceLegacy,
     // Don't overwrite the blob since it might have less data
     // But we still want to compute a new pgroup and update player_caches
     ifNotExists: true,
