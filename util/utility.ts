@@ -202,7 +202,7 @@ function getSteamAPIDataCallback(url: string | GetDataOptions, cb: ErrorCb) {
     }
   }
   const target = urllib.format(parse);
-  console.log('%s - getData: %s', new Date(), target);
+  console.log(target);
   request(
     {
       url: target,
@@ -860,11 +860,6 @@ export async function invokeIntervalAsync(
   func: () => Promise<void>,
   delay: number,
 ) {
-  process.on('unhandledRejection', (reason, p) => {
-    // In production pm2 doesn't appear to auto restart unless we exit the process here
-    console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
-    process.exit(1);
-  });
   while (true) {
     console.log('running %s', func.name);
     console.time(func.name);

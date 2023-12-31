@@ -36,11 +36,6 @@ export async function runQueue(
   for (let i = 0; i < parallelism; i++) {
     executor();
   }
-  process.on('unhandledRejection', (reason, p) => {
-    // In production pm2 doesn't appear to auto restart unless we exit the process here
-    console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
-    process.exit(1);
-  });
 }
 
 export async function runReliableQueue(
@@ -95,11 +90,6 @@ export async function runReliableQueue(
   for (let i = 0; i < parallelism; i++) {
     executor();
   }
-  process.on('unhandledRejection', (reason, p) => {
-    // In production pm2 doesn't appear to auto restart unless we exit the process here
-    console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
-    process.exit(1);
-  });
 }
 
 export async function addJob(input: QueueInput) {

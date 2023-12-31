@@ -129,13 +129,14 @@ arr = arr.filter(
 const apps = arr.map((app) => {
   // In production, we can use the built files directly
   // This makes the pm2 memory metrics work
-  const prodScript = `build/svc/${app.name}.js`;
-  const devScript = `svc/${app.name}.ts`;
+  const prodScript = `build/index.js`;
+  const devScript = `index.ts`;
   const script = prod ? prodScript : devScript;
   return {
     ...app,
     watch: dev ? true : false,
     ignore_watch: ['.git', 'node_modules', 'build', 'json'],
+    log_date_format: 'YYYY-MM-DDTHH:mm:ss',
     exec_mode: app.exec_mode ?? 'fork',
     instances: app.instances ?? 1,
     script,
@@ -143,6 +144,9 @@ const apps = arr.map((app) => {
       script.endsWith('.ts') || script.endsWith('.mts')
         ? 'node_modules/.bin/tsx'
         : undefined,
+    env: {
+      ROLE: app.name,
+    }
   };
 });
 
