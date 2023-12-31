@@ -622,21 +622,19 @@ export async function getMatchDataFromBlobWithMetadata(
   };
 
   if (!api && backfill) {
+    redisCount(redis, 'steam_api_backfill');
     api = await tryFetchApiData(matchId);
     if (api) {
-      // Count for logging
-      redisCount(redis, 'steam_api_backfill');
       odData.backfill_api = true;
     }
   }
   if (!api) {
     return [null, null];
   }
-  // Currently disabled due to high load on gcdata
-  if (false && !gcdata && backfill) {
-    gcdata = await tryFetchGcData(matchId, getPGroup(api!));
+  if (!gcdata && backfill) {
+    redisCount(redis, 'steam_gc_backfill');
+    // gcdata = await tryFetchGcData(matchId, getPGroup(api));
     if (gcdata) {
-      redisCount(redis, 'steam_gc_backfill');
       odData.backfill_gc = true;
     }
   }
