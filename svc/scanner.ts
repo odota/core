@@ -5,7 +5,13 @@ import { insertMatch } from '../store/insert';
 import type { ApiMatch } from '../store/pgroup';
 import { generateJob, getSteamAPIData, redisCount } from '../util/utility';
 
+const apiKeys = config.STEAM_API_KEY.split(',');
+const apiHosts = config.STEAM_API_HOST.split(',');
+const parallelism = Math.min(apiHosts.length, apiKeys.length);
 const PAGE_SIZE = 100;
+// This endpoint is limited to something like 1 request every 5 seconds
+const SCANNER_WAIT = 5000;
+const SCANNER_WAIT_CATCHUP = SCANNER_WAIT / parallelism;
 
 async function scanApi(seqNum: number) {
   let nextSeqNum = seqNum;
@@ -42,7 +48,7 @@ async function scanApi(seqNum: number) {
     await redis.set('match_seq_num', nextSeqNum);
     // If not a full page, delay the next iteration
     await new Promise((resolve) =>
-      setTimeout(resolve, resp.length < PAGE_SIZE ? 6000 : 1500),
+      setTimeout(resolve, resp.length < PAGE_SIZE ? SCANNER_WAIT : SCANNER_WAIT_CATCHUP),
     );
   }
 }
