@@ -115,7 +115,7 @@ keys
                     account_id,
                     api_key,
                     ip,
-                    date_part('month', timestamp) as month,
+                    concat(date_part('year', timestamp), '-', date_part('month', timestamp)) as month,
                     MAX(usage_count) as usage_count
                   FROM api_key_usage
                   WHERE
