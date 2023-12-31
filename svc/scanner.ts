@@ -88,11 +88,3 @@ async function start() {
 }
 start();
 
-// This is the only process that isn't a webserver, runQueue(), or invokeIntervalAsync()
-// so it needs its own exception handler
-process.on('unhandledRejection', (reason, p) => {
-  // In production pm2 doesn't appear to auto restart unless we exit the process here
-  console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
-  redisCount(redis, 'scanner_exception');
-  process.exit(1);
-});
