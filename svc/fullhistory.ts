@@ -28,6 +28,9 @@ async function updatePlayer(player: FullHistoryJob) {
     });
   console.log('got full match history for %s', player.account_id);
   redisCount(redis, 'fullhistory');
+  if (player.short_history) {
+    redisCount(redis, 'fullhistory_short');
+  }
 }
 
 async function processMatch(matchId: string) {
@@ -135,7 +138,7 @@ async function processFullHistory(job: FullHistoryJob) {
     (matchId) => () => processMatch(matchId),
   );
   // Number of match details requests to send at once--note this is per worker
-  await eachLimitPromise(promiseFuncs, 2);
+  await eachLimitPromise(promiseFuncs, 1);
   await updatePlayer(player);
   console.timeEnd('doFullHistory: ' + player.account_id.toString());
 }

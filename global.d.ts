@@ -420,6 +420,7 @@ type MetricName =
   | 'fullhistory'
   | 'fullhistory_skip'
   | 'fullhistory_op'
+  | 'fullhistory_short'
   | 'match_archive_read'
   | 'match_archive_write'
   | 'auto_parse'
