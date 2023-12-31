@@ -73,7 +73,7 @@ export async function buildStatus() {
     steam_proxy_calls_last_day: async () => countDay('steam_proxy_call'),
     steam_429_last_day: async () => countDay('steam_429'),
     steam_api_backfill_last_day: async () => countDay('steam_api_backfill'),
-    // steam_gc_backfill_last_day: async () => getRedisCountDay('steam_gc_backfill'),
+    steam_gc_backfill_last_day: async () => getRedisCountDay('steam_gc_backfill'),
     match_archive_read_last_day: async () => countDay('match_archive_read'),
     match_archive_write_last_day: async () => countDay('match_archive_write'),
     incomplete_archive_last_day: async () => countDay('incomplete_archive'),
