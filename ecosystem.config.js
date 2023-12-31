@@ -28,8 +28,8 @@ let arr = [
   {
     name: 'web',
     group: 'backend',
-    exec_mode: 'cluster',
-    instances: prod ? os.cpus().length : 1,
+    exec_mode: prod ? 'cluster' : undefined,
+    instances: prod ? os.cpus().length : undefined,
   },
   {
     name: 'apiadmin',
