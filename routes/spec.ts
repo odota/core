@@ -2347,32 +2347,26 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
         },
         route: () => '/records/:field',
         func: async (req, res, cb) => {
-          redis.zrevrange(
+          const rows = await redis.zrevrange(
             `records:${req.params.field}`,
             0,
             99,
-            'WITHSCORES',
-            (err, rows) => {
-              if (err) {
-                return cb(err);
-              }
-              const entries = rows
-                ?.map((r, i) => {
-                  const match_id = parseInt(r.split(':')[0]);
-                  const start_time = parseInt(r.split(':')[1]);
-                  const hero_id = parseInt(r.split(':')[2]);
-                  const score = parseInt(rows[i + 1]);
-                  return {
-                    match_id: Number.isNaN(match_id) ? null : match_id,
-                    start_time: Number.isNaN(start_time) ? null : start_time,
-                    hero_id: Number.isNaN(hero_id) ? null : hero_id,
-                    score: Number.isNaN(score) ? null : score,
-                  };
-                })
-                .filter((r, i) => i % 2 === 0);
-              return res.json(entries);
-            },
-          );
+            'WITHSCORES');
+          const entries = rows
+            ?.map((r, i) => {
+              const match_id = parseInt(r.split(':')[0]);
+              const start_time = parseInt(r.split(':')[1]);
+              const hero_id = parseInt(r.split(':')[2]);
+              const score = parseInt(rows[i + 1]);
+              return {
+                match_id: Number.isNaN(match_id) ? null : match_id,
+                start_time: Number.isNaN(start_time) ? null : start_time,
+                hero_id: Number.isNaN(hero_id) ? null : hero_id,
+                score: Number.isNaN(score) ? null : score,
+              };
+            })
+            .filter((r, i) => i % 2 === 0);
+          return res.json(entries);
         },
       },
     },
@@ -2402,21 +2396,13 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
         },
         route: () => '/live',
         func: async (req, res, cb) => {
-          redis.zrangebyscore('liveGames', '-inf', 'inf', (err, rows) => {
-            if (err) {
-              return cb(err);
-            }
-            if (!rows?.length) {
-              return res.json(rows);
-            }
-            const keys = rows.map((r) => `liveGame:${r}`);
-            return redis.mget(keys, (err, rows) => {
-              if (err) {
-                return cb(err);
-              }
-              return res.json(rows?.map((r) => (r ? JSON.parse(r) : null)));
-            });
-          });
+          const games = await redis.zrangebyscore('liveGames', '-inf', 'inf');
+          if (!games?.length) {
+            return res.json(games);
+          }
+          const keys = games.map((r) => `liveGame:${r}`);
+          const blobs = await redis.mget(keys);
+          return res.json(blobs.map((r) => (r ? JSON.parse(r) : null)));
         },
       },
     },
