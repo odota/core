@@ -3,7 +3,7 @@ import db from '../store/db';
 import config from '../config';
 import { epochWeek, invokeIntervalAsync } from '../util/utility';
 
-async function scenariosCleanup() {
+async function cleanup() {
   const currentWeek = epochWeek();
   console.log(
     'teamScenarios',
@@ -41,4 +41,4 @@ async function scenariosCleanup() {
   );
   return;
 }
-invokeIntervalAsync(scenariosCleanup, 1000 * 60 * 60 * 6);
+invokeIntervalAsync(cleanup, 1000 * 60 * 60 * 6);

@@ -603,7 +603,7 @@ export async function insertMatch(
       return null;
     }
     if ('game_mode' in match && match.game_mode === 19) {
-      // don't parse event matches unless forced
+      // don't parse event matches
       return null;
     }
     // We only auto-parse if this is a fresh match from API

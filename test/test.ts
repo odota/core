@@ -97,6 +97,142 @@ before(async function setup() {
   await startServices();
   await loadMatches();
   await loadPlayers();
+
+  async function initElasticsearch() {
+    console.log('Create Elasticsearch Mapping');
+    const mapping = JSON.parse(
+      readFileSync('./elasticsearch/index.json', { encoding: 'utf-8' }),
+    );
+    const exists = await es.indices.exists({
+      index: 'dota-test', // Check if index already exists, in which case, delete it
+    });
+    if (exists.body) {
+      await es.indices.delete({
+        index: 'dota-test',
+      });
+    }
+    await es.indices.create({
+      index: 'dota-test',
+    });
+    await es.indices.close({
+      index: 'dota-test',
+    });
+    await es.indices.putSettings({
+      index: 'dota-test',
+      body: mapping.settings,
+    });
+    await es.indices.putMapping({
+      index: 'dota-test',
+      type: 'player',
+      body: mapping.mappings.player,
+    });
+    await es.indices.open({
+      index: 'dota-test',
+    });
+  }
+  
+  async function initRedis() {
+    console.log('wiping redis');
+    await redis.flushdb();
+  }
+  
+  async function initPostgres() {
+    const pool = new Pool({
+      connectionString: initPostgresHost,
+    });
+    const client = await pool.connect();
+    console.log('drop postgres test database');
+    await client.query('DROP DATABASE IF EXISTS yasp_test');
+    console.log('create postgres test database');
+    await client.query('CREATE DATABASE yasp_test');
+    const pool2 = new Pool({
+      connectionString: POSTGRES_URL,
+    });
+    const client2 = await pool2.connect();
+    console.log('create postgres test tables');
+    const query = readFileSync('./sql/create_tables.sql', 'utf8');
+    await client2.query(query);
+    // ready to create client
+    console.log('insert postgres test data');
+    // populate the DB with this leagueid so we insert a pro match
+    await db.raw(
+      "INSERT INTO leagues(leagueid, tier) VALUES(5399, 'professional')",
+    );
+  }
+  
+  async function initCassandra() {
+    const init = new Client({
+      contactPoints: [initCassandraHost],
+      localDataCenter: 'datacenter1',
+    });
+    console.log('drop cassandra test keyspace');
+    await init.execute('DROP KEYSPACE IF EXISTS yasp_test');
+    console.log('create cassandra test keyspace');
+    await init.execute(
+      "CREATE KEYSPACE yasp_test WITH REPLICATION = { 'class': 'NetworkTopologyStrategy', 'datacenter1': 1 };",
+    );
+    console.log('create cassandra tables');
+    const tables = readFileSync('./sql/create_tables.cql', 'utf8')
+      .split(';')
+      .filter((cql) => cql.length > 1);
+    for (let i = 0; i < tables.length; i++) {
+      const cql = tables[i];
+      await init.execute('USE yasp_test');
+      await init.execute(cql);
+    }
+  }
+  
+  async function initScylla() {
+    const init = new Client({
+      contactPoints: [initScyllaHost],
+      localDataCenter: 'datacenter1',
+    });
+    console.log(initScyllaHost);
+    console.log('drop scylla test keyspace');
+    await init.execute('DROP KEYSPACE IF EXISTS yasp_test');
+    console.log('create scylla test keyspace');
+    await init.execute(
+      "CREATE KEYSPACE yasp_test WITH REPLICATION = { 'class': 'NetworkTopologyStrategy', 'datacenter1': 1 };",
+    );
+    console.log('create scylla tables');
+    const tables = readFileSync('./sql/create_tables.cql', 'utf8')
+      .split(';')
+      .filter((cql) => cql.length > 1);
+    for (let i = 0; i < tables.length; i++) {
+      const cql = tables[i];
+      await init.execute('USE yasp_test');
+      await init.execute(cql);
+    }
+  }
+  
+  async function startServices() {
+    console.log('starting services');
+    const web = await import('../svc/web.js');
+    app = web.app;
+    await import('../svc/parser.js');
+    await import('../svc/mmr.js');
+  }
+  
+  async function loadMatches() {
+    console.log('loading matches');
+    const arr = [detailsApi.result, detailsApiPro.result, detailsApiPro.result];
+    for (let i = 0; i < arr.length; i++) {
+      const m = arr[i];
+      await insertMatch(m, {
+        type: 'api',
+        // Pretend to be scanner insert so we queue mmr/counts update etc.
+        origin: 'scanner',
+        skipParse: true,
+      });
+    }
+  }
+  
+  async function loadPlayers() {
+    console.log('loading players');
+    await Promise.all(
+      summariesApi.response.players.map((p) => upsertPlayer(db, p, true)),
+    );
+  }
 });
 describe(c.blue('[TEST] swagger schema'), async function testSwaggerSchema() {
   this.timeout(2000);
@@ -407,22 +543,22 @@ describe(c.blue('[TEST] api management'), () => {
           email: 'test@test.com',
         },
       });
-      assert.equal(res.statusCode, 200);
+    assert.equal(res.statusCode, 200);
 
-      res = await supertest(app)
-        .get('/keys?loggedin=1');
-      assert.equal(res.statusCode, 200);
-      assert.equal(res.body.customer.credit_brand, 'MasterCard');
-      assert.equal(res.body.customer.api_key, this.previousKey);
-      const res2 = await db.from('api_keys')
-        .where({
-          account_id: 1,
-        });
-      if (res2.length === 0) {
-        throw Error('No API record found');
-      }
-      assert.equal(res2[0].customer_id, this.previousCustomer);
-      assert.equal(res2[0].subscription_id, this.previousSub);
+    res = await supertest(app).get('/keys?loggedin=1');
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.body.customer.credit_brand, 'MasterCard');
+    assert.equal(res.body.customer.api_key, this.previousKey);
+
+    const res2 = await db.from('api_keys')
+      .where({
+        account_id: 1,
+      });
+    if (res2.length === 0) {
+      throw Error('No API record found');
+    }
+    assert.equal(res2[0].customer_id, this.previousCustomer);
+    assert.equal(res2[0].subscription_id, this.previousSub);
   });
   it('delete should set is_deleted and remove from redis but not change other db fields', async function testDeleteOnlyModifiesKey() {
     this.timeout(5000);
@@ -469,6 +605,7 @@ describe(c.blue('[TEST] api management'), () => {
     }
     assert.equal(res2[0].customer_id, this.previousCustomer);
     assert.notEqual(res2[0].subscription_id, this.previousSub);
+
     res = await supertest(app).get('/keys?loggedin=1');
     assert.equal(res.statusCode, 200);
     assert.equal(res.body.customer.credit_brand, 'Discover');
@@ -504,11 +641,11 @@ describe(c.blue('[TEST] api management'), () => {
     assert.equal(res.body.error, 'Open invoice');
 
     res = await supertest(app).get('/keys?loggedin=1');
-
     assert.equal(res.statusCode, 200);
     assert.equal(res.body.customer, null);
     assert.equal(res.body.openInvoices[0].id, invoice.id);
     assert.equal(res.body.openInvoices[0].amountDue, 12300);
+
     const res2 = await db.from('api_keys')
       .where({
         account_id: 1,
@@ -563,164 +700,28 @@ describe(c.blue('[TEST] api limits'), () => {
     assert.equal(keys.length, 1);
     assert.equal(Number(res[keys[0]]), 25);
   });
+
+  async function testWhiteListedRoutes(key: string) {
+    const routes = [
+      `/api${key}`, // Docs
+      `/api/metadata${key}`, // Login status
+      `/keys${key}`, // API Key management
+    ];
+    for (let i = 0; i < routes.length; i++) {
+      const route = routes[i];
+      const res = await supertest(app).get(route);
+      assert.notEqual(res.statusCode, 429);
+    }
+  }
+  
+  async function testRateCheckedRoute() {
+    for (let i = 0; i < 10; i++) {
+      const res = await supertest(app).get('/api/matches/1781962623');
+      assert.equal(res.statusCode, 200);
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+  }
 });
-
-async function testWhiteListedRoutes(key: string) {
-  const routes = [
-    `/api${key}`, // Docs
-    `/api/metadata${key}`, // Login status
-    `/keys${key}`, // API Key management
-  ];
-  for (let i = 0; i < routes.length; i++) {
-    const route = routes[i];
-    const res = await supertest(app).get(route);
-    assert.notEqual(res.statusCode, 429);
-  }
-}
-
-async function testRateCheckedRoute() {
-  for (let i = 0; i < 10; i++) {
-    const res = await supertest(app).get('/api/matches/1781962623');
-    assert.equal(res.statusCode, 200);
-    await new Promise((resolve) => setTimeout(resolve, 100));
-  }
-}
-
-async function initElasticsearch() {
-  console.log('Create Elasticsearch Mapping');
-  const mapping = JSON.parse(
-    readFileSync('./elasticsearch/index.json', { encoding: 'utf-8' }),
-  );
-  const exists = await es.indices.exists({
-    index: 'dota-test', // Check if index already exists, in which case, delete it
-  });
-  if (exists.body) {
-    await es.indices.delete({
-      index: 'dota-test',
-    });
-  }
-  await es.indices.create({
-    index: 'dota-test',
-  });
-  await es.indices.close({
-    index: 'dota-test',
-  });
-  await es.indices.putSettings({
-    index: 'dota-test',
-    body: mapping.settings,
-  });
-  await es.indices.putMapping({
-    index: 'dota-test',
-    type: 'player',
-    body: mapping.mappings.player,
-  });
-  await es.indices.open({
-    index: 'dota-test',
-  });
-}
-
-async function initRedis() {
-  console.log('wiping redis');
-  await redis.flushdb();
-}
-
-async function initPostgres() {
-  const pool = new Pool({
-    connectionString: initPostgresHost,
-  });
-  const client = await pool.connect();
-  console.log('drop postgres test database');
-  await client.query('DROP DATABASE IF EXISTS yasp_test');
-  console.log('create postgres test database');
-  await client.query('CREATE DATABASE yasp_test');
-  const pool2 = new Pool({
-    connectionString: POSTGRES_URL,
-  });
-  const client2 = await pool2.connect();
-  console.log('create postgres test tables');
-  const query = readFileSync('./sql/create_tables.sql', 'utf8');
-  await client2.query(query);
-  // ready to create client
-  console.log('insert postgres test data');
-  // populate the DB with this leagueid so we insert a pro match
-  await db.raw(
-    "INSERT INTO leagues(leagueid, tier) VALUES(5399, 'professional')",
-  );
-}
-
-async function initCassandra() {
-  const init = new Client({
-    contactPoints: [initCassandraHost],
-    localDataCenter: 'datacenter1',
-  });
-  console.log('drop cassandra test keyspace');
-  await init.execute('DROP KEYSPACE IF EXISTS yasp_test');
-  console.log('create cassandra test keyspace');
-  await init.execute(
-    "CREATE KEYSPACE yasp_test WITH REPLICATION = { 'class': 'NetworkTopologyStrategy', 'datacenter1': 1 };",
-  );
-  console.log('create cassandra tables');
-  const tables = readFileSync('./sql/create_tables.cql', 'utf8')
-    .split(';')
-    .filter((cql) => cql.length > 1);
-  for (let i = 0; i < tables.length; i++) {
-    const cql = tables[i];
-    await init.execute('USE yasp_test');
-    await init.execute(cql);
-  }
-}
-
-async function initScylla() {
-  const init = new Client({
-    contactPoints: [initScyllaHost],
-    localDataCenter: 'datacenter1',
-  });
-  console.log(initScyllaHost);
-  console.log('drop scylla test keyspace');
-  await init.execute('DROP KEYSPACE IF EXISTS yasp_test');
-  console.log('create scylla test keyspace');
-  await init.execute(
-    "CREATE KEYSPACE yasp_test WITH REPLICATION = { 'class': 'NetworkTopologyStrategy', 'datacenter1': 1 };",
-  );
-  console.log('create scylla tables');
-  const tables = readFileSync('./sql/create_tables.cql', 'utf8')
-    .split(';')
-    .filter((cql) => cql.length > 1);
-  for (let i = 0; i < tables.length; i++) {
-    const cql = tables[i];
-    await init.execute('USE yasp_test');
-    await init.execute(cql);
-  }
-}
-
-async function startServices() {
-  console.log('starting services');
-  const web = await import('../svc/web.js');
-  app = web.app;
-  await import('../svc/parser.js');
-  await import('../svc/mmr.js');
-}
-
-async function loadMatches() {
-  console.log('loading matches');
-  const arr = [detailsApi.result, detailsApiPro.result, detailsApiPro.result];
-  for (let i = 0; i < arr.length; i++) {
-    const m = arr[i];
-    await insertMatch(m, {
-      type: 'api',
-      // Pretend to be scanner insert so we queue mmr/counts update etc.
-      origin: 'scanner',
-      skipParse: true,
-    });
-  }
-}
-
-async function loadPlayers() {
-  console.log('loading players');
-  await Promise.all(
-    summariesApi.response.players.map((p) => upsertPlayer(db, p, true)),
-  );
-}
 
 /*
 describe(c.blue('[TEST] generateMatchups'), () => {

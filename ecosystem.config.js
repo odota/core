@@ -104,7 +104,7 @@ let arr = [
     group: 'backend',
   },
   {
-    name: 'scenariosCleanup',
+    name: 'cleanup',
     group: 'backend',
   },
   {
