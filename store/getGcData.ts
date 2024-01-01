@@ -27,7 +27,7 @@ export async function readGcData(
     return;
   }
   const { match_id, cluster, replay_salt } = gcData;
-  if (!match_id || !cluster || !replay_salt) {
+  if (match_id == null || cluster == null || replay_salt == null) {
     return;
   }
   return gcData;
