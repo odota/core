@@ -50,7 +50,6 @@ const defaults = {
   MAXIMUM_AGE_SCENARIOS_ROWS: '4', // maximum allowed age of scenarios rows in weeks
   MATCH_CACHE_SECONDS: '60', // number of seconds to cache matches
   PLAYER_CACHE_SECONDS: '1800', // number of seconds to cache player aggregations
-  SCANNER_PLAYER_PERCENT: '100', // percent of matches from scanner to insert player account IDs for (discover new player account IDs)
   ENABLE_API_LIMIT: '', // if truthy, API calls after exceeding API_FREE_LIMIT are blocked
   API_FREE_LIMIT: '2000', // number of api requests per day before 429 is returned. If using an API key, calls over this are charged.
   API_BILLING_UNIT: '100', // how many calls is equivalent to a unit of calls e.g. 100 calls per $0.01.

@@ -2,7 +2,7 @@
 import { runQueue } from '../store/queue';
 import db from '../store/db';
 import redis from '../store/redis';
-import { insertPlayerRating, upsertPlayer } from '../store/insert';
+import { insertPlayerRating } from '../store/insert';
 import config from '../config';
 import {
   getRetrieverCount,
@@ -17,15 +17,14 @@ async function processMmr(job: MmrJob) {
   console.log(url);
   const { data } = await axios.get(url);
   redisCount(redis, 'retriever_player');
-  // NOTE: To reduce the number of updates on the player table
-  // Only write it sometimes, unless we're in dev mode
-  if (config.NODE_ENV === 'development' || Math.random() < 0.05) {
-    const player = {
-      account_id: job.account_id,
-      plus: Boolean(data.is_plus_subscriber),
-    };
-    await upsertPlayer(db, player, false);
-  }
+
+  // Update player's Dota Plus status if changed
+  const player = {
+    account_id: job.account_id,
+    plus: Boolean(data.is_plus_subscriber),
+  };
+  await db.raw('UPDATE players SET plus = ? WHERE account_id = ? AND plus != ?', [player.plus, player.account_id, player.plus]);
+
   if (
     data.solo_competitive_rank ||
     data.competitive_rank ||

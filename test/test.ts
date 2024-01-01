@@ -286,6 +286,9 @@ describe(c.blue('[TEST] players'), async () => {
     assert.equal(data.profile.account_id, 120269134);
     assert.ok(data.profile.personaname);
   });
+  it('should have Dota Plus data', async () => {
+    assert.equal(data.profile.plus, true);
+  });
   it('should have rank_tier data', async () => {
     assert.equal(data.rank_tier, 80);
   });

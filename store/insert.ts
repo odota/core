@@ -152,70 +152,6 @@ export async function insertPlayerRating(row: PlayerRating) {
   }
 }
 
-export async function insertPlayerCache(
-  match: Match,
-  pgroup: PGroup,
-  type: string,
-) {
-  const { players } = match;
-  await Promise.all(
-    players.map(async (p) => {
-      // add account id to each player so we know what caches to update
-      const account_id = pgroup[p.player_slot]?.account_id ?? p.account_id;
-      // join player with match to form player_match
-      const playerMatch: Partial<ParsedPlayerMatch> = {
-        ...p,
-        ...match,
-        account_id,
-        players: undefined,
-      };
-      if (
-        !playerMatch.account_id ||
-        playerMatch.account_id === getAnonymousAccountId()
-      ) {
-        return;
-      }
-      if (type === 'api') {
-        // We currently update this for the non-anonymous players in the match
-        // It'll reflect the current anonymity state of the players at insertion time
-        // This might lead to changes in peers counts after a fullhistory update or parse request
-        playerMatch.heroes = pgroup;
-      }
-      computeMatchData(playerMatch as ParsedPlayerMatch);
-      delete playerMatch.patch;
-      delete playerMatch.region;
-      const cleanedMatch = await cleanRowCassandra(
-        cassandra,
-        'player_caches',
-        playerMatch,
-      );
-      const serializedMatch: any = serialize(cleanedMatch);
-      const query = util.format(
-        'INSERT INTO player_caches (%s) VALUES (%s)',
-        Object.keys(serializedMatch).join(','),
-        Object.keys(serializedMatch)
-          .map(() => '?')
-          .join(','),
-      );
-      const arr = Object.keys(serializedMatch).map((k) => serializedMatch[k]);
-      await cassandra.execute(query, arr, {
-        prepare: true,
-      });
-      if (
-        (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') &&
-        cleanedMatch.player_slot === 0
-      ) {
-        fs.writeFileSync(
-          './json/' +
-            match.match_id +
-            `_playercache_${type}_${playerMatch.player_slot}.json`,
-          JSON.stringify(cleanedMatch, null, 2),
-        );
-      }
-    }),
-  );
-}
-
 function createMatchCopy<T>(match: any): T {
   // Makes a deep copy of the original match
   const copy = JSON.parse(JSON.stringify(match));
@@ -251,6 +187,20 @@ export async function insertMatch(
       // Skip if not in a pro league (premium or professional tier)
       return;
     }
+    const trx = await db.transaction();
+    try {
+      await upsertMatch();
+      await upsertPlayerMatches();
+      await upsertPicksBans();
+      await upsertMatchPatch();
+      await upsertTeamMatch();
+      await updateTeamRankings();
+    } catch (e) {
+      trx.rollback();
+      throw e;
+    }
+    await trx.commit();
+
     async function upsertMatch() {
       await upsert(trx, 'matches', match, {
         match_id: match.match_id,
@@ -392,28 +342,68 @@ export async function insertMatch(
         ]);
       }
     }
-    const trx = await db.transaction();
-    try {
-      await upsertMatch();
-      await upsertPlayerMatches();
-      await upsertPicksBans();
-      await upsertMatchPatch();
-      await upsertTeamMatch();
-      await updateTeamRankings();
-    } catch (e) {
-      trx.rollback();
-      throw e;
-    }
-    await trx.commit();
   }
-  async function updateCassandraPlayerCaches(match: InsertMatchInput) {
+  async function upsertPlayerCaches(match: InsertMatchInput) {
     // Add the 10 player_match rows indexed by player
     // We currently do this on all types
     const copy = createMatchCopy<Match>(match);
     if (average_rank) {
       copy.average_rank = average_rank;
     }
-    await insertPlayerCache(copy, pgroup, options.type);
+    await Promise.all(
+      copy.players.map(async (p) => {
+        // add account id to each player so we know what caches to update
+        const account_id = pgroup[p.player_slot]?.account_id ?? p.account_id;
+        // join player with match to form player_match
+        const playerMatch: Partial<ParsedPlayerMatch> = {
+          ...p,
+          ...copy,
+          account_id,
+          players: undefined,
+        };
+        if (
+          !playerMatch.account_id ||
+          playerMatch.account_id === getAnonymousAccountId()
+        ) {
+          return;
+        }
+        if (options.type === 'api') {
+          // We currently update this for the non-anonymous players in the match
+          // It'll reflect the current anonymity state of the players at insertion time
+          // This might lead to changes in peers counts after a fullhistory update or parse request
+          playerMatch.heroes = pgroup;
+        }
+        computeMatchData(playerMatch as ParsedPlayerMatch);
+        const cleanedMatch = await cleanRowCassandra(
+          cassandra,
+          'player_caches',
+          playerMatch,
+        );
+        const serializedMatch: any = serialize(cleanedMatch);
+        const query = util.format(
+          'INSERT INTO player_caches (%s) VALUES (%s)',
+          Object.keys(serializedMatch).join(','),
+          Object.keys(serializedMatch)
+            .map(() => '?')
+            .join(','),
+        );
+        const arr = Object.keys(serializedMatch).map((k) => serializedMatch[k]);
+        await cassandra.execute(query, arr, {
+          prepare: true,
+        });
+        if (
+          (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') &&
+          cleanedMatch.player_slot === 0
+        ) {
+          fs.writeFileSync(
+            './json/' +
+              copy.match_id +
+              `_playercache_${options.type}_${playerMatch.player_slot}.json`,
+            JSON.stringify(cleanedMatch, null, 2),
+          );
+        }
+      }),
+    );
   }
   async function upsertMatchBlobs(match: InsertMatchInput) {
     // The table holds data for each possible stage of ingestion, api/gcdata/replay/meta etc.
@@ -424,19 +414,19 @@ export async function insertMatch(
     // NOTE: apparently the Steam API started deleting some fields on old matches, like HD/TD/ability builds
     // Currently this means fullhistory could overwrite the blob later and we could lose some data
     // So add the ifNotExists option to avoid overwriting
-    // We still want to update the identity blob
+    // We added a new "identity" blob to hold the currently visible account IDs
 
     let copy = createMatchCopy<typeof match>(match);
-    await upsertBlob(options.type, copy, options.ifNotExists);
+    await upsertBlob(options.type, copy, options.ifNotExists ?? false);
 
-    // average_rank should be stored in a new blob column since it's not part of API data
-    // We could also store the ranks of the players in the game instead of looking it up at view time
+    // average_rank should be stored in a new blob column too since it's not part of API data
+    // We could also store the ranks of the players here rather than looking up their current rank on view
     // That's probably better anyway since it's more accurate to show their rank at the time of the match
     if (ranksBlob) {
       // await upsertBlob('ranks', ranksBlob);
     }
 
-    async function upsertBlob(type: DataType, blob: { match_id: number, players: { player_slot: number }[] }, ifNotExists = false) {
+    async function upsertBlob(type: DataType, blob: { match_id: number, players: { player_slot: number }[] }, ifNotExists: boolean) {
       const matchId = blob.match_id;
       const result = await cassandra.execute(
         `INSERT INTO match_blobs(match_id, ${type}) VALUES(?, ?) ${ifNotExists ? 'IF NOT EXISTS' : ''}`,
@@ -501,7 +491,7 @@ export async function insertMatch(
     await Promise.all(arr.map((val) => clearCache(val)));
   }
   async function decideCounts(match: InsertMatchInput) {
-    // We only do this if fresh match
+    // Update temporary match counts/hero rankings
     if (options.origin === 'scanner' && options.type === 'api') {
       await addJob({
         name: 'countsQueue',
@@ -510,7 +500,7 @@ export async function insertMatch(
     }
   }
   async function decideMmr(match: InsertMatchInput) {
-    // We only do this if fresh match and ranked
+    // Trigger an update for player rank_tier if ranked match
     const arr = match.players.filter<ApiPlayer>((p): p is ApiPlayer => {
       return Boolean(
         options.origin === 'scanner' &&
@@ -535,18 +525,17 @@ export async function insertMatch(
     );
   }
   async function decideProfile(match: InsertMatchInput) {
-    // We only do this if fresh match
+    // Player discovery
+    // Add a placeholder player with just the ID
+    // We could also trigger profile update here but we probably don't need to update name after each match
+    // The profiler process will update profiles randomly
+    // We can also discover players from gcdata where they're not anonymous
     const arr = match.players.filter((p) => {
       return (
-        match.match_id % 100 < Number(config.SCANNER_PLAYER_PERCENT) &&
-        options.origin === 'scanner' &&
-        options.type === 'api' &&
         p.account_id &&
         p.account_id !== getAnonymousAccountId()
       );
     });
-    // Add a placeholder player with just the ID
-    // We could also queue a profile job here but seems like a lot to update name after each match
     await Promise.all(
       arr.map((p) =>
         // Avoid extraneous writes to player table by not using upsert function
@@ -558,12 +547,12 @@ export async function insertMatch(
     );
   }
   async function decideGcData(match: InsertMatchInput) {
-    // We only do this for fresh matches
-    // Don't get replay URLs for event matches
+    // Trigger a request for gcdata
     if (
       options.origin === 'scanner' &&
       options.type === 'api' &&
       'game_mode' in match &&
+      // Don't get replay URLs for event matches
       match.game_mode !== 19 &&
       match.match_id % 100 < Number(config.GCDATA_PERCENT)
     ) {
@@ -629,8 +618,8 @@ export async function insertMatch(
     if (hasTrackedPlayer) {
       priority = -2;
     }
-    // We might have to try several times since it might be too soon
-    let attempts = 30;
+    // We might have to retry since it might be too soon for the replay
+    let attempts = 50;
     const job = await addReliableJob(
       {
         name: 'parse',
@@ -701,7 +690,7 @@ export async function insertMatch(
   }
 
   await upsertMatchPostgres(match);
-  await updateCassandraPlayerCaches(match);
+  await upsertPlayerCaches(match);
   await upsertMatchBlobs(match);
   await clearRedisMatch(match);
   await clearRedisPlayer(match);

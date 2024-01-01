@@ -6,7 +6,7 @@ import cassandra from './cassandra';
 import { getRandomRetrieverUrl, redisCount } from '../util/utility';
 import axios from 'axios';
 import retrieverMatch from '../test/data/retriever_match.json';
-import { insertMatch, upsert } from './insert';
+import { insertMatch } from './insert';
 
 /**
  * Return GC data by reading it without fetching.
