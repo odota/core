@@ -33,18 +33,16 @@ export function countWords(
   const chatWordsString = chatWords.join(' ');
   const tokens = tokenize(chatWordsString);
   // count how frequently each word occurs
-  const counts: NumberDict = {};
+  // Use a JS Map since it's user input and a string like 'constructor' is going to cause problems
+  const counts = new Map<string, number>();
   for (let i = 0; i < tokens.length; i += 1) {
     // ignore the empty string
     if (tokens[i]) {
-      if (!counts[tokens[i]]) {
-        counts[tokens[i]] = 0;
-      }
-      counts[tokens[i]] += 1;
+      counts.set(tokens[i], (counts.get(tokens[i]) ?? 0) + 1);
     }
   }
   // return the final counts
-  return counts;
+  return Object.fromEntries(counts.entries());
 }
 /**
  * Computes additional properties from a match/player_match
