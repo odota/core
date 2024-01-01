@@ -1,0 +1,45 @@
+{
+  "match_id": 7490235544,
+  "players": [
+    {
+      "player_slot": 0,
+      "account_id": 124801257
+    },
+    {
+      "player_slot": 1,
+      "account_id": 480412663
+    },
+    {
+      "player_slot": 2,
+      "account_id": 331855530
+    },
+    {
+      "player_slot": 3,
+      "account_id": 317880638
+    },
+    {
+      "player_slot": 4,
+      "account_id": 431770905
+    },
+    {
+      "player_slot": 128,
+      "account_id": 148215639
+    },
+    {
+      "player_slot": 129,
+      "account_id": 173978074
+    },
+    {
+      "player_slot": 130,
+      "account_id": 138857296
+    },
+    {
+      "player_slot": 131,
+      "account_id": 207829314
+    },
+    {
+      "player_slot": 132,
+      "account_id": 94296097
+    }
+  ]
+}

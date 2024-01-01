@@ -5,7 +5,7 @@ import { teamScenariosQueryParams, metadata } from '../util/scenariosUtil';
 import { filterMatches } from '../util/filter';
 import db from './db';
 import redis from './redis';
-import cassandra from './cassandra';
+import cassandra, { getCassandraColumns } from './cassandra';
 import { benchmarks } from '../util/benchmarksUtil';
 import type knex from 'knex';
 import type { Request } from 'express';
@@ -21,14 +21,12 @@ import {
   PeersCount,
   redisCount,
 } from '../util/utility';
-import { cassandraColumnInfo, cleanRowCassandra } from './insert';
 import {
   readArchivedPlayerMatches,
   tryReadArchivedMatch,
 } from './getArchivedData';
 import { tryFetchApiData } from './getApiData';
-import { getPGroup, type ApiMatch } from './pgroup';
-import { tryFetchGcData } from './getGcData';
+import { type ApiMatch } from './pgroup';
 
 /**
  * Adds benchmark data to the players in a match
@@ -227,9 +225,7 @@ export async function getPlayerMatchesWithMetadata(
     return [[], null];
   }
   redisCount(redis, 'player_matches');
-  // call clean method to ensure we have column info cached
-  await cleanRowCassandra(cassandra, 'player_caches', {});
-  // console.log(queryObj.project, cassandraColumnInfo.player_caches);
+  const columns = await getCassandraColumns('player_caches');  
   const query = util.format(
     `
       SELECT %s FROM player_caches
@@ -241,7 +237,7 @@ export async function getPlayerMatchesWithMetadata(
     queryObj.projectAll
       ? '*'
       : queryObj.project
-          .filter((f: string) => cassandraColumnInfo.player_caches?.[f])
+          .filter((f: string) => columns[f])
           .join(','),
   );
   const [localMatches, archivedMatches] = await Promise.all([
@@ -281,9 +277,7 @@ export async function getPlayerMatchesWithMetadata(
   if (archivedMatches.length) {
     console.time('merge:' + accountId);
     const keys = queryObj.projectAll
-      ? (Object.keys(
-          cassandraColumnInfo.player_caches,
-        ) as (keyof ParsedPlayerMatch)[])
+      ? (Object.keys(columns) as (keyof ParsedPlayerMatch)[])
       : queryObj.project;
     // Merge together the results
     // Sort both lists into descending order
@@ -676,6 +670,7 @@ export async function getMatchDataFromBlobWithMetadata(
   };
   return [final, odData];
 }
+
 
 export async function getMatchDataFromLegacy(
   matchId: number,

@@ -8,10 +8,9 @@ import { computeMatchData } from '../util/compute';
 import db from './db';
 import redis from './redis';
 import { es, INDEX } from './elasticsearch';
-import cassandra from './cassandra';
+import cassandra, { getCassandraColumns } from './cassandra';
 import { getKeys, clearCache } from './cacheFunctions';
 import type knex from 'knex';
-import type { Client } from 'cassandra-driver';
 import {
   getAnonymousAccountId,
   convert64to32,
@@ -26,7 +25,6 @@ import { getMatchRankTier } from './queries';
 import { ApiMatch, ApiMatchPro, ApiPlayer, getPGroup } from './pgroup';
 
 const columnInfo: AnyDict = {};
-export const cassandraColumnInfo: AnyDict = {};
 
 function doCleanRow(schema: StringDict, row: AnyDict) {
   const obj: AnyDict = {};
@@ -37,29 +35,13 @@ function doCleanRow(schema: StringDict, row: AnyDict) {
   });
   return obj;
 }
+
 async function cleanRowPostgres(db: knex.Knex, table: string, row: AnyDict) {
   if (!columnInfo[table]) {
     const result = await db(table).columnInfo();
     columnInfo[table] = result;
   }
   return doCleanRow(columnInfo[table], row);
-}
-export async function cleanRowCassandra(
-  cassandra: Client,
-  table: string,
-  row: AnyDict,
-) {
-  if (!cassandraColumnInfo[table]) {
-    const result = await cassandra.execute(
-      'SELECT column_name FROM system_schema.columns WHERE keyspace_name = ? AND table_name = ?',
-      [config.NODE_ENV === 'test' ? 'yasp_test' : 'yasp', table],
-    );
-    cassandraColumnInfo[table] = {};
-    result.rows.forEach((r) => {
-      cassandraColumnInfo[table][r.column_name] = 1;
-    });
-  }
-  return doCleanRow(cassandraColumnInfo[table], row);
 }
 
 export async function upsert(
@@ -350,6 +332,7 @@ export async function insertMatch(
     if (average_rank) {
       copy.average_rank = average_rank;
     }
+    const columns = await getCassandraColumns('player_caches');
     await Promise.all(
       copy.players.map(async (p) => {
         // add account id to each player so we know what caches to update
@@ -374,12 +357,13 @@ export async function insertMatch(
           playerMatch.heroes = pgroup;
         }
         computeMatchData(playerMatch as ParsedPlayerMatch);
-        const cleanedMatch = await cleanRowCassandra(
-          cassandra,
-          'player_caches',
-          playerMatch,
-        );
-        const serializedMatch: any = serialize(cleanedMatch);
+        // Remove extra properties
+        Object.keys(playerMatch).forEach(key => {
+          if (!columns[key]) {
+            delete playerMatch[key as keyof ParsedPlayerMatch];
+          }
+        });
+        const serializedMatch: any = serialize(playerMatch);
         const query = util.format(
           'INSERT INTO player_caches (%s) VALUES (%s)',
           Object.keys(serializedMatch).join(','),
@@ -388,18 +372,19 @@ export async function insertMatch(
             .join(','),
         );
         const arr = Object.keys(serializedMatch).map((k) => serializedMatch[k]);
+        // TODO (howard) dual write here
         await cassandra.execute(query, arr, {
           prepare: true,
         });
         if (
           (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') &&
-          cleanedMatch.player_slot === 0
+          playerMatch.player_slot === 0
         ) {
           fs.writeFileSync(
             './json/' +
               copy.match_id +
               `_playercache_${options.type}_${playerMatch.player_slot}.json`,
-            JSON.stringify(cleanedMatch, null, 2),
+            JSON.stringify(playerMatch, null, 2),
           );
         }
       }),
@@ -428,6 +413,7 @@ export async function insertMatch(
 
     async function upsertBlob(type: DataType, blob: { match_id: number, players: { player_slot: number }[] }, ifNotExists: boolean) {
       const matchId = blob.match_id;
+      // TODO (howard) dual write here
       const result = await cassandra.execute(
         `INSERT INTO match_blobs(match_id, ${type}) VALUES(?, ?) ${ifNotExists ? 'IF NOT EXISTS' : ''}`,
         [matchId, JSON.stringify(blob)],
