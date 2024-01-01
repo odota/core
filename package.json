@@ -1,7 +1,7 @@
 {
   "name": "opendota-core",
   "description": "Open source Dota data platform",
-  "version": "24.0.0",
+  "version": "25.0.0",
   "license": "MIT",
   "scripts": {
     "start": "tsx index",
