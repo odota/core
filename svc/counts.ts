@@ -69,7 +69,9 @@ async function upsertMatchSample(match: Match) {
         avg_rank_tier: avg || null,
         num_rank_tier: num || null,
       };
-      const newMatch = { ...match, ...matchMmrData };
+      const radiant_team = match.players.filter(p => isRadiant(p)).map(p => p.hero_id);
+      const dire_team = match.players.filter(p => !isRadiant(p)).map(p => p.hero_id);
+      const newMatch = { ...match, ...matchMmrData, radiant_team, dire_team };
       await upsert(trx, 'public_matches', newMatch, {
         match_id: newMatch.match_id,
       });

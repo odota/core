@@ -40,7 +40,7 @@ export default {
   mmrAscendingParam: {
     name: 'mmr_ascending',
     in: 'query',
-    description: 'Order by MMR ascending',
+    description: 'Order by average rank ascending',
     required: false,
     schema: {
       type: 'integer',
@@ -49,7 +49,7 @@ export default {
   mmrDescendingParam: {
     name: 'mmr_descending',
     in: 'query',
-    description: 'Order by MMR descending',
+    description: 'Order by average rank descending',
     required: false,
     schema: {
       type: 'integer',

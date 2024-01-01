@@ -319,16 +319,15 @@ CREATE TABLE IF NOT EXISTS public_matches (
   radiant_win boolean,
   start_time integer,
   duration integer,
-  avg_mmr integer,
-  num_mmr integer,
   lobby_type integer,
   game_mode integer,
   avg_rank_tier double precision,
   num_rank_tier integer,
-  cluster integer
+  cluster integer,
+  radiant_team integer[],
+  dire_team integer[]
 );
 CREATE INDEX IF NOT EXISTS public_matches_start_time_idx on public_matches(start_time);
-CREATE INDEX IF NOT EXISTS public_matches_avg_mmr_idx on public_matches(avg_mmr);
 CREATE INDEX IF NOT EXISTS public_matches_avg_rank_tier_idx on public_matches(avg_rank_tier) WHERE avg_rank_tier IS NOT NULL;
 
 CREATE TABLE IF NOT EXISTS team_rating (

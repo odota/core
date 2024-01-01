@@ -1136,18 +1136,14 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
             : '';
           const { rows } = await db.raw(
             `
-          WITH match_ids AS (SELECT match_id FROM public_matches
+          SELECT * FROM public_matches
           WHERE TRUE
           AND match_id > ?
           AND match_id < ?
           ${minRank}
           ${maxRank}
           ${order}
-          LIMIT 100)
-          SELECT * FROM
-          (SELECT * FROM public_matches
-          WHERE match_id IN (SELECT match_id FROM match_ids)) matches
-          ${order}
+          LIMIT 100
           `,
             [moreThan, lessThan],
           );
