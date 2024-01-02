@@ -13,7 +13,7 @@ if (process.env.PROVIDER === 'gce' && !fs.existsSync('/usr/src/.env')) {
 async function start() {
   if (process.env.ROLE) {
     // if role variable is set just run that script
-    import('./svc/' + process.env.ROLE);
+    import('./svc/' + process.env.ROLE + '.js');
   } else if (process.env.GROUP) {
     // or run the group with pm2
     cp.execSync('pm2 start ecosystem.config.js');
