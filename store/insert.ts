@@ -5,7 +5,7 @@ import fs from 'fs';
 import config from '../config';
 import { addJob, addReliableJob } from './queue';
 import { computeMatchData } from '../util/compute';
-import db from './db';
+import db, { getPostgresColumns } from './db';
 import redis from './redis';
 import { es, INDEX } from './elasticsearch';
 import cassandra, { getCassandraColumns } from './cassandra';
@@ -24,33 +24,20 @@ import {
 import { getMatchRankTier } from './queries';
 import { ApiMatch, ApiMatchPro, ApiPlayer, getPGroup } from './pgroup';
 
-const columnInfo: AnyDict = {};
-
-function doCleanRow(schema: StringDict, row: AnyDict) {
-  const obj: AnyDict = {};
-  Object.keys(row).forEach((key) => {
-    if (key in schema) {
-      obj[key] = row[key];
-    }
-  });
-  return obj;
-}
-
-async function cleanRowPostgres(db: knex.Knex, table: string, row: AnyDict) {
-  if (!columnInfo[table]) {
-    const result = await db(table).columnInfo();
-    columnInfo[table] = result;
-  }
-  return doCleanRow(columnInfo[table], row);
-}
-
 export async function upsert(
   db: knex.Knex,
   table: string,
   insert: AnyDict,
   conflict: NumberDict,
 ) {
-  const row = await cleanRowPostgres(db, table, insert);
+  const columns = await getPostgresColumns(table);
+  const row = {...insert};
+  // Remove extra properties
+  Object.keys(row).forEach((key) => {
+    if (!columns[key]) {
+      delete row[key];
+    }
+  });
   const values = Object.keys(row).map(() => '?');
   const update = Object.keys(row).map((key) =>
     util.format('%s=%s', key, `EXCLUDED.${key}`),
