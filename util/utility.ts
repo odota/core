@@ -921,10 +921,9 @@ export function checkIfInExperiment(ip: string, mod: number) {
     crypto.createHash('md5').update(ip).digest().readInt32BE(0) % 100 < mod
   );
 }
-export function isDataComplete(match: Partial<ParsedMatch> | null) {
-  // Check for a field from API and from parse
-  // Once we are archiving from blobstore we could also check for replay_salt
-  return Boolean(match && match.start_time && match.version && match.chat);
+export function isDataComplete(match: Partial<ParsedMatch>) {
+  // Check for fields from API, gcdata, parse
+  return Boolean(match && match.replay_salt && match.start_time && match.version && match.chat && match.players?.[0]?.hero_damage && match.players?.[0]?.ability_upgrades_arr);
 }
 
 /**
