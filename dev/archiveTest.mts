@@ -1,7 +1,6 @@
 const { Archive } = await import('../store/archive.js');
 const { tryReadArchivedMatch } = await import('../store/getArchivedData.js');
 
-
 // Read some match data
 // const match = await getMatchDataFromBlob(7465883253);
 // const blob = Buffer.from(JSON.stringify(match));

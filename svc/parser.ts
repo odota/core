@@ -46,7 +46,11 @@ async function parseProcessor(job: ParseJob) {
     const apiStart = Date.now();
     // The pgroup is used to update player_caches on insert.
     // Since currently gcdata and parse data have no knowledge of anonymity, we pass it from API data
-    let { data: apiMatch, error: apiError, pgroup } = await getOrFetchApiData(matchId);
+    let {
+      data: apiMatch,
+      error: apiError,
+      pgroup,
+    } = await getOrFetchApiData(matchId);
     apiTime = Date.now() - apiStart;
     if (apiError || !apiMatch || !pgroup) {
       log('fail', apiError || 'Missing API data or pgroup');
@@ -75,17 +79,13 @@ async function parseProcessor(job: ParseJob) {
     );
 
     const parseStart = Date.now();
-    let parseError = await saveParseData(
-      matchId,
-      url,
-      {
-        start_time,
-        duration,
-        leagueid,
-        pgroup,
-        origin: job.origin,
-      },
-    );
+    let parseError = await saveParseData(matchId, url, {
+      start_time,
+      duration,
+      leagueid,
+      pgroup,
+      origin: job.origin,
+    });
     parseTime = Date.now() - parseStart;
     if (parseError) {
       console.log('[PARSER] %s: %s', matchId, parseError);
@@ -98,7 +98,7 @@ async function parseProcessor(job: ParseJob) {
     return true;
   } catch (e: any) {
     log('crash', e?.message);
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     // Rethrow the exception
     throw e;
   }

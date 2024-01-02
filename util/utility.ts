@@ -923,7 +923,15 @@ export function checkIfInExperiment(ip: string, mod: number) {
 }
 export function isDataComplete(match: Partial<ParsedMatch>) {
   // Check for fields from API, gcdata, parse
-  return Boolean(match && match.replay_salt && match.start_time && match.version && match.chat && match.players?.[0]?.hero_damage && match.players?.[0]?.ability_upgrades_arr);
+  return Boolean(
+    match &&
+      match.replay_salt &&
+      match.start_time &&
+      match.version &&
+      match.chat &&
+      match.players?.[0]?.hero_damage &&
+      match.players?.[0]?.ability_upgrades_arr,
+  );
 }
 
 /**

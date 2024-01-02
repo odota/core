@@ -146,7 +146,7 @@ const apps = arr.map((app) => {
         : undefined,
     env: {
       ROLE: app.name,
-    }
+    },
   };
 });
 

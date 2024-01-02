@@ -128,13 +128,15 @@ async function deleteMatch(matchId: number) {
 
 export async function archivePostgresStream() {
   const max = await getCurrentMaxArchiveID();
-  const query = new QueryStream(`
+  const query = new QueryStream(
+    `
   SELECT match_id 
   from parsed_matches 
   WHERE is_archived IS NULL 
   and match_id < ? 
   ORDER BY match_id asc`,
-   [max]);
+    [max],
+  );
   const pg = new Client(config.POSTGRES_URL);
   await pg.connect();
   const stream = pg.query(query);
@@ -162,8 +164,7 @@ async function archiveSequential(start: number, max: number) {
     console.log(i);
     try {
       await doArchiveFromBlob(i);
-    }
-    catch (e) {
+    } catch (e) {
       console.error(e);
     }
   }
@@ -177,14 +178,14 @@ async function archiveRandom(max: number) {
     page.push(rand + i);
   }
   console.log(page[0]);
-  await Promise.allSettled(page.map(i => doArchiveFromBlob(i)));
+  await Promise.allSettled(page.map((i) => doArchiveFromBlob(i)));
 }
 
 export async function archiveToken(max: number) {
   let page = await getTokenRange(1000);
-  page = page.filter(id => id < max);
+  page = page.filter((id) => id < max);
   console.log(page[0]);
-  await Promise.allSettled(page.map(i => doArchiveFromBlob(i)));
+  await Promise.allSettled(page.map((i) => doArchiveFromBlob(i)));
 }
 
 function randomBigInt(byteCount: number) {
@@ -216,7 +217,7 @@ async function getTokenRange(size: number) {
       autoPage: true,
     },
   );
-  return result.rows.map(row => Number(row.match_id));
+  return result.rows.map((row) => Number(row.match_id));
 }
 
 export async function readArchivedPlayerMatches(

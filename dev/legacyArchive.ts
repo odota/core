@@ -34,7 +34,7 @@ async function getTokenRange(size: number) {
       autoPage: true,
     },
   );
-  return result.rows.map(row => Number(row.match_id));
+  return result.rows.map((row) => Number(row.match_id));
 }
 
 async function doArchiveFromLegacy(matchId: number) {
@@ -153,7 +153,7 @@ async function start() {
   while (true) {
     try {
       const page = await getTokenRange(100);
-      await Promise.allSettled(page.map(i => doArchiveFromLegacy(i)));
+      await Promise.allSettled(page.map((i) => doArchiveFromLegacy(i)));
     } catch (e) {
       console.error(e);
     }
@@ -169,7 +169,7 @@ async function start2() {
         page.push(rand + i);
       }
       console.log(page[0]);
-      await Promise.allSettled(page.map(i => doArchiveFromLegacy(i)));
+      await Promise.allSettled(page.map((i) => doArchiveFromLegacy(i)));
     } catch (e) {
       console.error(e);
     }

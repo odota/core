@@ -170,4 +170,3 @@ export function validateMatchProperties(match: ParsedMatch) {
     (property) => match[property] !== undefined && match[property] !== null,
   );
 }
-

@@ -23,7 +23,10 @@ async function processMmr(job: MmrJob) {
     account_id: job.account_id,
     plus: Boolean(data.is_plus_subscriber),
   };
-  await db.raw('UPDATE players SET plus = ? WHERE account_id = ? AND (plus != ? OR plus IS NULL)', [player.plus, player.account_id, player.plus]);
+  await db.raw(
+    'UPDATE players SET plus = ? WHERE account_id = ? AND (plus != ? OR plus IS NULL)',
+    [player.plus, player.account_id, player.plus],
+  );
 
   if (
     data.solo_competitive_rank ||

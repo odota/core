@@ -982,7 +982,10 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
         func: async (req, res, cb) => {
           const playerId = req.params.account_id;
           // If this player has already recently been queued, don't do it again
-          if (config.NODE_ENV !== 'development' && await redis.get('fh_queue:' + playerId)) {
+          if (
+            config.NODE_ENV !== 'development' &&
+            (await redis.get('fh_queue:' + playerId))
+          ) {
             redisCount(redis, 'fullhistory_skip');
             return res.json({ length: 0 });
           }
@@ -2347,7 +2350,8 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
             `records:${req.params.field}`,
             0,
             99,
-            'WITHSCORES');
+            'WITHSCORES',
+          );
           const entries = rows
             ?.map((r, i) => {
               const match_id = parseInt(r.split(':')[0]);

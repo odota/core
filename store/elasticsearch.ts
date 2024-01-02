@@ -7,4 +7,3 @@ export const es = new elasticsearch.Client({
   apiVersion: '6.8',
 });
 export const INDEX = config.NODE_ENV === 'test' ? 'dota-test' : 'dota';
-

@@ -43,7 +43,7 @@ async function processMatch(matchId: string) {
     type: 'api',
     ifNotExists: true,
   });
-  await new Promise(resolve => setTimeout(resolve, 200));
+  await new Promise((resolve) => setTimeout(resolve, 200));
 }
 
 async function processFullHistory(job: FullHistoryJob) {
@@ -54,7 +54,7 @@ async function processFullHistory(job: FullHistoryJob) {
   ) {
     return;
   }
-  
+
   console.time('doFullHistory: ' + player.account_id.toString());
   // if test or only want last 100 (no paging), set short_history
   // const heroArray = job.short_history || config.NODE_ENV === 'test' ? ['0'] : Object.keys(constants.heroes);

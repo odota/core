@@ -358,7 +358,7 @@ export async function insertMatch(
         }
         computeMatchData(playerMatch as ParsedPlayerMatch);
         // Remove extra properties
-        Object.keys(playerMatch).forEach(key => {
+        Object.keys(playerMatch).forEach((key) => {
           if (!columns[key]) {
             delete playerMatch[key as keyof ParsedPlayerMatch];
           }
@@ -411,11 +411,17 @@ export async function insertMatch(
       // await upsertBlob('ranks', ranksBlob);
     }
 
-    async function upsertBlob(type: DataType, blob: { match_id: number, players: { player_slot: number }[] }, ifNotExists: boolean) {
+    async function upsertBlob(
+      type: DataType,
+      blob: { match_id: number; players: { player_slot: number }[] },
+      ifNotExists: boolean,
+    ) {
       const matchId = blob.match_id;
       // TODO (howard) dual write here
       const result = await cassandra.execute(
-        `INSERT INTO match_blobs(match_id, ${type}) VALUES(?, ?) ${ifNotExists ? 'IF NOT EXISTS' : ''}`,
+        `INSERT INTO match_blobs(match_id, ${type}) VALUES(?, ?) ${
+          ifNotExists ? 'IF NOT EXISTS' : ''
+        }`,
         [matchId, JSON.stringify(blob)],
         {
           prepare: true,
@@ -426,16 +432,19 @@ export async function insertMatch(
         // This can change from Steam API as players toggle privacy settings
         // Write this if we didn't apply the change, since that means we are reinserting and the privacy setting probably changed
         if (options.type === 'api') {
-          const identityBlob = { match_id: copy.match_id, players: copy.players.map(p => ({
-            player_slot: p.player_slot,
-            account_id: p.account_id,
-          }))};
+          const identityBlob = {
+            match_id: copy.match_id,
+            players: copy.players.map((p) => ({
+              player_slot: p.player_slot,
+              account_id: p.account_id,
+            })),
+          };
           await upsertBlob('identity', identityBlob, false);
         }
       }
       if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
         fs.writeFileSync(
-          './json/' + matchId + '_' +type + '.json',
+          './json/' + matchId + '_' + type + '.json',
           JSON.stringify(blob, null, 2),
         );
       }
@@ -517,10 +526,7 @@ export async function insertMatch(
     // The profiler process will update profiles randomly
     // We can also discover players from gcdata where they're not anonymous
     const arr = match.players.filter((p) => {
-      return (
-        p.account_id &&
-        p.account_id !== getAnonymousAccountId()
-      );
+      return p.account_id && p.account_id !== getAnonymousAccountId();
     });
     await Promise.all(
       arr.map((p) =>

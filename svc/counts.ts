@@ -69,8 +69,12 @@ async function upsertMatchSample(match: Match) {
         avg_rank_tier: avg || null,
         num_rank_tier: num || null,
       };
-      const radiant_team = match.players.filter(p => isRadiant(p)).map(p => p.hero_id);
-      const dire_team = match.players.filter(p => !isRadiant(p)).map(p => p.hero_id);
+      const radiant_team = match.players
+        .filter((p) => isRadiant(p))
+        .map((p) => p.hero_id);
+      const dire_team = match.players
+        .filter((p) => !isRadiant(p))
+        .map((p) => p.hero_id);
       const newMatch = { ...match, ...matchMmrData, radiant_team, dire_team };
       await upsert(trx, 'public_matches', newMatch, {
         match_id: newMatch.match_id,
@@ -248,7 +252,10 @@ async function updateHeroCounts(match: Match) {
 }
 
 async function updateBenchmarks(match: Match) {
-  if (match.match_id % 100 < Number(config.BENCHMARKS_SAMPLE_PERCENT) && isSignificant(match)) {
+  if (
+    match.match_id % 100 < Number(config.BENCHMARKS_SAMPLE_PERCENT) &&
+    isSignificant(match)
+  ) {
     for (let i = 0; i < match.players.length; i += 1) {
       const p = match.players[i];
       // only do if all players have heroes

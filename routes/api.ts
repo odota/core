@@ -57,9 +57,14 @@ api.use('/players/:account_id/:info?', async (req, res, cb) => {
       filterCols = filterCols.concat(filterDeps[key as FilterType] || []);
     });
     const sortArr = (req.query.sort || []) as (keyof ParsedPlayerMatch)[];
-    const privacy = await db.raw('SELECT fh_unavailable FROM players WHERE account_id = ?', [req.params.account_id]);
+    const privacy = await db.raw(
+      'SELECT fh_unavailable FROM players WHERE account_id = ?',
+      [req.params.account_id],
+    );
     // User can view their own stats
-    const isPrivate = Boolean(privacy.rows[0]?.fh_unavailable) && req.user?.account_id !== req.params.account_id;
+    const isPrivate =
+      Boolean(privacy.rows[0]?.fh_unavailable) &&
+      req.user?.account_id !== req.params.account_id;
     (req as unknown as Express.ExtRequest).queryObj = {
       project: [
         'match_id',

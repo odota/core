@@ -130,12 +130,12 @@ before(async function setup() {
       index: 'dota-test',
     });
   }
-  
+
   async function initRedis() {
     console.log('wiping redis');
     await redis.flushdb();
   }
-  
+
   async function initPostgres() {
     const pool = new Pool({
       connectionString: initPostgresHost,
@@ -159,7 +159,7 @@ before(async function setup() {
       "INSERT INTO leagues(leagueid, tier) VALUES(5399, 'professional')",
     );
   }
-  
+
   async function initCassandra() {
     const init = new Client({
       contactPoints: [initCassandraHost],
@@ -181,7 +181,7 @@ before(async function setup() {
       await init.execute(cql);
     }
   }
-  
+
   async function initScylla() {
     const init = new Client({
       contactPoints: [initScyllaHost],
@@ -204,7 +204,7 @@ before(async function setup() {
       await init.execute(cql);
     }
   }
-  
+
   async function startServices() {
     console.log('starting services');
     const web = await import('../svc/web.js');
@@ -212,7 +212,7 @@ before(async function setup() {
     await import('../svc/parser.js');
     await import('../svc/mmr.js');
   }
-  
+
   async function loadMatches() {
     console.log('loading matches');
     const arr = [detailsApi.result, detailsApiPro.result, detailsApiPro.result];
@@ -226,7 +226,7 @@ before(async function setup() {
       });
     }
   }
-  
+
   async function loadPlayers() {
     console.log('loading players');
     await Promise.all(
@@ -261,17 +261,26 @@ describe(c.blue('[TEST] player_caches'), async () => {
 });
 describe(c.blue('[TEST] privacy setting'), async () => {
   it('should return one row due to default privacy setting', async () => {
-    await db.raw('UPDATE players SET fh_unavailable = NULL WHERE account_id = ?', ['120269134']);
+    await db.raw(
+      'UPDATE players SET fh_unavailable = NULL WHERE account_id = ?',
+      ['120269134'],
+    );
     const res = await supertest(app).get('/api/players/120269134/matches');
     assert.equal(res.body.length, 1);
   });
   it('should return one row due to visible match data', async () => {
-    await db.raw('UPDATE players SET fh_unavailable = FALSE WHERE account_id = ?', ['120269134']);
+    await db.raw(
+      'UPDATE players SET fh_unavailable = FALSE WHERE account_id = ?',
+      ['120269134'],
+    );
     const res = await supertest(app).get('/api/players/120269134/matches');
     assert.equal(res.body.length, 1);
   });
   it('should return no rows due to hidden match data', async () => {
-    await db.raw('UPDATE players SET fh_unavailable = TRUE WHERE account_id = ?', ['120269134']);
+    await db.raw(
+      'UPDATE players SET fh_unavailable = TRUE WHERE account_id = ?',
+      ['120269134'],
+    );
     const res = await supertest(app).get('/api/players/120269134/matches');
     assert.equal(res.body.length, 0);
   });
@@ -453,10 +462,9 @@ describe(c.blue('[TEST] api routes'), async function () {
 });
 describe(c.blue('[TEST] api management'), () => {
   beforeEach(async function getApiRecord() {
-    const res = await db.from('api_keys')
-      .where({
-        account_id: 1,
-      });
+    const res = await db.from('api_keys').where({
+      account_id: 1,
+    });
     this.previousKey = res[0]?.api_key;
     this.previousCustomer = res[0]?.customer_id;
     this.previousSub = res[0]?.subscription_id;
@@ -469,8 +477,7 @@ describe(c.blue('[TEST] api management'), () => {
   });
 
   it('should not get fields for GET', async () => {
-    const res = await supertest(app)
-      .get('/keys?loggedin=1');
+    const res = await supertest(app).get('/keys?loggedin=1');
     assert.equal(res.statusCode, 200);
     assert.deepStrictEqual(res.body, {});
   });
@@ -500,27 +507,25 @@ describe(c.blue('[TEST] api management'), () => {
 
   it('post should not change key', async function testPostDoesNotChangeKey() {
     this.timeout(5000);
-    let res = await supertest(app)
-      .get('/keys?loggedin=1');
+    let res = await supertest(app).get('/keys?loggedin=1');
     assert.equal(res.statusCode, 200);
     assert.equal(res.body.customer.credit_brand, 'Visa');
 
     const previousCredit = res.body.customer.credit_brand;
 
     res = await supertest(app)
-    .post('/keys?loggedin=1')
-    .send({
-      token: {
-        id: 'tok_discover',
-        email: 'test@test.com',
-      },
-    });
+      .post('/keys?loggedin=1')
+      .send({
+        token: {
+          id: 'tok_discover',
+          email: 'test@test.com',
+        },
+      });
     assert.equal(res.statusCode, 200);
 
-    const res2 = await db.from('api_keys')
-      .where({
-        account_id: 1,
-      });
+    const res2 = await db.from('api_keys').where({
+      account_id: 1,
+    });
     if (res2.length === 0) {
       throw Error('No API record found');
     }
@@ -529,10 +534,7 @@ describe(c.blue('[TEST] api management'), () => {
 
     res = await supertest(app).get('/keys?loggedin=1');
     assert.equal(res.statusCode, 200);
-    assert.equal(
-      res.body.customer.credit_brand,
-      previousCredit,
-    );
+    assert.equal(res.body.customer.credit_brand, previousCredit);
     assert.equal(res.body.customer.api_key, this.previousKey);
   });
 
@@ -553,10 +555,9 @@ describe(c.blue('[TEST] api management'), () => {
     assert.equal(res.body.customer.credit_brand, 'MasterCard');
     assert.equal(res.body.customer.api_key, this.previousKey);
 
-    const res2 = await db.from('api_keys')
-      .where({
-        account_id: 1,
-      });
+    const res2 = await db.from('api_keys').where({
+      account_id: 1,
+    });
     if (res2.length === 0) {
       throw Error('No API record found');
     }
@@ -571,10 +572,9 @@ describe(c.blue('[TEST] api management'), () => {
     assert.equal(resp, 1);
     const res = await supertest(app).delete('/keys?loggedin=1');
     assert.equal(res.statusCode, 200);
-    const res2 = await db.from('api_keys')
-      .where({
-        account_id: 1,
-      });
+    const res2 = await db.from('api_keys').where({
+      account_id: 1,
+    });
     if (res2.length === 0) {
       throw Error('No API record found');
     }
@@ -598,11 +598,10 @@ describe(c.blue('[TEST] api management'), () => {
       });
     assert.equal(res.statusCode, 200);
 
-    const res2 = await db.from('api_keys')
-          .where({
-            account_id: 1,
-            is_canceled: null,
-          });
+    const res2 = await db.from('api_keys').where({
+      account_id: 1,
+      is_canceled: null,
+    });
     if (res2.length === 0) {
       throw Error('No API record found');
     }
@@ -649,11 +648,10 @@ describe(c.blue('[TEST] api management'), () => {
     assert.equal(res.body.openInvoices[0].id, invoice.id);
     assert.equal(res.body.openInvoices[0].amountDue, 12300);
 
-    const res2 = await db.from('api_keys')
-      .where({
-        account_id: 1,
-        is_canceled: null,
-      });
+    const res2 = await db.from('api_keys').where({
+      account_id: 1,
+      is_canceled: null,
+    });
     assert.equal(res2.length, 0);
   });
 });
@@ -716,7 +714,7 @@ describe(c.blue('[TEST] api limits'), () => {
       assert.notEqual(res.statusCode, 429);
     }
   }
-  
+
   async function testRateCheckedRoute() {
     for (let i = 0; i < 10; i++) {
       const res = await supertest(app).get('/api/matches/1781962623');

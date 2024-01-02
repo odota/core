@@ -225,7 +225,7 @@ export async function getPlayerMatchesWithMetadata(
     return [[], null];
   }
   redisCount(redis, 'player_matches');
-  const columns = await getCassandraColumns('player_caches');  
+  const columns = await getCassandraColumns('player_caches');
   const query = util.format(
     `
       SELECT %s FROM player_caches
@@ -236,9 +236,7 @@ export async function getPlayerMatchesWithMetadata(
     // Only allow selecting fields present in column names data
     queryObj.projectAll
       ? '*'
-      : queryObj.project
-          .filter((f: string) => columns[f])
-          .join(','),
+      : queryObj.project.filter((f: string) => columns[f]).join(','),
   );
   const [localMatches, archivedMatches] = await Promise.all([
     new Promise<ParsedPlayerMatch[]>((resolve, reject) => {
@@ -490,7 +488,7 @@ export async function getProPeers(
 }
 
 export async function getMatchRankTier(
-  players: { account_id?: number | null, player_slot: number }[],
+  players: { account_id?: number | null; player_slot: number }[],
 ) {
   const result = await Promise.all(
     players.map(async (player) => {
@@ -507,11 +505,14 @@ export async function getMatchRankTier(
   // Remove undefined/null values
   const filt = result.filter(Boolean);
   const avg = averageMedal(filt.map((r) => Number(r))) || null;
-  return { avg, num: filt.length, players: result.map((r, i) => ({
+  return {
+    avg,
+    num: filt.length,
+    players: result.map((r, i) => ({
       player_slot: players[i].player_slot,
-      rank_tier: r
-    })
-  )};
+      rank_tier: r,
+    })),
+  };
 }
 
 export async function getItemTimings(req: Request): Promise<any[]> {

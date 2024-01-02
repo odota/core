@@ -1,8 +1,6 @@
 import moment from 'moment';
 import redis from '../store/redis';
-import {
-  parallelPromise,
-} from '../util/utility';
+import { parallelPromise } from '../util/utility';
 
 function generatePercentiles(arr: string[]) {
   // sort the list

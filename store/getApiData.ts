@@ -33,7 +33,7 @@ export async function readApiData(
  */
 export async function saveApiData(
   matchId: number,
-): Promise<{ error: string | null, pgroup: PGroup | undefined }> {
+): Promise<{ error: string | null; pgroup: PGroup | undefined }> {
   let body;
   try {
     // Try the steam API
@@ -85,7 +85,11 @@ export async function tryFetchApiData(
  */
 export async function getOrFetchApiData(
   matchId: number,
-): Promise<{ data: ApiMatch | undefined; error: string | null, pgroup: PGroup | undefined }> {
+): Promise<{
+  data: ApiMatch | undefined;
+  error: string | null;
+  pgroup: PGroup | undefined;
+}> {
   if (!matchId || !Number.isInteger(matchId) || matchId <= 0) {
     throw new Error('invalid match_id');
   }

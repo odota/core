@@ -51,7 +51,7 @@
   - You can request a parse by ID to get a match with parsed data, e.g. `npm run request`
     - To complete a parse the following services need to be running: `pm2 start ecosystem.config.js --only web,retriever,parser`
   - Or request a match history refresh on a player to get up to 500 of their recent matches, e.g. `npm run fullhistory`
-    - This requires the fullhistory service:  `pm2 start ecosystem.config.js --only fullhistory`
+    - This requires the fullhistory service: `pm2 start ecosystem.config.js --only fullhistory`
 
 ## Resources
 

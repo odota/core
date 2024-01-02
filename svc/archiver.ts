@@ -1,5 +1,5 @@
 // Cleans up old data from Cassandra and optionally archives it
-import { archiveToken, getCurrentMaxArchiveID } from "../store/getArchivedData";
+import { archiveToken, getCurrentMaxArchiveID } from '../store/getArchivedData';
 
 async function start() {
   const max = await getCurrentMaxArchiveID();
