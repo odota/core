@@ -590,8 +590,8 @@ export async function insertMatch(
       return null;
     }
     redisCount(redis, 'auto_parse');
-    let priority = 0;
-    if ('leagueid' in match) {
+    let priority = 5;
+    if (isProLeague) {
       priority = -1;
     }
     if (hasTrackedPlayer) {

@@ -1545,21 +1545,19 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
             redis.zincrby('request_usage_count', 1, req.query.api_key);
             redis.expireat('request_usage_count', getEndOfMonth());
           }
-          // By default, auto-parsed matches have priority 0
-          // Requests have priority 1
           let priority = 1;
           if (
             req.user?.account_id &&
             (await isSubscriber(req.user.account_id))
           ) {
             // Give subscribers higher parse priority
-            priority = -3;
+            priority = -10;
           } else if (req.query.api_key) {
             // Lower priority for high-volume API key requests since they're non-interactive
             priority = 2;
           } else if (await checkIsParsed(Number(matchId))) {
             // Deprioritize reparsing already parsed matches
-            priority = 3;
+            priority = 10;
           } else if (req.headers.origin === config.UI_HOST) {
             // Give UI requests priority
             priority = 0;
