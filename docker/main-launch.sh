@@ -9,5 +9,5 @@ npm run build
 
 pm2 start ecosystem.config.js --only web
 
-# We shall now display logs indefinitely
-pm2 logs
+# Sleep since processes are run by pm2
+sleep infinity
