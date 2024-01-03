@@ -69,29 +69,37 @@ export async function saveParseData(
   // bunzip: 6716ms (bunzip2 7503212404_1277518156.dem.bz2)
   // parse: 9407ms (curl -X POST --data-binary "@7503212404_1277518156.dem" odota-parser:5600 > output.log)
   // process: 3278ms (node processors/createParsedDataBlob.mjs < output.log)
-  const { stdout } = await execPromise(
-    `curl --max-time 90 --fail -L ${url} | ${
-      url && url.slice(-3) === 'bz2' ? 'bunzip2' : 'cat'
-    } | curl -X POST -T - ${PARSER_HOST} | node processors/createParsedDataBlob.mjs ${matchId}`,
-    //@ts-ignore
-    { shell: true, maxBuffer: 10 * 1024 * 1024 },
-  );
+  try {
+    const { stdout } = await execPromise(
+      `curl --max-time 90 --fail -L ${url} | ${
+        url && url.slice(-3) === 'bz2' ? 'bunzip2' : 'cat'
+      } | curl -X POST -T - ${PARSER_HOST} | node processors/createParsedDataBlob.mjs ${matchId}`,
+      //@ts-ignore
+      { shell: true, maxBuffer: 10 * 1024 * 1024 },
+    );
 
-  const result: ParserMatch = {
-    ...JSON.parse(stdout),
-    match_id: matchId,
-    leagueid,
-    // start_time and duration used for calculating dust adjustments and APM
-    start_time,
-    duration,
-  };
-  await insertMatch(result, {
-    type: 'parsed',
-    origin,
-    pgroup,
-    endedAt: start_time + duration,
-  });
-  return null;
+    const result: ParserMatch = {
+      ...JSON.parse(stdout),
+      match_id: matchId,
+      leagueid,
+      // start_time and duration used for calculating dust adjustments and APM
+      start_time,
+      duration,
+    };
+    await insertMatch(result, {
+      type: 'parsed',
+      origin,
+      pgroup,
+      endedAt: start_time + duration,
+    });
+    return null;
+  } catch(e: any) {
+    if (e?.message?.includes('bunzip2: Data integrity error when decompressing')) {
+      return 'bunzip2: Data integrity error when decompressing';
+    } else {
+      throw e;
+    }
+  }
 }
 
 export async function getOrFetchParseData(
