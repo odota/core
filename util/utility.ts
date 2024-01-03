@@ -359,7 +359,7 @@ export function isSignificant(match: Match | ApiMatch) {
       match.radiant_win !== undefined &&
       match.duration > 360 &&
       (match.players || []).every(
-        (player) => (player.gold_per_min || 0) < 2500,
+        (player) => (player.gold_per_min || 0) < 2500 && Boolean(player.hero_id)
       ),
   );
 }

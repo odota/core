@@ -22,10 +22,10 @@ async function cleanup() {
     )
     .del();
   await db.raw(
-    "DELETE from public_matches where start_time < extract(epoch from now() - interval '6 month')::int",
+    "DELETE from public_matches where start_time < extract(epoch from now() - interval '12 month')::int",
   );
   await db.raw(
-    'delete from hero_search where match_id < (select max(match_id) - 150000000 from hero_search)',
+    'DELETE from hero_search where match_id < (select max(match_id) - 200000000 from hero_search)',
   );
   return;
 }
