@@ -9,4 +9,20 @@ const scylla = new scyllaDriver.Client({
   localDataCenter: 'datacenter1',
   keyspace: url.parse(spl[0]).path?.substring(1),
 });
+
+const scyllaColumnInfo: Record<string, Record<string, boolean>> = {};
+export async function getScyllaColumns(table: string) {
+  if (!scyllaColumnInfo[table]) {
+    const result = await scylla.execute(
+      'SELECT column_name FROM system_schema.columns WHERE keyspace_name = ? AND table_name = ?',
+      [config.NODE_ENV === 'test' ? 'yasp_test' : 'yasp', table],
+    );
+    scyllaColumnInfo[table] = {};
+    result.rows.forEach((r) => {
+      scyllaColumnInfo[table][r.column_name] = true;
+    });
+  }
+  return scyllaColumnInfo[table];
+}
+
 export default scylla;
