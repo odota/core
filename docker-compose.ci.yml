@@ -13,7 +13,7 @@ services:
     image: scylladb/scylla:5.4
     container_name: odota-scylla
   redis:
-    image: redis:6
+    image: redis:7
     container_name: odota-redis
   elasticsearch:
     image: elasticsearch:6.8.23
