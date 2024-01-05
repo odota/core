@@ -1540,11 +1540,6 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           const matchId = req.params.match_id;
           // Count this request
           redisCount(redis, 'request');
-          if (req.query.api_key) {
-            redisCount(redis, 'request_api_key');
-            redis.zincrby('request_usage_count', 1, req.query.api_key);
-            redis.expireat('request_usage_count', getEndOfMonth());
-          }
           let priority = 1;
           if (
             req.user?.account_id &&
@@ -1555,12 +1550,16 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           } else if (req.query.api_key) {
             // Lower priority for high-volume API key requests since they're non-interactive
             priority = 2;
+            redisCount(redis, 'request_api_key');
+            redis.zincrby('request_usage_count', 1, req.query.api_key);
+            redis.expireat('request_usage_count', getEndOfMonth());
           } else if (await checkIsParsed(Number(matchId))) {
             // Deprioritize reparsing already parsed matches
             priority = 10;
           } else if (req.headers.origin === config.UI_HOST) {
             // Give UI requests priority
             priority = 0;
+            redisCount(redis, 'request_ui');
           }
           const parseJob = await addReliableJob(
             {

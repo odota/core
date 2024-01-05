@@ -435,6 +435,7 @@ type MetricName =
   | 'steam_api_backfill'
   | 'steam_gc_backfill'
   | 'request_api_key'
+  | 'request_ui'
   | 'request'
   | 'reparse'
   | 'regcdata'

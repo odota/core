@@ -49,6 +49,7 @@ export async function buildStatus() {
     matches_prev_hour: async () => countLastHour('added_match'),
     auto_parse_last_day: async () => countDay('auto_parse'),
     requests_last_day: async () => countDay('request'),
+    requests_ui_day: async () => countDay('request_ui'),
     requests_api_key_last_day: async () => countDay('request_api_key'),
     retriever_matches_last_day: async () => countDay('retriever'),
     retriever_players_last_day: async () => countDay('retriever_player'),
