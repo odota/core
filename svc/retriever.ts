@@ -12,7 +12,7 @@ import config from '../config';
 import axios from 'axios';
 
 const app = express();
-const steamObj: { [key: string]: any } = {};
+const steamObj: Record<string, any> = {};
 let users = config.STEAM_USER.split(',');
 let passes = config.STEAM_PASS.split(',');
 if (config.STEAM_ACCOUNT_DATA) {
@@ -39,6 +39,7 @@ let matchRequests = 0;
 let matchSuccesses = 0;
 let profileRequests = 0;
 let profileSuccesses = 0;
+const matchSuccessAccount: Record<string, number> = {};
 
 app.use(compression());
 app.get('/healthz', (req, res, cb) => {
@@ -193,7 +194,7 @@ function selfDestruct() {
 function getUptime() {
   return process.uptime();
 }
-function getServerUptime() {
+function getOSUptime() {
   return os.uptime();
 }
 function genStats() {
@@ -203,10 +204,11 @@ function genStats() {
     profileRequests,
     profileSuccesses,
     uptime: getUptime(),
-    serverUptime: getServerUptime(),
+    osUptime: getOSUptime(),
     hostname: os.hostname(),
     numReadyAccounts: Object.keys(steamObj).length,
     totalAccounts: users.length,
+    matchSuccessAccount,
   };
   return data;
 }
@@ -257,6 +259,10 @@ function getGcMatchData(idx: string, matchId: string, cb: ErrorCb) {
         return cb(null, { result: { status: matchData.result } });
       }
       matchSuccesses += 1;
+      if (!matchSuccessAccount[idx]) {
+        matchSuccessAccount[idx] = 0;
+      }
+      matchSuccessAccount[idx] += 1;
       const end = Date.now();
       // Reset delay on success
       extraMatchRequestInterval = 0;
