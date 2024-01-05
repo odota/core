@@ -25,17 +25,15 @@ if (config.STEAM_ACCOUNT_DATA) {
   users = accountData.map((a) => a.split('\t')[0]);
   passes = accountData.map((a) => a.split('\t')[1]);
 }
-const minUpTimeSeconds = 300;
+const minUpTimeSeconds = 180;
 const timeoutMs = 5000;
-// maybe 200 per account?
+// Approx limits: 100 per account per day, 500 per IP per day
 const accountsToUse = Math.min(5, users.length);
-// maybe can do 1000 per IP now?
-const matchRequestLimit = 600;
 const port = config.PORT || config.RETRIEVER_PORT;
-const matchRequestDelay = 500;
-const matchRequestDelayStep = 1;
+const baseMatchRequestInterval = 500;
+let extraMatchRequestInterval = 0;
+const matchRequestIntervalStep = 0;
 const noneReady = () => Object.keys(steamObj).length === 0;
-let matchRequestDelayIncr = 0;
 let lastRequestTime: number | null = null;
 let matchRequests = 0;
 let matchSuccesses = 0;
@@ -65,12 +63,12 @@ app.use((req, res, cb) => {
     profileSuccesses,
     profileRequests,
     getUptime(),
-    matchRequestDelay + matchRequestDelayIncr,
+    baseMatchRequestInterval + extraMatchRequestInterval,
     req.query,
   );
   const shouldRestart =
     // (matchSuccesses / matchRequests < 0.1 && matchRequests > 100 && getUptime() > minUpTimeSeconds) ||
-    (matchRequests > matchRequestLimit && getUptime() > minUpTimeSeconds) ||
+    (matchRequests > (Object.keys(steamObj).length * 100) && getUptime() > minUpTimeSeconds) ||
     (noneReady() && getUptime() > minUpTimeSeconds);
   if (shouldRestart && config.NODE_ENV !== 'development') {
     return selfDestruct();
@@ -86,13 +84,10 @@ app.get('/', (req, res, cb) => {
   if (req.query.match_id) {
     // Don't allow requests coming in too fast
     const curRequestTime = Number(new Date());
-    if (matchRequests > matchRequestLimit) {
-      return res.status(403).json({ error: 'match request limit exceeded' });
-    }
     if (
       lastRequestTime &&
       curRequestTime - lastRequestTime <
-        matchRequestDelay + matchRequestDelayIncr
+        baseMatchRequestInterval + extraMatchRequestInterval
     ) {
       return res.status(429).json({
         error: 'too many requests',
@@ -251,7 +246,7 @@ function getGcMatchData(idx: string, matchId: string, cb: ErrorCb) {
   matchRequests += 1;
   const start = Date.now();
   const timeout = setTimeout(() => {
-    matchRequestDelayIncr += matchRequestDelayStep;
+    extraMatchRequestInterval += matchRequestIntervalStep;
   }, timeoutMs);
   return Dota2.requestMatchDetails(
     Number(matchId),
@@ -264,7 +259,7 @@ function getGcMatchData(idx: string, matchId: string, cb: ErrorCb) {
       matchSuccesses += 1;
       const end = Date.now();
       // Reset delay on success
-      matchRequestDelayIncr = 0;
+      extraMatchRequestInterval = 0;
       console.log('received match %s in %sms', matchId, end - start);
       clearTimeout(timeout);
       return cb(err, matchData);
