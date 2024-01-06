@@ -433,6 +433,7 @@ type MetricName =
   | 'match_cache_hit'
   | 'player_cache_hit'
   | 'steam_api_backfill'
+  | 'steam_api_notfound'
   | 'steam_gc_backfill'
   | 'request_api_key'
   | 'request_ui'

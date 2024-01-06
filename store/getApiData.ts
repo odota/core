@@ -70,7 +70,11 @@ export async function tryFetchApiData(
   try {
     await saveApiData(matchId);
     return readApiData(matchId);
-  } catch (e) {
+  } catch (e: any) {
+    if (e?.result?.error === 'Match ID not found') {
+      // Steam API reported this ID doesn't exist
+      redisCount(redis, 'steam_api_notfound');
+    }
     console.log(e);
     return;
   }

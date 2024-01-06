@@ -221,22 +221,14 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
         },
         route: () => '/matches/:match_id',
         func: async (req, res, cb) => {
-          try {
-            const match = await buildMatch(Number(req.params.match_id), {
-              meta: req.query.meta,
-            });
-            if (!match) {
-              // 404 for match not found
-              return cb();
-            }
-            return res.json(match);
-          } catch (err: any) {
-            if (err?.result?.error === 'Match ID not found') {
-              // Steam API reported this ID doesn't exist, return 404 instead of 500
-              return cb();
-            }
-            return cb(err);
+          const match = await buildMatch(Number(req.params.match_id), {
+            meta: req.query.meta,
+          });
+          if (!match) {
+            // 404 for match not found
+            return cb();
           }
+          return res.json(match);
         },
       },
     },
