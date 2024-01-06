@@ -18,6 +18,7 @@
     "resetpicks": "redis-cli keys 'picks_*' | xargs redis-cli del",
     "resetrecords": "redis-cli keys 'records*' | xargs redis-cli del",
     "dockerbuild": "sudo docker build -t odota/core .",
+    "dockerbuild:retriever": "sudo docker build -t odota/retriever -f Dockerfile.retriever .",
     "psql": "docker exec -it odota-postgres psql -U postgres -d yasp",
     "prettier": "prettier --write ."
   },

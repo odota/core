@@ -1,0 +1,21 @@
+FROM node:20-alpine
+
+RUN apk add --no-cache git curl
+
+ENV NPM_CONFIG_LOGLEVEL warn
+
+COPY . /usr/src
+
+# WORKDIR /usr/src
+# RUN npm run build
+
+COPY svc/retriever.ts /usr/src/svc/retriever.ts
+COPY config.ts /usr/src/config.ts
+WORKDIR /usr/src
+RUN npm install dotenv@16.3.1 axios@1.6.3 compression@1.7.4 express@4.18.2 tsx@4.6.2 dota2@github:odota/node-dota2 steam@github:odota/node-steam-npm steam-resources@github:odota/node-steam-resources
+
+ENV PATH /usr/src/node_modules/.bin:$PATH
+
+ENV ROLE retriever
+
+CMD ["tsx",  "svc/retriever.ts"]

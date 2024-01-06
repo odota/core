@@ -1,18 +1,10 @@
 #!/bin/bash
 
-VMNAME=$(hostname)
-ZONE=$(curl -H Metadata-Flavor:Google http://metadata/computeMetadata/v1/instance/zone | cut -d/ -f4)
+RETRIEVER_SECRET=REPLACE_ME
+STEAM_ACCOUNT_DATA=REPLACE_ME
 
-sudo iptables -w -A INPUT -p tcp --dport 80 -j ACCEPT
+sudo docker run -d --name=retriever --net=host --log-opt max-size=1g -e NODE_ENV=production -e RETRIEVER_PORT=80 -e ROLE=retriever -e RETRIEVER_SECRET=$RETRIEVER_SECRET -e "STEAM_ACCOUNT_DATA=$STEAM_ACCOUNT_DATA" odota/core:latest sh -c "npm start"
 
+# If already initialized
 sudo docker start retriever
-
-# Setup
-while true
-do
-sudo docker run -d --name=retriever --net=host --restart=always --log-opt max-size=1g -e RETRIEVER_PORT=80 -e PROVIDER=gce -e ROLE=retriever odota/core:latest sh -c "npm start" && break
-sleep 5
-done
-
-sudo docker logs -f retriever
-sudo shutdown -h now
+sudo docker logs -f retriever && sleep 5 && sudo shutdown -h now
