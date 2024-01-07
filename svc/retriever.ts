@@ -120,11 +120,6 @@ app.get('/', (req, res, cb) => {
     return res.json(genStats());
   }
 });
-app.use((err: Error, req: express.Request, res: express.Response) => {
-  return res.status(500).json({
-    error: err,
-  });
-});
 
 async function start() {
   Steam.servers = await getSteamServers();
