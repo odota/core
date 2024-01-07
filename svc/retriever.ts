@@ -69,7 +69,7 @@ app.use((req, res, cb) => {
   );
   const shouldRestart =
     // (matchSuccesses / matchRequests < 0.1 && matchRequests > 100 && getUptime() > minUpTimeSeconds) ||
-    (matchRequests > (Object.keys(steamObj).length * 100) && getUptime() > minUpTimeSeconds) ||
+    (matchRequests > (Object.keys(steamObj).length * 110) && getUptime() > minUpTimeSeconds) ||
     (noneReady() && getUptime() > minUpTimeSeconds);
   if (shouldRestart && config.NODE_ENV !== 'development') {
     return selfDestruct();
