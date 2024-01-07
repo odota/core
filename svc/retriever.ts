@@ -152,6 +152,9 @@ async function init() {
           client.Dota2.on('ready', () => {
             console.log('%s ready', logOnDetails.account_name);
             steamObj[client.steamID] = client;
+            if (!matchSuccessAccount[client.steamID]) {
+              matchSuccessAccount[client.steamID] = 0;
+            }
             resolve();
           });
           client.on('connected', () => {
@@ -259,9 +262,6 @@ function getGcMatchData(idx: string, matchId: string, cb: ErrorCb) {
         return cb(null, { result: { status: matchData.result } });
       }
       matchSuccesses += 1;
-      if (!matchSuccessAccount[idx]) {
-        matchSuccessAccount[idx] = 0;
-      }
       matchSuccessAccount[idx] += 1;
       const end = Date.now();
       // Reset delay on success
