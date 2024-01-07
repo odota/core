@@ -69,32 +69,27 @@ export async function saveParseData(
   // bunzip: 6716ms (bunzip2 7503212404_1277518156.dem.bz2)
   // parse: 9407ms (curl -X POST --data-binary "@7503212404_1277518156.dem" odota-parser:5600 > output.log)
   // process: 3278ms (node processors/createParsedDataBlob.mjs < output.log)
-  try {
-    const parseUrl = `${PARSER_HOST}/blob?replay_url=${url}`;
-    console.log(parseUrl);
-    const resp = await axios.get<ParserMatch>(parseUrl);
-    const result: ParserMatch = {
-      ...resp.data,
-      match_id: matchId,
-      leagueid,
-      // start_time and duration used for calculating dust adjustments and APM
-      start_time,
-      duration,
-    };
-    await insertMatch(result, {
-      type: 'parsed',
-      origin,
-      pgroup,
-      endedAt: start_time + duration,
-    });
-    return null;
-  } catch(e: any) {
-    if (e?.message?.includes('bunzip2: Data integrity error when decompressing')) {
-      return 'bunzip2: Data integrity error when decompressing';
-    } else {
-      throw e;
-    }
+  const parseUrl = `${PARSER_HOST}/blob?replay_url=${url}`;
+  console.log(parseUrl);
+  const resp = await axios.get<ParserMatch>(parseUrl);
+  if (!resp.data) {
+    return 'Parse failed';
   }
+  const result: ParserMatch = {
+    ...resp.data,
+    match_id: matchId,
+    leagueid,
+    // start_time and duration used for calculating dust adjustments and APM
+    start_time,
+    duration,
+  };
+  await insertMatch(result, {
+    type: 'parsed',
+    origin,
+    pgroup,
+    endedAt: start_time + duration,
+  });
+  return null;
 }
 
 export async function getOrFetchParseData(
