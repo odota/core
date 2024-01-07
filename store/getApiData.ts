@@ -43,8 +43,12 @@ export async function saveApiData(
       }).url,
       proxy: true,
     });
-  } catch (e) {
+  } catch (e: any) {
     console.log(e);
+    if (e?.result?.error === 'Match ID not found') {
+      // Steam API reported this ID doesn't exist
+      redisCount(redis, 'steam_api_notfound');
+    }
     // Expected exception here if invalid match ID
     return { error: 'Failed to get data from Steam API', pgroup: undefined };
   }
@@ -71,10 +75,6 @@ export async function tryFetchApiData(
     await saveApiData(matchId);
     return readApiData(matchId);
   } catch (e: any) {
-    if (e?.result?.error === 'Match ID not found') {
-      // Steam API reported this ID doesn't exist
-      redisCount(redis, 'steam_api_notfound');
-    }
     console.log(e);
     return;
   }
