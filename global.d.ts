@@ -1,8 +1,6 @@
 declare module 'simple-vdf';
 declare module 'dotaconstants';
 declare module 'http-proxy';
-declare module 'steam';
-declare module 'dota2';
 
 declare namespace Express {
   type ExpressRequest = import('express').Request;
