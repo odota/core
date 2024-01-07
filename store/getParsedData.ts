@@ -70,16 +70,11 @@ export async function saveParseData(
   // parse: 9407ms (curl -X POST --data-binary "@7503212404_1277518156.dem" odota-parser:5600 > output.log)
   // process: 3278ms (node processors/createParsedDataBlob.mjs < output.log)
   try {
-    const { stdout } = await execPromise(
-      `curl --max-time 90 --fail -L ${url} | ${
-        url && url.slice(-3) === 'bz2' ? 'bunzip2' : 'cat'
-      } | curl -X POST -T - ${PARSER_HOST} | node processors/createParsedDataBlob.mjs ${matchId}`,
-      //@ts-ignore
-      { shell: true, maxBuffer: 10 * 1024 * 1024 },
-    );
-
+    const parseUrl = `${PARSER_HOST}/blob?replay_url=${url}`;
+    console.log(parseUrl);
+    const resp = await axios.get<ParserMatch>(parseUrl);
     const result: ParserMatch = {
-      ...JSON.parse(stdout),
+      ...resp.data,
       match_id: matchId,
       leagueid,
       // start_time and duration used for calculating dust adjustments and APM

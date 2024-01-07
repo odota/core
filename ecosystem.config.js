@@ -19,7 +19,7 @@ let arr = [
   },
   {
     name: 'parser',
-    group: 'parser',
+    group: 'backend',
   },
   {
     name: 'fullhistory',

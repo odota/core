@@ -40,12 +40,10 @@ export async function readGcData(
  */
 async function saveGcData(matchId: number, pgroup: PGroup): Promise<void> {
   const url = getRandomRetrieverUrl({ matchId });
-  let body: typeof retrieverMatch | undefined = undefined;
-  const { data } = await axios.get(url, { timeout: 5000 });
-  body = data;
-  if (!body || !body.match || !body.match.replay_salt || !body.match.players) {
+  const { data } = await axios.get<typeof retrieverMatch>(url, { timeout: 5000 });
+  if (!data || !data.match || !data.match.replay_salt || !data.match.players) {
     // non-retryable error
-    throw new Error('invalid body');
+    throw new Error('invalid data');
   }
   // Count retriever calls
   redisCount(redis, 'retriever');
@@ -54,7 +52,7 @@ async function saveGcData(matchId: number, pgroup: PGroup): Promise<void> {
     'retrieverCounts',
     moment().startOf('hour').add(1, 'hour').format('X'),
   );
-  const players = body.match.players.map(
+  const players = data.match.players.map(
     (p: any, i: number): GcPlayer => ({
       // NOTE: account ids are not anonymous in this call so we don't include it in the data to insert
       // We could start storing this data but then the API also needs to respect the user's match history setting
@@ -62,7 +60,7 @@ async function saveGcData(matchId: number, pgroup: PGroup): Promise<void> {
       player_slot: p.player_slot,
       party_id: p.party_id?.low,
       permanent_buffs: p.permanent_buffs,
-      party_size: body!.match.players.filter(
+      party_size: data.match.players.filter(
         (matchPlayer: any) => matchPlayer.party_id?.low === p.party_id?.low,
       ).length,
       // If we want to start adding basic data for anonymous players in player_caches we can put k/d/a/hd/td etc here too
@@ -73,11 +71,11 @@ async function saveGcData(matchId: number, pgroup: PGroup): Promise<void> {
   const matchToInsert: GcMatch = {
     match_id: matchId,
     players,
-    series_id: body.match.series_id,
-    series_type: body.match.series_type,
+    series_id: data.match.series_id,
+    series_type: data.match.series_type,
     // With match_id, cluster, and replay salt we can construct a replay URL
-    cluster: body.match.cluster,
-    replay_salt: body.match.replay_salt,
+    cluster: data.match.cluster,
+    replay_salt: data.match.replay_salt,
   };
   // Update series id and type for pro match
   await db.raw(
@@ -94,7 +92,7 @@ async function saveGcData(matchId: number, pgroup: PGroup): Promise<void> {
   await insertMatch(matchToInsert, {
     type: 'gcdata',
     pgroup,
-    endedAt: body.match.starttime + body.match.duration,
+    endedAt: data.match.starttime + data.match.duration,
   });
   return;
 }
