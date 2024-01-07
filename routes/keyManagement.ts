@@ -1,5 +1,5 @@
 import express from 'express';
-import uuid from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 import bodyParser from 'body-parser';
 import moment from 'moment';
 import async from 'async';
@@ -239,7 +239,7 @@ keys
         return res.status(402).json(err);
       }
     }
-    const apiKey = uuid.v4();
+    const apiKey = uuidv4();
     const sub = await stripe.subscriptions.create({
       customer: customer_id,
       items: [{ plan: stripeAPIPlan }],
