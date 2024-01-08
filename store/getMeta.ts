@@ -15,7 +15,7 @@ const root = new ProtoBuf.Root();
 const builder = root.loadSync('./proto/dota_match_metadata.proto', {
   keepCase: true,
 });
-const Message = builder.lookupType('CDOTAMatchMetadataFile');
+const CDOTAMatchMetadataFile = builder.lookupType('CDOTAMatchMetadataFile');
 
 export async function getMeta(matchId: number) {
   const gcdata = await readGcData(matchId);
@@ -54,7 +54,7 @@ export async function getMetaFromUrl(url: string) {
     );
     console.timeEnd('[METAPARSE]: download/bunzip');
     console.time('[METAPARSE]: parse');
-    const message: any = Message.decode(stdout);
+    const message: any = CDOTAMatchMetadataFile.decode(stdout);
     // message.metadata.teams.forEach((team) => {
     //   team.players.forEach((player) => {
     //     player.equipped_econ_items?.forEach((item) => {

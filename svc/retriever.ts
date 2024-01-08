@@ -45,6 +45,10 @@ const builder = root.loadSync(
 );
 const EGCBaseClientMsg = builder.lookupEnum('EGCBaseClientMsg');
 const EDOTAGCMsg = builder.lookupEnum('EDOTAGCMsg');
+const CMsgClientToGCGetProfileCard = builder.lookupType('CMsgClientToGCGetProfileCard');
+const CMsgDOTAProfileCard = builder.lookupType('CMsgDOTAProfileCard');
+const CMsgGCMatchDetailsRequest = builder.lookupType('CMsgGCMatchDetailsRequest');
+const CMsgGCMatchDetailsResponse = builder.lookupType('CMsgGCMatchDetailsResponse');
 
 app.use(compression());
 app.get('/healthz', (req, res, cb) => {
@@ -229,16 +233,14 @@ function genStats() {
 function getPlayerProfile(idx: string, accountId: string, cb: ErrorCb) {
   const client = steamObj[idx];
   profileRequests += 1;
-  const Message = builder.lookupType('CMsgClientToGCGetProfileCard');
   client.sendToGC(
     DOTA_APPID,
     EDOTAGCMsg.values.k_EMsgClientToGCGetProfileCard,
     {},
-    Buffer.from(Message.encode({ account_id: Number(accountId) }).finish()),
+    Buffer.from(CMsgClientToGCGetProfileCard.encode({ account_id: Number(accountId) }).finish()),
     (appid, msgType, payload) => {
       // console.log(appid, msgType, payload);
-      const Message = builder.lookupType('CMsgDOTAProfileCard');
-      const profileCard = Message.decode(payload);
+      const profileCard = CMsgDOTAProfileCard.decode(payload);
       return cb(null, profileCard);
     },
   );
@@ -250,15 +252,13 @@ function getGcMatchData(idx: string, matchId: string, cb: ErrorCb) {
   const timeout = setTimeout(() => {
     extraMatchRequestInterval += matchRequestIntervalStep;
   }, timeoutMs);
-  const Message = builder.lookupType('CMsgGCMatchDetailsRequest');
   client.sendToGC(
     DOTA_APPID,
     EDOTAGCMsg.values.k_EMsgGCMatchDetailsRequest,
     {},
-    Buffer.from(Message.encode({ match_id: Number(matchId) }).finish()),
+    Buffer.from(CMsgGCMatchDetailsRequest.encode({ match_id: Number(matchId) }).finish()),
     (appid, msgType, payload) => {
-      const Message = builder.lookupType('CMsgGCMatchDetailsResponse');
-      const matchData: any = Message.decode(payload);
+      const matchData: any = CMsgGCMatchDetailsResponse.decode(payload);
       if (matchData.result === 15) {
         // Valve is blocking GC access to this match, probably a community prediction match
         // Return a 200 success code with specific format, so we treat it as an unretryable error
