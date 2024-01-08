@@ -77,5 +77,5 @@ CREATE TABLE IF NOT EXISTS match_blobs (
   ranks text,
 );
 
-ALTER TABLE player_caches WITH compaction = { 'class' :  'LeveledCompactionStrategy'  };
-ALTER TABLE match_blobs WITH compaction = { 'class' :  'LeveledCompactionStrategy'  };
+ALTER TABLE player_caches WITH compaction = { 'class' :  'LeveledCompactionStrategy', 'sstable_size_in_mb' : 512 };
+ALTER TABLE match_blobs WITH compaction = { 'class' :  'LeveledCompactionStrategy' };

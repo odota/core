@@ -29,8 +29,6 @@ async function processMmr(job: MmrJob) {
   );
 
   if (
-    data.solo_competitive_rank ||
-    data.competitive_rank ||
     data.rank_tier ||
     data.leaderboard_rank
   ) {
