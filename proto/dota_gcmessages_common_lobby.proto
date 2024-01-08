@@ -315,7 +315,6 @@ message CSODOTALobby {
 	optional uint32 league_node_id = 110;
 	optional uint32 match_duration = 111;
 	optional uint32 league_phase = 113;
-	optional bool record_detailed_stats = 114;
 	optional bool experimental_gameplay_enabled = 116;
 	repeated .CLobbyGuildChallenge guild_challenges = 117;
 	repeated .CLobbyGuildDetails guild_details = 118;

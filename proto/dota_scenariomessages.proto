@@ -9,6 +9,7 @@ message CScenarioGame_RoshanSpawner {
 	optional int32 kill_count = 1;
 	optional int32 state = 2;
 	optional float cooldown = 3;
+	optional int32 killer_team = 4;
 }
 
 message CScenarioEnt_Courier {
@@ -56,6 +57,7 @@ message CMsgDotaScenario {
 	message TeamNeutralItem {
 		optional string name = 1;
 		optional bool consumed = 2;
+		optional int32 tier = 3;
 	}
 
 	message Team {
