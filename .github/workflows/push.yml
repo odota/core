@@ -38,4 +38,4 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: odota/retriever:latest
-          file: {context}/Dockerfile.retriever
+          file: Dockerfile.retriever
