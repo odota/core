@@ -4,12 +4,9 @@ import cassandra from './cassandra';
 import db from './db';
 import { insertMatch } from './insert';
 import redis from './redis';
-import { promisify } from 'util';
-import { exec } from 'child_process';
 import axios from 'axios';
 
 const { PARSER_HOST } = config;
-const execPromise = promisify(exec);
 
 /**
  * Return parse data by reading it without fetching.
@@ -98,7 +95,7 @@ export async function getOrFetchParseData(
   extraData: ExtraData,
 ): Promise<{
   data: ParserMatch | undefined;
-  skipParse: boolean;
+  skipped: boolean;
   error: string | null;
 }> {
   const saved = await readParseData(matchId);
@@ -106,18 +103,18 @@ export async function getOrFetchParseData(
     redisCount(redis, 'reparse');
     if (config.DISABLE_REPARSE) {
       // If high load, we can disable parsing already parsed matches
-      return { data: saved, skipParse: true, error: null };
+      return { data: saved, skipped: true, error: null };
     }
   }
   const error = await saveParseData(matchId, url, extraData);
   if (error) {
-    return { data: undefined, skipParse: false, error };
+    return { data: undefined, skipped: false, error };
   }
   const result = await readParseData(matchId);
   if (!result) {
     throw new Error('[PARSEDATA]: Could not get data for match ' + matchId);
   }
-  return { data: result, skipParse: false, error };
+  return { data: result, skipped: false, error };
 }
 
 export async function checkIsParsed(matchId: number) {

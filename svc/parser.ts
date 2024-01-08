@@ -13,7 +13,7 @@ import c from 'ansi-colors';
 import { buildReplayUrl, redisCount } from '../util/utility';
 import redis from '../store/redis';
 import { getOrFetchApiData } from '../store/getApiData';
-import { checkIsParsed, saveParseData } from '../store/getParsedData';
+import { checkIsParsed, getOrFetchParseData } from '../store/getParsedData';
 
 const { PORT, PARSER_PORT, PARSER_PARALLELISM } = config;
 const app = express();
@@ -31,11 +31,11 @@ async function parseProcessor(job: ParseJob) {
     redisCount(redis, 'parser_job');
     const matchId = job.match_id;
 
-    // Check if match is already parsed
-    // Doing the check early means we don't update API or gcdata either if already parsed
+    // Check if match is already parsed according to PG
+    // Doing the check early means we don't verify API or gcdata
     if (await checkIsParsed(matchId)) {
-      redisCount(redis, 'reparse');
-      if (config.DISABLE_REPARSE) {
+      redisCount(redis, 'reparse_early');
+      if (config.DISABLE_REPARSE_EARLY) {
         // If high load, we can disable parsing already parsed matches
         log('skip');
         return true;
@@ -79,7 +79,7 @@ async function parseProcessor(job: ParseJob) {
     );
 
     const parseStart = Date.now();
-    let parseError = await saveParseData(matchId, url, {
+    const { error: parseError, skipped } = await getOrFetchParseData(matchId, url, {
       start_time,
       duration,
       leagueid,
@@ -91,6 +91,10 @@ async function parseProcessor(job: ParseJob) {
       console.log('[PARSER] %s: %s', matchId, parseError);
       log('fail', parseError);
       return false;
+    }
+    if (skipped) {
+      log('skip');
+      return true;
     }
 
     // Log successful parse and timing

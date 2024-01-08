@@ -69,6 +69,7 @@ const defaults = {
   PLAYER_ARCHIVE_S3_ENDPOINT: '', // S3-compatible endpoint to archive player match blobs
   PLAYER_ARCHIVE_S3_BUCKET: 'opendota-players', // name of the S3 bucket to archive player match blobs
   DISABLE_REPARSE: '', // Disable reparsing matches that are already parsed
+  DISABLE_REPARSE_EARLY: '', // Disable reparsing matches by checking parsed_matches table first
   DISABLE_REGCDATA: '', // Disable refetching new GC data on every request (cache it)
   DISABLE_REAPI: '', // Disable refetching new API data on every request
   DISABLE_OLD_PARSE: '', // Disable parsing for old non-league matches unlikely to have replays

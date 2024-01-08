@@ -60,6 +60,7 @@ export async function buildStatus() {
     parsed_matches_last_day: async () => countDay('parser'),
     reapi_last_day: async () => countDay('reapi'),
     regcdata_last_day: async () => countDay('regcdata'),
+    reparse_early_last_day: async () => countDay('reparse_early'),
     reparse_last_day: async () => countDay('reparse'),
     oldparse_last_day: async () => countDay('oldparse'),
     meta_parsed_last_day: async () => countDay('meta_parse'),
