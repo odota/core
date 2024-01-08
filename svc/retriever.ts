@@ -29,6 +29,7 @@ let matchSuccesses = 0;
 let profileRequests = 0;
 let profileSuccesses = 0;
 const matchSuccessAccount: Record<string, number> = {};
+const DOTA_APPID = 570;
 
 const root = new ProtoBuf.Root();
 const builder = root.loadSync(
@@ -157,14 +158,14 @@ async function init() {
           client.on('loggedOn', () => {
             console.log('[STEAM] Logged on %s', client.steamID);
             // Launch Dota 2
-            client.gamesPlayed(570);
+            client.gamesPlayed(DOTA_APPID);
           });
           client.on('appLaunched', (appid) => {
             client.sendToGC(
               appid,
               EGCBaseClientMsg.values.k_EMsgGCClientHello,
               {},
-              Buffer.alloc(0),
+              Buffer.alloc(0)
             );
           });
           client.on('receivedFromGC', (appid, msgType, payload) => {
@@ -230,7 +231,7 @@ function getPlayerProfile(idx: string, accountId: string, cb: ErrorCb) {
   profileRequests += 1;
   const Message = builder.lookupType('CMsgClientToGCGetProfileCard');
   client.sendToGC(
-    570,
+    DOTA_APPID,
     EDOTAGCMsg.values.k_EMsgClientToGCGetProfileCard,
     {},
     Buffer.from(Message.encode({ account_id: Number(accountId) }).finish()),
@@ -251,7 +252,7 @@ function getGcMatchData(idx: string, matchId: string, cb: ErrorCb) {
   }, timeoutMs);
   const Message = builder.lookupType('CMsgGCMatchDetailsRequest');
   client.sendToGC(
-    570,
+    DOTA_APPID,
     EDOTAGCMsg.values.k_EMsgGCMatchDetailsRequest,
     {},
     Buffer.from(Message.encode({ match_id: Number(matchId) }).finish()),
