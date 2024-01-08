@@ -1,5 +1,5 @@
 import fs from 'fs';
-import Steam from 'steam';
+import SteamUser from 'steam-user';
 import { EOL } from 'os';
 const accountData = fs.readFileSync('./STEAM_ACCOUNT_DATA_BAD.txt', 'utf8');
 const accountArray = accountData.split(EOL);
@@ -14,19 +14,16 @@ const logOnDetails = {
   account_name: user,
   password: pass,
 };
-const client = new Steam.SteamClient();
-client.steamUser = new Steam.SteamUser(client);
-client.connect();
-client.on('connected', () => {
-  client.steamUser.logOn(logOnDetails);
+const client = new SteamUser;
+client.logOn();
+client.on('loggedOn', (logOnResp: any) => {
+  console.error(index, user, 'passed', logOnResp.eresult);
 });
-client.on('logOnResponse', (logOnResp: any) => {
-  if (logOnResp.eresult === Steam.EResult.AccountDisabled) {
-    console.error(index, user, 'failed', logOnResp.eresult);
-  } else if (logOnResp.eresult === Steam.EResult.InvalidPassword) {
-    console.error(index, user, 'failed', logOnResp.eresult);
-  } else {
-    console.error(index, user, 'passed', logOnResp.eresult);
-  }
-  client.disconnect();
+client.on('error', (err: any) => {
+  console.error(err);
+  if (err.eresult === SteamUser.EResult.AccountDisabled) {
+    console.error(index, user, 'failed', err.eresult);
+  } else if (err.eresult === SteamUser.EResult.InvalidPassword) {
+    console.error(index, user, 'failed', err.eresult);
+  } 
 });
