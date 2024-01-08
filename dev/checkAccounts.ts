@@ -14,7 +14,7 @@ const logOnDetails = {
   account_name: user,
   password: pass,
 };
-const client = new SteamUser;
+const client = new SteamUser();
 client.logOn();
 client.on('loggedOn', (logOnResp: any) => {
   console.error(index, user, 'passed', logOnResp.eresult);
@@ -25,5 +25,5 @@ client.on('error', (err: any) => {
     console.error(index, user, 'failed', err.eresult);
   } else if (err.eresult === SteamUser.EResult.InvalidPassword) {
     console.error(index, user, 'failed', err.eresult);
-  } 
+  }
 });

@@ -63,7 +63,9 @@ async function saveGcData(matchId: number, pgroup: PGroup): Promise<void> {
       party_id: p.party_id?.low ?? Number(p.party_id),
       permanent_buffs: p.permanent_buffs ?? [],
       party_size: data.match.players.filter(
-        (matchPlayer: any) => (matchPlayer.party_id?.low ?? Number(matchPlayer.party_id)) === (p.party_id?.low ?? Number(p.party_id)),
+        (matchPlayer: any) =>
+          (matchPlayer.party_id?.low ?? Number(matchPlayer.party_id)) ===
+          (p.party_id?.low ?? Number(p.party_id)),
       ).length,
       // If we want to start adding basic data for anonymous players in player_caches we can put k/d/a/hd/td etc here too
       // There are some discrepancies in field names, e.g. starttime instead of start_time and item_7 instead of backpack_0

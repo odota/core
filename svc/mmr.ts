@@ -28,10 +28,7 @@ async function processMmr(job: MmrJob) {
     [player.plus, player.account_id, player.plus],
   );
 
-  if (
-    data.rank_tier ||
-    data.leaderboard_rank
-  ) {
+  if (data.rank_tier || data.leaderboard_rank) {
     data.account_id = job.account_id || null;
     data.match_id = job.match_id || null;
     data.time = new Date();

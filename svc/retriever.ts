@@ -31,9 +31,17 @@ let profileSuccesses = 0;
 const matchSuccessAccount: Record<string, number> = {};
 
 const root = new ProtoBuf.Root();
-const builder = root.loadSync(['./proto/gcsystemmsgs.proto', './proto/enums_clientserver.proto', './proto/dota_gcmessages_msgid.proto', './proto/dota_gcmessages_client.proto'], {
-  keepCase: true,
-});
+const builder = root.loadSync(
+  [
+    './proto/gcsystemmsgs.proto',
+    './proto/enums_clientserver.proto',
+    './proto/dota_gcmessages_msgid.proto',
+    './proto/dota_gcmessages_client.proto',
+  ],
+  {
+    keepCase: true,
+  },
+);
 const EGCBaseClientMsg = builder.lookupEnum('EGCBaseClientMsg');
 const EDOTAGCMsg = builder.lookupEnum('EDOTAGCMsg');
 
@@ -128,7 +136,9 @@ start();
 
 async function init() {
   if (config.STEAM_ACCOUNT_DATA) {
-    const resp = await axios.get<string>(config.STEAM_ACCOUNT_DATA, { responseType: 'text' });
+    const resp = await axios.get<string>(config.STEAM_ACCOUNT_DATA, {
+      responseType: 'text',
+    });
     const accountData = resp.data.split(/\r\n|\r|\n/g);
     users = accountData.map((a) => a.split('\t')[0]);
     passes = accountData.map((a) => a.split('\t')[1]);
@@ -150,17 +160,28 @@ async function init() {
             client.gamesPlayed(570);
           });
           client.on('appLaunched', (appid) => {
-            client.sendToGC(appid, EGCBaseClientMsg.values.k_EMsgGCClientHello, {}, Buffer.alloc(0));
+            client.sendToGC(
+              appid,
+              EGCBaseClientMsg.values.k_EMsgGCClientHello,
+              {},
+              Buffer.alloc(0),
+            );
           });
           client.on('receivedFromGC', (appid, msgType, payload) => {
             // We'll get Hello response here
-            console.log(`Received message ${msgType} from GC ${appid} with ${payload.length} bytes`);
+            console.log(
+              `Received message ${msgType} from GC ${appid} with ${payload.length} bytes`,
+            );
             if (msgType === EGCBaseClientMsg.values.k_EMsgGCClientWelcome) {
               if (!client.steamID) {
-                reject("client not connected");
+                reject('client not connected');
                 return;
               }
-              console.log('ready: %s (%s)', logOnDetails.accountName, client.steamID.toString());
+              console.log(
+                'ready: %s (%s)',
+                logOnDetails.accountName,
+                client.steamID.toString(),
+              );
               steamObj[client.steamID.toString()] = client;
               if (!matchSuccessAccount[client.steamID.toString()]) {
                 matchSuccessAccount[client.steamID.toString()] = 0;
@@ -208,12 +229,18 @@ function getPlayerProfile(idx: string, accountId: string, cb: ErrorCb) {
   const client = steamObj[idx];
   profileRequests += 1;
   const Message = builder.lookupType('CMsgClientToGCGetProfileCard');
-  client.sendToGC(570, EDOTAGCMsg.values.k_EMsgClientToGCGetProfileCard, {}, Buffer.from(Message.encode({ account_id: Number(accountId) }).finish()), (appid, msgType, payload) => {
-    // console.log(appid, msgType, payload);
-    const Message = builder.lookupType('CMsgDOTAProfileCard');
-    const profileCard = Message.decode(payload);
-    return cb(null, profileCard);
-  });
+  client.sendToGC(
+    570,
+    EDOTAGCMsg.values.k_EMsgClientToGCGetProfileCard,
+    {},
+    Buffer.from(Message.encode({ account_id: Number(accountId) }).finish()),
+    (appid, msgType, payload) => {
+      // console.log(appid, msgType, payload);
+      const Message = builder.lookupType('CMsgDOTAProfileCard');
+      const profileCard = Message.decode(payload);
+      return cb(null, profileCard);
+    },
+  );
 }
 function getGcMatchData(idx: string, matchId: string, cb: ErrorCb) {
   const client = steamObj[idx];
@@ -223,23 +250,29 @@ function getGcMatchData(idx: string, matchId: string, cb: ErrorCb) {
     extraMatchRequestInterval += matchRequestIntervalStep;
   }, timeoutMs);
   const Message = builder.lookupType('CMsgGCMatchDetailsRequest');
-  client.sendToGC(570, EDOTAGCMsg.values.k_EMsgGCMatchDetailsRequest, {}, Buffer.from(Message.encode({ match_id: Number(matchId) }).finish()), (appid, msgType, payload) => {
-    const Message = builder.lookupType('CMsgGCMatchDetailsResponse');
-    const matchData: any = Message.decode(payload);
-    if (matchData.result === 15) {
-      // Valve is blocking GC access to this match, probably a community prediction match
-      // Return a 200 success code with specific format, so we treat it as an unretryable error
-      return cb(null, { result: { status: matchData.result } });
-    }
-    matchSuccesses += 1;
-    matchSuccessAccount[idx] += 1;
-    const end = Date.now();
-    // Reset delay on success
-    extraMatchRequestInterval = 0;
-    console.log('received match %s in %sms', matchId, end - start);
-    clearTimeout(timeout);
-    return cb(null, matchData);
-  });
+  client.sendToGC(
+    570,
+    EDOTAGCMsg.values.k_EMsgGCMatchDetailsRequest,
+    {},
+    Buffer.from(Message.encode({ match_id: Number(matchId) }).finish()),
+    (appid, msgType, payload) => {
+      const Message = builder.lookupType('CMsgGCMatchDetailsResponse');
+      const matchData: any = Message.decode(payload);
+      if (matchData.result === 15) {
+        // Valve is blocking GC access to this match, probably a community prediction match
+        // Return a 200 success code with specific format, so we treat it as an unretryable error
+        return cb(null, { result: { status: matchData.result } });
+      }
+      matchSuccesses += 1;
+      matchSuccessAccount[idx] += 1;
+      const end = Date.now();
+      // Reset delay on success
+      extraMatchRequestInterval = 0;
+      console.log('received match %s in %sms', matchId, end - start);
+      clearTimeout(timeout);
+      return cb(null, matchData);
+    },
+  );
 }
 /**
  * Chooses a random login to use from the pool. Once selected, removes it from the list
