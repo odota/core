@@ -4,8 +4,7 @@ FROM node:20-alpine
 
 ENV NPM_CONFIG_LOGLEVEL warn
 
-COPY . /usr/src
-
+# COPY . /usr/src
 # WORKDIR /usr/src
 # RUN npm run build
 
