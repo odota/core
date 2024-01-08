@@ -31,7 +31,7 @@ export async function upsert(
   conflict: NumberDict,
 ) {
   const columns = await getPostgresColumns(table);
-  const row = {...insert};
+  const row = { ...insert };
   // Remove extra properties
   Object.keys(row).forEach((key) => {
     if (!columns[key]) {

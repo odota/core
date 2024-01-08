@@ -40,7 +40,9 @@ export async function readGcData(
  */
 async function saveGcData(matchId: number, pgroup: PGroup): Promise<void> {
   const url = getRandomRetrieverUrl({ matchId });
-  const { data } = await axios.get<typeof retrieverMatch>(url, { timeout: 5000 });
+  const { data } = await axios.get<typeof retrieverMatch>(url, {
+    timeout: 5000,
+  });
   if (!data || !data.match || !data.match.replay_salt || !data.match.players) {
     // non-retryable error
     throw new Error('invalid data');

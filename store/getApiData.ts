@@ -87,9 +87,7 @@ export async function tryFetchApiData(
  * @param matchId
  * @returns
  */
-export async function getOrFetchApiData(
-  matchId: number,
-): Promise<{
+export async function getOrFetchApiData(matchId: number): Promise<{
   data: ApiMatch | undefined;
   error: string | null;
   pgroup: PGroup | undefined;

@@ -79,13 +79,17 @@ async function parseProcessor(job: ParseJob) {
     );
 
     const parseStart = Date.now();
-    const { error: parseError, skipped } = await getOrFetchParseData(matchId, url, {
-      start_time,
-      duration,
-      leagueid,
-      pgroup,
-      origin: job.origin,
-    });
+    const { error: parseError, skipped } = await getOrFetchParseData(
+      matchId,
+      url,
+      {
+        start_time,
+        duration,
+        leagueid,
+        pgroup,
+        origin: job.origin,
+      },
+    );
     parseTime = Date.now() - parseStart;
     if (parseError) {
       console.log('[PARSER] %s: %s', matchId, parseError);
