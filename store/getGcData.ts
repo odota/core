@@ -39,7 +39,7 @@ export async function readGcData(
  * @returns
  */
 async function saveGcData(matchId: number, pgroup: PGroup): Promise<void> {
-  const url = getRandomRetrieverUrl({ matchId });
+  const url = getRandomRetrieverUrl(`/match/${matchId}`);
   const { data } = await axios.get<typeof retrieverMatch>(url, {
     timeout: 5000,
   });

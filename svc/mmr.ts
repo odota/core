@@ -13,7 +13,7 @@ import axios from 'axios';
 
 async function processMmr(job: MmrJob) {
   const accountId = job.account_id;
-  const url = getRandomRetrieverUrl({ accountId });
+  const url = getRandomRetrieverUrl(`/profile/${accountId}`);
   console.log(url);
   const { data } = await axios.get(url);
   redisCount(redis, 'retriever_player');

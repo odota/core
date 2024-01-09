@@ -10,7 +10,6 @@ import supertest from 'supertest';
 import stripe from '../store/stripe';
 import pg from 'pg';
 import { readFileSync } from 'fs';
-import util from 'util';
 import url from 'url';
 import { Client } from 'cassandra-driver';
 import swaggerParser from '@apidevtools/swagger-parser';
@@ -36,7 +35,6 @@ import c from 'ansi-colors';
 const { Pool } = pg;
 const {
   RETRIEVER_HOST,
-  STRIPE_SECRET,
   POSTGRES_URL,
   CASSANDRA_URL,
   SCYLLA_URL,
@@ -75,15 +73,18 @@ nock('http://api.steampowered.com')
   .query(true)
   .reply(200, leaguesApi);
 nock(`http://${RETRIEVER_HOST}`)
-  .get(/\?key=&account_id=.*/)
+  .get(/\/profile\/.*/)
   // fake mmr response up to 14 times for 7 non-anonymous players in test match inserted twice
   .times(14)
+  .query(true)
   .reply(200, retrieverPlayer)
   // fake error to test handling
-  .get('/?key=&match_id=1781962623')
+  .get('/match/1781962623')
+  .query(true)
   .reply(500, {})
   // fake GC match details
-  .get('/?key=&match_id=1781962623')
+  .get('/match/1781962623')
+  .query(true)
   // We faked the replay salt to 1 to match the testfile name
   .reply(200, retrieverMatch);
 before(async function setup() {

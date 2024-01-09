@@ -16,7 +16,6 @@ const steamObj: Record<string, SteamUser> = {};
 let users = config.STEAM_USER.split(',');
 let passes = config.STEAM_PASS.split(',');
 const minUpTimeSeconds = 180;
-const timeoutMs = 5000;
 const maxAccounts = 5;
 const port = config.PORT || config.RETRIEVER_PORT;
 const baseMatchRequestInterval = 500;
@@ -50,19 +49,24 @@ const CMsgDOTAProfileCard = builder.lookupType('CMsgDOTAProfileCard');
 const CMsgGCMatchDetailsRequest = builder.lookupType('CMsgGCMatchDetailsRequest');
 const CMsgGCMatchDetailsResponse = builder.lookupType('CMsgGCMatchDetailsResponse');
 
+setInterval(() => {
+  const shouldRestart =
+  // (matchSuccesses / matchRequests < 0.1 && matchRequests > 100 && getUptime() > minUpTimeSeconds) ||
+  (matchRequests > Object.keys(steamObj).length * 110 &&
+    getUptime() > minUpTimeSeconds) ||
+  (noneReady() && getUptime() > minUpTimeSeconds);
+  if (shouldRestart && config.NODE_ENV !== 'development') {
+    return selfDestruct();
+  }
+}, 10000);
+
+
 app.use(compression());
 app.get('/healthz', (req, res, cb) => {
   if (noneReady()) {
     return cb('not ready');
   }
   return res.end('ok');
-});
-app.use((req, res, cb) => {
-  if (config.RETRIEVER_SECRET && config.RETRIEVER_SECRET !== req.query.key) {
-    // reject request if it doesn't have key
-    return cb('invalid key');
-  }
-  return cb();
 });
 app.use((req, res, cb) => {
   console.log(
@@ -76,58 +80,86 @@ app.use((req, res, cb) => {
     baseMatchRequestInterval + extraMatchRequestInterval,
     req.query,
   );
-  const shouldRestart =
-    // (matchSuccesses / matchRequests < 0.1 && matchRequests > 100 && getUptime() > minUpTimeSeconds) ||
-    (matchRequests > Object.keys(steamObj).length * 110 &&
-      getUptime() > minUpTimeSeconds) ||
-    (noneReady() && getUptime() > minUpTimeSeconds);
-  if (shouldRestart && config.NODE_ENV !== 'development') {
-    return selfDestruct();
+  if (config.RETRIEVER_SECRET && config.RETRIEVER_SECRET !== req.query.key) {
+    // reject request if it doesn't have key
+    return cb('invalid key');
   }
   if (noneReady()) {
     return cb('not ready');
   }
   return cb();
 });
-app.get('/', (req, res, cb) => {
+app.get('/stats', async (req, res, cb) => {
+  return res.json(genStats());
+});
+app.get('/profile/:account_id', async (req, res, cb) => {
   const keys = Object.keys(steamObj);
   const rKey = keys[Math.floor(Math.random() * keys.length)];
-  if (req.query.match_id) {
-    // Don't allow requests coming in too fast
-    const curRequestTime = Number(new Date());
-    if (
-      lastRequestTime &&
-      curRequestTime - lastRequestTime <
-        baseMatchRequestInterval + extraMatchRequestInterval
-    ) {
-      return res.status(429).json({
-        error: 'too many requests',
-      });
-    }
-    lastRequestTime = curRequestTime;
-    getGcMatchData(
-      rKey,
-      req.query.match_id as string,
-      (err: any, data: any) => {
-        if (err) {
-          return cb(err);
-        }
-        return res.json(data);
-      },
-    );
-  } else if (req.query.account_id) {
-    getPlayerProfile(
-      rKey,
-      req.query.account_id as string,
-      (err: any, data: any) => {
-        if (err) {
-          return cb(err);
-        }
-        return res.json(data);
-      },
-    );
-  } else {
-    return res.json(genStats());
+  const accountId = req.params.account_id;
+  const client = steamObj[rKey];
+  profileRequests += 1;
+  client.sendToGC(
+    DOTA_APPID,
+    EDOTAGCMsg.values.k_EMsgClientToGCGetProfileCard,
+    {},
+    Buffer.from(CMsgClientToGCGetProfileCard.encode({ account_id: Number(accountId) }).finish()),
+    (appid, msgType, payload) => {
+      // console.log(appid, msgType, payload);
+      const profileCard = CMsgDOTAProfileCard.decode(payload);
+      return res.json(profileCard);
+    },
+  );
+});
+app.get('/match/:match_id', async (req, res, cb) => {
+  const keys = Object.keys(steamObj);
+  const rKey = keys[Math.floor(Math.random() * keys.length)];
+  const matchId = req.params.match_id;
+  // Don't allow requests coming in too fast
+  const curRequestTime = Number(new Date());
+  if (
+    lastRequestTime &&
+    curRequestTime - lastRequestTime <
+      baseMatchRequestInterval + extraMatchRequestInterval
+  ) {
+    return res.status(429).json({
+      error: 'too many requests',
+    });
+  }
+  lastRequestTime = curRequestTime;
+  const client = steamObj[rKey];
+  matchRequests += 1;
+  extraMatchRequestInterval += matchRequestIntervalStep;
+  console.time('match:' + matchId);
+  client.sendToGC(
+    DOTA_APPID,
+    EDOTAGCMsg.values.k_EMsgGCMatchDetailsRequest,
+    {},
+    Buffer.from(CMsgGCMatchDetailsRequest.encode({ match_id: Number(matchId) }).finish()),
+    (appid, msgType, payload) => {
+      console.timeEnd('match:' + matchId);
+      const matchData: any = CMsgGCMatchDetailsResponse.decode(payload);
+      if (matchData.result === 15) {
+        // Valve is blocking GC access to this match, probably a community prediction match
+        // Return a 200 success code with specific format, so we treat it as an unretryable error
+        return res.json({ result: { status: matchData.result } });
+      }
+      matchSuccesses += 1;
+      matchSuccessAccount[rKey] += 1;
+      // Reset delay on success
+      extraMatchRequestInterval = 0;
+      return res.json(matchData);
+    },
+  );
+});
+app.get('/aliases/:steam_ids', async (req, res, cb) => {
+  // example: 76561198048632981
+  try {
+    const keys = Object.keys(steamObj);
+    const rKey = keys[Math.floor(Math.random() * keys.length)];
+    const aliases = await steamObj[rKey].getAliases(req.params.steam_ids?.split(','));
+    return res.json(aliases);
+  } catch (e) {
+    cb(e);
   }
 });
 
@@ -199,7 +231,6 @@ async function init() {
             console.error(err);
             reject(err);
           });
-          // TODO relog if loggedOff?
           client.logOn(logOnDetails);
         }),
     ),
@@ -230,51 +261,7 @@ function genStats() {
   };
   return data;
 }
-function getPlayerProfile(idx: string, accountId: string, cb: ErrorCb) {
-  const client = steamObj[idx];
-  profileRequests += 1;
-  client.sendToGC(
-    DOTA_APPID,
-    EDOTAGCMsg.values.k_EMsgClientToGCGetProfileCard,
-    {},
-    Buffer.from(CMsgClientToGCGetProfileCard.encode({ account_id: Number(accountId) }).finish()),
-    (appid, msgType, payload) => {
-      // console.log(appid, msgType, payload);
-      const profileCard = CMsgDOTAProfileCard.decode(payload);
-      return cb(null, profileCard);
-    },
-  );
-}
-function getGcMatchData(idx: string, matchId: string, cb: ErrorCb) {
-  const client = steamObj[idx];
-  matchRequests += 1;
-  const start = Date.now();
-  const timeout = setTimeout(() => {
-    extraMatchRequestInterval += matchRequestIntervalStep;
-  }, timeoutMs);
-  client.sendToGC(
-    DOTA_APPID,
-    EDOTAGCMsg.values.k_EMsgGCMatchDetailsRequest,
-    {},
-    Buffer.from(CMsgGCMatchDetailsRequest.encode({ match_id: Number(matchId) }).finish()),
-    (appid, msgType, payload) => {
-      const matchData: any = CMsgGCMatchDetailsResponse.decode(payload);
-      if (matchData.result === 15) {
-        // Valve is blocking GC access to this match, probably a community prediction match
-        // Return a 200 success code with specific format, so we treat it as an unretryable error
-        return cb(null, { result: { status: matchData.result } });
-      }
-      matchSuccesses += 1;
-      matchSuccessAccount[idx] += 1;
-      const end = Date.now();
-      // Reset delay on success
-      extraMatchRequestInterval = 0;
-      console.log('received match %s in %sms', matchId, end - start);
-      clearTimeout(timeout);
-      return cb(null, matchData);
-    },
-  );
-}
+
 /**
  * Chooses a random login to use from the pool. Once selected, removes it from the list
  * @returns

@@ -799,18 +799,11 @@ export function getRetrieverCount() {
  * Return a URL to use for GC data retrieval.
  * @returns
  */
-export function getRandomRetrieverUrl({
-  accountId,
-  matchId,
-}: {
-  accountId?: string | number;
-  matchId?: string | number;
-}): string {
+export function getRandomRetrieverUrl(path: string): string {
   const urls = RETRIEVER_ARRAY.map(
-    (r) =>
-      `http://${r}?key=${config.RETRIEVER_SECRET}${
-        accountId ? `&account_id=${accountId}` : ''
-      }${matchId ? `&match_id=${matchId}` : ''}`,
+    (r) => {
+      return `http://${r}${path}?key=${config.RETRIEVER_SECRET}`;
+    }
   );
   return urls[Math.floor(Math.random() * urls.length)];
 }
