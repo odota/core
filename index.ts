@@ -19,7 +19,7 @@ async function start() {
     cp.execSync('pm2 start ecosystem.config.js');
     setInterval(
       () => {
-        cp.execSync('pm2 flush all');
+        cp.execSync('pm2 flush');
       },
       60 * 60 * 1000,
     );
