@@ -270,7 +270,7 @@ function chooseLoginInfo(accountsToUse: number) {
   const startIndex = Math.floor(Math.random() * (users.length - accountsToUse));
   console.log('[RETRIEVER] using %s accounts at index %s', accountsToUse, startIndex);
   return users.slice(startIndex, startIndex + accountsToUse).map((e, i) => ({
-    accountName: users[i],
-    password: passes[i],
+    accountName: users[startIndex + i],
+    password: passes[startIndex + i],
   }));
 }
