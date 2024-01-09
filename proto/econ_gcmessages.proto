@@ -257,6 +257,7 @@ message CMsgRequestCrateItemsResponse {
 	optional uint32 response = 1;
 	repeated uint32 item_defs = 2;
 	repeated uint32 peek_item_defs = 3;
+	repeated .CSOEconItem peek_items = 4;
 }
 
 message CMsgRequestCrateEscalationLevel {

@@ -13,7 +13,7 @@ import axios from 'axios';
 
 async function processMmr(job: MmrJob) {
   const accountId = job.account_id;
-  const url = getRandomRetrieverUrl({ accountId });
+  const url = getRandomRetrieverUrl(`/profile/${accountId}`);
   console.log(url);
   const { data } = await axios.get(url);
   redisCount(redis, 'retriever_player');
@@ -28,12 +28,7 @@ async function processMmr(job: MmrJob) {
     [player.plus, player.account_id, player.plus],
   );
 
-  if (
-    data.solo_competitive_rank ||
-    data.competitive_rank ||
-    data.rank_tier ||
-    data.leaderboard_rank
-  ) {
+  if (data.rank_tier || data.leaderboard_rank) {
     data.account_id = job.account_id || null;
     data.match_id = job.match_id || null;
     data.time = new Date();

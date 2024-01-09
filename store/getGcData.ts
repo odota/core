@@ -39,7 +39,7 @@ export async function readGcData(
  * @returns
  */
 async function saveGcData(matchId: number, pgroup: PGroup): Promise<void> {
-  const url = getRandomRetrieverUrl({ matchId });
+  const url = getRandomRetrieverUrl(`/match/${matchId}`);
   const { data } = await axios.get<typeof retrieverMatch>(url, {
     timeout: 5000,
   });
@@ -60,10 +60,11 @@ async function saveGcData(matchId: number, pgroup: PGroup): Promise<void> {
       // We could start storing this data but then the API also needs to respect the user's match history setting
       // account_id: p.account_id,
       player_slot: p.player_slot,
-      party_id: p.party_id?.low,
-      permanent_buffs: p.permanent_buffs,
+      party_id: Number(p.party_id),
+      permanent_buffs: p.permanent_buffs ?? [],
       party_size: data.match.players.filter(
-        (matchPlayer: any) => matchPlayer.party_id?.low === p.party_id?.low,
+        (matchPlayer: any) =>
+          Number(matchPlayer.party_id) === Number(p.party_id),
       ).length,
       // If we want to start adding basic data for anonymous players in player_caches we can put k/d/a/hd/td etc here too
       // There are some discrepancies in field names, e.g. starttime instead of start_time and item_7 instead of backpack_0

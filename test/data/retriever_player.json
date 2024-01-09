@@ -1,24 +1,10 @@
 {
   "account_id": 120269134,
-  "slots": [],
-  "badge_points": 8665,
-  "event_points": null,
-  "event_id": null,
-  "recent_battle_cup_victory": null,
+  "badge_points": 4325,
   "rank_tier": 80,
   "leaderboard_rank": 1476,
   "is_plus_subscriber": true,
-  "plus_original_start_date": 1581552493,
-  "rank_tier_score": null,
-  "previous_rank_tier": null,
-  "rank_tier_mmr_type": null,
-  "leaderboard_rank_core": null,
-  "rank_tier_peak": null,
-  "title": null,
-  "favorite_team_packed": {
-    "low": 0,
-    "high": 0,
-    "unsigned": true
-  },
-  "lifetime_games": 5234
+  "plus_original_start_date": 0,
+  "favorite_team_packed": "0",
+  "lifetime_games": 1137
 }

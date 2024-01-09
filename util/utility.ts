@@ -1,6 +1,5 @@
 import constants from 'dotaconstants';
 import request from 'request';
-import Long from 'long';
 import urllib from 'url';
 import moment from 'moment';
 import crypto from 'crypto';
@@ -31,7 +30,7 @@ export function tokenize(input: string) {
  * Takes and returns a string
  */
 export function convert64to32(id: string) {
-  return Long.fromString(id).subtract('76561197960265728').toString();
+  return (BigInt(id) - BigInt('76561197960265728')).toString();
 }
 /*
  * Converts a steamid 64 to a steamid 32
@@ -39,7 +38,7 @@ export function convert64to32(id: string) {
  * Takes and returns a string
  */
 export function convert32to64(id: string) {
-  return Long.fromString(id).add('76561197960265728').toString();
+  return (BigInt(id) + BigInt('76561197960265728')).toString();
 }
 /**
  * Helper to generate Steam API URLs
@@ -800,18 +799,11 @@ export function getRetrieverCount() {
  * Return a URL to use for GC data retrieval.
  * @returns
  */
-export function getRandomRetrieverUrl({
-  accountId,
-  matchId,
-}: {
-  accountId?: string | number;
-  matchId?: string | number;
-}): string {
+export function getRandomRetrieverUrl(path: string): string {
   const urls = RETRIEVER_ARRAY.map(
-    (r) =>
-      `http://${r}?key=${config.RETRIEVER_SECRET}${
-        accountId ? `&account_id=${accountId}` : ''
-      }${matchId ? `&match_id=${matchId}` : ''}`,
+    (r) => {
+      return `http://${r}${path}?key=${config.RETRIEVER_SECRET}`;
+    }
   );
   return urls[Math.floor(Math.random() * urls.length)];
 }

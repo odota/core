@@ -586,7 +586,6 @@ enum EDOTAGCMsg {
 	k_EMsgClientToGCRequestContestVotesResponse = 8348;
 	k_EMsgClientToGCMVPVoteTimeout = 8349;
 	k_EMsgClientToGCMVPVoteTimeoutResponse = 8350;
-	k_EMsgDetailedGameStats = 8353;
 	k_EMsgMatchMatchmakingStats = 8360;
 	k_EMsgClientToGCSubmitPlayerMatchSurvey = 8361;
 	k_EMsgClientToGCSubmitPlayerMatchSurveyResponse = 8362;
@@ -884,4 +883,8 @@ enum EDOTAGCMsg {
 	k_EMsgClientToGCFantasyCraftingRerollOptionsResponse = 8937;
 	k_EMsgClientToGCRoadToTIDevForceQuest = 8935;
 	k_EMsgLobbyRoadToTIMatchQuestData = 8939;
+	k_EMsgClientToGCShowcaseModerationGetQueue = 8940;
+	k_EMsgClientToGCShowcaseModerationGetQueueResponse = 8941;
+	k_EMsgClientToGCShowcaseModerationApplyModeration = 8942;
+	k_EMsgClientToGCShowcaseModerationApplyModerationResponse = 8943;
 }

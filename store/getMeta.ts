@@ -15,7 +15,7 @@ const root = new ProtoBuf.Root();
 const builder = root.loadSync('./proto/dota_match_metadata.proto', {
   keepCase: true,
 });
-const Message = builder.lookupType('CDOTAMatchMetadataFile');
+const CDOTAMatchMetadataFile = builder.lookupType('CDOTAMatchMetadataFile');
 
 export async function getMeta(matchId: number) {
   const gcdata = await readGcData(matchId);
@@ -54,7 +54,7 @@ export async function getMetaFromUrl(url: string) {
     );
     console.timeEnd('[METAPARSE]: download/bunzip');
     console.time('[METAPARSE]: parse');
-    const message: any = Message.decode(stdout);
+    const message: any = CDOTAMatchMetadataFile.decode(stdout);
     // message.metadata.teams.forEach((team) => {
     //   team.players.forEach((player) => {
     //     player.equipped_econ_items?.forEach((item) => {
@@ -69,27 +69,5 @@ export async function getMetaFromUrl(url: string) {
   } catch (e) {
     console.error(e);
     return null;
-  }
-}
-
-// await updateProtos();
-// Fetch protos from https://github.com/SteamDatabase/GameTracking-Dota2/blob/master/Protobufs/dota_match_metadata.proto
-async function updateProtos() {
-  const resp = await axios.get(
-    'https://api.github.com/repos/SteamDatabase/GameTracking-Dota2/git/trees/master?recursive=1',
-  );
-  const files = resp.data.tree;
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i];
-    if (file.path.startsWith('Protobufs/')) {
-      console.log(file.path);
-      const name = file.path.split('/').slice(-1)[0];
-      const resp2 = await axios.get(
-        'https://raw.githubusercontent.com/SteamDatabase/GameTracking-Dota2/master/' +
-          file.path,
-        { responseType: 'arraybuffer' },
-      );
-      fs.writeFileSync('./proto/' + name, resp2.data);
-    }
   }
 }
