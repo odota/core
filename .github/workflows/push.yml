@@ -27,7 +27,8 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          platforms: linux/amd64,linux/arm64
+          # Disabling linux/arm64 build for now to save some time
+          platforms: linux/amd64
           push: true
           tags: odota/core:latest
       - name: Build and push retriever
@@ -35,7 +36,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           push: true
           tags: odota/retriever:latest
           file: Dockerfile.retriever
