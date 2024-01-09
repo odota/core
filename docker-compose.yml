@@ -1,61 +1,19 @@
-# You don't usually need to edit this file.
-# If it does not fit your personal use case, docker-compose.override.yml is a preferred way to go.
-
-version: '2'
+version: '3'
 services:
   postgres:
     image: postgres:9.5
     container_name: odota-postgres
     environment:
       POSTGRES_PASSWORD: postgres
-  postgresinit:
-    image: postgres
-    depends_on:
-      - postgres
-    volumes:
-      - .:/usr/src
-    container_name: odota-postgresinit
-    entrypoint:
-      [
-        'bash',
-        '-c',
-        'sleep 10 && psql --file /usr/src/sql/init.sql postgres://postgres:postgres@odota-postgres/postgres && psql --file /usr/src/sql/create_tables.sql postgres://postgres:postgres@odota-postgres/yasp',
-      ]
   cassandra:
     image: cassandra:4
     container_name: odota-cassandra
     environment:
       MAX_HEAP_SIZE: 128M
       HEAP_NEWSIZE: 24M
-  cassandrainit:
-    image: cassandra
-    depends_on:
-      - cassandra
-    volumes:
-      - .:/usr/src
-    container_name: odota-cassandrainit
-    entrypoint:
-      [
-        'bash',
-        '-c',
-        'sleep 80 && cqlsh -f /usr/src/sql/init.cql odota-cassandra && cqlsh -f /usr/src/sql/create_tables.cql -k yasp odota-cassandra',
-      ]
   # scylla:
   #   image: scylladb/scylla:5.4
   #   container_name: odota-scylla
-  # scyllainit:
-  #   image: scylladb/scylla
-  #   depends_on:
-  #     - scylla
-  #   volumes:
-  #     - .:/usr/src
-  #   container_name: odota-scyllainit
-  #   entrypoint:
-  #     [
-  #       'bash',
-  #       '-c',
-  #       'sleep 80 && cqlsh -f /usr/src/sql/init.cql odota-scylla && cqlsh -f /usr/src/sql/create_tables.cql -k yasp odota-scylla',
-  #     ]
   redis:
     image: redis:7
     container_name: odota-redis
@@ -80,8 +38,7 @@ services:
       context: .
       dockerfile: Dockerfile
     image: odota/core
-    # Override this command with your script if existing does not fit your needs
-    entrypoint: bash scripts/launch.sh
+    entrypoint: sleep infinity
     ports:
       - '5000:5000'
       - '5100:5100'
@@ -93,8 +50,6 @@ services:
       CASSANDRA_URL: cassandra://odota-cassandra/yasp
       SCYLLA_URL: scylla://odota-scylla/yasp
       ELASTICSEARCH_URL: odota-elasticsearch:9200
-    volumes:
-      - .:/usr/src
     links:
       - postgres
       - cassandra
