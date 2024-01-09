@@ -105,6 +105,7 @@ app.get('/profile/:account_id', async (req, res, cb) => {
     Buffer.from(CMsgClientToGCGetProfileCard.encode({ account_id: Number(accountId) }).finish()),
     (appid, msgType, payload) => {
       // console.log(appid, msgType, payload);
+      profileSuccesses += 1;
       const profileCard = CMsgDOTAProfileCard.decode(payload);
       return res.json(profileCard);
     },
