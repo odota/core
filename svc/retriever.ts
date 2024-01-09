@@ -17,6 +17,7 @@ let users = config.STEAM_USER.split(',');
 let passes = config.STEAM_PASS.split(',');
 const minUpTimeSeconds = 180;
 const maxAccounts = 5;
+const matchesPerAccount = 110;
 const port = config.PORT || config.RETRIEVER_PORT;
 const baseMatchRequestInterval = 500;
 let extraMatchRequestInterval = 0;
@@ -52,7 +53,7 @@ const CMsgGCMatchDetailsResponse = builder.lookupType('CMsgGCMatchDetailsRespons
 setInterval(() => {
   const shouldRestart =
   // (matchSuccesses / matchRequests < 0.1 && matchRequests > 100 && getUptime() > minUpTimeSeconds) ||
-  (matchRequests > Object.keys(steamObj).length * 110 &&
+  (matchRequests > Object.keys(steamObj).length * matchesPerAccount &&
     getUptime() > minUpTimeSeconds) ||
   (noneReady() && getUptime() > minUpTimeSeconds);
   if (shouldRestart && config.NODE_ENV !== 'development') {
