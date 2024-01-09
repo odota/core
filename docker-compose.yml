@@ -19,7 +19,7 @@ services:
       [
         'bash',
         '-c',
-        'sleep 30 && psql --file /usr/src/sql/init.sql postgres://postgres:postgres@odota-postgres/postgres && psql --file /usr/src/sql/create_tables.sql postgres://postgres:postgres@odota-postgres/yasp',
+        'sleep 10 && psql --file /usr/src/sql/init.sql postgres://postgres:postgres@odota-postgres/postgres && psql --file /usr/src/sql/create_tables.sql postgres://postgres:postgres@odota-postgres/yasp',
       ]
   cassandra:
     image: cassandra:4
@@ -38,24 +38,24 @@ services:
       [
         'bash',
         '-c',
-        'sleep 90 && cqlsh -f /usr/src/sql/init.cql odota-cassandra && cqlsh -f /usr/src/sql/create_tables.cql -k yasp odota-cassandra',
+        'sleep 80 && cqlsh -f /usr/src/sql/init.cql odota-cassandra && cqlsh -f /usr/src/sql/create_tables.cql -k yasp odota-cassandra',
       ]
-  scylla:
-    image: scylladb/scylla:5.4
-    container_name: odota-scylla
-  scyllainit:
-    image: scylladb/scylla
-    depends_on:
-      - scylla
-    volumes:
-      - .:/usr/src
-    container_name: odota-scyllainit
-    entrypoint:
-      [
-        'bash',
-        '-c',
-        'sleep 60 && cqlsh -f /usr/src/sql/init.cql odota-scylla && cqlsh -f /usr/src/sql/create_tables.cql -k yasp odota-scylla',
-      ]
+  # scylla:
+  #   image: scylladb/scylla:5.4
+  #   container_name: odota-scylla
+  # scyllainit:
+  #   image: scylladb/scylla
+  #   depends_on:
+  #     - scylla
+  #   volumes:
+  #     - .:/usr/src
+  #   container_name: odota-scyllainit
+  #   entrypoint:
+  #     [
+  #       'bash',
+  #       '-c',
+  #       'sleep 80 && cqlsh -f /usr/src/sql/init.cql odota-scylla && cqlsh -f /usr/src/sql/create_tables.cql -k yasp odota-scylla',
+  #     ]
   redis:
     image: redis:7
     container_name: odota-redis
@@ -81,7 +81,7 @@ services:
       dockerfile: Dockerfile
     image: odota/core
     # Override this command with your script if existing does not fit your needs
-    entrypoint: bash docker/main-launch.sh
+    entrypoint: bash scripts/launch.sh
     ports:
       - '5000:5000'
       - '5100:5100'
@@ -101,5 +101,5 @@ services:
       - redis
       - elasticsearch
       - parser
-      - scylla
+      # - scylla
     container_name: odota-core
