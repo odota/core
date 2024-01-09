@@ -184,9 +184,7 @@ async function init() {
   const accountsToUse = Math.min(maxAccounts, users.length);
   // Some logins may fail, and sometimes the Steam CM never returns a response
   // So don't await this and we'll just make sure we have at least one working with noneReady
-  const logOns = Array.from(new Array(accountsToUse), (v, i) =>
-    chooseLoginInfo(),
-  );
+  const logOns = chooseLoginInfo(accountsToUse);
   await Promise.allSettled(
     logOns.map(
       (logOnDetails) =>
@@ -264,13 +262,14 @@ function genStats() {
 }
 
 /**
- * Chooses a random login to use from the pool. Once selected, removes it from the list
+ * Chooses a set of logins to use from the pool
  * @returns
  */
-function chooseLoginInfo() {
-  const startIndex = Math.floor(Math.random() * users.length);
-  return {
-    accountName: users.splice(startIndex, 1)[0],
-    password: passes.splice(startIndex, 1)[0],
-  };
+function chooseLoginInfo(accountsToUse: number) {
+  const startIndex = Math.floor(Math.random() * (users.length - accountsToUse));
+  console.log('[RETRIEVER] using %s accounts at index %s', accountsToUse, startIndex);
+  return users.slice(startIndex, startIndex + accountsToUse).map((e, i) => ({
+    accountName: users[i],
+    password: passes[i],
+  }));
 }
