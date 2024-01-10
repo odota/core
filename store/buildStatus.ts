@@ -140,6 +140,24 @@ export async function buildStatus() {
       });
       return response;
     },
+    api_status: async () => {
+      const results = await redis.zrangebyscore(
+        'api_status',
+        '-inf',
+        'inf',
+        'WITHSCORES',
+      );
+      const response: any[] = [];
+      results?.forEach((result, i) => {
+        if (i % 2 === 0) {
+          response.push({
+            status: result.split('.')[0],
+            count: results[i + 1],
+          });
+        }
+      });
+      return response;
+    },
     load_times: async () => {
       const arr = await redis.lrange('load_times', 0, -1);
       return generatePercentiles(arr ?? []);

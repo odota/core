@@ -50,10 +50,6 @@ const whitelistedPaths = [
   '/manageSub',
   '/keys', // API Key management
 ];
-const pathCosts: NumberDict = {
-  '/api/request': 30,
-  '/api/explorer': 5,
-};
 // PASSPORT config
 passport.serializeUser((user: any, done: ErrorCb) => {
   done(null, user.account_id);
@@ -160,7 +156,7 @@ app.use((req, res, cb) => {
   }
   const command = redis.multi();
   command
-    .hincrby('rate_limit', res.locals.usageIdentifier, pathCosts[req.path] || 1)
+    .hincrby('rate_limit', res.locals.usageIdentifier, 1)
     .expireat('rate_limit', getStartOfBlockMinutes(1, 1));
   if (!res.locals.isAPIRequest) {
     // not API request so check previous usage
@@ -193,7 +189,7 @@ app.use((req, res, cb) => {
     }
     if (
       config.ENABLE_API_LIMIT &&
-      !whitelistedPaths.includes(req.path) &&
+      !whitelistedPaths.includes(new URL(req.originalUrl).pathname) &&
       !res.locals.isAPIRequest &&
       Number(prevUsage) >= Number(config.API_FREE_LIMIT)
     ) {
@@ -213,12 +209,11 @@ app.use((req, res, cb) => {
     if (elapsed > 2000 || config.NODE_ENV === 'development') {
       console.log('[SLOWLOG] %s, %s', req.originalUrl, elapsed);
     }
-    // When called from a middleware, the mount point is not included in req.path. See Express docs.
     if (
       res.statusCode !== 500 &&
       res.statusCode !== 429 &&
       !whitelistedPaths.includes(
-        req.baseUrl + (req.path === '/' ? '' : req.path),
+        new URL(req.originalUrl).pathname,
       ) &&
       elapsed < 10000
     ) {
@@ -238,21 +233,21 @@ app.use((req, res, cb) => {
         }
       });
     }
-    if (req.originalUrl.indexOf('/api') === 0) {
-      redisCount(redis, 'api_hits');
-      if (req.headers.origin === config.UI_HOST) {
-        redisCount(redis, 'api_hits_ui');
-      }
-      const normPath = req.path
-        .replace(/\d+/g, ':id')
-        .toLowerCase()
-        .replace(/\/+$/, '');
-      redis.zincrby('api_paths', 1, req.method + ' ' + normPath);
-      redis.expireat(
-        'api_paths',
-        moment().startOf('hour').add(1, 'hour').format('X'),
-      );
+    redisCount(redis, 'api_hits');
+    if (req.headers.origin === config.UI_HOST) {
+      redisCount(redis, 'api_hits_ui');
     }
+    const normPath = new URL(req.originalUrl).pathname
+      .replace(/\d+/g, ':id')
+      .toLowerCase()
+      .replace(/\/+$/, '');
+    redis.zincrby('api_paths', 1, req.method + ' ' + normPath);
+    redis.expireat(
+      'api_paths',
+      moment().startOf('hour').add(1, 'hour').format('X'),
+    );
+    redis.zincrby('api_status', 1, res.statusCode);
+    redis.expireat('api_status', moment().startOf('hour').add(1, 'hour').format('X'));
     if (req.user && req.user.account_id) {
       redis.zadd('visitors', moment().format('X'), req.user.account_id);
     }
@@ -269,7 +264,7 @@ app.use((req, res, next) => {
     req.header('Origin') !== config.UI_HOST
   ) {
     // Make an exception for replay parse request
-    if (req.method === 'POST' && req.path.startsWith('/api/request/')) {
+    if (req.method === 'POST' && new URL(req.originalUrl).pathname.startsWith('/api/request/')) {
       return next();
     }
     return res.status(403).json({ error: 'Invalid Origin header' });
