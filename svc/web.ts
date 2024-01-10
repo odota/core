@@ -189,7 +189,7 @@ app.use((req, res, cb) => {
     }
     if (
       config.ENABLE_API_LIMIT &&
-      !whitelistedPaths.some(path => req.originalUrl.startsWith(path)) &&
+      !whitelistedPaths.includes(req.originalUrl.split('?')[0]) &&
       !res.locals.isAPIRequest &&
       Number(prevUsage) >= Number(config.API_FREE_LIMIT)
     ) {
@@ -212,7 +212,7 @@ app.use((req, res, cb) => {
     if (
       res.statusCode !== 500 &&
       res.statusCode !== 429 &&
-      !whitelistedPaths.some(path => req.originalUrl.startsWith(path)) &&
+      !whitelistedPaths.includes(req.originalUrl.split('?')[0]) &&
       elapsed < 10000
     ) {
       const multi = redis.multi();
