@@ -404,6 +404,7 @@ type MetricName =
   | 'steam_api_call'
   | 'steam_proxy_call'
   | 'steam_429'
+  | 'steam_403'
   | 'web_crash'
   | '500_error'
   | 'api_hits_ui'

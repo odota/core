@@ -79,30 +79,55 @@ passport.use(
     },
   ),
 );
-// Compression middleware
-app.use(compression());
-// Dota 2 images middleware (proxy to Dota 2 CDN to serve over https)
-app.use('/apps', (req, res) => {
-  request(`http://cdn.dota2.com/${req.originalUrl}`).pipe(res);
-});
-// Proxy to serve team logos over https
-app.use('/ugc', (req, res) => {
-  request(`http://cloud-3.steamusercontent.com/${req.originalUrl}`)
-    .on('response', (resp: any) => {
-      resp.headers['content-type'] = 'image/png';
-    })
-    .pipe(res);
-});
-// Health check
-app.route('/healthz').get((req, res) => {
-  res.send('ok');
-});
-// Session/Passport middleware
-app.use(session(sessOptions));
-app.use(passport.initialize());
-app.use(passport.session());
-// Get client IP to use for rate limiting;
-// app.use(requestIp.mw());
+
+// Do logging when requests finish
+const onResFinish = (req: express.Request, res: express.Response, timeStart: number) => {
+  const timeEnd = Number(new Date());
+  const elapsed = timeEnd - timeStart;
+  if (elapsed > 2000 || config.NODE_ENV === 'development') {
+    console.log('[SLOWLOG] %s, %s', req.originalUrl, elapsed);
+  }
+  if (
+    res.statusCode !== 500 &&
+    res.statusCode !== 429 &&
+    !whitelistedPaths.includes(req.originalUrl.split('?')[0]) &&
+    elapsed < 10000
+  ) {
+    const multi = redis.multi();
+    if (res.locals.isAPIRequest) {
+      multi
+        .hincrby('usage_count', res.locals.usageIdentifier, 1)
+        .expireat('usage_count', getEndOfMonth());
+    } else {
+      multi
+        .zincrby('ip_usage_count', 1, res.locals.usageIdentifier)
+        .expireat('ip_usage_count', getEndOfDay());
+    }
+    multi.exec((err, res) => {
+      if (config.NODE_ENV === 'development') {
+        console.log('usage count increment', err, res);
+      }
+    });
+  }
+  redisCount(redis, 'api_hits');
+  if (req.headers.origin === config.UI_HOST) {
+    redisCount(redis, 'api_hits_ui');
+  }
+  const normPath = req.route?.path;
+  redis.zincrby('api_paths', 1, req.method + ' ' + normPath);
+  redis.expireat(
+    'api_paths',
+    moment().startOf('hour').add(1, 'hour').format('X'),
+  );
+  redis.zincrby('api_status', 1, res.statusCode);
+  redis.expireat('api_status', moment().startOf('hour').add(1, 'hour').format('X'));
+  if (req.user && req.user.account_id) {
+    redis.zadd('visitors', moment().format('X'), req.user.account_id);
+  }
+  redis.lpush('load_times', elapsed);
+  redis.ltrim('load_times', 0, 9999);
+};
+
 // Dummy User ID for testing
 if (config.NODE_ENV === 'test') {
   app.use((req, res, cb) => {
@@ -116,59 +141,70 @@ if (config.NODE_ENV === 'test') {
   app.route('/gen429').get((req, res) => res.status(429).end());
   app.route('/gen500').get((req, res) => res.status(500).end());
 }
+
+// Health check
+app.route('/healthz').get((req, res) => {
+  res.send('ok');
+});
+
+// Proxy to serve team logos over https
+app.use('/ugc', (req, res) => {
+  request(`http://cloud-3.steamusercontent.com/${req.originalUrl}`)
+    .on('response', (resp: any) => {
+      resp.headers['content-type'] = 'image/png';
+    })
+    .pipe(res);
+});
+
+// Compress everything after this
+app.use(compression());
+
+// Session/Passport middleware
+app.use(session(sessOptions));
+app.use(passport.initialize());
+app.use(passport.session());
+
+// This is for passing the IP through if behind load balancer https://expressjs.com/en/guide/behind-proxies.html
+app.set('trust proxy', true);
 // Rate limiter and API key middleware
-app.use((req, res, cb) => {
-  // console.log('[REQ]', req.originalUrl);
-  const apiKey =
+app.use(async (req, res, cb) => {
+  res.once('finish', () => onResFinish(req, res, Number(new Date())));
+  try {
+    const apiKey =
     (req.headers.authorization &&
       req.headers.authorization.replace('Bearer ', '')) ||
     req.query.api_key;
-  if (config.ENABLE_API_LIMIT && apiKey) {
-    redis.sismember('api_keys', apiKey as string, (err, resp) => {
-      if (err) {
-        cb(err);
-      } else {
-        res.locals.isAPIRequest = resp === 1;
-        cb();
-      }
-    });
-  } else {
-    cb();
-  }
-});
-app.set('trust proxy', true);
-app.use((req, res, cb) => {
-  const { ip } = req;
-  res.locals.ip = ip;
-  let rateLimit: number | string = '';
-  if (res.locals.isAPIRequest) {
-    const requestAPIKey =
-      (req.headers.authorization &&
-        req.headers.authorization.replace('Bearer ', '')) ||
-      req.query.api_key;
-    res.locals.usageIdentifier = requestAPIKey;
-    rateLimit = config.API_KEY_PER_MIN_LIMIT;
-    // console.log('[KEY] %s visit %s, ip %s', requestAPIKey, req.originalUrl, ip);
-  } else {
-    res.locals.usageIdentifier = ip;
-    rateLimit = config.NO_API_KEY_PER_MIN_LIMIT;
-    // console.log('[USER] %s visit %s, ip %s', req.user ? req.user.account_id : 'anonymous', req.originalUrl, ip);
-  }
-  const command = redis.multi();
-  command
-    .hincrby('rate_limit', res.locals.usageIdentifier, 1)
-    .expireat('rate_limit', getStartOfBlockMinutes(1, 1));
-  if (!res.locals.isAPIRequest) {
-    // not API request so check previous usage
-    command.zscore('ip_usage_count', res.locals.usageIdentifier);
-  }
-  command.exec((err, resp) => {
-    if (err) {
-      console.log(err);
-      return cb(err);
+    if (config.ENABLE_API_LIMIT && apiKey) {
+      const resp = await redis.sismember('api_keys', apiKey as string);
+      res.locals.isAPIRequest = resp === 1;
     }
+    const { ip } = req;
+    res.locals.ip = ip;
+    let rateLimit: number | string = '';
+    if (res.locals.isAPIRequest) {
+      const requestAPIKey =
+        (req.headers.authorization &&
+          req.headers.authorization.replace('Bearer ', '')) ||
+        req.query.api_key;
+      res.locals.usageIdentifier = requestAPIKey;
+      rateLimit = config.API_KEY_PER_MIN_LIMIT;
+      // console.log('[KEY] %s visit %s, ip %s', requestAPIKey, req.originalUrl, ip);
+    } else {
+      res.locals.usageIdentifier = ip;
+      rateLimit = config.NO_API_KEY_PER_MIN_LIMIT;
+      // console.log('[USER] %s visit %s, ip %s', req.user ? req.user.account_id : 'anonymous', req.originalUrl, ip);
+    }
+    const command = redis.multi();
+    command
+      .hincrby('rate_limit', res.locals.usageIdentifier, 1)
+      .expireat('rate_limit', getStartOfBlockMinutes(1, 1));
+    if (!res.locals.isAPIRequest) {
+      // not API request so check previous usage
+      command.zscore('ip_usage_count', res.locals.usageIdentifier);
+    }
+    const resp = await command.exec();
     if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
-      console.log('[WEB] %s rate limit %s', req.originalUrl, resp);
+      console.log('[WEB] %s rate limit %s', req.originalUrl, JSON.stringify(resp));
     }
     const incrValue = resp![0]?.[1];
     const prevUsage = resp![2]?.[1];
@@ -198,58 +234,9 @@ app.use((req, res, cb) => {
       });
     }
     return cb();
-  });
-});
-// Telemetry middleware
-app.use((req, res, cb) => {
-  const timeStart = Number(new Date());
-  res.once('finish', () => {
-    const timeEnd = Number(new Date());
-    const elapsed = timeEnd - timeStart;
-    if (elapsed > 2000 || config.NODE_ENV === 'development') {
-      console.log('[SLOWLOG] %s, %s', req.originalUrl, elapsed);
-    }
-    if (
-      res.statusCode !== 500 &&
-      res.statusCode !== 429 &&
-      !whitelistedPaths.includes(req.originalUrl.split('?')[0]) &&
-      elapsed < 10000
-    ) {
-      const multi = redis.multi();
-      if (res.locals.isAPIRequest) {
-        multi
-          .hincrby('usage_count', res.locals.usageIdentifier, 1)
-          .expireat('usage_count', getEndOfMonth());
-      } else {
-        multi
-          .zincrby('ip_usage_count', 1, res.locals.usageIdentifier)
-          .expireat('ip_usage_count', getEndOfDay());
-      }
-      multi.exec((err, res) => {
-        if (config.NODE_ENV === 'development') {
-          console.log('usage count increment', err, res);
-        }
-      });
-    }
-    redisCount(redis, 'api_hits');
-    if (req.headers.origin === config.UI_HOST) {
-      redisCount(redis, 'api_hits_ui');
-    }
-    const normPath = req.route?.path;
-    redis.zincrby('api_paths', 1, req.method + ' ' + normPath);
-    redis.expireat(
-      'api_paths',
-      moment().startOf('hour').add(1, 'hour').format('X'),
-    );
-    redis.zincrby('api_status', 1, res.statusCode);
-    redis.expireat('api_status', moment().startOf('hour').add(1, 'hour').format('X'));
-    if (req.user && req.user.account_id) {
-      redis.zadd('visitors', moment().format('X'), req.user.account_id);
-    }
-    redis.lpush('load_times', elapsed);
-    redis.ltrim('load_times', 0, 9999);
-  });
-  cb();
+  } catch (e) {
+    cb(e);
+  }
 });
 app.use((req, res, next) => {
   // Reject request if not GET and Origin header is present and not an approved domain (prevent CSRF)
@@ -273,6 +260,7 @@ app.use(
     credentials: true,
   }),
 );
+// req.body available after this
 app.use(bodyParser.json());
 app.route('/login').get(
   passport.authenticate('steam', {
@@ -302,44 +290,52 @@ app.route('/logout').get((req, res) => {
   }
   return res.redirect('/api');
 });
-app.route('/subscribeSuccess').get(async (req, res) => {
-  if (!req.query.session_id) {
-    return res.status(400).json({ error: 'no session ID' });
+app.route('/subscribeSuccess').get(async (req, res, cb) => {
+  try {
+    if (!req.query.session_id) {
+      return res.status(400).json({ error: 'no session ID' });
+    }
+    if (!req.user?.account_id) {
+      return res.status(400).json({ error: 'no account ID' });
+    }
+    // look up the checkout session id: https://stripe.com/docs/payments/checkout/custom-success-page
+    const session = await stripe.checkout.sessions.retrieve(
+      req.query.session_id as string,
+    );
+    const customer = await stripe.customers.retrieve(session.customer as string);
+    const accountId = req.user.account_id;
+    // associate the customer id with the steam account ID (req.user.account_id)
+    await db.raw(
+      'INSERT INTO subscriber(account_id, customer_id, status) VALUES (?, ?, ?) ON CONFLICT(account_id) DO UPDATE SET account_id = EXCLUDED.account_id, customer_id = EXCLUDED.customer_id, status = EXCLUDED.status',
+      [accountId, customer.id, 'active'],
+    );
+    // Send the user back to the subscribe page
+    return res.redirect(`${config.UI_HOST}/subscribe`);
+  } catch (e) {
+    cb(e);
   }
-  if (!req.user?.account_id) {
-    return res.status(400).json({ error: 'no account ID' });
-  }
-  // look up the checkout session id: https://stripe.com/docs/payments/checkout/custom-success-page
-  const session = await stripe.checkout.sessions.retrieve(
-    req.query.session_id as string,
-  );
-  const customer = await stripe.customers.retrieve(session.customer as string);
-  const accountId = req.user.account_id;
-  // associate the customer id with the steam account ID (req.user.account_id)
-  await db.raw(
-    'INSERT INTO subscriber(account_id, customer_id, status) VALUES (?, ?, ?) ON CONFLICT(account_id) DO UPDATE SET account_id = EXCLUDED.account_id, customer_id = EXCLUDED.customer_id, status = EXCLUDED.status',
-    [accountId, customer.id, 'active'],
-  );
-  // Send the user back to the subscribe page
-  return res.redirect(`${config.UI_HOST}/subscribe`);
 });
-app.route('/manageSub').post(async (req, res) => {
-  if (!req.user?.account_id) {
-    return res.status(400).json({ error: 'no account ID' });
+app.route('/manageSub').post(async (req, res, cb) => {
+  try {
+    if (!req.user?.account_id) {
+      return res.status(400).json({ error: 'no account ID' });
+    }
+    const result = await db.raw(
+      "SELECT customer_id FROM subscriber where account_id = ? AND status = 'active'",
+      [req.user.account_id],
+    );
+    const customer = result?.rows?.[0];
+    if (!customer) {
+      return res.status(400).json({ error: 'customer not found' });
+    }
+    const session = await stripe.billingPortal.sessions.create({
+      customer: customer.customer_id,
+      return_url: req.body?.return_url,
+    });
+    return res.json(session);
+  } catch(e) {
+    cb(e);
   }
-  const result = await db.raw(
-    "SELECT customer_id FROM subscriber where account_id = ? AND status = 'active'",
-    [req.user.account_id],
-  );
-  const customer = result?.rows?.[0];
-  if (!customer) {
-    return res.status(400).json({ error: 'customer not found' });
-  }
-  const session = await stripe.billingPortal.sessions.create({
-    customer: customer.customer_id,
-    return_url: req.body?.return_url,
-  });
-  return res.json(session);
 });
 // Admin endpoints middleware
 app.use('/admin*', (req, res, cb) => {
