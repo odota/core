@@ -168,8 +168,9 @@ app.use(passport.session());
 app.set('trust proxy', true);
 // Rate limiter and API key middleware
 app.use(async (req, res, cb) => {
-  res.once('finish', () => onResFinish(req, res, Number(new Date())));
   try {
+    const timeStart = Number(new Date());
+    res.once('finish', () => onResFinish(req, res, timeStart));
     const apiKey =
     (req.headers.authorization &&
       req.headers.authorization.replace('Bearer ', '')) ||
