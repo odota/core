@@ -1,12 +1,10 @@
 import config from '../config';
-import { redisCount } from '../util/utility';
+import { getRandomParserUrl, redisCount } from '../util/utility';
 import cassandra from './cassandra';
 import db from './db';
 import { insertMatch } from './insert';
 import redis from './redis';
 import axios from 'axios';
-
-const { PARSER_HOST } = config;
 
 /**
  * Return parse data by reading it without fetching.
@@ -42,18 +40,18 @@ type ExtraData = {
 /**
  * Requests parse data and saves it locally
  * @param matchId
- * @param url
+ * @param replayUrl
  * @returns
  */
 export async function saveParseData(
   matchId: number,
-  url: string,
+  replayUrl: string,
   { leagueid, start_time, duration, origin, pgroup }: ExtraData,
 ): Promise<{ error: string | null }> {
-  console.log('[PARSER] parsing replay at:', url);
+  console.log('[PARSER] parsing replay at:', replayUrl);
   try {
     // Make a HEAD request for the replay to see if it's available
-    await axios.head(url, { timeout: 5000 });
+    await axios.head(replayUrl, { timeout: 5000 });
   } catch (e) {
     if (axios.isAxiosError(e)) {
       console.log(e.message);
@@ -66,8 +64,7 @@ export async function saveParseData(
   // bunzip: 6716ms (bunzip2 7503212404_1277518156.dem.bz2)
   // parse: 9407ms (curl -X POST --data-binary "@7503212404_1277518156.dem" odota-parser:5600 > output.log)
   // process: 3278ms (node processors/createParsedDataBlob.mjs < output.log)
-  const parseUrl = `${PARSER_HOST}/blob?replay_url=${url}`;
-  console.log(parseUrl);
+  const parseUrl = getRandomParserUrl(replayUrl);
   const resp = await axios.get<ParserMatch>(parseUrl);
   if (!resp.data) {
     return { error: 'Parse failed' };

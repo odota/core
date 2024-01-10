@@ -782,19 +782,30 @@ export function getLaneFromPosData(
   };
 }
 
-// Generate a list of hosts to use for GC data retrieval. Supports weighting using the size URL query parameter
-const input = config.RETRIEVER_HOST;
-const RETRIEVER_ARRAY: string[] = [];
-const arr = input.split(',');
-arr.forEach((element) => {
-  const parsedUrl = urllib.parse(`http://${element}`, true);
-  for (let i = 0; i < (Number(parsedUrl.query.size) || 1); i += 1) {
-    RETRIEVER_ARRAY.push(parsedUrl.host as string);
-  }
-});
+const RETRIEVER_ARRAY: string[] = makeUrlArray(config.RETRIEVER_HOST);
+const PARSER_ARRAY: string[] = makeUrlArray(config.PARSER_HOST);
+
+/**
+ * Generate a list of URLs to use for data retrieval. Supports weighting using the size URL query parameter
+ * @param input Comma separated URLs
+ * @returns Array of URLs
+ */
+function makeUrlArray(input: string) {
+  const output: string[] = [];
+  const arr = input.split(',');
+  arr.forEach((element) => {
+    const parsedUrl = urllib.parse(`http://${element}`, true);
+    for (let i = 0; i < (Number(parsedUrl.query.size) || 1); i += 1) {
+      output.push(parsedUrl.host as string);
+    }
+  });
+  return output;
+}
+
 export function getRetrieverCount() {
   return RETRIEVER_ARRAY.length;
 }
+
 /**
  * Return a URL to use for GC data retrieval.
  * @returns
@@ -803,6 +814,15 @@ export function getRandomRetrieverUrl(path: string): string {
   const urls = RETRIEVER_ARRAY.map(
     (r) => {
       return `http://${r}${path}?key=${config.RETRIEVER_SECRET}`;
+    }
+  );
+  return urls[Math.floor(Math.random() * urls.length)];
+}
+
+export function getRandomParserUrl(replayUrl: string): string {
+  const urls = PARSER_ARRAY.map(
+    (r) => {
+      return `http://${r}/blob?replay_url=${replayUrl}`;
     }
   );
   return urls[Math.floor(Math.random() * urls.length)];

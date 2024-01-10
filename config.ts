@@ -21,7 +21,7 @@ const defaults = {
   ROOT_URL: 'http://localhost:5000', // base url to redirect to after steam oauth login
   RETRIEVER_HOST: 'localhost:5100', // Comma separated list of retriever hosts (access to Dota 2 GC data)
   GCDATA_RETRIEVER_HOST: '', // Comma separated list of retriever hosts dedicated for gcdata job
-  PARSER_HOST: 'http://localhost:5600', // host of the Java parse server
+  PARSER_HOST: 'localhost:5600', // host of the Java parse server
   UI_HOST: '', // The host of the UI, target of /logout and /return
   STEAM_API_HOST: 'api.steampowered.com', // comma separated list of hosts to fetch Steam API data from
   POSTGRES_URL: 'postgresql://postgres:postgres@localhost/yasp', // connection string for PostgreSQL

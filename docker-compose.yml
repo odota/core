@@ -43,7 +43,7 @@ services:
       - '5000:5000'
       - '5100:5100'
     environment:
-      PARSER_HOST: http://odota-parser:5600
+      PARSER_HOST: odota-parser:5600
       POSTGRES_URL: postgresql://postgres:postgres@odota-postgres/yasp
       READONLY_POSTGRES_URL: postgresql://readonly:readonly@odota-postgres/yasp
       REDIS_URL: redis://odota-redis:6379/0
