@@ -74,7 +74,7 @@
     "@types/passport": "^1.0.16",
     "@types/passport-steam": "^1.0.5",
     "@types/pg": "^8.10.9",
-    "@types/qs": "^6.9.10",
+    "@types/qs": "^6.9.11",
     "@types/request": "^2.48.12",
     "@types/supertest": "^6.0.2",
     "@types/steam-user": "^4.26.8",
