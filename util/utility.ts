@@ -956,7 +956,7 @@ export function isDataComplete(match: Partial<ParsedMatch>) {
 export function pick(obj: any, keys: string[]) {
   const pick: any = {};
   keys.forEach((key) => {
-    pick[key] = obj[key] || null;
+    pick[key] = obj[key] ?? null;
   });
   return pick;
 }
