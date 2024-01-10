@@ -28,7 +28,7 @@ import {
 import { tryFetchApiData } from './getApiData';
 import { type ApiMatch } from './pgroup';
 import { gzipSync, gunzipSync } from 'zlib';
-import { alwaysCols, countsCols, heroesCols, peersCols, significantCols } from '../routes/playerFields';
+import { alwaysCols, countsCols, heroesCols, matchesCols, peersCols, significantCols } from '../routes/playerFields';
 
 /**
  * Adds benchmark data to the players in a match
@@ -215,7 +215,7 @@ type PlayerMatchesMetadata = {
   mergedLength: number;
 };
 // Only cache columns used by frontpage queries
-const cacheableColumns = new Set([...alwaysCols, ...significantCols, ...peersCols, ...heroesCols, ...countsCols, 'kills']);
+const cacheableColumns = new Set([...alwaysCols, ...significantCols, ...peersCols, ...heroesCols, ...countsCols, ...matchesCols]);
 export async function getPlayerMatchesWithMetadata(
   accountId: number,
   queryObj: QueryObj,
@@ -340,9 +340,11 @@ async function readCachedPlayerMatches(accountId: number, project: string[], noC
       }
       // Populate cache with all columns result
       const all = await readLocalPlayerMatches(accountId, Array.from(cacheableColumns));
-      const zip = gzipSync(JSON.stringify(all));
-      console.log('[PLAYERCACHE] %s: caching %s matches in %s bytes', accountId, all.length, zip.length);
-      await redis.setex('player_cache:' + accountId.toString(), config.PLAYER_CACHE_SECONDS, zip);
+      if (all.length) {
+        const zip = gzipSync(JSON.stringify(all));
+        console.log('[PLAYERCACHE] %s: caching %s matches in %s bytes', accountId, all.length, zip.length);
+        await redis.setex('player_cache:' + accountId.toString(), config.PLAYER_CACHE_SECONDS, zip);
+      }
       // Release the lock
       await redis.del('player_cache_lock:' + accountId.toString());
       return all.map((m: any) => pick(m, project));
