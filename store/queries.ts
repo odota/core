@@ -28,6 +28,7 @@ import {
 import { tryFetchApiData } from './getApiData';
 import { type ApiMatch } from './pgroup';
 import { gzipSync, gunzipSync } from 'zlib';
+import { alwaysCols, countsCols, heroesCols, peersCols, significantCols } from '../routes/playerFields';
 
 /**
  * Adds benchmark data to the players in a match
@@ -213,6 +214,8 @@ type PlayerMatchesMetadata = {
   archivedLength: number;
   mergedLength: number;
 };
+// Only cache columns used by frontpage queries
+const cachableColumns = new Set([...alwaysCols, ...significantCols, ...peersCols, ...heroesCols, ...countsCols]);
 export async function getPlayerMatchesWithMetadata(
   accountId: number,
   queryObj: QueryObj,
@@ -234,7 +237,9 @@ export async function getPlayerMatchesWithMetadata(
 
   const localOrCached = async () => {
     // Don't use cache if dbLimit (recentMatches) or projectAll (archiving)
-    return (await readCachedPlayerMatches(accountId, projection, Boolean(queryObj.dbLimit || queryObj.projectAll))) ?? readLocalPlayerMatches(accountId, projection, queryObj.dbLimit);
+    // Check if every requested column can be satisified by cache
+    const noCache = Boolean(queryObj.dbLimit) || !projection.every(field => cachableColumns.has(field as any));
+    return (await readCachedPlayerMatches(accountId, projection, noCache)) ?? readLocalPlayerMatches(accountId, projection, queryObj.dbLimit);
   }
 
   const [localMatches, archivedMatches] = await Promise.all([
@@ -312,8 +317,6 @@ export async function getPlayerMatchesWithMetadata(
 }
 
 async function readCachedPlayerMatches(accountId: number, project: string[], noCache: boolean): Promise<ParsedPlayerMatch[] | undefined> {
-  // NOTE: with the current code we will always read all columns from player_caches and cache it
-  // This means we're not benefiting from optimization by projecting only specific columns
   if (config.ENABLE_PLAYER_CACHE && !noCache) {
     const result = await redis.getBuffer('player_cache:' + accountId.toString());
     if (result) {
@@ -335,7 +338,7 @@ async function readCachedPlayerMatches(accountId: number, project: string[], noC
         return readCachedPlayerMatches(accountId, project, noCache);
       }
       // Populate cache with all columns result
-      const all = await readLocalPlayerMatches(accountId, ['*'], undefined);
+      const all = await readLocalPlayerMatches(accountId, Array.from(cachableColumns), undefined);
       const zip = gzipSync(JSON.stringify(all));
       console.log('[PLAYERCACHE] caching %s bytes', zip.length);
       await redis.setex('player_cache:' + accountId.toString(), config.PLAYER_CACHE_SECONDS, zip);

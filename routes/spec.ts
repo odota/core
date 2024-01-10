@@ -17,7 +17,7 @@ import {
   mergeObjects,
   redisCount,
 } from '../util/utility';
-import { subkeys } from './playerFields';
+import { matchesCols, countsCats, countsCols, heroesCols, histogramCols, peersCols, prosCols, wardmapCols, wordcloudCols, recentMatchesCols } from './playerFields';
 import db from '../store/db';
 import redis from '../store/redis';
 import packageJson from '../package.json';
@@ -345,30 +345,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
         route: () => '/players/:account_id/recentMatches',
         func: async (req, res, cb) => {
           const cache = await getPlayerMatches(Number(req.params.account_id), {
-            project: req.queryObj.project.concat([
-              'hero_id',
-              'start_time',
-              'duration',
-              'game_mode',
-              'lobby_type',
-              'version',
-              'kills',
-              'deaths',
-              'assists',
-              'average_rank',
-              'xp_per_min',
-              'gold_per_min',
-              'hero_damage',
-              'tower_damage',
-              'hero_healing',
-              'last_hits',
-              'lane',
-              'lane_role',
-              'is_roaming',
-              'cluster',
-              'leaver_status',
-              'party_size',
-            ]),
+            project: req.queryObj.project.concat(recentMatchesCols),
             dbLimit: 20,
           });
           return res.json(cache?.filter((match) => match.duration));
@@ -408,21 +385,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
         route: () => '/players/:account_id/matches',
         func: async (req, res, cb) => {
           // Use passed fields as additional fields, if available
-          const additionalFields = req.query.project || [
-            'hero_id',
-            'start_time',
-            'duration',
-            'game_mode',
-            'lobby_type',
-            'version',
-            'kills',
-            'deaths',
-            'assists',
-            'skill',
-            'average_rank',
-            'leaver_status',
-            'party_size',
-          ];
+          const additionalFields = req.query.project || matchesCols;
           req.queryObj.project = req.queryObj.project.concat(additionalFields);
           const cache = await getPlayerMatches(
             Number(req.params.account_id),
@@ -472,11 +435,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
             };
             heroes[hero_id_int] = hero;
           });
-          req.queryObj.project = req.queryObj.project.concat(
-            'heroes',
-            'account_id',
-            'start_time',
-          );
+          req.queryObj.project = req.queryObj.project.concat(heroesCols);
           const cache = await getPlayerMatches(
             Number(req.params.account_id),
             req.queryObj,
@@ -543,12 +502,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
         },
         route: () => '/players/:account_id/peers',
         func: async (req, res, cb) => {
-          req.queryObj.project = req.queryObj.project.concat(
-            'heroes',
-            'start_time',
-            'gold_per_min',
-            'xp_per_min',
-          );
+          req.queryObj.project = req.queryObj.project.concat(peersCols);
           const cache = await getPlayerMatches(
             Number(req.params.account_id),
             req.queryObj,
@@ -585,10 +539,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
         },
         route: () => '/players/:account_id/pros',
         func: async (req, res, cb) => {
-          req.queryObj.project = req.queryObj.project.concat(
-            'heroes',
-            'start_time',
-          );
+          req.queryObj.project = req.queryObj.project.concat(prosCols);
           const cache = await getPlayerMatches(
             Number(req.params.account_id),
             req.queryObj,
@@ -626,20 +577,20 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
         route: () => '/players/:account_id/totals',
         func: async (req, res, cb) => {
           const result: AnyDict = {};
-          subkeys.forEach((key) => {
+          histogramCols.forEach((key) => {
             result[key] = {
               field: key,
               n: 0,
               sum: 0,
             };
           });
-          req.queryObj.project = req.queryObj.project.concat(subkeys);
+          req.queryObj.project = req.queryObj.project.concat(histogramCols);
           const cache = await getPlayerMatches(
             Number(req.params.account_id),
             req.queryObj,
           );
           cache.forEach((m) => {
-            subkeys.forEach((key) => {
+            histogramCols.forEach((key) => {
               if (m[key] !== null && m[key] !== undefined) {
                 result[key].n += 1;
                 result[key].sum += Number(m[key]);
@@ -671,21 +622,11 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
         },
         route: () => '/players/:account_id/counts',
         func: async (req, res, cb) => {
-          const result: AnyDict = {};
-          const countCats = [
-            'leaver_status',
-            'game_mode',
-            'lobby_type',
-            'lane_role',
-            'region',
-            'patch',
-            'is_radiant',
-          ] as const;
-          countCats.forEach((key) => {
+          const result = {} as Record<(typeof countsCats)[number], any>;
+          countsCats.forEach((key) => {
             result[key] = {};
           });
-          const deps = countCats.map((name) => filterDeps[name]).flat();
-          req.queryObj.project = req.queryObj.project.concat(deps);
+          req.queryObj.project = req.queryObj.project.concat(countsCols);
           const cache = await getPlayerMatches(
             Number(req.params.account_id),
             req.queryObj,
@@ -693,7 +634,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           cache.forEach((m) => {
             // Compute the needed fields
             const record: Record<
-              (typeof countCats)[number],
+              (typeof countsCats)[number],
               number | boolean | null
             > = {
               is_radiant: isRadiant(m),
@@ -704,7 +645,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
               lobby_type: m.lobby_type,
               lane_role: m.lane_role,
             };
-            countCats.forEach((key) => {
+            countsCats.forEach((key) => {
               if (!result[key][Math.floor(Number(record[key]))]) {
                 result[key][Math.floor(Number(record[key]))] = {
                   games: 0,
@@ -753,7 +694,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
         },
         route: () => '/players/:account_id/histograms/:field',
         func: async (req, res, cb) => {
-          const field = subkeys.find((key) => key === req.params.field);
+          const field = histogramCols.find((key) => key === req.params.field);
           if (field) {
             req.queryObj.project = req.queryObj.project.concat(field);
           } else {
@@ -816,13 +757,11 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
         },
         route: () => '/players/:account_id/wardmap',
         func: async (req, res, cb) => {
-          const result = {
-            obs: {},
-            sen: {},
-          };
-          req.queryObj.project = req.queryObj.project.concat(
-            Object.keys(result) as (keyof ParsedPlayerMatch)[],
-          );
+          const result = {} as Record<(typeof wardmapCols)[number], any>;
+          wardmapCols.forEach((key) => {
+            result[key] = {};
+          });
+          req.queryObj.project = req.queryObj.project.concat(wardmapCols);
           const cache = await getPlayerMatches(
             Number(req.params.account_id),
             req.queryObj,
@@ -863,13 +802,11 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
         },
         route: () => '/players/:account_id/wordcloud',
         func: async (req, res, cb) => {
-          const result = {
-            my_word_counts: {},
-            all_word_counts: {},
-          };
-          req.queryObj.project = req.queryObj.project.concat(
-            Object.keys(result) as (keyof ParsedPlayerMatch)[],
-          );
+          const result = {} as Record<(typeof wordcloudCols)[number], any>;
+          wordcloudCols.forEach((key) => {
+            result[key] = {};
+          });
+          req.queryObj.project = req.queryObj.project.concat(wordcloudCols);
           const cache = await getPlayerMatches(
             Number(req.params.account_id),
             req.queryObj,

@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { FilterType, filterDeps } from '../util/filter';
 import spec from './spec';
 import db from '../store/db';
+import { alwaysCols } from './playerFields';
 
 //@ts-ignore
 const api: Router = new Router();
@@ -29,7 +30,7 @@ api.use('/players/:account_id/:info?', async (req, res, cb) => {
       // build array of required projections due to filters
       filterCols = filterCols.concat(filterDeps[key as FilterType] || []);
     });
-    const sortArr = (req.query.sort || []) as (keyof ParsedPlayerMatch)[];
+    const sortCol = (Array.isArray(req.query.sort) ? req.query.sort[0] : req.query.sort) as keyof ParsedPlayerMatch | undefined;
     const privacy = await db.raw(
       'SELECT fh_unavailable FROM players WHERE account_id = ?',
       [req.params.account_id],
@@ -40,14 +41,12 @@ api.use('/players/:account_id/:info?', async (req, res, cb) => {
       req.user?.account_id !== req.params.account_id;
     (req as unknown as Express.ExtRequest).queryObj = {
       project: [
-        'match_id',
-        'player_slot',
-        'radiant_win',
+        ...alwaysCols,
         ...filterCols,
-        ...sortArr,
+        ...sortCol ? [sortCol] : [],
       ],
       filter: (req.query || {}) as unknown as ArrayifiedFilters,
-      sort: sortArr[0],
+      sort: sortCol,
       limit: Number(req.query.limit),
       offset: Number(req.query.offset),
       having: Number(req.query.having),
