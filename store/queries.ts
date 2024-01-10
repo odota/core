@@ -552,7 +552,7 @@ export async function getMatchRankTier(
   );
   // Remove undefined/null values
   const filt = result.filter(Boolean);
-  const avg = averageMedal(filt.map((r) => Number(r))) || null;
+  const avg = averageMedal(filt.map((r) => Number(r)));
   return {
     avg,
     num: filt.length,

@@ -66,8 +66,8 @@ async function upsertMatchSample(match: Match) {
     const trx = await db.transaction();
     try {
       const matchMmrData = {
-        avg_rank_tier: avg || null,
-        num_rank_tier: num || null,
+        avg_rank_tier: avg ?? null,
+        num_rank_tier: num ?? null,
       };
       const radiant_team = match.players
         .filter((p) => isRadiant(p))

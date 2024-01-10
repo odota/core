@@ -181,9 +181,9 @@ export async function insertMatch(
           // Add lane data
           if (pm.lane_pos) {
             const laneData = getLaneFromPosData(pm.lane_pos, isRadiant(pm));
-            pm.lane = laneData.lane || null;
-            pm.lane_role = laneData.lane_role || null;
-            pm.is_roaming = laneData.is_roaming || null;
+            pm.lane = laneData.lane ?? null;
+            pm.lane_role = laneData.lane_role ?? null;
+            pm.is_roaming = laneData.is_roaming ?? null;
           }
           return upsert(trx, 'player_matches', pm, {
             match_id: pm.match_id,

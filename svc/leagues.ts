@@ -22,7 +22,7 @@ async function doLeagues() {
     if (league.league_id === 4664) {
       eventTier = 'premium';
     }
-    league.tier = openQualifierTier || eventTier || null;
+    league.tier = openQualifierTier ?? eventTier;
     league.ticket = null;
     league.banner = null;
     league.leagueid = league.league_id;

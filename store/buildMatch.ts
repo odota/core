@@ -32,12 +32,12 @@ async function extendPlayerData(
   const row = await db
     .first()
     .from('rank_tier')
-    .where({ account_id: p.account_id || null });
+    .where({ account_id: p.account_id ?? null });
   p.rank_tier = row ? row.rating : null;
   const subscriber = await db
     .first()
     .from('subscriber')
-    .where({ account_id: p.account_id || null });
+    .where({ account_id: p.account_id ?? null });
   p.is_subscriber = Boolean(subscriber?.status);
   // Note: Type is bad here, we're adding properties that shouldn't be there but changing will affect external API
   return p as Player | ParsedPlayer;
