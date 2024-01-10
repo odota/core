@@ -189,7 +189,7 @@ app.use((req, res, cb) => {
     }
     if (
       config.ENABLE_API_LIMIT &&
-      !whitelistedPaths.includes(new URL(req.originalUrl).pathname) &&
+      !whitelistedPaths.some(path => req.originalUrl.startsWith(path)) &&
       !res.locals.isAPIRequest &&
       Number(prevUsage) >= Number(config.API_FREE_LIMIT)
     ) {
@@ -212,9 +212,7 @@ app.use((req, res, cb) => {
     if (
       res.statusCode !== 500 &&
       res.statusCode !== 429 &&
-      !whitelistedPaths.includes(
-        new URL(req.originalUrl).pathname,
-      ) &&
+      !whitelistedPaths.some(path => req.originalUrl.startsWith(path)) &&
       elapsed < 10000
     ) {
       const multi = redis.multi();
@@ -237,7 +235,7 @@ app.use((req, res, cb) => {
     if (req.headers.origin === config.UI_HOST) {
       redisCount(redis, 'api_hits_ui');
     }
-    const normPath = new URL(req.originalUrl).pathname
+    const normPath = req.originalUrl
       .replace(/\d+/g, ':id')
       .toLowerCase()
       .replace(/\/+$/, '');
@@ -264,7 +262,7 @@ app.use((req, res, next) => {
     req.header('Origin') !== config.UI_HOST
   ) {
     // Make an exception for replay parse request
-    if (req.method === 'POST' && new URL(req.originalUrl).pathname.startsWith('/api/request/')) {
+    if (req.method === 'POST' && req.originalUrl.startsWith('/api/request/')) {
       return next();
     }
     return res.status(403).json({ error: 'Invalid Origin header' });
