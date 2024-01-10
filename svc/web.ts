@@ -235,10 +235,7 @@ app.use((req, res, cb) => {
     if (req.headers.origin === config.UI_HOST) {
       redisCount(redis, 'api_hits_ui');
     }
-    const normPath = req.originalUrl
-      .replace(/\d+/g, ':id')
-      .toLowerCase()
-      .replace(/\/+$/, '');
+    const normPath = req.route?.path;
     redis.zincrby('api_paths', 1, req.method + ' ' + normPath);
     redis.expireat(
       'api_paths',
