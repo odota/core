@@ -33,12 +33,7 @@ import cassandra from '../store/cassandra';
 import c from 'ansi-colors';
 
 const { Pool } = pg;
-const {
-  RETRIEVER_HOST,
-  POSTGRES_URL,
-  CASSANDRA_URL,
-  SCYLLA_URL,
-} = config;
+const { RETRIEVER_HOST, POSTGRES_URL, CASSANDRA_URL, SCYLLA_URL } = config;
 const initPostgresHost = POSTGRES_URL.replace('/yasp_test', '/postgres');
 const initCassandraHost = url.parse(CASSANDRA_URL).host as string;
 const initScyllaHost = url.parse(SCYLLA_URL).host as string;

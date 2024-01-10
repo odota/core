@@ -17,7 +17,18 @@ import {
   mergeObjects,
   redisCount,
 } from '../util/utility';
-import { matchesCols, countsCats, countsCols, heroesCols, histogramCols, peersCols, prosCols, wardmapCols, wordcloudCols, recentMatchesCols } from './playerFields';
+import {
+  matchesCols,
+  countsCats,
+  countsCols,
+  heroesCols,
+  histogramCols,
+  peersCols,
+  prosCols,
+  wardmapCols,
+  wordcloudCols,
+  recentMatchesCols,
+} from './playerFields';
 import db from '../store/db';
 import redis from '../store/redis';
 import packageJson from '../package.json';

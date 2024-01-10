@@ -353,7 +353,7 @@ export function mode(array: number[]) {
  * */
 export function isSignificant(match: Match | ApiMatch) {
   return Boolean(
-      constants.game_mode[match.game_mode]?.balanced &&
+    constants.game_mode[match.game_mode]?.balanced &&
       constants.lobby_type[match.lobby_type]?.balanced &&
       match.radiant_win != null &&
       match.duration > 360 &&
@@ -811,20 +811,16 @@ export function getRetrieverCount() {
  * @returns
  */
 export function getRandomRetrieverUrl(path: string): string {
-  const urls = RETRIEVER_ARRAY.map(
-    (r) => {
-      return `http://${r}${path}?key=${config.RETRIEVER_SECRET}`;
-    }
-  );
+  const urls = RETRIEVER_ARRAY.map((r) => {
+    return `http://${r}${path}?key=${config.RETRIEVER_SECRET}`;
+  });
   return urls[Math.floor(Math.random() * urls.length)];
 }
 
 export function getRandomParserUrl(replayUrl: string): string {
-  const urls = PARSER_ARRAY.map(
-    (r) => {
-      return `http://${r}/blob?replay_url=${replayUrl}`;
-    }
-  );
+  const urls = PARSER_ARRAY.map((r) => {
+    return `http://${r}/blob?replay_url=${replayUrl}`;
+  });
   return urls[Math.floor(Math.random() * urls.length)];
 }
 

@@ -81,7 +81,11 @@ passport.use(
 );
 
 // Do logging when requests finish
-const onResFinish = (req: express.Request, res: express.Response, timeStart: number) => {
+const onResFinish = (
+  req: express.Request,
+  res: express.Response,
+  timeStart: number,
+) => {
   const timeEnd = Number(new Date());
   const elapsed = timeEnd - timeStart;
   if (elapsed > 2000 || config.NODE_ENV === 'development') {
@@ -120,7 +124,10 @@ const onResFinish = (req: express.Request, res: express.Response, timeStart: num
     moment().startOf('hour').add(1, 'hour').format('X'),
   );
   redis.zincrby('api_status', 1, res.statusCode);
-  redis.expireat('api_status', moment().startOf('hour').add(1, 'hour').format('X'));
+  redis.expireat(
+    'api_status',
+    moment().startOf('hour').add(1, 'hour').format('X'),
+  );
   if (req.user && req.user.account_id) {
     redis.zadd('visitors', moment().format('X'), req.user.account_id);
   }
@@ -172,9 +179,9 @@ app.use(async (req, res, cb) => {
     const timeStart = Number(new Date());
     res.once('finish', () => onResFinish(req, res, timeStart));
     const apiKey =
-    (req.headers.authorization &&
-      req.headers.authorization.replace('Bearer ', '')) ||
-    req.query.api_key;
+      (req.headers.authorization &&
+        req.headers.authorization.replace('Bearer ', '')) ||
+      req.query.api_key;
     if (config.ENABLE_API_LIMIT && apiKey) {
       const resp = await redis.sismember('api_keys', apiKey as string);
       res.locals.isAPIRequest = resp === 1;
@@ -205,7 +212,11 @@ app.use(async (req, res, cb) => {
     }
     const resp = await command.exec();
     if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
-      console.log('[WEB] %s rate limit %s', req.originalUrl, JSON.stringify(resp));
+      console.log(
+        '[WEB] %s rate limit %s',
+        req.originalUrl,
+        JSON.stringify(resp),
+      );
     }
     const incrValue = resp![0]?.[1];
     const prevUsage = resp![2]?.[1];
@@ -303,7 +314,9 @@ app.route('/subscribeSuccess').get(async (req, res, cb) => {
     const session = await stripe.checkout.sessions.retrieve(
       req.query.session_id as string,
     );
-    const customer = await stripe.customers.retrieve(session.customer as string);
+    const customer = await stripe.customers.retrieve(
+      session.customer as string,
+    );
     const accountId = req.user.account_id;
     // associate the customer id with the steam account ID (req.user.account_id)
     await db.raw(
@@ -334,7 +347,7 @@ app.route('/manageSub').post(async (req, res, cb) => {
       return_url: req.body?.return_url,
     });
     return res.json(session);
-  } catch(e) {
+  } catch (e) {
     cb(e);
   }
 });

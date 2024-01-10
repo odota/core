@@ -30,7 +30,9 @@ api.use('/players/:account_id/:info?', async (req, res, cb) => {
       // build array of required projections due to filters
       filterCols = filterCols.concat(filterDeps[key as FilterType] || []);
     });
-    const sortCol = (Array.isArray(req.query.sort) ? req.query.sort[0] : req.query.sort) as keyof ParsedPlayerMatch | undefined;
+    const sortCol = (
+      Array.isArray(req.query.sort) ? req.query.sort[0] : req.query.sort
+    ) as keyof ParsedPlayerMatch | undefined;
     const privacy = await db.raw(
       'SELECT fh_unavailable FROM players WHERE account_id = ?',
       [req.params.account_id],
@@ -40,11 +42,7 @@ api.use('/players/:account_id/:info?', async (req, res, cb) => {
       Boolean(privacy.rows[0]?.fh_unavailable) &&
       req.user?.account_id !== req.params.account_id;
     (req as unknown as Express.ExtRequest).queryObj = {
-      project: [
-        ...alwaysCols,
-        ...filterCols,
-        ...sortCol ? [sortCol] : [],
-      ],
+      project: [...alwaysCols, ...filterCols, ...(sortCol ? [sortCol] : [])],
       filter: (req.query || {}) as unknown as ArrayifiedFilters,
       sort: sortCol,
       limit: Number(req.query.limit),

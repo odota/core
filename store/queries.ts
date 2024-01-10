@@ -28,7 +28,15 @@ import {
 import { tryFetchApiData } from './getApiData';
 import { type ApiMatch } from './pgroup';
 import { gzipSync, gunzipSync } from 'zlib';
-import { alwaysCols, countsCols, heroesCols, matchesCols, peersCols, significantCols } from '../routes/playerFields';
+import {
+  alwaysCols,
+  countsCols,
+  heroesCols,
+  itemsCols,
+  matchesCols,
+  peersCols,
+  significantCols,
+} from '../routes/playerFields';
 
 /**
  * Adds benchmark data to the players in a match
@@ -214,8 +222,16 @@ type PlayerMatchesMetadata = {
   archivedLength: number;
   mergedLength: number;
 };
-// Only cache columns used by frontpage queries
-const cacheableColumns = new Set([...alwaysCols, ...significantCols, ...peersCols, ...heroesCols, ...countsCols, ...matchesCols]);
+// Cache a set of columns for the frontpage and matches queries
+const cacheableColumns = new Set([
+  ...alwaysCols,
+  ...significantCols,
+  ...peersCols,
+  ...heroesCols,
+  ...countsCols,
+  ...matchesCols,
+  ...itemsCols,
+]);
 export async function getPlayerMatchesWithMetadata(
   accountId: number,
   queryObj: QueryObj,
@@ -231,20 +247,26 @@ export async function getPlayerMatchesWithMetadata(
   redisCount(redis, 'player_matches');
   const columns = await getCassandraColumns('player_caches');
   const sanitizedProject = queryObj.project.filter((f: string) => columns[f]);
-  const projection = queryObj.projectAll
-        ? ['*']
-        : sanitizedProject;
+  const projection = queryObj.projectAll ? ['*'] : sanitizedProject;
 
   const localOrCached = async () => {
     // Don't use cache if dbLimit (recentMatches) or projectAll (archiving)
     // Check if every requested column can be satisified by cache
-    const noCache = Boolean(queryObj.dbLimit) || !projection.every(field => cacheableColumns.has(field as any));
-    return (await readCachedPlayerMatches(accountId, projection, noCache)) ?? readLocalPlayerMatches(accountId, projection, queryObj.dbLimit);
-  }
+    const canCache =
+      config.ENABLE_PLAYER_CACHE &&
+      !Boolean(queryObj.dbLimit) &&
+      projection.every((field) => cacheableColumns.has(field as any));
+    const cache = canCache
+      ? await readCachedPlayerMatches(accountId, projection)
+      : undefined;
+    return (
+      cache ?? readLocalPlayerMatches(accountId, projection, queryObj.dbLimit)
+    );
+  };
 
   const [localMatches, archivedMatches] = await Promise.all([
     localOrCached(),
-    // for dbLimit (recentMatches), skip the archive and just return 20 most recent
+    // if dbLimit (recentMatches), don't use archive
     config.ENABLE_PLAYER_ARCHIVE && !queryObj.dbLimit
       ? readArchivedPlayerMatches(accountId)
       : Promise.resolve([]),
@@ -316,44 +338,71 @@ export async function getPlayerMatchesWithMetadata(
   ];
 }
 
-async function readCachedPlayerMatches(accountId: number, project: string[], noCache: boolean): Promise<ParsedPlayerMatch[] | undefined> {
-  if (config.ENABLE_PLAYER_CACHE && !noCache) {
-    const result = await redis.getBuffer('player_cache:' + accountId.toString());
-    if (result) {
-      redisCount(redis, 'player_cache_hit');
-      const unzip = gunzipSync(result).toString();
-      const output = JSON.parse(unzip);
-      console.log('[PLAYERCACHE] %s: read %s matches from %s bytes', accountId, output.length, result.length);
-      // Remove columns not asked for
-      return output.map((m: any) => pick(m, project));
-    } else {
-      // Uses the imprecise lock algorithm described in https://redis.io/commands/setnx/
-      // A client might delete the lock held by another client in the case of the population taking more than the timeout time
-      // This is because we use del to release rather than delete only if matches random value
-      // But that's ok since this is just an optimization to reduce load
-      const lock = await redis.set('player_cache_lock:' + accountId.toString(), Date.now().toString(), 'EX', 15, 'NX');
-      if (!lock) {
-        console.log('[PLAYERCACHE] waiting for lock on %s', accountId);
-        // Couldn't acquire the lock, wait and try again
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        return readCachedPlayerMatches(accountId, project, noCache);
-      }
-      // Populate cache with all columns result
-      const all = await readLocalPlayerMatches(accountId, Array.from(cacheableColumns));
-      if (all.length) {
-        const zip = gzipSync(JSON.stringify(all));
-        console.log('[PLAYERCACHE] %s: caching %s matches in %s bytes', accountId, all.length, zip.length);
-        await redis.setex('player_cache:' + accountId.toString(), config.PLAYER_CACHE_SECONDS, zip);
-      }
-      // Release the lock
-      await redis.del('player_cache_lock:' + accountId.toString());
-      return all.map((m: any) => pick(m, project));
+async function readCachedPlayerMatches(
+  accountId: number,
+  project: string[],
+): Promise<ParsedPlayerMatch[]> {
+  const result = await redis.getBuffer('player_cache:' + accountId.toString());
+  if (result) {
+    redisCount(redis, 'player_cache_hit');
+    const unzip = gunzipSync(result).toString();
+    const output = JSON.parse(unzip);
+    console.log(
+      '[PLAYERCACHE] %s: read %s matches from %s bytes',
+      accountId,
+      output.length,
+      result.length,
+    );
+    // Remove columns not asked for
+    return output.map((m: any) => pick(m, project));
+  } else {
+    // Uses the imprecise lock algorithm described in https://redis.io/commands/setnx/
+    // A client might delete the lock held by another client in the case of the population taking more than the timeout time
+    // This is because we use del to release rather than delete only if matches random value
+    // But that's ok since this is just an optimization to reduce load
+    const lock = await redis.set(
+      'player_cache_lock:' + accountId.toString(),
+      Date.now().toString(),
+      'EX',
+      15,
+      'NX',
+    );
+    if (!lock) {
+      console.log('[PLAYERCACHE] waiting for lock on %s', accountId);
+      // Couldn't acquire the lock, wait and try again
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      return readCachedPlayerMatches(accountId, project);
     }
+    // Populate cache with all columns result
+    const all = await readLocalPlayerMatches(
+      accountId,
+      Array.from(cacheableColumns),
+    );
+    if (all.length) {
+      const zip = gzipSync(JSON.stringify(all));
+      console.log(
+        '[PLAYERCACHE] %s: caching %s matches in %s bytes',
+        accountId,
+        all.length,
+        zip.length,
+      );
+      await redis.setex(
+        'player_cache:' + accountId.toString(),
+        config.PLAYER_CACHE_SECONDS,
+        zip,
+      );
+    }
+    // Release the lock
+    await redis.del('player_cache_lock:' + accountId.toString());
+    return all.map((m: any) => pick(m, project));
   }
-  return;
 }
 
-async function readLocalPlayerMatches(accountId: number, project: string[], limit?: number) {
+async function readLocalPlayerMatches(
+  accountId: number,
+  project: string[],
+  limit?: number,
+) {
   const query = util.format(
     `
       SELECT %s FROM player_caches
@@ -385,7 +434,7 @@ async function readLocalPlayerMatches(accountId: number, project: string[], limi
       },
     );
   });
-};
+}
 
 export async function getFullPlayerMatchesWithMetadata(
   accountId: number,

@@ -1,4 +1,4 @@
-import { filterDeps } from "../util/filter";
+import { filterDeps } from '../util/filter';
 
 /**
  * List of columns to support for histograms and totals
@@ -36,11 +36,7 @@ export const histogramCols = [
 ] as const;
 
 // Columns always projected
-export const alwaysCols = [
-  'match_id',
-  'player_slot',
-  'radiant_win'
-] as const;
+export const alwaysCols = ['match_id', 'player_slot', 'radiant_win'] as const;
 
 // Columns returned in matches call by default
 export const matchesCols = [
@@ -56,6 +52,17 @@ export const matchesCols = [
   'average_rank',
   'leaver_status',
   'party_size',
+] as const;
+
+// Used in the UI to show items on match list
+export const itemsCols = [
+  'item_0',
+  'item_1',
+  'item_2',
+  'item_3',
+  'item_4',
+  'item_5',
+  'backpack_0',
 ] as const;
 
 export const recentMatchesCols = [
@@ -89,18 +96,11 @@ export const peersCols = [
   'heroes',
   'start_time',
   'gold_per_min',
-  'xp_per_min'
+  'xp_per_min',
 ] as const;
-export const prosCols = [
-  'heroes',
-  'start_time',
-] as const;
-export const wardmapCols = [
-  'obs', 'sen'
-] as const;
-export const wordcloudCols = [
-  'all_word_counts', 'my_word_counts'
-] as const;
+export const prosCols = ['heroes', 'start_time'] as const;
+export const wardmapCols = ['obs', 'sen'] as const;
+export const wordcloudCols = ['all_word_counts', 'my_word_counts'] as const;
 
 // NOTE: These are filterDeps keys, not column names directly
 export const countsCats = [
@@ -113,4 +113,3 @@ export const countsCats = [
   'is_radiant',
 ] as const;
 export const countsCols = countsCats.map((name) => filterDeps[name]).flat();
-

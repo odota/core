@@ -461,7 +461,11 @@ export async function insertMatch(
     await redis.del(`match:${match.match_id}`);
   }
   async function clearRedisPlayer(match: InsertMatchInput) {
-    await Promise.all(match.players.filter(p => p.account_id).map((p) => redis.del(`player_cache:${p.account_id?.toString()}`)));
+    await Promise.all(
+      match.players
+        .filter((p) => p.account_id)
+        .map((p) => redis.del(`player_cache:${p.account_id?.toString()}`)),
+    );
   }
   async function decideCounts(match: InsertMatchInput) {
     // Update temporary match counts/hero rankings

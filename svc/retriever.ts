@@ -45,22 +45,27 @@ const builder = root.loadSync(
 );
 const EGCBaseClientMsg = builder.lookupEnum('EGCBaseClientMsg');
 const EDOTAGCMsg = builder.lookupEnum('EDOTAGCMsg');
-const CMsgClientToGCGetProfileCard = builder.lookupType('CMsgClientToGCGetProfileCard');
+const CMsgClientToGCGetProfileCard = builder.lookupType(
+  'CMsgClientToGCGetProfileCard',
+);
 const CMsgDOTAProfileCard = builder.lookupType('CMsgDOTAProfileCard');
-const CMsgGCMatchDetailsRequest = builder.lookupType('CMsgGCMatchDetailsRequest');
-const CMsgGCMatchDetailsResponse = builder.lookupType('CMsgGCMatchDetailsResponse');
+const CMsgGCMatchDetailsRequest = builder.lookupType(
+  'CMsgGCMatchDetailsRequest',
+);
+const CMsgGCMatchDetailsResponse = builder.lookupType(
+  'CMsgGCMatchDetailsResponse',
+);
 
 setInterval(() => {
   const shouldRestart =
-  // (matchSuccesses / matchRequests < 0.1 && matchRequests > 100 && getUptime() > minUpTimeSeconds) ||
-  (matchRequests > Object.keys(steamObj).length * matchesPerAccount &&
-    getUptime() > minUpTimeSeconds) ||
-  (noneReady() && getUptime() > minUpTimeSeconds);
+    // (matchSuccesses / matchRequests < 0.1 && matchRequests > 100 && getUptime() > minUpTimeSeconds) ||
+    (matchRequests > Object.keys(steamObj).length * matchesPerAccount &&
+      getUptime() > minUpTimeSeconds) ||
+    (noneReady() && getUptime() > minUpTimeSeconds);
   if (shouldRestart && config.NODE_ENV !== 'development') {
     return selfDestruct();
   }
 }, 10000);
-
 
 app.use(compression());
 app.get('/healthz', (req, res, cb) => {
@@ -103,7 +108,11 @@ app.get('/profile/:account_id', async (req, res, cb) => {
     DOTA_APPID,
     EDOTAGCMsg.values.k_EMsgClientToGCGetProfileCard,
     {},
-    Buffer.from(CMsgClientToGCGetProfileCard.encode({ account_id: Number(accountId) }).finish()),
+    Buffer.from(
+      CMsgClientToGCGetProfileCard.encode({
+        account_id: Number(accountId),
+      }).finish(),
+    ),
     (appid, msgType, payload) => {
       // console.log(appid, msgType, payload);
       profileSuccesses += 1;
@@ -136,7 +145,9 @@ app.get('/match/:match_id', async (req, res, cb) => {
     DOTA_APPID,
     EDOTAGCMsg.values.k_EMsgGCMatchDetailsRequest,
     {},
-    Buffer.from(CMsgGCMatchDetailsRequest.encode({ match_id: Number(matchId) }).finish()),
+    Buffer.from(
+      CMsgGCMatchDetailsRequest.encode({ match_id: Number(matchId) }).finish(),
+    ),
     (appid, msgType, payload) => {
       console.timeEnd('match:' + matchId);
       const matchData: any = CMsgGCMatchDetailsResponse.decode(payload);
@@ -158,7 +169,9 @@ app.get('/aliases/:steam_ids', async (req, res, cb) => {
   try {
     const keys = Object.keys(steamObj);
     const rKey = keys[Math.floor(Math.random() * keys.length)];
-    const aliases = await steamObj[rKey].getAliases(req.params.steam_ids?.split(','));
+    const aliases = await steamObj[rKey].getAliases(
+      req.params.steam_ids?.split(','),
+    );
     return res.json(aliases);
   } catch (e) {
     cb(e);
@@ -201,7 +214,7 @@ async function init() {
               appid,
               EGCBaseClientMsg.values.k_EMsgGCClientHello,
               {},
-              Buffer.alloc(0)
+              Buffer.alloc(0),
             );
           });
           client.on('receivedFromGC', (appid, msgType, payload) => {
@@ -268,7 +281,11 @@ function genStats() {
  */
 function chooseLoginInfo(accountsToUse: number) {
   const startIndex = Math.floor(Math.random() * (users.length - accountsToUse));
-  console.log('[RETRIEVER] using %s accounts at index %s', accountsToUse, startIndex);
+  console.log(
+    '[RETRIEVER] using %s accounts at index %s',
+    accountsToUse,
+    startIndex,
+  );
   return users.slice(startIndex, startIndex + accountsToUse).map((e, i) => ({
     accountName: users[startIndex + i],
     password: passes[startIndex + i],
