@@ -353,11 +353,9 @@ export function mode(array: number[]) {
  * */
 export function isSignificant(match: Match | ApiMatch) {
   return Boolean(
-    constants.game_mode[match.game_mode] &&
-      constants.game_mode[match.game_mode].balanced &&
-      constants.lobby_type[match.lobby_type] &&
-      constants.lobby_type[match.lobby_type].balanced &&
-      match.radiant_win !== undefined &&
+      constants.game_mode[match.game_mode]?.balanced &&
+      constants.lobby_type[match.lobby_type]?.balanced &&
+      match.radiant_win != null &&
       match.duration > 360 &&
       (match.players || []).every(
         (player) =>
