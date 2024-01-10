@@ -215,7 +215,7 @@ type PlayerMatchesMetadata = {
   mergedLength: number;
 };
 // Only cache columns used by frontpage queries
-const cachableColumns = new Set([...alwaysCols, ...significantCols, ...peersCols, ...heroesCols, ...countsCols]);
+const cacheableColumns = new Set([...alwaysCols, ...significantCols, ...peersCols, ...heroesCols, ...countsCols, 'kills']);
 export async function getPlayerMatchesWithMetadata(
   accountId: number,
   queryObj: QueryObj,
@@ -238,7 +238,7 @@ export async function getPlayerMatchesWithMetadata(
   const localOrCached = async () => {
     // Don't use cache if dbLimit (recentMatches) or projectAll (archiving)
     // Check if every requested column can be satisified by cache
-    const noCache = Boolean(queryObj.dbLimit) || !projection.every(field => cachableColumns.has(field as any));
+    const noCache = Boolean(queryObj.dbLimit) || !projection.every(field => cacheableColumns.has(field as any));
     return (await readCachedPlayerMatches(accountId, projection, noCache)) ?? readLocalPlayerMatches(accountId, projection, queryObj.dbLimit);
   }
 
@@ -322,9 +322,10 @@ async function readCachedPlayerMatches(accountId: number, project: string[], noC
     if (result) {
       redisCount(redis, 'player_cache_hit');
       const unzip = gunzipSync(result).toString();
-      console.log('[PLAYERCACHE] decompressed %s bytes', unzip.length);
+      const output = JSON.parse(unzip);
+      console.log('[PLAYERCACHE] read %s matches in %s bytes', output.length, unzip.length);
       // Remove columns not asked for
-      return JSON.parse(unzip).map((m: any) => pick(m, project));
+      return output.map((m: any) => pick(m, project));
     } else {
       // Uses the imprecise lock algorithm described in https://redis.io/commands/setnx/
       // A client might delete the lock held by another client in the case of the population taking more than the timeout time
@@ -338,9 +339,9 @@ async function readCachedPlayerMatches(accountId: number, project: string[], noC
         return readCachedPlayerMatches(accountId, project, noCache);
       }
       // Populate cache with all columns result
-      const all = await readLocalPlayerMatches(accountId, Array.from(cachableColumns), undefined);
+      const all = await readLocalPlayerMatches(accountId, Array.from(cacheableColumns));
       const zip = gzipSync(JSON.stringify(all));
-      console.log('[PLAYERCACHE] caching %s bytes', zip.length);
+      console.log('[PLAYERCACHE] caching %s matches in %s bytes', all.length, zip.length);
       await redis.setex('player_cache:' + accountId.toString(), config.PLAYER_CACHE_SECONDS, zip);
       // Release the lock
       await redis.del('player_cache_lock:' + accountId.toString());
@@ -350,7 +351,7 @@ async function readCachedPlayerMatches(accountId: number, project: string[], noC
   return;
 }
 
-async function readLocalPlayerMatches(accountId: number, project: string[], limit: number | undefined) {
+async function readLocalPlayerMatches(accountId: number, project: string[], limit?: number) {
   const query = util.format(
     `
       SELECT %s FROM player_caches
@@ -367,7 +368,7 @@ async function readLocalPlayerMatches(accountId: number, project: string[], limi
       [accountId],
       {
         prepare: true,
-        fetchSize: 5000,
+        fetchSize: 1000,
         autoPage: true,
       },
       (n, row) => {
