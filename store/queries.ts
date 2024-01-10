@@ -323,7 +323,7 @@ async function readCachedPlayerMatches(accountId: number, project: string[], noC
       redisCount(redis, 'player_cache_hit');
       const unzip = gunzipSync(result).toString();
       const output = JSON.parse(unzip);
-      console.log('[PLAYERCACHE] read %s matches in %s bytes', output.length, unzip.length);
+      console.log('[PLAYERCACHE] %s: read %s matches from %s bytes', accountId, output.length, result.length);
       // Remove columns not asked for
       return output.map((m: any) => pick(m, project));
     } else {
@@ -341,7 +341,7 @@ async function readCachedPlayerMatches(accountId: number, project: string[], noC
       // Populate cache with all columns result
       const all = await readLocalPlayerMatches(accountId, Array.from(cacheableColumns));
       const zip = gzipSync(JSON.stringify(all));
-      console.log('[PLAYERCACHE] caching %s matches in %s bytes', all.length, zip.length);
+      console.log('[PLAYERCACHE] %s: caching %s matches in %s bytes', accountId, all.length, zip.length);
       await redis.setex('player_cache:' + accountId.toString(), config.PLAYER_CACHE_SECONDS, zip);
       // Release the lock
       await redis.del('player_cache_lock:' + accountId.toString());
