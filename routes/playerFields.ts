@@ -62,7 +62,6 @@ export const itemsCols = [
   'item_3',
   'item_4',
   'item_5',
-  'backpack_0',
 ] as const;
 
 export const recentMatchesCols = [
