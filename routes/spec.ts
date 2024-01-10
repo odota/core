@@ -21,7 +21,6 @@ import { subkeys } from './playerFields';
 import db from '../store/db';
 import redis from '../store/redis';
 import packageJson from '../package.json';
-import { sendDataWithCache } from '../store/cacheFunctions';
 import generateOperationId from './generateOperationId';
 import {
   getDistributions,
@@ -311,7 +310,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
               result.lose += 1;
             }
           });
-          return sendDataWithCache(req, res, result, 'wl');
+          return res.json(result);
         },
       },
     },
@@ -516,7 +515,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
                 hero.games >= Number(req.queryObj.having),
             )
             .sort((a, b) => b.games - a.games);
-          return sendDataWithCache(req, res, result, 'heroes');
+          return res.json(result);
         },
       },
     },
@@ -558,7 +557,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           const result = await getPeers(teammates, {
             account_id: Number(req.params.account_id),
           });
-          return sendDataWithCache(req, res, result, 'peers');
+          return res.json(result);
         },
       },
     },

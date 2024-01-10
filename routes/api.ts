@@ -1,37 +1,10 @@
 import { Router } from 'express';
 import { FilterType, filterDeps } from '../util/filter';
 import spec from './spec';
-import { readCache } from '../store/cacheFunctions';
-import { redisCount } from '../util/utility';
-import redis from '../store/redis';
 import db from '../store/db';
 
 //@ts-ignore
 const api: Router = new Router();
-// Player caches middleware
-api.use('/players/:account_id/:info?', async (req, res, cb) => {
-  // Check cache
-  try {
-    if (!Object.keys(req.query).length && req.params.info) {
-      const result = await readCache({
-        key: req.params.info,
-        account_id: req.params.account_id,
-      });
-      if (result) {
-        redisCount(redis, 'player_cache_hit');
-        return res.json(JSON.parse(result));
-      }
-      // missed the cache
-      return cb();
-    }
-    // not eligible for cache (query params)
-    return cb();
-  } catch (e) {
-    console.error(e);
-    // Exception from cache but we can continue to the regular handler
-    return cb();
-  }
-});
 // Player endpoints middleware
 api.use('/players/:account_id/:info?', async (req, res, cb) => {
   try {

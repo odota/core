@@ -9,7 +9,6 @@ import db, { getPostgresColumns } from './db';
 import redis from './redis';
 import { es, INDEX } from './elasticsearch';
 import cassandra, { getCassandraColumns } from './cassandra';
-import { getKeys, clearCache } from './cacheFunctions';
 import type knex from 'knex';
 import {
   getAnonymousAccountId,
@@ -462,15 +461,7 @@ export async function insertMatch(
     await redis.del(`match:${match.match_id}`);
   }
   async function clearRedisPlayer(match: InsertMatchInput) {
-    const arr: { key: string; account_id: string }[] = [];
-    match.players.forEach((player) => {
-      getKeys().forEach((key) => {
-        if (player.account_id) {
-          arr.push({ key, account_id: player.account_id?.toString() });
-        }
-      });
-    });
-    await Promise.all(arr.map((val) => clearCache(val)));
+    await Promise.all(match.players.filter(p => p.account_id).map((p) => redis.del(`player_cache:${p.account_id?.toString()}`)));
   }
   async function decideCounts(match: InsertMatchInput) {
     // Update temporary match counts/hero rankings
