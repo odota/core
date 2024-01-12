@@ -9,6 +9,7 @@ import contributors from '../CONTRIBUTORS';
 import { promisify } from 'util';
 import type { Redis } from 'ioredis';
 import type { ApiMatch } from '../store/pgroup';
+import type QueryString from 'qs';
 
 /**
  * Tokenizes an input string.
@@ -659,20 +660,18 @@ export function countItemPopularity(items: any[]) {
   }, {});
 }
 
-export type PeersCount = {
-  [key: string]: {
-    account_id: number;
-    last_played: number;
-    win: number;
-    games: number;
-    with_win: number;
-    with_games: number;
-    against_win: number;
-    against_games: number;
-    with_gpm_sum: number;
-    with_xpm_sum: number;
-  };
-};
+export type PeersCount = Record<string, {
+  account_id: number;
+  last_played: number;
+  win: number;
+  games: number;
+  with_win: number;
+  with_games: number;
+  against_win: number;
+  against_games: number;
+  with_gpm_sum: number;
+  with_xpm_sum: number;
+}>;
 /**
  * Counts the peer account_ids in the input match array
  * */
@@ -732,7 +731,7 @@ export function getAnonymousAccountId() {
  * Computes the lane a hero is in based on an input hash of positions
  * */
 export function getLaneFromPosData(
-  lanePos: { [key: string]: NumberDict },
+  lanePos: Record<string, NumberDict>,
   isRadiant: boolean,
 ) {
   // compute lanes
@@ -955,4 +954,14 @@ export function pick(obj: any, keys: string[]) {
     pick[key] = obj[key] ?? null;
   });
   return pick;
+}
+
+export function queryParamToArray(input: string | string[] | QueryString.ParsedQs | QueryString.ParsedQs[] | undefined): string[] {
+  if (Array.isArray(input)) {
+    return input as string[];
+  }
+  if (typeof input === "string") {
+    return [input];
+  }
+  return [];
 }

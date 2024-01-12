@@ -30,43 +30,43 @@ export const filterDeps = {
 const filterFuncs: {
   [key in FilterType]: (
     m: ParsedPlayerMatch,
-    key: number,
-    arr: number[],
+    val: string | number,
+    arr: (string | number)[],
     curtime: number,
   ) => boolean;
 } = {
   // filter: player won
-  win(m, key) {
-    return Number(isRadiant(m) === m.radiant_win) === key;
+  win(m, val) {
+    return Number(isRadiant(m) === m.radiant_win) === val;
   },
-  patch(m, key) {
-    return getPatchIndex(m.start_time) === key;
+  patch(m, val) {
+    return getPatchIndex(m.start_time) === val;
   },
-  game_mode(m, key) {
-    return m.game_mode === key;
+  game_mode(m, val) {
+    return m.game_mode === val;
   },
-  lobby_type(m, key) {
-    return m.lobby_type === key;
+  lobby_type(m, val) {
+    return m.lobby_type === val;
   },
-  region(m, key) {
-    return constants.cluster[m.cluster] === key;
+  region(m, val) {
+    return constants.cluster[m.cluster] === val;
   },
-  date(m, key, _arr, curtime) {
-    return m.start_time > curtime - key * 86400;
+  date(m, val, _arr, curtime) {
+    return m.start_time > curtime - Number(val) * 86400;
   },
-  lane_role(m, key) {
-    return m.lane_role === key;
+  lane_role(m, val) {
+    return m.lane_role === val;
   },
-  hero_id(m, key) {
-    return m.hero_id === key;
+  hero_id(m, val) {
+    return m.hero_id === val;
   },
-  is_radiant(m, key) {
-    return Number(isRadiant(m)) === key;
+  is_radiant(m, val) {
+    return Number(isRadiant(m)) === val;
   },
-  party_size(m, key) {
-    return m.party_size === key;
+  party_size(m, val) {
+    return m.party_size === val;
   },
-  included_account_id(m, key, arr) {
+  included_account_id(m, val, arr) {
     return arr.every((k) => {
       let passed = false;
       Object.keys(m.heroes || {}).forEach((key) => {
@@ -77,7 +77,7 @@ const filterFuncs: {
       return passed;
     });
   },
-  excluded_account_id(m, key, arr) {
+  excluded_account_id(m, val, arr) {
     return arr.every((k) => {
       let passed = true;
       Object.keys(m.heroes || {}).forEach((key) => {
@@ -88,7 +88,7 @@ const filterFuncs: {
       return passed;
     });
   },
-  with_account_id(m, key, arr) {
+  with_account_id(m, val, arr) {
     return arr.every((k) => {
       let passed = false;
       Object.keys(m.heroes || {}).forEach((key) => {
@@ -102,7 +102,7 @@ const filterFuncs: {
       return passed;
     });
   },
-  against_account_id(m, key, arr) {
+  against_account_id(m, val, arr) {
     return arr.every((k) => {
       let passed = false;
       Object.keys(m.heroes || {}).forEach((key) => {
@@ -116,7 +116,7 @@ const filterFuncs: {
       return passed;
     });
   },
-  with_hero_id(m, key, arr) {
+  with_hero_id(m, val, arr) {
     return arr.every((k) => {
       let passed = false;
       Object.keys(m.heroes || {}).forEach((key) => {
@@ -130,7 +130,7 @@ const filterFuncs: {
       return passed;
     });
   },
-  against_hero_id(m, key, arr) {
+  against_hero_id(m, val, arr) {
     return arr.every((k) => {
       let passed = false;
       Object.keys(m.heroes || {}).forEach((key) => {
@@ -144,20 +144,20 @@ const filterFuncs: {
       return passed;
     });
   },
-  significant(m, key) {
-    return Number(isSignificant(m)) === key;
+  significant(m, val) {
+    return Number(isSignificant(m)) === val;
   },
-  leagueid(m, key) {
-    return m.leagueid === key;
+  leagueid(m, val) {
+    return m.leagueid === val;
   },
-  leaver_status(m, key) {
-    return m.leaver_status === key;
+  leaver_status(m, val) {
+    return m.leaver_status === val;
   },
 };
 
 export function filterMatches(
   matches: ParsedPlayerMatch[],
-  filters?: ArrayifiedFilters,
+  filters?: Map<string, (string | number)[]>
 ) {
   // Used for date filter
   const curtime = Math.floor(Date.now() / 1000);
@@ -165,28 +165,31 @@ export function filterMatches(
   const filtered = [];
   for (let i = 0; i < matches.length; i += 1) {
     let include = true;
-    // verify the match passes each filter test
-    Object.keys(filters || {}).forEach((key) => {
-      if (
-        filterFuncs[key as FilterType] &&
-        filters &&
-        filters[key] &&
-        filters[key]?.length
-      ) {
-        // earlier, we arrayified everything
-        // pass the first element, as well as the full array
-        // check that it passes all filters
-        // pass the player_match, the first element of array, and the array itself
-        include =
-          include &&
-          filterFuncs[key as FilterType](
-            matches[i],
-            filters[key][0],
-            filters[key],
-            curtime,
-          );
-      }
-    });
+    if (filters) {
+      // verify the match passes each filter test
+      Array.from(filters.keys()).forEach((key) => {
+        const arr = filters.get(key);
+        const first = arr?.[0];
+        if (
+          filterFuncs[key as FilterType] &&
+          first &&
+          arr
+        ) {
+          // earlier, we arrayified everything
+          // pass the first element, as well as the full array
+          // check that it passes all filters
+          // pass the player_match, the first element of array, and the array itself
+          include =
+            include &&
+            filterFuncs[key as FilterType](
+              matches[i],
+              first,
+              arr,
+              curtime,
+            );
+        }
+      });
+    }
     // if we passed, push it
     if (include) {
       filtered.push(matches[i]);

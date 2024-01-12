@@ -3,22 +3,18 @@ declare module 'dotaconstants';
 declare module 'http-proxy';
 
 declare namespace Express {
-  type ExpressRequest = import('express').Request;
-  interface ExtRequest extends ExpressRequest {
-    query: any;
-    originalQuery: string;
-    queryObj: QueryObj;
+  interface Locals {
+    queryObj: QueryObj
   }
   interface User {
     account_id: string;
   }
 }
 
-type ArrayifiedFilters = { [key: string]: number[] };
 type QueryObj = {
   project: (keyof ParsedPlayerMatch)[];
   projectAll?: boolean;
-  filter?: ArrayifiedFilters;
+  filter?: Map<string, (string | number)[]>;
   sort?: keyof ParsedPlayerMatch;
   // Number of results to return after client filter/sort
   limit?: number;
@@ -29,12 +25,9 @@ type QueryObj = {
   isPrivate?: boolean;
 };
 
-type StringDict = { [key: string]: string };
-type NumberArrayDict = { [key: string]: number[] };
-type StringArrayDict = { [key: string]: string[] };
-type AnyDict = { [key: string]: any };
-type NumberDict = { [key: string]: number };
-type BooleanDict = { [key: string]: boolean };
+type AnyDict = Record<string, any>;
+type NumberDict = Record<string, number>;
+type BooleanDict = Record<string, boolean>;
 type ErrorCb = (
   err?: Error | null | undefined | string | unknown,
   result?: any,
@@ -149,7 +142,7 @@ interface ParsedPlayer extends Player {
   purchase_log: any[];
   pings: any;
   purchase: NumberDict;
-  lane_pos: { [key: string]: NumberDict };
+  lane_pos: Record<string, NumberDict>;
   gold_t: number[];
   xp_t: number[];
   lh_t: number[];
@@ -380,7 +373,7 @@ type PathVerbSpec = {
   };
   route: () => string;
   func: (
-    req: Express.ExtRequest,
+    req: import('express').Request,
     res: import('express').Response,
     cb: ErrorCb,
   ) => Promise<any>;

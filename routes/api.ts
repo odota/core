@@ -3,6 +3,7 @@ import { FilterType, filterDeps } from '../util/filter';
 import spec from './spec';
 import db from '../store/db';
 import { alwaysCols } from './playerFields';
+import { queryParamToArray } from '../util/utility';
 
 //@ts-ignore
 const api: Router = new Router();
@@ -12,9 +13,6 @@ api.use('/players/:account_id/:info?', async (req, res, cb) => {
     if (!Number.isInteger(Number(req.params.account_id))) {
       return res.status(400).json({ error: 'invalid account id' });
     }
-    (req as unknown as Express.ExtRequest).originalQuery = JSON.parse(
-      JSON.stringify(req.query),
-    );
     // Enable significance filter by default, disable it if 0 is passed
     if (req.query.significant === '0') {
       delete req.query.significant;
@@ -22,17 +20,15 @@ api.use('/players/:account_id/:info?', async (req, res, cb) => {
       req.query.significant = '1';
     }
     let filterCols: (keyof ParsedPlayerMatch)[] = [];
+    const filter = new Map<string, (string | number)[]>();
     Object.keys(req.query).forEach((key) => {
       // numberify and arrayify everything in query
-      req.query[key] = []
-        .concat(req.query[key] as [])
-        .map((e) => (Number.isNaN(Number(e)) ? e : Number(e))) as any;
+      // leave it as a string if not a number
+      filter.set(key, queryParamToArray(req.query[key]).map((e) => (Number.isNaN(Number(e)) ? e : Number(e))));
       // build array of required projections due to filters
       filterCols = filterCols.concat(filterDeps[key as FilterType] || []);
     });
-    const sortCol = (
-      Array.isArray(req.query.sort) ? req.query.sort[0] : req.query.sort
-    ) as keyof ParsedPlayerMatch | undefined;
+    const sortCols = queryParamToArray(req.query.sort) as (keyof ParsedPlayerMatch)[];
     const privacy = await db.raw(
       'SELECT fh_unavailable FROM players WHERE account_id = ?',
       [req.params.account_id],
@@ -41,10 +37,10 @@ api.use('/players/:account_id/:info?', async (req, res, cb) => {
     const isPrivate =
       Boolean(privacy.rows[0]?.fh_unavailable) &&
       req.user?.account_id !== req.params.account_id;
-    (req as unknown as Express.ExtRequest).queryObj = {
-      project: [...alwaysCols, ...filterCols, ...(sortCol ? [sortCol] : [])],
-      filter: (req.query || {}) as unknown as ArrayifiedFilters,
-      sort: sortCol,
+    res.locals.queryObj = {
+      project: [...alwaysCols, ...filterCols, ...sortCols],
+      filter,
+      sort: sortCols[0],
       limit: Number(req.query.limit),
       offset: Number(req.query.offset),
       having: Number(req.query.having),
@@ -85,7 +81,7 @@ Object.keys(spec.paths).forEach((path) => {
       api[verb as HttpVerb](routePath, async (req, res, cb) => {
         // Wrap all the route handlers in try/catch so we don't have to do it individually
         try {
-          await func(req as Express.ExtRequest, res, cb);
+          await func(req, res, cb);
         } catch (e) {
           cb(e);
         }
