@@ -23,12 +23,13 @@ const baseMatchRequestInterval = 500;
 let extraMatchRequestInterval = 0;
 const matchRequestIntervalStep = 0;
 const noneReady = () => Object.keys(steamObj).length === 0;
-let lastRequestTime: number | null = null;
+let lastMatchRequestTime: number | null = null;
 let matchRequests = 0;
 let matchSuccesses = 0;
 let profileRequests = 0;
 let profileSuccesses = 0;
 const matchSuccessAccount: Record<string, number> = {};
+const matchRequestAccount: Record<string, number> = {};
 const DOTA_APPID = 570;
 
 const root = new ProtoBuf.Root();
@@ -122,23 +123,25 @@ app.get('/profile/:account_id', async (req, res, cb) => {
   );
 });
 app.get('/match/:match_id', async (req, res, cb) => {
-  const keys = Object.keys(steamObj);
-  const rKey = keys[Math.floor(Math.random() * keys.length)];
-  const matchId = req.params.match_id;
   // Don't allow requests coming in too fast
-  const curRequestTime = Number(new Date());
+  const curTime = Number(new Date());
   if (
-    lastRequestTime &&
-    curRequestTime - lastRequestTime <
+    lastMatchRequestTime &&
+    curTime - lastMatchRequestTime <
       baseMatchRequestInterval + extraMatchRequestInterval
   ) {
     return res.status(429).json({
       error: 'too many requests',
     });
   }
-  lastRequestTime = curRequestTime;
+  lastMatchRequestTime = curTime;
+  const keys = Object.keys(steamObj);
+  // Round robin request to spread load evenly
+  const rKey = keys[matchRequests % keys.length];
+  const matchId = req.params.match_id;
   const client = steamObj[rKey];
   matchRequests += 1;
+  matchRequestAccount[rKey] += 1;
   extraMatchRequestInterval += matchRequestIntervalStep;
   console.time('match:' + matchId);
   client.sendToGC(
@@ -166,16 +169,17 @@ app.get('/match/:match_id', async (req, res, cb) => {
 });
 app.get('/aliases/:steam_ids', async (req, res, cb) => {
   // example: 76561198048632981
-  try {
-    const keys = Object.keys(steamObj);
-    const rKey = keys[Math.floor(Math.random() * keys.length)];
-    const aliases = await steamObj[rKey].getAliases(
-      req.params.steam_ids?.split(','),
-    );
-    return res.json(aliases);
-  } catch (e) {
-    cb(e);
-  }
+  const keys = Object.keys(steamObj);
+  const rKey = keys[Math.floor(Math.random() * keys.length)];
+  const client = steamObj[rKey];
+  client.getAliases(
+    req.params.steam_ids?.split(','),
+    (err, aliases) => {
+      if (err) {
+        return cb(err);
+      }
+      return res.json(aliases);
+    });
 });
 
 async function start() {
@@ -233,8 +237,9 @@ async function init() {
                 client.steamID.toString(),
               );
               steamObj[client.steamID.toString()] = client;
-              if (!matchSuccessAccount[client.steamID.toString()]) {
+              if (!(client.steamID.toString() in matchSuccessAccount)) {
                 matchSuccessAccount[client.steamID.toString()] = 0;
+                matchRequestAccount[client.steamID.toString()] = 0;
               }
               resolve();
             }
@@ -271,6 +276,7 @@ function genStats() {
     numReadyAccounts: Object.keys(steamObj).length,
     totalAccounts: users.length,
     matchSuccessAccount,
+    matchRequestAccount,
   };
   return data;
 }
