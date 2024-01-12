@@ -21,7 +21,7 @@ async function start() {
       () => {
         cp.execSync('pm2 flush');
       },
-      60 * 60 * 1000,
+      24 * 60 * 60 * 1000,
     );
   } else {
     // Block indefinitely (keep process alive for Docker)
