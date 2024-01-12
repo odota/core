@@ -660,18 +660,21 @@ export function countItemPopularity(items: any[]) {
   }, {});
 }
 
-export type PeersCount = Record<string, {
-  account_id: number;
-  last_played: number;
-  win: number;
-  games: number;
-  with_win: number;
-  with_games: number;
-  against_win: number;
-  against_games: number;
-  with_gpm_sum: number;
-  with_xpm_sum: number;
-}>;
+export type PeersCount = Record<
+  string,
+  {
+    account_id: number;
+    last_played: number;
+    win: number;
+    games: number;
+    with_win: number;
+    with_games: number;
+    against_win: number;
+    against_games: number;
+    with_gpm_sum: number;
+    with_xpm_sum: number;
+  }
+>;
 /**
  * Counts the peer account_ids in the input match array
  * */
@@ -956,11 +959,18 @@ export function pick(obj: any, keys: string[]) {
   return pick;
 }
 
-export function queryParamToArray(input: string | string[] | QueryString.ParsedQs | QueryString.ParsedQs[] | undefined): string[] {
+export function queryParamToArray(
+  input:
+    | string
+    | string[]
+    | QueryString.ParsedQs
+    | QueryString.ParsedQs[]
+    | undefined,
+): string[] {
   if (Array.isArray(input)) {
     return input as string[];
   }
-  if (typeof input === "string") {
+  if (typeof input === 'string') {
     return [input];
   }
   return [];

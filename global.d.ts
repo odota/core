@@ -4,7 +4,7 @@ declare module 'http-proxy';
 
 declare namespace Express {
   interface Locals {
-    queryObj: QueryObj
+    queryObj: QueryObj;
   }
   interface User {
     account_id: string;

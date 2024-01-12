@@ -59,7 +59,9 @@ const CMsgGCMatchDetailsResponse = builder.lookupType(
 
 setInterval(() => {
   const shouldRestart =
-    (matchSuccesses === 0 && matchRequests > 100 && getUptime() > minUpTimeSeconds) ||
+    (matchSuccesses === 0 &&
+      matchRequests > 100 &&
+      getUptime() > minUpTimeSeconds) ||
     (matchRequests > Object.keys(steamObj).length * matchesPerAccount &&
       getUptime() > minUpTimeSeconds) ||
     (noneReady() && getUptime() > minUpTimeSeconds);
@@ -172,14 +174,12 @@ app.get('/aliases/:steam_ids', async (req, res, cb) => {
   const keys = Object.keys(steamObj);
   const rKey = keys[Math.floor(Math.random() * keys.length)];
   const client = steamObj[rKey];
-  client.getAliases(
-    req.params.steam_ids?.split(','),
-    (err, aliases) => {
-      if (err) {
-        return cb(err);
-      }
-      return res.json(aliases);
-    });
+  client.getAliases(req.params.steam_ids?.split(','), (err, aliases) => {
+    if (err) {
+      return cb(err);
+    }
+    return res.json(aliases);
+  });
 });
 
 async function start() {
@@ -291,7 +291,7 @@ function chooseLoginInfo(accountsToUse: number) {
     accountName: users[i],
     password: passes[i],
   }));
-  return arr.slice(startIndex, startIndex + accountsToUse)
+  return arr.slice(startIndex, startIndex + accountsToUse);
 }
 
 function chooseLoginInfoShuffle(accountsToUse: number) {
@@ -300,7 +300,7 @@ function chooseLoginInfoShuffle(accountsToUse: number) {
     password: passes[i],
   }));
   shuffle(arr);
-  return arr.slice(0, accountsToUse)
+  return arr.slice(0, accountsToUse);
 }
 
 export function shuffle(array: any[]) {

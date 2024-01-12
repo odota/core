@@ -72,7 +72,14 @@ export async function runReliableQueue(
           // If the processor returns true, it's successful and we should delete the job and then commit
           if (success || job.attempts <= 0) {
             if (success) {
-              await redis.publish('queue', c.blue(`[${queueName}] [complete] [pri: ${job.priority}] [queued: ${moment(job.timestamp).fromNow()}]`));
+              await redis.publish(
+                'queue',
+                c.blue(
+                  `[${queueName}] [complete] [pri: ${
+                    job.priority
+                  }] [queued: ${moment(job.timestamp).fromNow()}]`,
+                ),
+              );
             }
             await consumer.query('DELETE FROM queue WHERE id = $1', [job.id]);
             await consumer.query('COMMIT');

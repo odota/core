@@ -24,11 +24,18 @@ api.use('/players/:account_id/:info?', async (req, res, cb) => {
     Object.keys(req.query).forEach((key) => {
       // numberify and arrayify everything in query
       // leave it as a string if not a number
-      filter.set(key, queryParamToArray(req.query[key]).map((e) => (Number.isNaN(Number(e)) ? e : Number(e))));
+      filter.set(
+        key,
+        queryParamToArray(req.query[key]).map((e) =>
+          Number.isNaN(Number(e)) ? e : Number(e),
+        ),
+      );
       // build array of required projections due to filters
       filterCols = filterCols.concat(filterDeps[key as FilterType] || []);
     });
-    const sortCols = queryParamToArray(req.query.sort) as (keyof ParsedPlayerMatch)[];
+    const sortCols = queryParamToArray(
+      req.query.sort,
+    ) as (keyof ParsedPlayerMatch)[];
     const privacy = await db.raw(
       'SELECT fh_unavailable FROM players WHERE account_id = ?',
       [req.params.account_id],

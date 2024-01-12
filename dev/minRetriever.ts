@@ -72,14 +72,12 @@ app.get('/match/:match_id', async (req, res, cb) => {
   );
 });
 app.get('/aliases/:steam_ids', async (req, res, cb) => {
-  client.getAliases(
-    req.params.steam_ids?.split(','),
-    (err, aliases) => {
-      if (err) {
-        return cb(err);
-      }
-      return res.json(aliases);
-    });
+  client.getAliases(req.params.steam_ids?.split(','), (err, aliases) => {
+    if (err) {
+      return cb(err);
+    }
+    return res.json(aliases);
+  });
 });
 
 const logOnDetails = { accountName: users, password: passes };

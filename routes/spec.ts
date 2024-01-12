@@ -396,9 +396,12 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
         },
         route: () => '/players/:account_id/matches',
         func: async (req, res, cb) => {
-          let userFields = queryParamToArray(req.query.project) as (keyof ParsedPlayerMatch)[];
+          let userFields = queryParamToArray(
+            req.query.project,
+          ) as (keyof ParsedPlayerMatch)[];
           const additionalFields = userFields.length ? userFields : matchesCols;
-          res.locals.queryObj.project = res.locals.queryObj.project.concat(additionalFields);
+          res.locals.queryObj.project =
+            res.locals.queryObj.project.concat(additionalFields);
           const cache = await getPlayerMatches(
             Number(req.params.account_id),
             res.locals.queryObj,
@@ -447,7 +450,8 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
             };
             heroes[hero_id_int] = hero;
           });
-          res.locals.queryObj.project = res.locals.queryObj.project.concat(heroesCols);
+          res.locals.queryObj.project =
+            res.locals.queryObj.project.concat(heroesCols);
           const cache = await getPlayerMatches(
             Number(req.params.account_id),
             res.locals.queryObj,
@@ -514,7 +518,8 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
         },
         route: () => '/players/:account_id/peers',
         func: async (req, res, cb) => {
-          res.locals.queryObj.project = res.locals.queryObj.project.concat(peersCols);
+          res.locals.queryObj.project =
+            res.locals.queryObj.project.concat(peersCols);
           const cache = await getPlayerMatches(
             Number(req.params.account_id),
             res.locals.queryObj,
@@ -551,7 +556,8 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
         },
         route: () => '/players/:account_id/pros',
         func: async (req, res, cb) => {
-          res.locals.queryObj.project = res.locals.queryObj.project.concat(prosCols);
+          res.locals.queryObj.project =
+            res.locals.queryObj.project.concat(prosCols);
           const cache = await getPlayerMatches(
             Number(req.params.account_id),
             res.locals.queryObj,
@@ -596,7 +602,8 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
               sum: 0,
             };
           });
-          res.locals.queryObj.project = res.locals.queryObj.project.concat(histogramCols);
+          res.locals.queryObj.project =
+            res.locals.queryObj.project.concat(histogramCols);
           const cache = await getPlayerMatches(
             Number(req.params.account_id),
             res.locals.queryObj,
@@ -638,7 +645,8 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           countsCats.forEach((key) => {
             result[key] = {};
           });
-          res.locals.queryObj.project = res.locals.queryObj.project.concat(countsCols);
+          res.locals.queryObj.project =
+            res.locals.queryObj.project.concat(countsCols);
           const cache = await getPlayerMatches(
             Number(req.params.account_id),
             res.locals.queryObj,
@@ -708,7 +716,8 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
         func: async (req, res, cb) => {
           const field = histogramCols.find((key) => key === req.params.field);
           if (field) {
-            res.locals.queryObj.project = res.locals.queryObj.project.concat(field);
+            res.locals.queryObj.project =
+              res.locals.queryObj.project.concat(field);
           } else {
             return res.json([]);
           }
@@ -773,7 +782,8 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           wardmapCols.forEach((key) => {
             result[key] = {};
           });
-          res.locals.queryObj.project = res.locals.queryObj.project.concat(wardmapCols);
+          res.locals.queryObj.project =
+            res.locals.queryObj.project.concat(wardmapCols);
           const cache = await getPlayerMatches(
             Number(req.params.account_id),
             res.locals.queryObj,
@@ -818,7 +828,8 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           wordcloudCols.forEach((key) => {
             result[key] = {};
           });
-          res.locals.queryObj.project = res.locals.queryObj.project.concat(wordcloudCols);
+          res.locals.queryObj.project =
+            res.locals.queryObj.project.concat(wordcloudCols);
           const cache = await getPlayerMatches(
             Number(req.params.account_id),
             res.locals.queryObj,
@@ -1167,7 +1178,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
         func: async (req, res) => {
           const input = req.query.sql;
           if (typeof input !== 'string') {
-            return res.status(400).json({ error: 'input is not a string'});
+            return res.status(400).json({ error: 'input is not a string' });
           }
           const client = new Client({
             connectionString: config.READONLY_POSTGRES_URL,
@@ -1275,8 +1286,8 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           if (!req.query.q) {
             return res.status(400).json([]);
           }
-          if (typeof req.query.q !== "string") {
-            return res.status(400).json({ error: 'input is not a string'});
+          if (typeof req.query.q !== 'string') {
+            return res.status(400).json({ error: 'input is not a string' });
           }
           let result = [];
           if (req.query.pg) {
@@ -1319,8 +1330,8 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
         },
         route: () => '/rankings',
         func: async (req, res, cb) => {
-          if (typeof req.query.hero_id !== "string") {
-            return res.status(400).json({ error: 'input is not a string'});
+          if (typeof req.query.hero_id !== 'string') {
+            return res.status(400).json({ error: 'input is not a string' });
           }
           return res.json(await getHeroRankings(req.query.hero_id));
         },
@@ -1357,8 +1368,8 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
         },
         route: () => '/benchmarks',
         func: async (req, res, cb) => {
-          if (typeof req.query.hero_id !== "string") {
-            return res.status(400).json({ error: 'input is not a string'});
+          if (typeof req.query.hero_id !== 'string') {
+            return res.status(400).json({ error: 'input is not a string' });
           }
           const result = await getHeroBenchmarks(req.query.hero_id);
           return res.json(result);
@@ -1503,7 +1514,11 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
             // Lower priority for high-volume API key requests since they're non-interactive
             priority = 2;
             redisCount(redis, 'request_api_key');
-            redis.zincrby('request_usage_count', 1, req.query.api_key as string);
+            redis.zincrby(
+              'request_usage_count',
+              1,
+              req.query.api_key as string,
+            );
             redis.expireat('request_usage_count', getEndOfMonth());
           } else if (await checkIsParsed(Number(matchId))) {
             // Deprioritize reparsing already parsed matches
