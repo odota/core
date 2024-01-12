@@ -436,7 +436,8 @@ describe(c.blue('[TEST] api routes'), async function () {
       }
       const newTest = it(`should visit ${replacedPath}`, async () => {
         const res = await supertest(app)[verb as HttpVerb](
-          `/api${replacedPath}?q=testsearch`,
+          // Add query parameters to test search, rankings, benchmarks
+          `/api${replacedPath}?q=testsearch&hero_id=1`,
         );
         if (res.statusCode !== 200) {
           console.error(verb, replacedPath, res.body);
