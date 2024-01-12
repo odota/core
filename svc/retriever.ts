@@ -15,7 +15,7 @@ const app = express();
 const steamObj: Record<string, SteamUser> = {};
 let users = config.STEAM_USER.split(',');
 let passes = config.STEAM_PASS.split(',');
-const minUpTimeSeconds = 180;
+const minUpTimeSeconds = 120;
 const maxAccounts = 5;
 const matchesPerAccount = 110;
 const port = config.PORT || config.RETRIEVER_PORT;
@@ -58,7 +58,7 @@ const CMsgGCMatchDetailsResponse = builder.lookupType(
 
 setInterval(() => {
   const shouldRestart =
-    // (matchSuccesses / matchRequests < 0.1 && matchRequests > 100 && getUptime() > minUpTimeSeconds) ||
+    (matchSuccesses === 0 && matchRequests > 100 && getUptime() > minUpTimeSeconds) ||
     (matchRequests > Object.keys(steamObj).length * matchesPerAccount &&
       getUptime() > minUpTimeSeconds) ||
     (noneReady() && getUptime() > minUpTimeSeconds);
@@ -281,13 +281,27 @@ function genStats() {
  */
 function chooseLoginInfo(accountsToUse: number) {
   const startIndex = Math.floor(Math.random() * (users.length - accountsToUse));
-  console.log(
-    '[RETRIEVER] using %s accounts at index %s',
-    accountsToUse,
-    startIndex,
-  );
-  return users.slice(startIndex, startIndex + accountsToUse).map((e, i) => ({
-    accountName: users[startIndex + i],
-    password: passes[startIndex + i],
+  const arr = users.map((e, i) => ({
+    accountName: users[i],
+    password: passes[i],
   }));
+  return arr.slice(startIndex, startIndex + accountsToUse)
+}
+
+function chooseLoginInfoShuffle(accountsToUse: number) {
+  const arr = users.map((e, i) => ({
+    accountName: users[i],
+    password: passes[i],
+  }));
+  shuffle(arr);
+  return arr.slice(0, accountsToUse)
+}
+
+export function shuffle(array: any[]) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * i);
+    const temp = array[i];
+    array[i] = array[j];
+    array[j] = temp;
+  }
 }
