@@ -59,7 +59,7 @@ const CMsgGCMatchDetailsResponse = builder.lookupType(
 
 setInterval(() => {
   const shouldRestart =
-    (matchSuccesses === 0 &&
+    (matchSuccesses < 5 &&
       matchRequests > 100 &&
       getUptime() > minUpTimeSeconds) ||
     (matchRequests > Object.keys(steamObj).length * matchesPerAccount &&
