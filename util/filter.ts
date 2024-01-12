@@ -170,7 +170,7 @@ export function filterMatches(
       Array.from(filters.keys()).forEach((key) => {
         const arr = filters.get(key);
         const first = arr?.[0];
-        if (filterFuncs[key as FilterType] && first && arr) {
+        if (filterFuncs[key as FilterType] && first !== undefined && arr) {
           // earlier, we arrayified everything
           // pass the first element, as well as the full array
           // check that it passes all filters
