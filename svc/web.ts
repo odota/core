@@ -446,11 +446,15 @@ const server = app.listen(port, () => {
   console.log('[WEB] listening on %s', port);
 });
 const wss = new WebSocketServer({ server });
+// wss.on('connection', (socket, request) => {
+//   // Parse the query params for channels to sub to
+//   // request.url
+// });
 const logSub = new Redis(config.REDIS_URL);
-logSub.subscribe('api', 'parsed', 'gcdata');
+logSub.subscribe('api', 'parsed', 'gcdata', 'queue');
 logSub.on('message', (channel: string, message: string) => {
   // Emit it to all the connected websockets
-  // Can we let the user choose channels to sub to?
+  // TODO let the user choose channels to sub to via query params?
   wss.clients.forEach((client: WebSocket) => {
     if (client.readyState === WebSocket.OPEN) {
       client.send(message);
