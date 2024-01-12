@@ -145,6 +145,10 @@ app.get('/match/:match_id', async (req, res, cb) => {
   matchRequests += 1;
   matchRequestAccount[rKey] += 1;
   extraMatchRequestInterval += matchRequestIntervalStep;
+  // If the selected client has been failing, skip the request
+  if (matchSuccessAccount[rKey] === 0 && matchRequestAccount[rKey] >= 10) {
+    return res.status(500).end();
+  }
   console.time('match:' + matchId);
   client.sendToGC(
     DOTA_APPID,
