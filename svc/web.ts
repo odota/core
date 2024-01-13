@@ -370,18 +370,22 @@ app.get('/admin/retrieverMetrics', async (req, res, cb) => {
     const steamids = Object.keys(idReqs).map(key => {
       return {
         key,
-        reqs: idReqs[key],
-        success: idSuccess[key],
+        reqs: Number(idReqs[key]) || 0,
+        success: Number(idSuccess[key]) || 0,
       };
     });
     const ips = Object.keys(ipReqs).map(key => {
       return {
         key,
-        reqs: ipReqs[key],
-        success: ipSuccess[key],
+        reqs: Number(ipReqs[key]) || 0,
+        success: Number(ipSuccess[key]) || 0,
       };
     });
     return res.json({
+      countSteamIds: steamids.length,
+      countips: ips.length,
+      sumReqs: steamids.map(e => e.reqs).reduce((a, b) => a + b, 0),
+      sumSuccess: steamids.map(e => e.success).reduce((a, b) => a + b, 0),
       steamids,
       ips,
     });
