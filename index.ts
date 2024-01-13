@@ -1,16 +1,20 @@
 /**
  * Entry point for the application.
  * */
+import axios from 'axios';
 import cp from 'child_process';
 import fs from 'fs';
 
-if (process.env.PROVIDER === 'gce' && !fs.existsSync('/usr/src/.env')) {
-  cp.execSync(
-    'curl -H "Metadata-Flavor: Google" -L http://metadata.google.internal/computeMetadata/v1/project/attributes/env > /usr/src/.env',
-  );
-}
-
 async function start() {
+  if (process.env.PROVIDER === 'gce' && !fs.existsSync('/usr/src/.env')) {
+    const resp = await axios.get('http://metadata.google.internal/computeMetadata/v1/project/attributes/env', {
+      headers: {
+        'Metadata-Flavor': 'Google',
+      },
+      responseType: 'stream',
+    });
+    resp.data.pipe(fs.createWriteStream("/usr/src/.env"));
+  }
   if (process.env.ROLE) {
     // if role variable is set just run that script
     import('./svc/' + process.env.ROLE + '.js');
