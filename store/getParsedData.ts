@@ -13,7 +13,7 @@ import axios from 'axios';
  */
 export async function readParseData(
   matchId: number,
-): Promise<ParserMatch | undefined> {
+): Promise<ParserMatch | null> {
   const result = await cassandra.execute(
     'SELECT parsed FROM match_blobs WHERE match_id = ?',
     [matchId],
@@ -24,7 +24,7 @@ export async function readParseData(
     ? (JSON.parse(row.parsed) as ParserMatch)
     : undefined;
   if (!data) {
-    return;
+    return null;
   }
   return data;
 }
@@ -91,7 +91,7 @@ export async function getOrFetchParseData(
   url: string,
   extraData: ExtraData,
 ): Promise<{
-  data: ParserMatch | undefined;
+  data: ParserMatch | null
   skipped: boolean;
   error: string | null;
 }> {
@@ -105,14 +105,14 @@ export async function getOrFetchParseData(
   }
   const { error } = await saveParseData(matchId, url, extraData);
   if (error) {
-    return { data: undefined, skipped: false, error };
+    return { data: null, skipped: false, error };
   }
   // We don't actually need the readback right now, so save some work
   // const result = await readParseData(matchId);
   // if (!result) {
   //   throw new Error('[PARSEDATA]: Could not get data for match ' + matchId);
   // }
-  return { data: undefined, skipped: false, error };
+  return { data: null, skipped: false, error };
 }
 
 export async function checkIsParsed(matchId: number) {

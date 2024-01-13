@@ -474,8 +474,7 @@ export async function getPlayer(
   db: knex.Knex,
   accountId: number,
 ): Promise<User | undefined> {
-  const playerData: User | undefined = await db
-    .first(
+  const playerData = await db.first<User>(
       'players.account_id',
       'personaname',
       'name',
@@ -699,15 +698,15 @@ export async function getMatchDataFromBlobWithMetadata(
     },
   );
   const row = result.rows[0];
-  let api: ApiMatch | undefined = row?.api ? JSON.parse(row.api) : undefined;
-  let gcdata: GcMatch | undefined = row?.gcdata
+  let api: ApiMatch | null = row?.api ? JSON.parse(row.api) : null;
+  let gcdata: GcMatch | null = row?.gcdata
     ? JSON.parse(row.gcdata)
-    : undefined;
-  let parsed: ParsedMatch | undefined = row?.parsed
+    : null;
+  let parsed: ParsedMatch | null = row?.parsed
     ? JSON.parse(row.parsed)
-    : undefined;
-  let identity: any = row?.identity ? JSON.parse(row.identity) : undefined;
-  let ranks: any = row?.ranks ? JSON.parse(row.ranks) : undefined;
+    : null;
+  let identity: any = row?.identity ? JSON.parse(row.identity) : null;
+  let ranks: any = row?.ranks ? JSON.parse(row.ranks) : null;
 
   let odData: GetMatchDataMetadata = {
     has_api: Boolean(api),

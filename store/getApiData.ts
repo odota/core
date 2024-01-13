@@ -12,7 +12,7 @@ import redis from './redis';
  */
 export async function readApiData(
   matchId: number,
-): Promise<ApiMatch | undefined> {
+): Promise<ApiMatch | null> {
   const result = await cassandra.execute(
     'SELECT api FROM match_blobs WHERE match_id = ?',
     [matchId],
@@ -21,7 +21,7 @@ export async function readApiData(
   const row = result.rows[0];
   const data = row?.api ? (JSON.parse(row.api) as ApiMatch) : undefined;
   if (!data) {
-    return;
+    return null;
   }
   return data;
 }
@@ -33,7 +33,7 @@ export async function readApiData(
  */
 export async function saveApiData(
   matchId: number,
-): Promise<{ error: string | null; pgroup: PGroup | undefined }> {
+): Promise<{ error: string | null; pgroup: PGroup | null }> {
   let body;
   try {
     // Try the steam API
@@ -50,7 +50,7 @@ export async function saveApiData(
       redisCount(redis, 'steam_api_notfound');
     }
     // Expected exception here if invalid match ID
-    return { error: 'Failed to get data from Steam API', pgroup: undefined };
+    return { error: 'Failed to get data from Steam API', pgroup: null };
   }
   // match details response
   const match = body.result;
@@ -70,13 +70,13 @@ export async function saveApiData(
  */
 export async function tryFetchApiData(
   matchId: number,
-): Promise<ApiMatch | undefined> {
+): Promise<ApiMatch | null> {
   try {
     await saveApiData(matchId);
     return readApiData(matchId);
   } catch (e: any) {
     console.log(e);
-    return;
+    return null;
   }
 }
 
@@ -88,9 +88,9 @@ export async function tryFetchApiData(
  * @returns
  */
 export async function getOrFetchApiData(matchId: number): Promise<{
-  data: ApiMatch | undefined;
+  data: ApiMatch | null;
   error: string | null;
-  pgroup: PGroup | undefined;
+  pgroup: PGroup | null;
 }> {
   if (!matchId || !Number.isInteger(matchId) || matchId <= 0) {
     throw new Error('invalid match_id');
@@ -108,7 +108,7 @@ export async function getOrFetchApiData(matchId: number): Promise<{
   const { error, pgroup } = await saveApiData(matchId);
   if (error) {
     // We caught an exception from Steam API due to invalid ID
-    return { data: undefined, error, pgroup };
+    return { data: null, error, pgroup };
   }
   const result = await readApiData(matchId);
   if (!result) {

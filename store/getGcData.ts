@@ -15,7 +15,7 @@ import { insertMatch } from './insert';
  */
 export async function readGcData(
   matchId: number,
-): Promise<GcMatch | undefined> {
+): Promise<GcMatch | null> {
   const result = await cassandra.execute(
     'SELECT gcdata FROM match_blobs WHERE match_id = ?',
     [matchId],
@@ -24,11 +24,11 @@ export async function readGcData(
   const row = result.rows[0];
   const gcData = row?.gcdata ? (JSON.parse(row.gcdata) as GcMatch) : undefined;
   if (!gcData) {
-    return;
+    return null;
   }
   const { match_id, cluster, replay_salt } = gcData;
   if (match_id == null || cluster == null || replay_salt == null) {
-    return;
+    return null;
   }
   return gcData;
 }
@@ -38,7 +38,7 @@ export async function readGcData(
  * @param job
  * @returns
  */
-async function saveGcData(matchId: number, pgroup: PGroup): Promise<string | undefined> {
+async function saveGcData(matchId: number, pgroup: PGroup): Promise<string | null> {
   const url = getRandomRetrieverUrl(`/match/${matchId}`);
   const { data, headers } = await axios.get<typeof retrieverMatch>(url, {
     timeout: 5000,
@@ -119,7 +119,7 @@ async function saveGcData(matchId: number, pgroup: PGroup): Promise<string | und
     pgroup,
     endedAt: data.match.starttime + data.match.duration,
   });
-  return;
+  return null;
 }
 
 /**
@@ -131,13 +131,13 @@ async function saveGcData(matchId: number, pgroup: PGroup): Promise<string | und
 export async function tryFetchGcData(
   matchId: number,
   pgroup: PGroup,
-): Promise<GcMatch | undefined> {
+): Promise<GcMatch | null> {
   try {
     await saveGcData(matchId, pgroup);
     return readGcData(matchId);
   } catch (e) {
     console.log(e);
-    return;
+    return null;
   }
 }
 
@@ -152,7 +152,7 @@ export async function getOrFetchGcData(
   matchId: number,
   pgroup: PGroup,
 ): Promise<{
-  data: GcMatch | undefined;
+  data: GcMatch | null;
   error: string | null;
 }> {
   if (!matchId || !Number.isInteger(matchId) || matchId <= 0) {
@@ -170,7 +170,7 @@ export async function getOrFetchGcData(
   // If we got here we don't have it saved or want to refetch
   const error = await saveGcData(matchId, pgroup);
   if (error) {
-    return { data: undefined, error };
+    return { data: null, error };
   }
   const result = await readGcData(matchId);
   return { data: result, error: null };
@@ -180,10 +180,10 @@ export async function getOrFetchGcDataWithRetry(
   matchId: number,
   pgroup: PGroup,
 ): Promise<{
-  data: GcMatch | undefined;
+  data: GcMatch | null;
   error: string | null;
 }> {
-  let data: GcMatch | undefined = undefined;
+  let data: GcMatch | null = null;
   let error: string | null = null;
   let tryCount = 1;
   // Try until we either get data or a non-exception error

@@ -237,10 +237,10 @@ export async function readArchivedPlayerMatches(
  */
 export async function tryReadArchivedMatch(
   matchId: number,
-): Promise<ParsedMatch | undefined> {
+): Promise<ParsedMatch | null> {
   try {
     if (!config.ENABLE_MATCH_ARCHIVE) {
-      return;
+      return null;
     }
     // Check if the parsed data is archived
     // Most matches won't be in the archive so it's more efficient not to always try
@@ -253,7 +253,7 @@ export async function tryReadArchivedMatch(
       ).rows[0],
     );
     if (!isArchived) {
-      return;
+      return null;
     }
     const blob = await matchArchive.archiveGet(matchId.toString());
     const result: ParsedMatch | null = blob
@@ -266,5 +266,5 @@ export async function tryReadArchivedMatch(
   } catch (e) {
     console.error(e);
   }
-  return;
+  return null;
 }
