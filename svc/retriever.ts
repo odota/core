@@ -68,7 +68,11 @@ setInterval(() => {
   if (shouldRestart && config.NODE_ENV !== 'development') {
     return selfDestruct();
   }
-}, 10000);
+  // Re-register ourselves as available
+  if (config.SERVICE_REGISTRY_HOST && !noneReady()) {
+    axios.post(`https://${config.SERVICE_REGISTRY_HOST}/register/retriever/${Object.values(steamObj)[0].publicIP}?key=${config.RETRIEVER_SECRET}`);
+  }
+}, 5000);
 
 app.use(compression());
 app.get('/healthz', (req, res, cb) => {

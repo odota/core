@@ -352,6 +352,17 @@ app.route('/manageSub').post(async (req, res, cb) => {
     cb(e);
   }
 });
+app.post('/register/:service/:ip', async (req, res, cb) => {
+  // check secret matches
+  if (config.RETRIEVER_SECRET && config.RETRIEVER_SECRET !== req.query.key) {
+    return res.status(403).end();
+  }
+  // zadd the given ip and current time
+  if (req.params.service && req.params.ip) {
+    redis.zadd(`registry:${req.params.service}`, Date.now(), req.params.ip);
+  }
+  return res.end();
+});
 // Admin endpoints middleware
 app.use('/admin*', (req, res, cb) => {
   if (req.user && admins.includes(Number(req.user.account_id))) {
@@ -367,6 +378,7 @@ app.get('/admin/retrieverMetrics', async (req, res, cb) => {
     const ipReqs = await redis.hgetall('retrieverIPs');
     const idSuccess = await redis.hgetall('retrieverSuccessSteamIDs');
     const ipSuccess = await redis.hgetall('retrieverSuccessIPs');
+    const registry = await redis.zrange('registry:retriever', 0, -1);
     const steamids = Object.keys(idReqs).map(key => {
       return {
         key,
@@ -386,6 +398,7 @@ app.get('/admin/retrieverMetrics', async (req, res, cb) => {
       sumSuccess: steamids.map(e => e.success).reduce((a, b) => a + b, 0),
       countips: ips.length,
       countSteamIds: steamids.length,
+      registry,
       ips,
       steamids,
     });

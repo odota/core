@@ -1,10 +1,11 @@
 #!/bin/bash
 
-RETRIEVER_SECRET=REPLACE_ME
-STEAM_ACCOUNT_DATA=REPLACE_ME
-
-sudo docker run -d --name=retriever --net=host --log-opt max-size=1g -e NODE_ENV=production -e RETRIEVER_PORT=80 -e ROLE=retriever -e RETRIEVER_SECRET=$RETRIEVER_SECRET -e "STEAM_ACCOUNT_DATA=$STEAM_ACCOUNT_DATA" odota/core:latest sh -c "npm start"
+# Secrets don't need to be set since they're read from GCE metadata
+sudo docker run -d --name=retriever --net=host --log-opt max-size=1g -e NODE_ENV=production -e RETRIEVER_PORT=80 -e ROLE=retriever odota/retriever:latest
 
 # If already initialized
 sudo docker start retriever
-sudo docker logs -f retriever && sleep 5 && sudo shutdown -h now
+
+# We can set a time limit for termination on GCE, but it's cancelled if we shut down manually
+sudo docker logs -f retriever
+# && sleep 5 && sudo shutdown -h now

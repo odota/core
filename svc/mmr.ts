@@ -8,12 +8,14 @@ import {
   getRetrieverCount,
   redisCount,
   getRandomRetrieverUrl,
+  getRegistryRetrieverUrl,
 } from '../util/utility';
 import axios from 'axios';
 
 async function processMmr(job: MmrJob) {
   const accountId = job.account_id;
-  const url = getRandomRetrieverUrl(`/profile/${accountId}`);
+  const func = config.USE_SERVICE_REGISTRY ? getRegistryRetrieverUrl : getRandomRetrieverUrl;
+  const url = await func(`/profile/${accountId}`);
   console.log(url);
   const { data } = await axios.get(url);
   redisCount(redis, 'retriever_player');

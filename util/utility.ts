@@ -826,6 +826,14 @@ export function getRandomParserUrl(replayUrl: string): string {
   return urls[Math.floor(Math.random() * urls.length)];
 }
 
+export async function getRegistryRetrieverUrl(path: string) {
+  const redis = (await import('../store/redis.js')).redis;
+  // Purge values older than 10 seconds (stale heartbeat)
+  await redis.zremrangebyscore('registry:retriever', '-inf', Date.now() - 10000);
+  const ip = await redis.zrandmember('registry:retriever');
+  return `http://${ip}${path}?key=${config.RETRIEVER_SECRET}`;
+}
+
 /**
  * Increments an hourly Redis counter for the metric
  * @param redis The Redis instance (null to dynamic import the default redis)
