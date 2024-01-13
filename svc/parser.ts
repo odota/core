@@ -70,12 +70,17 @@ async function parseProcessor(job: ParseJob) {
 
     // Fetch the gcdata and construct a replay URL
     const gcStart = Date.now();
-    const gcdata = await getOrFetchGcDataWithRetry(matchId, pgroup);
+    const { data: gcMatch, error: gcError } = await getOrFetchGcDataWithRetry(matchId, pgroup);
+    if (!gcMatch) {
+      // non-retryable error
+      log('fail', gcError || 'Missing gcdata');
+      return false;
+    }
     gcTime = Date.now() - gcStart;
     let url = buildReplayUrl(
-      gcdata.match_id,
-      gcdata.cluster,
-      gcdata.replay_salt,
+      gcMatch.match_id,
+      gcMatch.cluster,
+      gcMatch.replay_salt,
     );
 
     const parseStart = Date.now();

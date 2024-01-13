@@ -33,6 +33,13 @@ async function countDay(prefix: MetricName) {
   return counts.reduce((a, b) => Number(a) + Number(b), 0);
 }
 
+async function countHour(prefix: MetricName) {
+  const result = await redis.get(
+    `${prefix}:v2:${moment().startOf('hour').format('X')}`,
+  );
+  return Number(result);
+}
+
 async function countLastHour(prefix: MetricName) {
   // Get counts for previous full hour (not current)
   const result = await redis.get(
@@ -51,6 +58,7 @@ export async function buildStatus() {
     requests_last_day: async () => countDay('request'),
     requests_ui_day: async () => countDay('request_ui'),
     requests_api_key_last_day: async () => countDay('request_api_key'),
+    retriever_matches_current_hour: async () => countHour('retriever'),
     retriever_matches_last_day: async () => countDay('retriever'),
     retriever_players_last_day: async () => countDay('retriever_player'),
     parse_jobs_last_day: async () => countDay('parser_job'),
@@ -105,24 +113,6 @@ export async function buildStatus() {
     web_crash_last_day: async () => countDay('web_crash'),
     skip_seq_num_last_day: async () => countDay('skip_seq_num'),
     // scanner_exception_last_day: async () => getRedisCountDay('scanner_exception'),
-    retriever: async () => {
-      const results = await redis.zrangebyscore(
-        'retrieverCounts',
-        '-inf',
-        'inf',
-        'WITHSCORES',
-      );
-      const response: any[] = [];
-      results?.forEach((result, i) => {
-        if (i % 2 === 0) {
-          response.push({
-            hostname: result.split('.')[0],
-            count: results[i + 1],
-          });
-        }
-      });
-      return response;
-    },
     api_paths: async () => {
       const results = await redis.zrangebyscore(
         'api_paths',

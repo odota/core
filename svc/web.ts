@@ -360,6 +360,34 @@ app.use('/admin*', (req, res, cb) => {
     error: 'Access Denied',
   });
 });
+app.get('/admin/retrieverMetrics', async (req, res, cb) => {
+  try {
+    const idReqs = await redis.hgetall('retrieverSteamIDs');
+    const ipReqs = await redis.hgetall('retrieverIPs');
+    const idSuccess = await redis.hgetall('retrieverSuccessSteamIDs');
+    const ipSuccess = await redis.hgetall('retrieverSuccessIPs');
+    const steamids = Object.keys(idReqs).map(key => {
+      return {
+        key,
+        reqs: idReqs[key],
+        success: idSuccess[key],
+      };
+    });
+    const ips = Object.keys(ipReqs).map(key => {
+      return {
+        key,
+        reqs: ipReqs[key],
+        success: ipSuccess[key],
+      };
+    });
+    return res.json({
+      steamids,
+      ips,
+    });
+  } catch(e) {
+    return cb(e);
+  }
+});
 app.get('/admin/apiMetrics', async (req, res, cb) => {
   try {
     const startTime = moment().startOf('month').format('YYYY-MM-DD');

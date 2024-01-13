@@ -38,21 +38,43 @@ export async function readGcData(
  * @param job
  * @returns
  */
-async function saveGcData(matchId: number, pgroup: PGroup): Promise<void> {
+async function saveGcData(matchId: number, pgroup: PGroup): Promise<string | undefined> {
   const url = getRandomRetrieverUrl(`/match/${matchId}`);
-  const { data } = await axios.get<typeof retrieverMatch>(url, {
+  const { data, headers } = await axios.get<typeof retrieverMatch>(url, {
     timeout: 5000,
   });
+  const steamid = headers['x-match-request-steamid'];
+  const ip = headers['x-match-request-ip'];
+  // Record the total steamids and ip counts (regardless of failure)
+  redis.hincrby('retrieverSteamIDs', steamid, 1);
+  redis.expireat(
+    'retrieverSteamIDs',
+    moment().startOf('day').add(1, 'day').format('X'),
+  );
+  redis.hincrby('retrieverIPs', ip, 1);
+  redis.expireat(
+    'retrieverIPs',
+    moment().startOf('day').add(1, 'day').format('X'),
+  );
+  if (headers['x-match-noretry']) {
+    // Steam is blocking this match for community prediction, so return error to prevent retry
+    return 'x-match-noretry';
+  }
   if (!data || !data.match || !data.match.replay_salt || !data.match.players) {
-    // non-retryable error
+    // Bad data but we can retry
     throw new Error('invalid data');
   }
-  // Count retriever calls
+  // Count successful calls
   redisCount(redis, 'retriever');
-  redis.zincrby('retrieverCounts', 1, 'retriever');
+  redis.hincrby('retrieverSuccessSteamIDs', steamid, 1);
   redis.expireat(
-    'retrieverCounts',
-    moment().startOf('hour').add(1, 'hour').format('X'),
+    'retrieverSuccessSteamIDs',
+    moment().startOf('day').add(1, 'day').format('X'),
+  );
+  redis.hincrby('retrieverSuccessIPs', ip, 1);
+  redis.expireat(
+    'retrieverSuccessIPs',
+    moment().startOf('day').add(1, 'day').format('X'),
   );
   const players = data.match.players.map(
     (p: any, i: number): GcPlayer => ({
@@ -129,7 +151,10 @@ export async function tryFetchGcData(
 export async function getOrFetchGcData(
   matchId: number,
   pgroup: PGroup,
-): Promise<GcMatch> {
+): Promise<{
+  data: GcMatch | undefined;
+  error: string | null;
+}> {
   if (!matchId || !Number.isInteger(matchId) || matchId <= 0) {
     throw new Error('invalid match_id');
   }
@@ -139,27 +164,34 @@ export async function getOrFetchGcData(
     redisCount(redis, 'regcdata');
     if (config.DISABLE_REGCDATA) {
       // If high load, we can disable refetching gcdata
-      return saved;
+      return { data: saved, error: null };
     }
   }
   // If we got here we don't have it saved or want to refetch
-  await saveGcData(matchId, pgroup);
-  const result = await readGcData(matchId);
-  if (!result) {
-    throw new Error('[GCDATA]: Could not get GC data for match ' + matchId);
+  const error = await saveGcData(matchId, pgroup);
+  if (error) {
+    return { data: undefined, error };
   }
-  return result;
+  const result = await readGcData(matchId);
+  return { data: result, error: null };
 }
 
 export async function getOrFetchGcDataWithRetry(
   matchId: number,
   pgroup: PGroup,
-): Promise<GcMatch> {
-  let result: GcMatch | undefined = undefined;
+): Promise<{
+  data: GcMatch | undefined;
+  error: string | null;
+}> {
+  let data: GcMatch | undefined = undefined;
+  let error: string | null = null;
   let tryCount = 1;
-  while (!result) {
+  // Try until we either get data or a non-exception error
+  while (!data && !error) {
     try {
-      result = await getOrFetchGcData(matchId, pgroup);
+      const resp = await getOrFetchGcData(matchId, pgroup);
+      data = resp.data;
+      error = resp.error;
     } catch (e) {
       if (axios.isAxiosError(e)) {
         console.log(matchId, e.response?.config?.url, e.message);
@@ -171,5 +203,5 @@ export async function getOrFetchGcDataWithRetry(
       console.log('retrying %s, attempt %s', matchId, tryCount);
     }
   }
-  return result;
+  return { data, error };
 }

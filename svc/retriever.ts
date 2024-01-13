@@ -147,9 +147,18 @@ app.get('/match/:match_id', async (req, res, cb) => {
   if (matchSuccessAccount[rKey] === 0 && matchRequestAccount[rKey] >= 10) {
     return res.status(500).end();
   }
+  res.setHeader('x-match-request-steamid', rKey);
+  res.setHeader('x-match-request-ip', client.publicIP);
   matchRequestAccount[rKey] += 1;
   extraMatchRequestInterval += matchRequestIntervalStep;
   console.time('match:' + matchId);
+  const timeout = setTimeout(() => {
+    // Respond after 4 seconds to send back header info
+    // Currently consumers are configured to fail after 5 seconds
+    // Use a 200 status code to avoid exception, we'll check the response body after
+    console.timeEnd('match:' + matchId);
+    res.end();
+  }, 4000);
   client.sendToGC(
     DOTA_APPID,
     EDOTAGCMsg.values.k_EMsgGCMatchDetailsRequest,
@@ -158,12 +167,14 @@ app.get('/match/:match_id', async (req, res, cb) => {
       CMsgGCMatchDetailsRequest.encode({ match_id: Number(matchId) }).finish(),
     ),
     (appid, msgType, payload) => {
+      clearTimeout(timeout);
       console.timeEnd('match:' + matchId);
       const matchData: any = CMsgGCMatchDetailsResponse.decode(payload);
       if (matchData.result === 15) {
         // Valve is blocking GC access to this match, probably a community prediction match
-        // Return a 200 success code with specific format, so we treat it as an unretryable error
-        return res.json({ result: { status: matchData.result } });
+        // Send back 200 success with a specific header that tells us not to retry
+        res.setHeader('x-match-noretry', matchData.result);
+        return res.end();
       }
       matchSuccesses += 1;
       matchSuccessAccount[rKey] += 1;
