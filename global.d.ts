@@ -1,6 +1,5 @@
 declare module 'simple-vdf';
 declare module 'dotaconstants';
-declare module 'http-proxy';
 
 declare namespace Express {
   interface Locals {

@@ -924,9 +924,6 @@ export async function parallelPromise<T>(
 export function epochWeek() {
   return Math.floor(Number(new Date()) / (1000 * 60 * 60 * 24 * 7));
 }
-export function cleanItemSchema(input: any) {
-  return input;
-}
 export function checkIfInExperiment(ip: string, mod: number) {
   return (
     crypto.createHash('md5').update(ip).digest().readInt32BE(0) % 100 < mod

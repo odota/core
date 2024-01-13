@@ -3,7 +3,6 @@ import vdf from 'simple-vdf';
 import db from '../store/db';
 import { upsert } from '../store/insert';
 import {
-  cleanItemSchema,
   eachLimitPromise,
   invokeIntervalAsync,
 } from '../util/utility';
@@ -19,7 +18,7 @@ async function doCosmetics() {
     'https://raw.githubusercontent.com/builder-247/node-dota2-cdn/main/build/icons.json',
   );
   const icons = iconsResp.data;
-  const itemData = vdf.parse(cleanItemSchema(items));
+  const itemData = vdf.parse(items);
 
   async function processItem(itemId: string) {
     const item = itemData.items_game.items[itemId];
