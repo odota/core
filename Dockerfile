@@ -10,4 +10,4 @@ RUN npm run build
 
 ENV PATH /usr/src/node_modules/.bin:$PATH
 
-CMD ["npm", "start]
+CMD ["npm", "start"]
