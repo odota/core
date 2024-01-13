@@ -45,6 +45,7 @@ const whitelistedPaths = [
   '/logout',
   '/return',
   '/admin/apiMetrics',
+  '/admin/retrieverMetrics',
   '/healthz',
   '/subscribeSuccess',
   '/manageSub',
