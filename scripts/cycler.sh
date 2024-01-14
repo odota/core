@@ -8,7 +8,7 @@ do
         gcloud compute instances create retriever-$(date +%s) \
             --project=peaceful-parity-87002 \
             --zone=us-central1-b \
-            --source-instance-template retriever-17 &
+            --source-instance-template retriever-18 &
         sleep 1
     done
     sleep 600
