@@ -352,14 +352,21 @@ app.route('/manageSub').post(async (req, res, cb) => {
     cb(e);
   }
 });
-app.post('/register/:service/:ip', async (req, res, cb) => {
+app.post('/register/:service/:host', async (req, res, cb) => {
   // check secret matches
   if (config.RETRIEVER_SECRET && config.RETRIEVER_SECRET !== req.query.key) {
     return res.status(403).end();
   }
-  // zadd the given ip and current time
-  if (req.params.service && req.params.ip) {
-    redis.zadd(`registry:${req.params.service}`, Date.now(), req.params.ip);
+  // zadd the given host and current time
+  if (req.params.service && req.params.host) {
+    const size = Number(req.query.size);
+    if (size) {
+      for (let i = 0; i < size; i++) {
+        redis.zadd(`registry:${req.params.service}`, Date.now(), req.params.host + '?' + i);
+      }
+    } else {
+      redis.zadd(`registry:${req.params.service}`, Date.now(), req.params.host);
+    }
   }
   return res.end();
 });

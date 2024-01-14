@@ -830,8 +830,9 @@ export async function getRegistryRetrieverUrl(path: string) {
   const redis = (await import('../store/redis.js')).redis;
   // Purge values older than 10 seconds (stale heartbeat)
   await redis.zremrangebyscore('registry:retriever', '-inf', Date.now() - 10000);
-  const ip = await redis.zrandmember('registry:retriever');
-  return `http://${ip}${path}?key=${config.RETRIEVER_SECRET}`;
+  const hostWithId = await redis.zrandmember('registry:retriever');
+  const host = hostWithId?.split('?')[0];
+  return `http://${host}${path}?key=${config.RETRIEVER_SECRET}`;
 }
 
 /**
