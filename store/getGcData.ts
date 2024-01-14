@@ -3,7 +3,7 @@ import config from '../config';
 import db from './db';
 import redis from './redis';
 import cassandra from './cassandra';
-import { getRandomRetrieverUrl, getRegistryRetrieverUrl, redisCount } from '../util/utility';
+import { getRandomRetrieverUrl, getRegistryUrl, redisCount } from '../util/utility';
 import axios from 'axios';
 import retrieverMatch from '../test/data/retriever_match.json';
 import { insertMatch } from './insert';
@@ -39,8 +39,7 @@ export async function readGcData(
  * @returns
  */
 async function saveGcData(matchId: number, pgroup: PGroup): Promise<string | null> {
-  const func = config.USE_SERVICE_REGISTRY ? getRegistryRetrieverUrl : getRandomRetrieverUrl;
-  const url =  await func(`/match/${matchId}`);
+  const url = config.USE_SERVICE_REGISTRY ? await getRegistryUrl('retriever', `/match/${matchId}`) : getRandomRetrieverUrl(`/match/${matchId}`);
   const { data, headers } = await axios.get<typeof retrieverMatch>(url, {
     timeout: 5000,
   });

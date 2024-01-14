@@ -826,11 +826,11 @@ export function getRandomParserUrl(replayUrl: string): string {
   return urls[Math.floor(Math.random() * urls.length)];
 }
 
-export async function getRegistryRetrieverUrl(path: string) {
+export async function getRegistryUrl(service: string, path: string) {
   const redis = (await import('../store/redis.js')).redis;
   // Purge values older than 10 seconds (stale heartbeat)
-  await redis.zremrangebyscore('registry:retriever', '-inf', Date.now() - 10000);
-  const hostWithId = await redis.zrandmember('registry:retriever');
+  await redis.zremrangebyscore('registry:' + service, '-inf', Date.now() - 10000);
+  const hostWithId = await redis.zrandmember('registry:' + service);
   const host = hostWithId?.split('?')[0];
   return `http://${host}${path}?key=${config.RETRIEVER_SECRET}`;
 }
