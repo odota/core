@@ -123,6 +123,7 @@ let arr = [
     name: 'cycler',
     group: 'backend',
     script: 'scripts/cycler.py',
+    interpreter: 'python3',
   },
 ];
 
@@ -145,10 +146,10 @@ const apps = arr.map((app) => {
     exec_mode: app.exec_mode ?? 'fork',
     instances: app.instances ?? 1,
     script: app.script ?? script,
-    interpreter:
-      script.endsWith('.ts') || script.endsWith('.mts')
+    interpreter: app.interpreter ??
+      (script.endsWith('.ts') || script.endsWith('.mts')
         ? 'node_modules/.bin/tsx'
-        : undefined,
+        : undefined),
     env: {
       ROLE: app.name,
     },
