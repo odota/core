@@ -152,7 +152,7 @@ async function getPlayerMatchDataFromLegacy(
 async function start() {
   while (true) {
     try {
-      const page = await getTokenRange(100);
+      const page = await getTokenRange(10);
       await Promise.allSettled(page.map((i) => doArchiveFromLegacy(i)));
     } catch (e) {
       console.error(e);
