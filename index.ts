@@ -11,9 +11,9 @@ async function start() {
       headers: {
         'Metadata-Flavor': 'Google',
       },
-      responseType: 'stream',
+      responseType: 'arraybuffer',
     });
-    resp.data.pipe(fs.createWriteStream("/usr/src/.env"));
+    fs.writeFileSync('/usr/src/.env', resp.data);
   }
   if (process.env.ROLE) {
     // if role variable is set just run that script
