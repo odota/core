@@ -132,7 +132,7 @@ export async function addReliableJob(
   );
   const job = rows[0];
   if (job) {
-    const message = c.blue(
+    const message = c.magenta(
       `[${new Date().toISOString()}] [queue] [add: ${name}] [priority: ${
         job.priority
       }] [attempts: ${job.attempts}] ${name === 'parse' ? data.match_id : ''}`,
