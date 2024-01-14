@@ -445,9 +445,9 @@ export async function insertMatch(
         ? match.start_time + match.duration
         : 0);
     const name = process.env.name || process.env.ROLE || process.argv[1];
-    const message = `[${new Date().toISOString()}] [${name}] insert [${
+    const message = `[${new Date().toISOString()}] [${name}] [insert: ${
       options.type
-    }] for ${match.match_id} ended ${moment.unix(endedAt ?? 0).fromNow()}`;
+    }] [ended: ${moment.unix(endedAt ?? 0).fromNow()}] ${match.match_id}`;
     redis.publish(options.type, message);
     if (options.type === 'parsed') {
       redisCount(redis, 'parser');

@@ -73,7 +73,7 @@ export async function runReliableQueue(
           if (success || job.attempts <= 0) {
             if (success) {
               const message = c.blue(
-                `[${new Date().toISOString()}] [queue: ${queueName}] [complete] [pri: ${
+                `[${new Date().toISOString()}] [queue] [complete: ${queueName}] [priority: ${
                   job.priority
                 }] [rem_attempts: ${job.attempts}] [queued: ${moment(job.timestamp).fromNow()}]`,
               );
@@ -115,7 +115,7 @@ export async function addReliableJob(
   options: ReliableQueueOptions,
 ) {
   const { name, data } = input;
-  const result = await db.raw<{
+  const { rows } = await db.raw<{
     rows: ReliableQueueRow[];
   }>(
     `INSERT INTO queue(type, timestamp, attempts, data, next_attempt_time, priority)
@@ -130,7 +130,19 @@ export async function addReliableJob(
       options.priority ?? 0,
     ],
   );
-  return result.rows[0];
+  const job = rows[0];
+  if (job) {
+    const message = c.blue(
+      `[${new Date().toISOString()}] [queue] [add: ${name}] [priority: ${
+        job.priority
+      }] [attempts: ${job.attempts}] ${name === 'parse' ? data.match_id : ''}`,
+    );
+    redis.publish(
+      'queue',
+      message,
+    );
+  }
+  return job;
 }
 
 export async function getReliableJob(jobId: string) {
