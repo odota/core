@@ -119,12 +119,12 @@ let arr = [
     name: 'archiver',
     group: 'backend',
   },
-  {
-    name: 'cycler',
-    group: 'backend',
-    script: 'scripts/cycler.py',
-    interpreter: 'python3',
-  },
+  // {
+  //   name: 'cycler',
+  //   group: 'backend',
+  //   script: 'scripts/cycler.py',
+  //   interpreter: 'python3',
+  // },
 ];
 
 // If GROUP is set filter to only the matching group
