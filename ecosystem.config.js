@@ -119,6 +119,11 @@ let arr = [
     name: 'archiver',
     group: 'backend',
   },
+  {
+    name: 'cycler',
+    group: 'backend',
+    script: 'scripts/cycler.py',
+  },
 ];
 
 // If GROUP is set filter to only the matching group
@@ -139,7 +144,7 @@ const apps = arr.map((app) => {
     log_date_format: 'YYYY-MM-DDTHH:mm:ss',
     exec_mode: app.exec_mode ?? 'fork',
     instances: app.instances ?? 1,
-    script,
+    script: app.script ?? script,
     interpreter:
       script.endsWith('.ts') || script.endsWith('.mts')
         ? 'node_modules/.bin/tsx'
