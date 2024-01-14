@@ -76,13 +76,10 @@ setInterval(() => {
   }
 }, 5000);
 
-app.use(compression());
 app.get('/healthz', (req, res, cb) => {
-  if (noneReady()) {
-    return cb('not ready');
-  }
   return res.end('ok');
 });
+app.use(compression());
 app.use((req, res, cb) => {
   console.log(
     'numReady: %s, matches: %s/%s, profiles: %s/%s, uptime: %s, matchRequestDelay: %s, query: %s',
