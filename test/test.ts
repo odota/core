@@ -93,6 +93,8 @@ before(async function setup() {
   await startServices();
   await loadMatches();
   await loadPlayers();
+  // Wait one second to give mmr time to update
+  await new Promise(resolve => setTimeout(resolve, 1000));
 
   async function initElasticsearch() {
     console.log('Create Elasticsearch Mapping');
