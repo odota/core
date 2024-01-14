@@ -19,7 +19,9 @@ const minUpTimeSeconds = 240;
 const maxAccounts = 4;
 const matchesPerAccount = 150;
 const port = config.PORT || config.RETRIEVER_PORT;
-const baseMatchRequestInterval = 500;
+const getMatchRequestInterval = () => {
+  return (1000 / (Object.keys(steamObj).length || 1)) + extraMatchRequestInterval;
+}
 let extraMatchRequestInterval = 0;
 const matchRequestIntervalStep = 0;
 const noneReady = () => Object.keys(steamObj).length === 0;
@@ -90,7 +92,7 @@ app.use((req, res, cb) => {
     profileSuccesses,
     profileRequests,
     getUptime(),
-    baseMatchRequestInterval + extraMatchRequestInterval,
+    getMatchRequestInterval(),
     req.query,
   );
   if (config.RETRIEVER_SECRET && config.RETRIEVER_SECRET !== req.query.key) {
@@ -133,8 +135,7 @@ app.get('/match/:match_id', async (req, res, cb) => {
   const curTime = Number(new Date());
   if (
     lastMatchRequestTime &&
-    curTime - lastMatchRequestTime <
-      baseMatchRequestInterval + extraMatchRequestInterval
+    curTime - lastMatchRequestTime < getMatchRequestInterval()
   ) {
     return res.status(429).json({
       error: 'too many requests',

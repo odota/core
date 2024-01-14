@@ -3,6 +3,7 @@
 from itertools import cycle
 import subprocess
 import time
+import random
 
 lifetime = 360
 template = "retriever-20"
@@ -20,17 +21,20 @@ def start():
   zoneList = zones.strip().split('\n')
   # sort by zone (alphabetical)
   zoneList = sorted(zoneList)
+  zoneList = list(filter(lambda s: s.startswith('us-') or s.startswith('northamerica-') , zoneList))
+  random.shuffle(zoneList)
   while True:
     for i, zone in enumerate(zoneList):
       try:
         print(i, zone)
         # Optionally multiple instances per zone
-        for n in range(1):
+        for n in range(2):
           command = cmd.format(zone, lifetime, template)
           print(command)
           subprocess.call(command, shell=True)
         # wait the instance lifetime and then move on to next zone
-        time.sleep(lifetime)
+        # go a little early to get new IP
+        time.sleep(lifetime * 0.95)
       except KeyboardInterrupt:
         raise
       except Exception as e:
