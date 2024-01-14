@@ -90,9 +90,9 @@ before(async function setup() {
   await initRedis();
   await initCassandra();
   // await initScylla();
-  await startServices();
   await loadMatches();
   await loadPlayers();
+  await startServices();
   // Wait one second to give mmr time to update
   await new Promise(resolve => setTimeout(resolve, 1000));
 
