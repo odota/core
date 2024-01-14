@@ -17,7 +17,7 @@ let users = config.STEAM_USER.split(',');
 let passes = config.STEAM_PASS.split(',');
 const minUpTimeSeconds = 240;
 const maxAccounts = 4;
-const matchesPerAccount = 150;
+const matchesPerAccount = 180;
 const port = config.PORT || config.RETRIEVER_PORT;
 const getMatchRequestInterval = () => {
   return (1000 / (Object.keys(steamObj).length || 1)) + extraMatchRequestInterval;
