@@ -206,12 +206,14 @@ app.get('/admin/retrieverMetrics', async (req, res, cb) => {
     const registry = ips.filter(ip => registryKeys.includes(ip.key));
     const isGce = (e: typeof steamids[number]) => (e.key.startsWith('35.') || e.key.startsWith('34.'));
     return res.json({
-      sumReqs: ips.map(e => e.reqs).reduce((a, b) => a + b, 0),
-      sumSuccess: ips.map(e => e.success).reduce((a, b) => a + b, 0),
+      countReqs: ips.map(e => e.reqs).reduce((a, b) => a + b, 0),
+      countSuccess: ips.map(e => e.success).reduce((a, b) => a + b, 0),
       gceSuccess: ips.filter(e => isGce(e)).map(e => e.success).reduce((a, b) => a + b, 0),
       nonGceSuccess: ips.filter(e => !isGce(e)).map(e => e.success).reduce((a, b) => a + b, 0),
-      countips: ips.length,
-      countSteamIds: steamids.length,
+      numIps: ips.length,
+      gceIps: ips.filter(e => isGce(e)).length,
+      nonGceIps: ips.filter(e => !isGce(e)).length,
+      numSteamIds: steamids.length,
       registry,
       ips,
       steamids,
