@@ -36,18 +36,10 @@ start();
 
 process.on('uncaughtException', async (err) => {
   console.error(err);
-  if (process.env.ROLE === 'web') {
-    const { redisCount } = await import('./util/utility.js');
-    redisCount(null, 'web_crash');
-  }
   process.exit(1);
 });
 process.on('unhandledRejection', async (reason, p) => {
   // In production pm2 doesn't appear to auto restart unless we exit the process here
   console.error('Unhandled Rejection at: Promise', p, 'reason:', reason);
-  if (process.env.ROLE === 'web') {
-    const { redisCount } = await import('./util/utility.js');
-    redisCount(null, 'web_crash');
-  }
   process.exit(1);
 });

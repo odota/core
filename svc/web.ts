@@ -540,3 +540,9 @@ logSub.on('message', (channel: string, message: string) => {
     }
   });
 });
+
+process.on('exit', (code) => {
+  if (code > 0) {
+    redisCount(redis, 'web_crash');
+  }
+});
