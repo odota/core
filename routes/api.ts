@@ -43,7 +43,7 @@ api.use('/players/:account_id/:info?', async (req, res, cb) => {
     // User can view their own stats
     const isPrivate =
       Boolean(privacy.rows[0]?.fh_unavailable) &&
-      req.user?.account_id !== req.params.account_id;
+      Number(req.user?.account_id) !== Number(req.params.account_id);
     res.locals.queryObj = {
       project: [...alwaysCols, ...filterCols, ...sortCols],
       filter,

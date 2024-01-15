@@ -55,7 +55,7 @@ const whitelistedPaths = [
 passport.serializeUser((user: any, done: ErrorCb) => {
   done(null, user.account_id);
 });
-passport.deserializeUser((accountId: string, done: ErrorCb) => {
+passport.deserializeUser((accountId: string | number, done: ErrorCb) => {
   done(null, {
     account_id: accountId,
   });
@@ -318,7 +318,7 @@ app.route('/subscribeSuccess').get(async (req, res, cb) => {
     const customer = await stripe.customers.retrieve(
       session.customer as string,
     );
-    const accountId = req.user.account_id;
+    const accountId = Number(req.user.account_id);
     // associate the customer id with the steam account ID (req.user.account_id)
     await db.raw(
       'INSERT INTO subscriber(account_id, customer_id, status) VALUES (?, ?, ?) ON CONFLICT(account_id) DO UPDATE SET account_id = EXCLUDED.account_id, customer_id = EXCLUDED.customer_id, status = EXCLUDED.status',
@@ -337,7 +337,7 @@ app.route('/manageSub').post(async (req, res, cb) => {
     }
     const result = await db.raw(
       "SELECT customer_id FROM subscriber where account_id = ? AND status = 'active'",
-      [req.user.account_id],
+      [Number(req.user.account_id)],
     );
     const customer = result?.rows?.[0];
     if (!customer) {
