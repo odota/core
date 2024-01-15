@@ -23,12 +23,15 @@ def start():
   # zoneList = list(filter(lambda s: s.startswith('us-') or s.startswith('northamerica-') , zoneList))
   while True:
     random.shuffle(zoneList)
-    for i in range(3):
+    success = 0
+    while success < 1:
+      i = random.randrange(len(zoneList))
       zone = zoneList[i]
       command = cmd.format(zone, lifetime, template)
       print(command)
       try:
         subprocess.call(command, shell=True)
+        success += 1
       except Exception as e:
         print(e)
     try:

@@ -3,7 +3,7 @@
 sudo iptables -w -A INPUT -p tcp --dport 80 -j ACCEPT
 sudo iptables -w -A INPUT -p tcp --dport 5600 -j ACCEPT
 
-sudo docker run -d --name parseServer --restart=always --net=host --log-opt max-size=1g -e SERVICE_REGISTRY_HOST=api.opendota.com odota/parser
+sudo docker run -d --name parseServer --restart=always --net=host --log-opt max-size=1g -e SERVICE_REGISTRY_HOST=api.opendota.com -e RETRIEVER_SECRET=REPLACE_ME odota/parser
 sudo docker start parseServer
 
 # If not using service registry, also run the parser queue/insert and use localhost Java parser

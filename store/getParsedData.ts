@@ -48,7 +48,6 @@ export async function saveParseData(
   replayUrl: string,
   { leagueid, start_time, duration, origin, pgroup }: ExtraData,
 ): Promise<{ error: string | null }> {
-  console.log('[PARSER] parsing replay at:', replayUrl);
   try {
     // Make a HEAD request for the replay to see if it's available
     await axios.head(replayUrl, { timeout: 5000 });
@@ -65,6 +64,7 @@ export async function saveParseData(
   // parse: 9407ms (curl -X POST --data-binary "@7503212404_1277518156.dem" odota-parser:5600 > output.log)
   // process: 3278ms (node processors/createParsedDataBlob.mjs < output.log)
   const parseUrl = config.USE_SERVICE_REGISTRY ? await getRegistryUrl('parser', `/blob?replay_url=${replayUrl}`) : getRandomParserUrl(`/blob?replay_url=${replayUrl}`);
+  console.log('[PARSER]', parseUrl);
   const resp = await axios.get<ParserMatch>(parseUrl);
   if (!resp.data) {
     return { error: 'Parse failed' };
