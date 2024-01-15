@@ -356,10 +356,9 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
         },
         route: () => '/players/:account_id/recentMatches',
         func: async (req, res, cb) => {
-          const cache = await getPlayerMatches(Number(req.params.account_id), {
-            project: res.locals.queryObj.project.concat(recentMatchesCols),
-            dbLimit: 20,
-          });
+          res.locals.queryObj.project = res.locals.queryObj.project.concat(recentMatchesCols);
+          res.locals.queryObj.dbLimit = 20;
+          const cache = await getPlayerMatches(Number(req.params.account_id), res.locals.queryObj);
           return res.json(cache?.filter((match) => match.duration));
         },
       },
@@ -873,6 +872,9 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
         },
         route: () => '/players/:account_id/ratings',
         func: async (req, res, cb) => {
+          if (res.locals.queryObj.isPrivate) {
+            return res.json([]);
+          }
           const result = await getPlayerRatings(req.params.account_id);
           return res.json(result);
         },
@@ -905,6 +907,9 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
         },
         route: () => '/players/:account_id/rankings',
         func: async (req, res, cb) => {
+          if (res.locals.queryObj.isPrivate) {
+            return res.json([]);
+          }
           return res.json(await getPlayerHeroRankings(req.params.account_id));
         },
       },

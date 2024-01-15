@@ -282,6 +282,14 @@ describe(c.blue('[TEST] privacy setting'), async () => {
     const res = await supertest(app).get('/api/players/120269134/matches');
     assert.equal(res.body.length, 0);
   });
+  it('should return no rows in recentMatches due to hidden match data', async () => {
+    await db.raw(
+      'UPDATE players SET fh_unavailable = TRUE WHERE account_id = ?',
+      ['120269134'],
+    );
+    const res = await supertest(app).get('/api/players/120269134/recentMatches');
+    assert.equal(res.body.length, 0);
+  });
 });
 describe(c.blue('[TEST] players'), async () => {
   let data: any = null;
