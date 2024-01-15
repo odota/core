@@ -44,11 +44,11 @@ async function doArchiveFromLegacy(matchId: number) {
   let match = await getMatchDataFromLegacy(matchId);
   if (!match) {
     // We couldn't find this match so just skip it
-    // console.log('could not find match:', matchId);
+    console.log('could not find match:', matchId);
     return;
   }
   if (!isDataComplete(match)) {
-    // console.log('data incomplete for match: ' + matchId);
+    console.log('data incomplete for match: ' + matchId);
     await deleteFromLegacy(matchId);
     return;
   }
@@ -69,14 +69,14 @@ async function doArchiveFromLegacy(matchId: number) {
   const playerMatches = await getPlayerMatchDataFromLegacy(matchId);
   if (!playerMatches.length) {
     // We couldn't find players for this match, some data was corrupted and we only have match level parsed data
-    // console.log('no players for match, deleting:', matchId);
+    console.log('no players for match, deleting:', matchId);
     if (Number(matchId) < 7000000000) {
-      // Just delete it from postgres and cassandra
+      // Just delete it from postgres too
       await db.raw('DELETE from parsed_matches WHERE match_id = ?', [
         Number(matchId),
       ]);
-      await deleteFromLegacy(matchId);
     }
+    await deleteFromLegacy(matchId);
     return;
   }
 
