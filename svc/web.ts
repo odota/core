@@ -208,7 +208,7 @@ app.post('/register/:service/:host', async (req, res, cb) => {
       keys.push(req.params.host);
     }
     const result = await redis.zadd(`registry:${req.params.service}`, ...keys);
-    return res.status(200).send(result);
+    return res.send(result.toString());
   }
   return res.end();
 });

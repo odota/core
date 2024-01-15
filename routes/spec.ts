@@ -1551,7 +1551,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
               priority,
             },
           );
-          return res.status(200).json({
+          return res.json({
             job: {
               jobId: parseJob.id,
             },
