@@ -170,19 +170,22 @@ app.get('/match/:match_id', async (req, res, cb) => {
     ),
     (appid, msgType, payload) => {
       clearTimeout(timeout);
-      console.timeEnd('match:' + matchId);
-      const matchData: any = CMsgGCMatchDetailsResponse.decode(payload);
-      if (matchData.result === 15) {
-        // Valve is blocking GC access to this match, probably a community prediction match
-        // Send back 200 success with a specific header that tells us not to retry
-        res.setHeader('x-match-noretry', matchData.result);
-        return res.end();
+      // Check if we already sent the response to avoid double-sending on slow requests
+      if (!res.headersSent) {
+        console.timeEnd('match:' + matchId);
+        const matchData: any = CMsgGCMatchDetailsResponse.decode(payload);
+        if (matchData.result === 15) {
+          // Valve is blocking GC access to this match, probably a community prediction match
+          // Send back 200 success with a specific header that tells us not to retry
+          res.setHeader('x-match-noretry', matchData.result);
+          return res.end();
+        }
+        matchSuccesses += 1;
+        matchSuccessAccount[rKey] += 1;
+        // Reset delay on success
+        extraMatchRequestInterval = 0;
+        return res.json(matchData);
       }
-      matchSuccesses += 1;
-      matchSuccessAccount[rKey] += 1;
-      // Reset delay on success
-      extraMatchRequestInterval = 0;
-      return res.json(matchData);
     },
   );
 });
