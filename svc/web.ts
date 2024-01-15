@@ -210,7 +210,7 @@ app.post('/register/:service/:host', async (req, res, cb) => {
     const result = await redis.zadd(`registry:${req.params.service}`, ...keys);
     return res.send(result);
   }
-  return res.send();
+  return res.status(200).end();
 });
 
 // Compress everything after this
