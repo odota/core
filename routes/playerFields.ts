@@ -64,7 +64,12 @@ export const itemsCols = [
   'item_5',
 ] as const;
 
+// Static list of columns to return for recent matches
+// Includes alwaysCols because it doesn't use the same queryObj as the other calls
 export const recentMatchesCols = [
+  'match_id',
+  'player_slot',
+  'radiant_win',
   'hero_id',
   'start_time',
   'duration',
@@ -87,7 +92,7 @@ export const recentMatchesCols = [
   'cluster',
   'leaver_status',
   'party_size',
-] as const;
+] as (keyof ParsedPlayerMatch)[];
 
 export const heroesCols = ['heroes', 'account_id', 'start_time'] as const;
 export const significantCols = filterDeps.significant;

@@ -357,10 +357,14 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
         },
         route: () => '/players/:account_id/recentMatches',
         func: async (req, res, cb) => {
-          res.locals.queryObj.project = res.locals.queryObj.project.concat(recentMatchesCols);
-          res.locals.queryObj.dbLimit = 20;
-          const cache = await getPlayerMatches(Number(req.params.account_id), res.locals.queryObj);
-          return res.json(cache?.filter((match) => match.duration));
+          // Construct a new queryObj, because this endpoint doesn't support filtering, sorting, or projection
+          const queryObj = {
+            project: recentMatchesCols,
+            dbLimit: 20,
+            isPrivate: res.locals.queryObj.isPrivate,
+          };
+          const cache = await getPlayerMatches(Number(req.params.account_id), queryObj);
+          return res.json(cache);
         },
       },
     },
