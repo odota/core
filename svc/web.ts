@@ -188,7 +188,6 @@ app.get('/admin/retrieverMetrics', async (req, res, cb) => {
     const ipReqs = await redis.hgetall('retrieverIPs');
     const idSuccess = await redis.hgetall('retrieverSuccessSteamIDs');
     const ipSuccess = await redis.hgetall('retrieverSuccessIPs');
-    const registry = await redis.zrange('registry:retriever', 0, -1);
     const steamids = Object.keys(idReqs).map(key => {
       return {
         key,
@@ -203,6 +202,8 @@ app.get('/admin/retrieverMetrics', async (req, res, cb) => {
         success: Number(ipSuccess[key]) || 0,
       };
     }).sort((a, b) => b.reqs - a.reqs);
+    const registryKeys = await redis.zrange('registry:retriever', 0, -1);
+    const registry = ips.filter(ip => registryKeys.includes(ip.key));
     const isGce = (e: typeof steamids[number]) => e.key.startsWith('35.') || e.key.startsWith('34.');
     return res.json({
       sumReqs: steamids.map(e => e.reqs).reduce((a, b) => a + b, 0),
