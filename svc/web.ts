@@ -185,7 +185,7 @@ app.use((req, res, next) => {
 
 // Health check
 app.get('/healthz', (req, res) => {
-  res.send('ok');
+  res.end('ok');
 });
 
 app.post('/register/:service/:host', async (req, res, cb) => {
@@ -208,9 +208,9 @@ app.post('/register/:service/:host', async (req, res, cb) => {
       keys.push(req.params.host);
     }
     const result = await redis.zadd(`registry:${req.params.service}`, ...keys);
-    return res.send(result);
+    return res.status(200).send(result);
   }
-  return res.status(200).end();
+  return res.end();
 });
 
 // Compress everything after this
