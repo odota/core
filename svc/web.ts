@@ -44,9 +44,6 @@ const whitelistedPaths = [
   '/login',
   '/logout',
   '/return',
-  '/admin/apiMetrics',
-  '/admin/retrieverMetrics',
-  '/healthz',
   '/subscribeSuccess',
   '/manageSub',
   '/keys', // API Key management
@@ -164,212 +161,18 @@ app.use('/ugc', (req, res) => {
     .pipe(res);
 });
 
-// Compress everything after this
-app.use(compression());
-
 // Session/Passport middleware
+// req.user available after this
 app.use(session(sessOptions));
 app.use(passport.initialize());
 app.use(passport.session());
 
-// This is for passing the IP through if behind load balancer https://expressjs.com/en/guide/behind-proxies.html
-app.set('trust proxy', true);
-// Rate limiter and API key middleware
-app.use(async (req, res, cb) => {
-  try {
-    const timeStart = Number(new Date());
-    res.once('finish', () => onResFinish(req, res, timeStart));
-    const apiKey =
-      (req.headers.authorization &&
-        req.headers.authorization.replace('Bearer ', '')) ||
-      req.query.api_key;
-    if (config.ENABLE_API_LIMIT && apiKey) {
-      const resp = await redis.sismember('api_keys', apiKey as string);
-      res.locals.isAPIRequest = resp === 1;
-    }
-    const { ip } = req;
-    res.locals.ip = ip;
-    let rateLimit: number | string = '';
-    if (res.locals.isAPIRequest) {
-      const requestAPIKey =
-        (req.headers.authorization &&
-          req.headers.authorization.replace('Bearer ', '')) ||
-        req.query.api_key;
-      res.locals.usageIdentifier = requestAPIKey;
-      rateLimit = config.API_KEY_PER_MIN_LIMIT;
-      // console.log('[KEY] %s visit %s, ip %s', requestAPIKey, req.originalUrl, ip);
-    } else {
-      res.locals.usageIdentifier = ip;
-      rateLimit = config.NO_API_KEY_PER_MIN_LIMIT;
-      // console.log('[USER] %s visit %s, ip %s', req.user ? req.user.account_id : 'anonymous', req.originalUrl, ip);
-    }
-    const command = redis.multi();
-    command
-      .hincrby('rate_limit', res.locals.usageIdentifier, 1)
-      .expireat('rate_limit', getStartOfBlockMinutes(1, 1));
-    if (!res.locals.isAPIRequest) {
-      // not API request so check previous usage
-      command.zscore('ip_usage_count', res.locals.usageIdentifier);
-    }
-    const resp = await command.exec();
-    if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
-      console.log(
-        '[WEB] %s rate limit %s',
-        req.originalUrl,
-        JSON.stringify(resp),
-      );
-    }
-    const incrValue = resp![0]?.[1];
-    const prevUsage = resp![2]?.[1];
-    res.set({
-      'X-Rate-Limit-Remaining-Minute': Number(rateLimit) - Number(incrValue),
-      'X-IP-Address': ip,
-    });
-    if (!res.locals.isAPIRequest) {
-      res.set(
-        'X-Rate-Limit-Remaining-Day',
-        (Number(config.API_FREE_LIMIT) - Number(prevUsage)).toString(),
-      );
-    }
-    if (Number(incrValue) > Number(rateLimit) && config.NODE_ENV !== 'test') {
-      return res.status(429).json({
-        error: 'rate limit exceeded',
-      });
-    }
-    if (
-      config.ENABLE_API_LIMIT &&
-      !whitelistedPaths.includes(req.originalUrl.split('?')[0]) &&
-      !res.locals.isAPIRequest &&
-      Number(prevUsage) >= Number(config.API_FREE_LIMIT)
-    ) {
-      return res.status(429).json({
-        error: 'daily api limit exceeded',
-      });
-    }
-    return cb();
-  } catch (e) {
-    cb(e);
-  }
-});
-app.use((req, res, next) => {
-  // Reject request if not GET and Origin header is present and not an approved domain (prevent CSRF)
-  if (
-    req.method !== 'GET' &&
-    req.header('Origin') &&
-    req.header('Origin') !== config.UI_HOST
-  ) {
-    // Make an exception for replay parse request
-    if (req.method === 'POST' && req.originalUrl.startsWith('/api/request/')) {
-      return next();
-    }
-    return res.status(403).json({ error: 'Invalid Origin header' });
-  }
-  return next();
-});
-// CORS headers
-app.use(
-  cors({
-    origin: true,
-    credentials: true,
-  }),
-);
 // req.body available after this
 app.use(bodyParser.json());
-app.route('/login').get(
-  passport.authenticate('steam', {
-    failureRedirect: '/api',
-  }),
-);
-app.route('/return').get(
-  passport.authenticate('steam', {
-    failureRedirect: '/api',
-  }),
-  (req, res) => {
-    if (config.UI_HOST) {
-      return res.redirect(
-        req.user
-          ? `${config.UI_HOST}/players/${req.user.account_id}`
-          : config.UI_HOST,
-      );
-    }
-    return res.redirect('/api');
-  },
-);
-app.route('/logout').get((req, res) => {
-  req.logout(() => {});
-  req.session = null;
-  if (config.UI_HOST) {
-    return res.redirect(config.UI_HOST);
-  }
-  return res.redirect('/api');
-});
-app.route('/subscribeSuccess').get(async (req, res, cb) => {
-  try {
-    if (!req.query.session_id) {
-      return res.status(400).json({ error: 'no session ID' });
-    }
-    if (!req.user?.account_id) {
-      return res.status(400).json({ error: 'no account ID' });
-    }
-    // look up the checkout session id: https://stripe.com/docs/payments/checkout/custom-success-page
-    const session = await stripe.checkout.sessions.retrieve(
-      req.query.session_id as string,
-    );
-    const customer = await stripe.customers.retrieve(
-      session.customer as string,
-    );
-    const accountId = Number(req.user.account_id);
-    // associate the customer id with the steam account ID (req.user.account_id)
-    await db.raw(
-      'INSERT INTO subscriber(account_id, customer_id, status) VALUES (?, ?, ?) ON CONFLICT(account_id) DO UPDATE SET account_id = EXCLUDED.account_id, customer_id = EXCLUDED.customer_id, status = EXCLUDED.status',
-      [accountId, customer.id, 'active'],
-    );
-    // Send the user back to the subscribe page
-    return res.redirect(`${config.UI_HOST}/subscribe`);
-  } catch (e) {
-    cb(e);
-  }
-});
-app.route('/manageSub').post(async (req, res, cb) => {
-  try {
-    if (!req.user?.account_id) {
-      return res.status(400).json({ error: 'no account ID' });
-    }
-    const result = await db.raw(
-      "SELECT customer_id FROM subscriber where account_id = ? AND status = 'active'",
-      [Number(req.user.account_id)],
-    );
-    const customer = result?.rows?.[0];
-    if (!customer) {
-      return res.status(400).json({ error: 'customer not found' });
-    }
-    const session = await stripe.billingPortal.sessions.create({
-      customer: customer.customer_id,
-      return_url: req.body?.return_url,
-    });
-    return res.json(session);
-  } catch (e) {
-    cb(e);
-  }
-});
-app.post('/register/:service/:host', async (req, res, cb) => {
-  // check secret matches
-  if (config.RETRIEVER_SECRET && config.RETRIEVER_SECRET !== req.query.key) {
-    return res.status(403).end();
-  }
-  // zadd the given host and current time
-  if (req.params.service && req.params.host) {
-    const size = Number(req.query.size);
-    if (size) {
-      for (let i = 0; i < size; i++) {
-        redis.zadd(`registry:${req.params.service}`, Date.now(), req.params.host + '?' + i);
-      }
-    } else {
-      redis.zadd(`registry:${req.params.service}`, Date.now(), req.params.host);
-    }
-  }
-  return res.end();
-});
+
+// Compress everything after this
+app.use(compression());
+
 // Admin endpoints middleware
 app.use('/admin*', (req, res, cb) => {
   if (req.user && admins.includes(Number(req.user.account_id))) {
@@ -469,17 +272,224 @@ app.get('/admin/apiMetrics', async (req, res, cb) => {
     return cb(e);
   }
 });
-app.use('/api', api);
+
+app.post('/register/:service/:host', async (req, res, cb) => {
+  // check secret matches
+  if (config.RETRIEVER_SECRET && config.RETRIEVER_SECRET !== req.query.key) {
+    return res.status(403).end();
+  }
+  // zadd the given host and current time
+  if (req.params.service && req.params.host) {
+    const size = Number(req.query.size);
+    if (size) {
+      for (let i = 0; i < size; i++) {
+        redis.zadd(`registry:${req.params.service}`, Date.now(), req.params.host + '?' + i);
+      }
+    } else {
+      redis.zadd(`registry:${req.params.service}`, Date.now(), req.params.host);
+    }
+  }
+  return res.end();
+});
+
+// This is for passing the IP through if behind load balancer https://expressjs.com/en/guide/behind-proxies.html
+app.set('trust proxy', true);
+// Rate limiter and API key middleware
+// Everything after this is rate limited
+app.use(async (req, res, cb) => {
+  try {
+    const timeStart = Number(new Date());
+    res.once('finish', () => onResFinish(req, res, timeStart));
+    const apiKey =
+      (req.headers.authorization &&
+        req.headers.authorization.replace('Bearer ', '')) ||
+      req.query.api_key;
+    if (config.ENABLE_API_LIMIT && apiKey) {
+      const resp = await redis.sismember('api_keys', apiKey as string);
+      res.locals.isAPIRequest = resp === 1;
+    }
+    const { ip } = req;
+    res.locals.ip = ip;
+    let rateLimit: number | string = '';
+    if (res.locals.isAPIRequest) {
+      const requestAPIKey =
+        (req.headers.authorization &&
+          req.headers.authorization.replace('Bearer ', '')) ||
+        req.query.api_key;
+      res.locals.usageIdentifier = requestAPIKey;
+      rateLimit = config.API_KEY_PER_MIN_LIMIT;
+      // console.log('[KEY] %s visit %s, ip %s', requestAPIKey, req.originalUrl, ip);
+    } else {
+      res.locals.usageIdentifier = ip;
+      rateLimit = config.NO_API_KEY_PER_MIN_LIMIT;
+      // console.log('[USER] %s visit %s, ip %s', req.user ? req.user.account_id : 'anonymous', req.originalUrl, ip);
+    }
+    const command = redis.multi();
+    command
+      .hincrby('rate_limit', res.locals.usageIdentifier, 1)
+      .expireat('rate_limit', getStartOfBlockMinutes(1, 1));
+    if (!res.locals.isAPIRequest) {
+      // not API request so check previous usage
+      command.zscore('ip_usage_count', res.locals.usageIdentifier);
+    }
+    const resp = await command.exec();
+    if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
+      console.log(
+        '[WEB] %s rate limit %s',
+        req.originalUrl,
+        JSON.stringify(resp),
+      );
+    }
+    const incrValue = resp![0]?.[1];
+    const prevUsage = resp![2]?.[1];
+    res.set({
+      'X-Rate-Limit-Remaining-Minute': Number(rateLimit) - Number(incrValue),
+      'X-IP-Address': ip,
+    });
+    if (!res.locals.isAPIRequest) {
+      res.set(
+        'X-Rate-Limit-Remaining-Day',
+        (Number(config.API_FREE_LIMIT) - Number(prevUsage)).toString(),
+      );
+    }
+    if (Number(incrValue) > Number(rateLimit) && config.NODE_ENV !== 'test') {
+      return res.status(429).json({
+        error: 'rate limit exceeded',
+      });
+    }
+    if (
+      config.ENABLE_API_LIMIT &&
+      !whitelistedPaths.includes(req.originalUrl.split('?')[0]) &&
+      !res.locals.isAPIRequest &&
+      Number(prevUsage) >= Number(config.API_FREE_LIMIT)
+    ) {
+      return res.status(429).json({
+        error: 'daily api limit exceeded',
+      });
+    }
+    return cb();
+  } catch (e) {
+    cb(e);
+  }
+});
+app.use((req, res, next) => {
+  // Reject request if not GET and Origin header is present and not an approved domain (prevent CSRF)
+  if (
+    req.method !== 'GET' &&
+    req.header('Origin') &&
+    req.header('Origin') !== config.UI_HOST
+  ) {
+    // Make an exception for replay parse request
+    if (req.method === 'POST' && req.originalUrl.startsWith('/api/request/')) {
+      return next();
+    }
+    return res.status(403).json({ error: 'Invalid Origin header' });
+  }
+  return next();
+});
+
+// CORS headers
+// All endpoints accessed from UI should be after this
+app.use(
+  cors({
+    origin: true,
+    credentials: true,
+  }),
+);
+
+app.route('/login').get(
+  passport.authenticate('steam', {
+    failureRedirect: '/api',
+  }),
+);
+app.route('/return').get(
+  passport.authenticate('steam', {
+    failureRedirect: '/api',
+  }),
+  (req, res) => {
+    if (config.UI_HOST) {
+      return res.redirect(
+        req.user
+          ? `${config.UI_HOST}/players/${req.user.account_id}`
+          : config.UI_HOST,
+      );
+    }
+    return res.redirect('/api');
+  },
+);
+app.route('/logout').get((req, res) => {
+  req.logout(() => {});
+  req.session = null;
+  if (config.UI_HOST) {
+    return res.redirect(config.UI_HOST);
+  }
+  return res.redirect('/api');
+});
+app.route('/subscribeSuccess').get(async (req, res, cb) => {
+  try {
+    if (!req.query.session_id) {
+      return res.status(400).json({ error: 'no session ID' });
+    }
+    if (!req.user?.account_id) {
+      return res.status(400).json({ error: 'no account ID' });
+    }
+    // look up the checkout session id: https://stripe.com/docs/payments/checkout/custom-success-page
+    const session = await stripe.checkout.sessions.retrieve(
+      req.query.session_id as string,
+    );
+    const customer = await stripe.customers.retrieve(
+      session.customer as string,
+    );
+    const accountId = Number(req.user.account_id);
+    // associate the customer id with the steam account ID (req.user.account_id)
+    await db.raw(
+      'INSERT INTO subscriber(account_id, customer_id, status) VALUES (?, ?, ?) ON CONFLICT(account_id) DO UPDATE SET account_id = EXCLUDED.account_id, customer_id = EXCLUDED.customer_id, status = EXCLUDED.status',
+      [accountId, customer.id, 'active'],
+    );
+    // Send the user back to the subscribe page
+    return res.redirect(`${config.UI_HOST}/subscribe`);
+  } catch (e) {
+    cb(e);
+  }
+});
+app.route('/manageSub').post(async (req, res, cb) => {
+  try {
+    if (!req.user?.account_id) {
+      return res.status(400).json({ error: 'no account ID' });
+    }
+    const result = await db.raw(
+      "SELECT customer_id FROM subscriber where account_id = ? AND status = 'active'",
+      [Number(req.user.account_id)],
+    );
+    const customer = result?.rows?.[0];
+    if (!customer) {
+      return res.status(400).json({ error: 'customer not found' });
+    }
+    const session = await stripe.billingPortal.sessions.create({
+      customer: customer.customer_id,
+      return_url: req.body?.return_url,
+    });
+    return res.json(session);
+  } catch (e) {
+    cb(e);
+  }
+});
+
 // CORS Preflight for API keys
 // NB: make sure UI_HOST is set e.g. http://localhost:3000 otherwise CSRF check above will stop preflight from working
 app.options('/keys', cors());
 app.use('/keys', keys);
+
+// API data endpoints
+app.use('/api', api);
+
 // 404 route
 app.use((req, res) =>
   res.status(404).json({
     error: 'Not Found',
   }),
 );
+
 // 500 route
 app.use(
   (err: Error, req: express.Request, res: express.Response, cb: ErrorCb) => {
@@ -498,6 +508,8 @@ const port = config.PORT || config.FRONTEND_PORT;
 const server = app.listen(port, () => {
   console.log('[WEB] listening on %s', port);
 });
+
+// Websocket server for log streaming
 const wss = new WebSocketServer({ server });
 // wss.on('connection', (socket, request) => {
 //   // Parse the query params for channels to sub to
