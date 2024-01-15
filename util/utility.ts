@@ -850,10 +850,10 @@ export async function redisCount(redis: Redis | null, prefix: MetricName) {
   );
 }
 
-export async function redisCountDistinct(redis: Redis | null, prefix: MetricName) {
+export async function redisCountDistinct(redis: Redis | null, prefix: MetricName, value: string) {
   const redisToUse = redis ?? (await import('../store/redis.js')).redis;
   const key = `${prefix}:v2:${moment().startOf('hour').format('X')}`;
-  await redisToUse?.pfadd(key);
+  await redisToUse?.pfadd(prefix, value);
   await redisToUse?.expireat(
     key,
     moment().startOf('hour').add(1, 'day').format('X'),

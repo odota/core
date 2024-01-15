@@ -1513,7 +1513,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           const matchId = req.params.match_id;
           // Count this request
           redisCount(redis, 'request');
-          redisCountDistinct(redis, 'distinct_request');
+          redisCountDistinct(redis, 'distinct_request', matchId);
           let priority = 1;
           if (
             req.user?.account_id &&
