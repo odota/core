@@ -73,9 +73,11 @@ export async function buildStatus() {
     distinct_requests_last_day: async () => countDayDistinct('distinct_request'),
     requests_ui_day: async () => countDay('request_ui'),
     requests_api_key_last_day: async () => countDay('request_api_key'),
+    registry_retriever: async () => redis.zcard('registry:retriever'),
     retriever_matches_current_hour: async () => countHour('retriever'),
     retriever_matches_last_day: async () => countDay('retriever'),
     retriever_players_last_day: async () => countDay('retriever_player'),
+    registry_parser: async () => redis.zcard('registry:parser'),
     parse_jobs_last_day: async () => countDay('parser_job'),
     parse_fails_last_day: async () => countDay('parser_fail'),
     parse_crashes_last_day: async () => countDay('parser_crash'),
@@ -102,6 +104,16 @@ export async function buildStatus() {
     match_archive_read_last_day: async () => countDay('match_archive_read'),
     match_archive_write_last_day: async () => countDay('match_archive_write'),
     incomplete_archive_last_day: async () => countDay('incomplete_archive'),
+    api_hits_last_day: async () => countDay('api_hits'),
+    api_hits_ui_last_day: async () => countDay('api_hits_ui'),
+    build_match_last_day: async () => countDay('build_match'),
+    get_player_matches_last_day: async () => countDay('player_matches'),
+    self_player_matches_last_day: async () => countDay('self_profile_view'),
+    match_cache_hit_last_day: async () => countDay('match_cache_hit'),
+    player_cache_hit_last_day: async () => countDay('player_cache_hit'),
+    error_last_day: async () => countDay('500_error'),
+    web_crash_last_day: async () => countDay('web_crash'),
+    skip_seq_num_last_day: async () => countDay('skip_seq_num'),
     parseQueue: async () => {
       // It's slow to count in postgres so use the value saved by monitor
       const result = await redis.get('health:v2');
@@ -118,16 +130,6 @@ export async function buildStatus() {
       const result = await redis.get('health:v2');
       return result ? JSON.parse(result)?.seqNumDelay?.metric : null;
     },
-    api_hits_last_day: async () => countDay('api_hits'),
-    api_hits_ui_last_day: async () => countDay('api_hits_ui'),
-    build_match_last_day: async () => countDay('build_match'),
-    get_player_matches_last_day: async () => countDay('player_matches'),
-    self_profile_views_last_day: async () => countDay('self_profile_view'),
-    match_cache_hit_last_day: async () => countDay('match_cache_hit'),
-    player_cache_hit_last_day: async () => countDay('player_cache_hit'),
-    error_last_day: async () => countDay('500_error'),
-    web_crash_last_day: async () => countDay('web_crash'),
-    skip_seq_num_last_day: async () => countDay('skip_seq_num'),
     // scanner_exception_last_day: async () => getRedisCountDay('scanner_exception'),
     api_paths: async () => {
       const results = await redis.zrangebyscore(
