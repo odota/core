@@ -185,6 +185,7 @@ async function start3() {
             fetchSize: 1,
         },
         (n, row) => {
+            console.log(n, Number(row.match_id));
             doArchiveFromLegacy(Number(row.match_id));
         },
         (err, result) => {
