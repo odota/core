@@ -417,6 +417,7 @@ type MetricName =
   | 'retriever'
   | 'build_match'
   | 'player_matches'
+  | 'self_profile_view'
   | 'match_cache_hit'
   | 'player_cache_hit'
   | 'steam_api_backfill'

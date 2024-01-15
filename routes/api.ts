@@ -2,8 +2,9 @@ import { Router } from 'express';
 import { FilterType, filterDeps } from '../util/filter';
 import spec from './spec';
 import db from '../store/db';
+import redis from '../store/redis';
 import { alwaysCols } from './playerFields';
-import { queryParamToArray } from '../util/utility';
+import { queryParamToArray, redisCount } from '../util/utility';
 
 //@ts-ignore
 const api: Router = new Router();
@@ -41,9 +42,12 @@ api.use('/players/:account_id/:info?', async (req, res, cb) => {
       [req.params.account_id],
     );
     // User can view their own stats
+    const isSelf = Number(req.user?.account_id) === Number(req.params.account_id);
+    if (isSelf) {
+      redisCount(redis, 'self_profile_view');
+    }
     const isPrivate =
-      Boolean(privacy.rows[0]?.fh_unavailable) &&
-      Number(req.user?.account_id) !== Number(req.params.account_id);
+      Boolean(privacy.rows[0]?.fh_unavailable) && !isSelf;
     res.locals.queryObj = {
       project: [...alwaysCols, ...filterCols, ...sortCols],
       filter,

@@ -107,6 +107,7 @@ export async function buildStatus() {
     api_hits_ui_last_day: async () => countDay('api_hits_ui'),
     build_match_last_day: async () => countDay('build_match'),
     get_player_matches_last_day: async () => countDay('player_matches'),
+    self_profile_views_last_day: async () => countDay('self_profile_view'),
     match_cache_hit_last_day: async () => countDay('match_cache_hit'),
     player_cache_hit_last_day: async () => countDay('player_cache_hit'),
     error_last_day: async () => countDay('500_error'),

@@ -19,16 +19,15 @@ def start():
   # Get the available zones
   zones = subprocess.check_output("gcloud compute zones list --format='value(NAME)'", shell=True).decode("utf-8")
   zoneList = zones.strip().split('\n')
-  # sort by zone (alphabetical)
-  zoneList = sorted(zoneList)
-  zoneList = list(filter(lambda s: s.startswith('us-') or s.startswith('northamerica-') , zoneList))
+  # zoneList = sorted(zoneList)
+  # zoneList = list(filter(lambda s: s.startswith('us-') or s.startswith('northamerica-') , zoneList))
   random.shuffle(zoneList)
   while True:
     for i, zone in enumerate(zoneList):
       try:
         print(i, zone)
         # Optionally multiple instances per zone
-        for n in range(2):
+        for n in range(3):
           command = cmd.format(zone, lifetime, template)
           print(command)
           subprocess.call(command, shell=True)
