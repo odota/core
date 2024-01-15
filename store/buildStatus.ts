@@ -48,6 +48,20 @@ async function countLastHour(prefix: MetricName) {
   return Number(result);
 }
 
+async function countDayDistinct(prefix: MetricName) {
+  // Get counts for last 24 hour keys (including current partial hour)
+  const keyArr = [];
+  for (let i = 0; i < 24; i += 1) {
+    keyArr.push(
+      `${prefix}:v2:${moment()
+        .startOf('hour')
+        .subtract(i, 'hour')
+        .format('X')}`,
+    );
+  }
+  return redis.pfcount(...keyArr);
+}
+
 export async function buildStatus() {
   const obj = {
     user_players: async () => redis.zcard('visitors'),
@@ -56,6 +70,7 @@ export async function buildStatus() {
     matches_prev_hour: async () => countLastHour('added_match'),
     auto_parse_last_day: async () => countDay('auto_parse'),
     requests_last_day: async () => countDay('request'),
+    distinct_requests_last_day: async () => countDayDistinct('distinct_request'),
     requests_ui_day: async () => countDay('request_ui'),
     requests_api_key_last_day: async () => countDay('request_api_key'),
     retriever_matches_current_hour: async () => countHour('retriever'),

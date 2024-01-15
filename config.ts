@@ -16,7 +16,6 @@ const defaults = {
   PORT: '', // Default port to use by services often set by the system
   FRONTEND_PORT: '5000', // Port to run the webserver/API on
   RETRIEVER_PORT: '5100', // Port to run the Steam GC retriever on
-  PARSER_PORT: '5200', // Port to run the parser service on. Note: This is the JS service that processes jobs, not the Java server that actually parses replays (PARSER_HOST)
   PROXY_PORT: '5300', // Port to run the Steam API proxy on
   ROOT_URL: 'http://localhost:5000', // base url to redirect to after steam oauth login
   RETRIEVER_HOST: 'localhost:5100', // Comma separated list of retriever hosts (access to Dota 2 GC data)
@@ -89,7 +88,6 @@ if (process.env.NODE_ENV === 'test') {
   process.env.REDIS_URL = process.env.REDIS_URL?.slice(0, -1) + '1';
   process.env.SESSION_SECRET = 'testsecretvalue';
   process.env.FRONTEND_PORT = '5001';
-  process.env.PARSER_PORT = '5201';
 }
 
 // Export the combined values

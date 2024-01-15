@@ -819,9 +819,9 @@ export function getRandomRetrieverUrl(path: string): string {
   return urls[Math.floor(Math.random() * urls.length)];
 }
 
-export function getRandomParserUrl(replayUrl: string): string {
+export function getRandomParserUrl(path: string): string {
   const urls = PARSER_ARRAY.map((r) => {
-    return `http://${r}/blob?replay_url=${replayUrl}`;
+    return `http://${r}${path}`;
   });
   return urls[Math.floor(Math.random() * urls.length)];
 }
@@ -832,7 +832,7 @@ export async function getRegistryUrl(service: string, path: string) {
   await redis.zremrangebyscore('registry:' + service, '-inf', Date.now() - 10000);
   const hostWithId = await redis.zrandmember('registry:' + service);
   const host = hostWithId?.split('?')[0];
-  return `http://${host}${path}?key=${config.RETRIEVER_SECRET}`;
+  return `http://${host}${path}${service === 'retriever' ? `?key=${config.RETRIEVER_SECRET}` : ''}`;
 }
 
 /**
@@ -844,6 +844,16 @@ export async function redisCount(redis: Redis | null, prefix: MetricName) {
   const redisToUse = redis ?? (await import('../store/redis.js')).redis;
   const key = `${prefix}:v2:${moment().startOf('hour').format('X')}`;
   await redisToUse?.incr(key);
+  await redisToUse?.expireat(
+    key,
+    moment().startOf('hour').add(1, 'day').format('X'),
+  );
+}
+
+export async function redisCountDistinct(redis: Redis | null, prefix: MetricName) {
+  const redisToUse = redis ?? (await import('../store/redis.js')).redis;
+  const key = `${prefix}:v2:${moment().startOf('hour').format('X')}`;
+  await redisToUse?.pfadd(key);
   await redisToUse?.expireat(
     key,
     moment().startOf('hour').add(1, 'day').format('X'),

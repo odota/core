@@ -426,6 +426,7 @@ type MetricName =
   | 'request_api_key'
   | 'request_ui'
   | 'request'
+  | 'distinct_request'
   | 'reparse_early'
   | 'reparse'
   | 'regcdata'

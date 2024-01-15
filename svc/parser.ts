@@ -5,7 +5,6 @@
  * Stream is run through a series of processors to count/aggregate it into a single object
  * This object is passed to insertMatch to persist the data into the database.
  * */
-import express from 'express';
 import { getOrFetchGcDataWithRetry } from '../store/getGcData';
 import config from '../config';
 import { runReliableQueue } from '../store/queue';
@@ -15,12 +14,7 @@ import redis from '../store/redis';
 import { getOrFetchApiData } from '../store/getApiData';
 import { checkIsParsed, getOrFetchParseData } from '../store/getParsedData';
 
-const { PORT, PARSER_PORT, PARSER_PARALLELISM } = config;
-const app = express();
-app.get('/healthz', (req, res) => {
-  res.end('ok');
-});
-app.listen(PORT || PARSER_PORT);
+const { PARSER_PARALLELISM } = config;
 
 async function parseProcessor(job: ParseJob) {
   const start = Date.now();

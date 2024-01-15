@@ -21,23 +21,21 @@ def start():
   zoneList = zones.strip().split('\n')
   # zoneList = sorted(zoneList)
   # zoneList = list(filter(lambda s: s.startswith('us-') or s.startswith('northamerica-') , zoneList))
-  random.shuffle(zoneList)
   while True:
-    for i, zone in enumerate(zoneList):
+    random.shuffle(zoneList)
+    for i in range(3):
+      zone = zoneList[i]
+      command = cmd.format(zone, lifetime, template)
+      print(command)
       try:
-        print(i, zone)
-        # Optionally multiple instances per zone
-        for n in range(3):
-          command = cmd.format(zone, lifetime, template)
-          print(command)
-          subprocess.call(command, shell=True)
-        # wait the instance lifetime and then move on to next zone
-        # go a little early to get new IP
-        time.sleep(lifetime * 0.95)
-      except KeyboardInterrupt:
-        raise
+        subprocess.call(command, shell=True)
       except Exception as e:
         print(e)
-        time.sleep(lifetime)
+    try:
+      # wait the instance lifetime and then start new instances
+      # go a little early to get new IP
+      time.sleep(lifetime * 0.95)
+    except KeyboardInterrupt:
+      raise
 
 start()
