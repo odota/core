@@ -101,6 +101,8 @@ export async function getOrFetchApiData(matchId: number): Promise<{
     redisCount(redis, 'reapi');
     if (config.DISABLE_REAPI) {
       // If high load, we can disable refetching
+      // But this will also mean we can't update player_caches for previously anonymous players
+      // since we use the original pgroup
       return { data: saved, error: null, pgroup: getPGroup(saved) };
     }
   }
