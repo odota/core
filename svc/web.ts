@@ -196,15 +196,18 @@ app.post('/register/:service/:host', async (req, res, cb) => {
   // zadd the given host and current time
   if (req.params.service && req.params.host) {
     const size = Number(req.query.size);
+    const now = Date.now();
     const keys = [];
     if (size) {
       for (let i = 0; i < size; i++) {
+        keys.push(now);
         keys.push(req.params.host + '?' + i);
       }
     } else {
+      keys.push(now);
       keys.push(req.params.host);
     }
-    const result = await redis.zadd(`registry:${req.params.service}`, Date.now(), ...keys);
+    const result = await redis.zadd(`registry:${req.params.service}`, ...keys);
     return res.send(result);
   }
   return res.end();
