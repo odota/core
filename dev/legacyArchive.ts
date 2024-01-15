@@ -178,7 +178,7 @@ async function start2() {
 
 async function start3() {
     cassandra.eachRow(
-        `SELECT match_id from matches`,
+        `SELECT match_id from matches LIMIT 1`,
         [],
         {
             prepare: true,
