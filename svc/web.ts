@@ -203,9 +203,12 @@ app.get('/admin/retrieverMetrics', async (req, res, cb) => {
         success: Number(ipSuccess[key]) || 0,
       };
     }).sort((a, b) => b.reqs - a.reqs);
+    const isGce = (e: typeof steamids[number]) => e.key.startsWith('35.') || e.key.startsWith('34.');
     return res.json({
       sumReqs: steamids.map(e => e.reqs).reduce((a, b) => a + b, 0),
       sumSuccess: steamids.map(e => e.success).reduce((a, b) => a + b, 0),
+      gceSuccess: steamids.filter(e => isGce(e)).map(e => e.success).reduce((a, b) => a + b, 0),
+      nonGceSuccess: steamids.filter(e => !isGce(e)).map(e => e.success).reduce((a, b) => a + b, 0),
       countips: ips.length,
       countSteamIds: steamids.length,
       registry,
