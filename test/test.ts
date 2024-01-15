@@ -665,7 +665,7 @@ describe(c.blue('[TEST] api management'), () => {
 describe(c.blue('[TEST] api limits'), () => {
   before(async () => {
     config.ENABLE_API_LIMIT = '1';
-    config.API_FREE_LIMIT = '10';
+    config.API_FREE_LIMIT = '5';
     await redis
       .multi()
       .del('ip_usage_count')
@@ -675,45 +675,38 @@ describe(c.blue('[TEST] api limits'), () => {
   });
 
   it('should be able to make API calls without key with whitelisted routes unaffected. One call should fail as rate limit is hit. Last ones should succeed as they are whitelisted', async function testNoApiLimit() {
-    this.timeout(25000);
-    await testWhiteListedRoutes('');
-    await testRateCheckedRoute();
+    await makeWhitelistedRequests('');
+    await makeRateCheckedRequests('', 5);
     const res = await supertest(app).get('/api/matches/1781962623');
     assert.equal(res.statusCode, 429);
     assert.equal(res.body.error, 'daily api limit exceeded');
-    await testWhiteListedRoutes('');
+    await makeWhitelistedRequests('');
   });
 
   it('should be able to make more than 10 calls when using API KEY', async function testAPIKeyLimitsAndCounting() {
-    this.timeout(25000);
-    for (let i = 0; i < 25; i++) {
-      let regular = await supertest(app).get(
-        '/api/matches/1781962623?api_key=KEY',
-      );
-      assert.equal(regular.statusCode, 200);
-      await new Promise((resolve) => setTimeout(resolve, 100));
-    }
     // Try whitelisted routes. Should not increment usage.
-    await testWhiteListedRoutes('?api_key=KEY');
+    await makeWhitelistedRequests('?api_key=KEY');
     // Try a 429. Should not increment usage.
-    const tooMany = await supertest(app).get('/gen429');
+    const tooMany = await supertest(app).get('/gen429?api_key=KEY');
     assert.equal(tooMany.statusCode, 429);
     // Try a 500. Should not increment usage.
-    const err = await supertest(app).get('/gen500');
+    const err = await supertest(app).get('/gen500?api_key=KEY');
     assert.equal(err.statusCode, 500);
+
+    // Make calls that count toward limit
+    await makeRateCheckedRequests('?api_key=KEY', 10);
 
     const res = await redis.hgetall('usage_count');
     assert.ok(res);
     const keys = Object.keys(res);
     assert.equal(keys.length, 1);
-    assert.equal(Number(res[keys[0]]), 25);
+    assert.equal(Number(res[keys[0]]), 10);
   });
 
-  async function testWhiteListedRoutes(key: string) {
+  async function makeWhitelistedRequests(key: string) {
     const routes = [
       `/api${key}`, // Docs
       `/api/metadata${key}`, // Login status
-      `/keys${key}`, // API Key management
     ];
     for (let i = 0; i < routes.length; i++) {
       const route = routes[i];
@@ -722,9 +715,9 @@ describe(c.blue('[TEST] api limits'), () => {
     }
   }
 
-  async function testRateCheckedRoute() {
-    for (let i = 0; i < 10; i++) {
-      const res = await supertest(app).get('/api/matches/1781962623');
+  async function makeRateCheckedRequests(key: string, num: number) {
+    for (let i = 0; i < num; i++) {
+      const res = await supertest(app).get(`/api/matches/1781962623${key}`);
       assert.equal(res.statusCode, 200);
       await new Promise((resolve) => setTimeout(resolve, 100));
     }

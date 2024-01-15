@@ -37,17 +37,12 @@ const sessOptions = {
   maxAge: 52 * 7 * 24 * 60 * 60 * 1000,
   secret: config.SESSION_SECRET,
 };
-const whitelistedPaths = [
-  '/api',
-  '/api/metadata',
-  '/api/status',
-  '/login',
-  '/logout',
-  '/return',
-  '/subscribeSuccess',
-  '/manageSub',
-  '/keys', // API Key management
+const unlimitedPaths = [
+  '/api', // OpenAPI spec
+  '/api/metadata', // User metadata
+  '/api/status', // Status page
 ];
+
 // PASSPORT config
 passport.serializeUser((user: any, done: ErrorCb) => {
   done(null, user.account_id);
@@ -92,7 +87,7 @@ const onResFinish = (
   if (
     res.statusCode !== 500 &&
     res.statusCode !== 429 &&
-    !whitelistedPaths.includes(req.originalUrl.split('?')[0]) &&
+    !unlimitedPaths.includes(req.originalUrl.split('?')[0]) &&
     elapsed < 10000
   ) {
     const multi = redis.multi();
@@ -143,14 +138,7 @@ if (config.NODE_ENV === 'test') {
     }
     cb();
   });
-  app.route('/gen429').get((req, res) => res.status(429).end());
-  app.route('/gen500').get((req, res) => res.status(500).end());
 }
-
-// Health check
-app.route('/healthz').get((req, res) => {
-  res.send('ok');
-});
 
 // Proxy to serve team logos over https
 app.use('/ugc', (req, res) => {
@@ -170,8 +158,144 @@ app.use(passport.session());
 // req.body available after this
 app.use(bodyParser.json());
 
+// CORS headers
+// All endpoints accessed from UI should be after this
+app.use(
+  cors({
+    origin: true,
+    credentials: true,
+  }),
+);
+  
+// Reject request if not GET and Origin header is present and not an approved domain (prevent CSRF)
+app.use((req, res, next) => {
+  if (
+    req.method !== 'GET' &&
+    req.header('Origin') &&
+    req.header('Origin') !== config.UI_HOST
+  ) {
+    // Make an exception for replay parse request
+    if (req.method === 'POST' && req.originalUrl.startsWith('/api/request/')) {
+      return next();
+    }
+    return res.status(403).json({ error: 'Invalid Origin header' });
+  }
+  return next();
+});
+
+// Health check
+app.get('/healthz', (req, res) => {
+  res.send('ok');
+});
+
+app.post('/register/:service/:host', async (req, res, cb) => {
+  // check secret matches
+  if (config.RETRIEVER_SECRET && config.RETRIEVER_SECRET !== req.query.key) {
+    return res.status(403).end();
+  }
+  // zadd the given host and current time
+  if (req.params.service && req.params.host) {
+    const size = Number(req.query.size);
+    const keys = [];
+    if (size) {
+      for (let i = 0; i < size; i++) {
+        keys.push(req.params.host + '?' + i);
+      }
+    } else {
+      keys.push(req.params.host);
+    }
+    const result = await redis.zadd(`registry:${req.params.service}`, Date.now(), ...keys);
+    return res.send(result);
+  }
+  return res.end();
+});
+
 // Compress everything after this
 app.use(compression());
+
+app.get('/login',
+  passport.authenticate('steam', {
+    failureRedirect: '/api',
+  }),
+);
+app.get('/return',
+  passport.authenticate('steam', {
+    failureRedirect: '/api',
+  }),
+  (req, res) => {
+    if (config.UI_HOST) {
+      return res.redirect(
+        req.user
+          ? `${config.UI_HOST}/players/${req.user.account_id}`
+          : config.UI_HOST,
+      );
+    }
+    return res.redirect('/api');
+  },
+);
+app.get('/logout', (req, res) => {
+  req.logout(() => {});
+  req.session = null;
+  if (config.UI_HOST) {
+    return res.redirect(config.UI_HOST);
+  }
+  return res.redirect('/api');
+});
+
+app.get('/subscribeSuccess', async (req, res, cb) => {
+  try {
+    if (!req.query.session_id) {
+      return res.status(400).json({ error: 'no session ID' });
+    }
+    if (!req.user?.account_id) {
+      return res.status(400).json({ error: 'no account ID' });
+    }
+    // look up the checkout session id: https://stripe.com/docs/payments/checkout/custom-success-page
+    const session = await stripe.checkout.sessions.retrieve(
+      req.query.session_id as string,
+    );
+    const customer = await stripe.customers.retrieve(
+      session.customer as string,
+    );
+    const accountId = Number(req.user.account_id);
+    // associate the customer id with the steam account ID (req.user.account_id)
+    await db.raw(
+      'INSERT INTO subscriber(account_id, customer_id, status) VALUES (?, ?, ?) ON CONFLICT(account_id) DO UPDATE SET account_id = EXCLUDED.account_id, customer_id = EXCLUDED.customer_id, status = EXCLUDED.status',
+      [accountId, customer.id, 'active'],
+    );
+    // Send the user back to the subscribe page
+    return res.redirect(`${config.UI_HOST}/subscribe`);
+  } catch (e) {
+    cb(e);
+  }
+});
+app.post('/manageSub', async (req, res, cb) => {
+  try {
+    if (!req.user?.account_id) {
+      return res.status(400).json({ error: 'no account ID' });
+    }
+    const result = await db.raw(
+      "SELECT customer_id FROM subscriber where account_id = ? AND status = 'active'",
+      [Number(req.user.account_id)],
+    );
+    const customer = result?.rows?.[0];
+    if (!customer) {
+      return res.status(400).json({ error: 'customer not found' });
+    }
+    const session = await stripe.billingPortal.sessions.create({
+      customer: customer.customer_id,
+      return_url: req.body?.return_url,
+    });
+    return res.json(session);
+  } catch (e) {
+    cb(e);
+  }
+});
+
+// CORS Preflight for API keys
+// NB: make sure UI_HOST is set e.g. http://localhost:3000 otherwise CSRF check above will stop preflight from working
+app.options('/keys', cors());
+app.use('/keys', keys);
 
 // Admin endpoints middleware
 app.use('/admin*', (req, res, cb) => {
@@ -279,25 +403,6 @@ app.get('/admin/apiMetrics', async (req, res, cb) => {
   }
 });
 
-app.post('/register/:service/:host', async (req, res, cb) => {
-  // check secret matches
-  if (config.RETRIEVER_SECRET && config.RETRIEVER_SECRET !== req.query.key) {
-    return res.status(403).end();
-  }
-  // zadd the given host and current time
-  if (req.params.service && req.params.host) {
-    const size = Number(req.query.size);
-    if (size) {
-      for (let i = 0; i < size; i++) {
-        redis.zadd(`registry:${req.params.service}`, Date.now(), req.params.host + '?' + i);
-      }
-    } else {
-      redis.zadd(`registry:${req.params.service}`, Date.now(), req.params.host);
-    }
-  }
-  return res.end();
-});
-
 // This is for passing the IP through if behind load balancer https://expressjs.com/en/guide/behind-proxies.html
 app.set('trust proxy', true);
 // Rate limiter and API key middleware
@@ -365,7 +470,7 @@ app.use(async (req, res, cb) => {
     }
     if (
       config.ENABLE_API_LIMIT &&
-      !whitelistedPaths.includes(req.originalUrl.split('?')[0]) &&
+      !unlimitedPaths.includes(req.originalUrl.split('?')[0]) &&
       !res.locals.isAPIRequest &&
       Number(prevUsage) >= Number(config.API_FREE_LIMIT)
     ) {
@@ -378,116 +483,14 @@ app.use(async (req, res, cb) => {
     cb(e);
   }
 });
-app.use((req, res, next) => {
-  // Reject request if not GET and Origin header is present and not an approved domain (prevent CSRF)
-  if (
-    req.method !== 'GET' &&
-    req.header('Origin') &&
-    req.header('Origin') !== config.UI_HOST
-  ) {
-    // Make an exception for replay parse request
-    if (req.method === 'POST' && req.originalUrl.startsWith('/api/request/')) {
-      return next();
-    }
-    return res.status(403).json({ error: 'Invalid Origin header' });
-  }
-  return next();
-});
-
-// CORS headers
-// All endpoints accessed from UI should be after this
-app.use(
-  cors({
-    origin: true,
-    credentials: true,
-  }),
-);
-
-app.route('/login').get(
-  passport.authenticate('steam', {
-    failureRedirect: '/api',
-  }),
-);
-app.route('/return').get(
-  passport.authenticate('steam', {
-    failureRedirect: '/api',
-  }),
-  (req, res) => {
-    if (config.UI_HOST) {
-      return res.redirect(
-        req.user
-          ? `${config.UI_HOST}/players/${req.user.account_id}`
-          : config.UI_HOST,
-      );
-    }
-    return res.redirect('/api');
-  },
-);
-app.route('/logout').get((req, res) => {
-  req.logout(() => {});
-  req.session = null;
-  if (config.UI_HOST) {
-    return res.redirect(config.UI_HOST);
-  }
-  return res.redirect('/api');
-});
-app.route('/subscribeSuccess').get(async (req, res, cb) => {
-  try {
-    if (!req.query.session_id) {
-      return res.status(400).json({ error: 'no session ID' });
-    }
-    if (!req.user?.account_id) {
-      return res.status(400).json({ error: 'no account ID' });
-    }
-    // look up the checkout session id: https://stripe.com/docs/payments/checkout/custom-success-page
-    const session = await stripe.checkout.sessions.retrieve(
-      req.query.session_id as string,
-    );
-    const customer = await stripe.customers.retrieve(
-      session.customer as string,
-    );
-    const accountId = Number(req.user.account_id);
-    // associate the customer id with the steam account ID (req.user.account_id)
-    await db.raw(
-      'INSERT INTO subscriber(account_id, customer_id, status) VALUES (?, ?, ?) ON CONFLICT(account_id) DO UPDATE SET account_id = EXCLUDED.account_id, customer_id = EXCLUDED.customer_id, status = EXCLUDED.status',
-      [accountId, customer.id, 'active'],
-    );
-    // Send the user back to the subscribe page
-    return res.redirect(`${config.UI_HOST}/subscribe`);
-  } catch (e) {
-    cb(e);
-  }
-});
-app.route('/manageSub').post(async (req, res, cb) => {
-  try {
-    if (!req.user?.account_id) {
-      return res.status(400).json({ error: 'no account ID' });
-    }
-    const result = await db.raw(
-      "SELECT customer_id FROM subscriber where account_id = ? AND status = 'active'",
-      [Number(req.user.account_id)],
-    );
-    const customer = result?.rows?.[0];
-    if (!customer) {
-      return res.status(400).json({ error: 'customer not found' });
-    }
-    const session = await stripe.billingPortal.sessions.create({
-      customer: customer.customer_id,
-      return_url: req.body?.return_url,
-    });
-    return res.json(session);
-  } catch (e) {
-    cb(e);
-  }
-});
-
-// CORS Preflight for API keys
-// NB: make sure UI_HOST is set e.g. http://localhost:3000 otherwise CSRF check above will stop preflight from working
-app.options('/keys', cors());
-app.use('/keys', keys);
 
 // API data endpoints
 app.use('/api', api);
+
+if (config.NODE_ENV === 'test') {
+  app.get('/gen429', (req, res) => res.status(429).end());
+  app.get('/gen500', (req, res) => res.status(500).end());
+}
 
 // 404 route
 app.use((req, res) =>
@@ -510,6 +513,8 @@ app.use(
     });
   },
 );
+
+// Start the server
 const port = config.PORT || config.FRONTEND_PORT;
 const server = app.listen(port, () => {
   console.log('[WEB] listening on %s', port);

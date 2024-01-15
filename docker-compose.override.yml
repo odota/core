@@ -1,0 +1,46 @@
+# Extends the configuration for development (inits and mounting directory into core)
+version: '3'
+services:
+  postgresinit:
+    image: postgres
+    depends_on:
+      - postgres
+    volumes:
+      - .:/usr/src
+    container_name: odota-postgresinit
+    entrypoint:
+      [
+        'bash',
+        '-c',
+        'sleep 10 && psql --file /usr/src/sql/init.sql postgres://postgres:postgres@odota-postgres/postgres && psql --file /usr/src/sql/create_tables.sql postgres://postgres:postgres@odota-postgres/yasp',
+      ]
+  cassandrainit:
+    image: cassandra
+    depends_on:
+      - cassandra
+    volumes:
+      - .:/usr/src
+    container_name: odota-cassandrainit
+    entrypoint:
+      [
+        'bash',
+        '-c',
+        'sleep 80 && cqlsh -f /usr/src/sql/init.cql odota-cassandra && cqlsh -f /usr/src/sql/create_tables.cql -k yasp odota-cassandra',
+      ]
+  # scyllainit:
+  #   image: scylladb/scylla
+  #   depends_on:
+  #     - scylla
+  #   volumes:
+  #     - .:/usr/src
+  #   container_name: odota-scyllainit
+  #   entrypoint:
+  #     [
+  #       'bash',
+  #       '-c',
+  #       'sleep 80 && cqlsh -f /usr/src/sql/init.cql odota-scylla && cqlsh -f /usr/src/sql/create_tables.cql -k yasp odota-scylla',
+  #     ]
+  core:
+    entrypoint: bash scripts/launch.sh
+    volumes:
+      - .:/usr/src
