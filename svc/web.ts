@@ -204,12 +204,12 @@ app.get('/admin/retrieverMetrics', async (req, res, cb) => {
     }).sort((a, b) => b.reqs - a.reqs);
     const registryKeys = await redis.zrange('registry:retriever', 0, -1);
     const registry = ips.filter(ip => registryKeys.includes(ip.key));
-    const isGce = (e: typeof steamids[number]) => e.key.startsWith('35.') || e.key.startsWith('34.');
+    const isGce = (e: typeof steamids[number]) => (e.key.startsWith('35.') || e.key.startsWith('34.'));
     return res.json({
-      sumReqs: steamids.map(e => e.reqs).reduce((a, b) => a + b, 0),
-      sumSuccess: steamids.map(e => e.success).reduce((a, b) => a + b, 0),
-      gceSuccess: steamids.filter(e => isGce(e)).map(e => e.success).reduce((a, b) => a + b, 0),
-      nonGceSuccess: steamids.filter(e => !isGce(e)).map(e => e.success).reduce((a, b) => a + b, 0),
+      sumReqs: ips.map(e => e.reqs).reduce((a, b) => a + b, 0),
+      sumSuccess: ips.map(e => e.success).reduce((a, b) => a + b, 0),
+      gceSuccess: ips.filter(e => isGce(e)).map(e => e.success).reduce((a, b) => a + b, 0),
+      nonGceSuccess: ips.filter(e => !isGce(e)).map(e => e.success).reduce((a, b) => a + b, 0),
       countips: ips.length,
       countSteamIds: steamids.length,
       registry,
