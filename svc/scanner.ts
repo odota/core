@@ -46,6 +46,8 @@ async function scanApi(seqNum: number) {
       console.log('next_seq_num: %s', nextSeqNum);
     }
     await redis.set('match_seq_num', nextSeqNum);
+    // We might want to store this in pg eventually for consistency
+    // await db.raw('INSERT INTO last_seq_num(match_seq_num) VALUES (?)', [nextSeqNum]);
     // If not a full page, delay the next iteration
     await new Promise((resolve) =>
       setTimeout(

@@ -17,25 +17,27 @@ const delay = 1000;
 async function processMatch(matchId: number) {
   // Check if exists
   const res = await redis.get(`scanner_insert:${matchId}`);
-  const job = generateJob('api_details', {
-    match_id: matchId,
-  });
-  const { url } = job;
-  const body = await getSteamAPIData({
-    url,
-    delay,
-  });
-  if (!body.result) {
-    return;
+  if (!res) {
+    const job = generateJob('api_details', {
+      match_id: matchId,
+    });
+    const { url } = job;
+    const body = await getSteamAPIData({
+      url,
+      delay,
+    });
+    if (!body.result) {
+      return;
+    }
+    const match = body.result;
+    await insertMatch(match, {
+      type: 'api',
+      origin: 'scanner',
+    });
+    // Set with long expiration (1 month) to avoid picking up the same matches again
+    // If GetMatchHistoryBySequenceNum is out for a long time, this might be a problem
+    redis.setex(`scanner_insert:${match.match_id}`, 3600 * 24 * 30, 1);
   }
-  const match = body.result;
-  await insertMatch(match, {
-    type: 'api',
-    origin: 'scanner',
-  });
-  // Set with long expiration (1 month) to avoid picking up the same matches again
-  // If GetMatchHistoryBySequenceNum is out for a long time, this might be a problem
-  redis.setex(`scanner_insert:${match.match_id}`, 3600 * 24 * 30, 1);
 }
 async function processPlayer(accountId: string) {
   const ajob = generateJob('api_history', {
