@@ -10,12 +10,18 @@ const prod = process.env.NODE_ENV === 'production';
 let arr = [
   // Services in non-backend groups are deployed separately
   {
-    name: 'retriever',
-    group: 'retriever',
-  },
-  {
     name: 'proxy',
     group: 'proxy',
+  },
+  {
+    name: 'web',
+    group: 'backend',
+    exec_mode: prod ? 'cluster' : undefined,
+    instances: prod ? os.cpus().length : undefined,
+  },
+  {
+    name: 'retriever',
+    group: 'backend',
   },
   {
     name: 'parser',
@@ -24,12 +30,6 @@ let arr = [
   {
     name: 'fullhistory',
     group: 'backend',
-  },
-  {
-    name: 'web',
-    group: 'backend',
-    exec_mode: prod ? 'cluster' : undefined,
-    instances: prod ? os.cpus().length : undefined,
   },
   {
     name: 'apiadmin',
@@ -119,6 +119,7 @@ let arr = [
     name: 'archiver',
     group: 'backend',
   },
+  // Requires the gcloud CLI to be installed
   // {
   //   name: 'cycler',
   //   group: 'backend',
