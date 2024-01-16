@@ -6,7 +6,7 @@ import config from '../config';
 import { Client } from 'pg';
 import c from 'ansi-colors';
 
-moment.relativeTimeThreshold('ss', 1);
+moment.relativeTimeThreshold('ss', 0);
 
 export async function runQueue(
   queueName: QueueName,

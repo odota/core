@@ -23,7 +23,7 @@ import {
 import { getMatchRankTier } from './queries';
 import { ApiMatch, ApiMatchPro, ApiPlayer, getPGroup } from './pgroup';
 
-moment.relativeTimeThreshold('ss', 1);
+moment.relativeTimeThreshold('ss', 0);
 
 export async function upsert(
   db: knex.Knex,
