@@ -892,7 +892,7 @@ export function invokeInterval(func: (cb: ErrorCb) => void, delay: number) {
 }
 /**
  * Same as invokeInterval but for async functions
- * On exceptions, exits the process
+ * Throws on exceptions
  * @param func
  * @param delay
  */
