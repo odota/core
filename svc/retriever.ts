@@ -24,7 +24,7 @@ const getMatchRequestInterval = () => {
 };
 let extraMatchRequestInterval = 0;
 const matchRequestIntervalStep = 0;
-const noneReady = () => Object.keys(steamObj).length === 0;
+const noneReady = () => Object.values(steamObj).filter(client => client.steamID).length === 0;
 let lastMatchRequestTime: number | null = null;
 let matchRequests = 0;
 let matchSuccesses = 0;
@@ -61,10 +61,11 @@ const CMsgGCMatchDetailsResponse = builder.lookupType(
 
 setInterval(() => {
   const shouldRestart =
-    (matchSuccesses < 5 &&
-      matchRequests > 100 &&
+    ((matchRequests - matchSuccesses) > 100 &&
       getUptime() > minUpTimeSeconds) ||
     (matchRequests > Object.keys(steamObj).length * matchesPerAccount &&
+      getUptime() > minUpTimeSeconds) ||
+    ((profileRequests - profileSuccesses) > 1000 &&
       getUptime() > minUpTimeSeconds) ||
     (noneReady() && getUptime() > minUpTimeSeconds);
   if (shouldRestart && config.NODE_ENV !== 'development') {
@@ -84,6 +85,9 @@ app.get('/healthz', (req, res, cb) => {
   return res.end('ok');
 });
 app.use(compression());
+app.get('/stats', async (req, res, cb) => {
+  return res.json(genStats());
+});
 app.use((req, res, cb) => {
   console.log(
     'numReady: %s, matches: %s/%s, profiles: %s/%s, uptime: %s, matchRequestDelay: %s, query: %s',
@@ -105,9 +109,7 @@ app.use((req, res, cb) => {
   }
   return cb();
 });
-app.get('/stats', async (req, res, cb) => {
-  return res.json(genStats());
-});
+
 app.get('/profile/:account_id', async (req, res, cb) => {
   const keys = Object.keys(steamObj);
   const rKey = keys[Math.floor(Math.random() * keys.length)];
