@@ -2,10 +2,7 @@
 import vdf from 'simple-vdf';
 import db from '../store/db';
 import { upsert } from '../store/insert';
-import {
-  eachLimitPromise,
-  invokeIntervalAsync,
-} from '../util/utility';
+import { eachLimitPromise, invokeIntervalAsync } from '../util/utility';
 import axios from 'axios';
 
 async function doCosmetics() {

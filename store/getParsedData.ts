@@ -1,5 +1,9 @@
 import config from '../config';
-import { getRandomParserUrl, getRegistryUrl, redisCount } from '../util/utility';
+import {
+  getRandomParserUrl,
+  getRegistryUrl,
+  redisCount,
+} from '../util/utility';
 import cassandra from './cassandra';
 import db from './db';
 import { insertMatch } from './insert';
@@ -63,7 +67,9 @@ export async function saveParseData(
   // bunzip: 6716ms (bunzip2 7503212404_1277518156.dem.bz2)
   // parse: 9407ms (curl -X POST --data-binary "@7503212404_1277518156.dem" odota-parser:5600 > output.log)
   // process: 3278ms (node processors/createParsedDataBlob.mjs < output.log)
-  const parseUrl = config.USE_SERVICE_REGISTRY ? await getRegistryUrl('parser', `/blob?replay_url=${replayUrl}`) : getRandomParserUrl(`/blob?replay_url=${replayUrl}`);
+  const parseUrl = config.USE_SERVICE_REGISTRY
+    ? await getRegistryUrl('parser', `/blob?replay_url=${replayUrl}`)
+    : getRandomParserUrl(`/blob?replay_url=${replayUrl}`);
   console.log('[PARSER]', parseUrl);
   const resp = await axios.get<ParserMatch>(parseUrl);
   if (!resp.data) {
@@ -91,7 +97,7 @@ export async function getOrFetchParseData(
   url: string,
   extraData: ExtraData,
 ): Promise<{
-  data: ParserMatch | null
+  data: ParserMatch | null;
   skipped: boolean;
   error: string | null;
 }> {

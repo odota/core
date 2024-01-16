@@ -70,7 +70,8 @@ export async function buildStatus() {
     matches_prev_hour: async () => countLastHour('added_match'),
     auto_parse_last_day: async () => countDay('auto_parse'),
     requests_last_day: async () => countDay('request'),
-    distinct_requests_last_day: async () => countDayDistinct('distinct_request'),
+    distinct_requests_last_day: async () =>
+      countDayDistinct('distinct_request'),
     requests_ui_day: async () => countDay('request_ui'),
     requests_api_key_last_day: async () => countDay('request_api_key'),
     registry_retriever: async () => redis.zcard('registry:retriever'),

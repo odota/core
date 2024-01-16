@@ -474,7 +474,8 @@ export async function getPlayer(
   db: knex.Knex,
   accountId: number,
 ): Promise<User | undefined> {
-  const playerData = await db.first<User>(
+  const playerData = await db
+    .first<User>(
       'players.account_id',
       'personaname',
       'name',
@@ -699,12 +700,8 @@ export async function getMatchDataFromBlobWithMetadata(
   );
   const row = result.rows[0];
   let api: ApiMatch | null = row?.api ? JSON.parse(row.api) : null;
-  let gcdata: GcMatch | null = row?.gcdata
-    ? JSON.parse(row.gcdata)
-    : null;
-  let parsed: ParsedMatch | null = row?.parsed
-    ? JSON.parse(row.parsed)
-    : null;
+  let gcdata: GcMatch | null = row?.gcdata ? JSON.parse(row.gcdata) : null;
+  let parsed: ParsedMatch | null = row?.parsed ? JSON.parse(row.parsed) : null;
   let identity: any = row?.identity ? JSON.parse(row.identity) : null;
   let ranks: any = row?.ranks ? JSON.parse(row.ranks) : null;
 

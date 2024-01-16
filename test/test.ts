@@ -94,7 +94,7 @@ before(async function setup() {
   await loadPlayers();
   await startServices();
   // Wait one second to give mmr time to update
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  await new Promise((resolve) => setTimeout(resolve, 1000));
 
   async function initElasticsearch() {
     console.log('Create Elasticsearch Mapping');
@@ -287,7 +287,9 @@ describe(c.blue('[TEST] privacy setting'), async () => {
       'UPDATE players SET fh_unavailable = TRUE WHERE account_id = ?',
       ['120269134'],
     );
-    const res = await supertest(app).get('/api/players/120269134/recentMatches');
+    const res = await supertest(app).get(
+      '/api/players/120269134/recentMatches',
+    );
     assert.equal(res.body.length, 0);
   });
 });

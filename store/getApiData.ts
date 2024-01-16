@@ -10,9 +10,7 @@ import redis from './redis';
  * @param matchId
  * @returns
  */
-export async function readApiData(
-  matchId: number,
-): Promise<ApiMatch | null> {
+export async function readApiData(matchId: number): Promise<ApiMatch | null> {
   const result = await cassandra.execute(
     'SELECT api FROM match_blobs WHERE match_id = ?',
     [matchId],

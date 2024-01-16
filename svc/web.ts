@@ -166,7 +166,7 @@ app.use(
     credentials: true,
   }),
 );
-  
+
 // Reject request if not GET and Origin header is present and not an approved domain (prevent CSRF)
 app.use((req, res, next) => {
   if (
@@ -216,12 +216,14 @@ app.post('/register/:service/:host', async (req, res, cb) => {
 // Compress everything after this
 app.use(compression());
 
-app.get('/login',
+app.get(
+  '/login',
   passport.authenticate('steam', {
     failureRedirect: '/api',
   }),
 );
-app.get('/return',
+app.get(
+  '/return',
   passport.authenticate('steam', {
     failureRedirect: '/api',
   }),
@@ -315,37 +317,48 @@ app.get('/admin/retrieverMetrics', async (req, res, cb) => {
     const ipReqs = await redis.hgetall('retrieverIPs');
     const idSuccess = await redis.hgetall('retrieverSuccessSteamIDs');
     const ipSuccess = await redis.hgetall('retrieverSuccessIPs');
-    const steamids = Object.keys(idReqs).map(key => {
-      return {
-        key,
-        reqs: Number(idReqs[key]) || 0,
-        success: Number(idSuccess[key]) || 0,
-      };
-    }).sort((a, b) => b.reqs - a.reqs);
-    const ips = Object.keys(ipReqs).map(key => {
-      return {
-        key,
-        reqs: Number(ipReqs[key]) || 0,
-        success: Number(ipSuccess[key]) || 0,
-      };
-    }).sort((a, b) => b.reqs - a.reqs);
+    const steamids = Object.keys(idReqs)
+      .map((key) => {
+        return {
+          key,
+          reqs: Number(idReqs[key]) || 0,
+          success: Number(idSuccess[key]) || 0,
+        };
+      })
+      .sort((a, b) => b.reqs - a.reqs);
+    const ips = Object.keys(ipReqs)
+      .map((key) => {
+        return {
+          key,
+          reqs: Number(ipReqs[key]) || 0,
+          success: Number(ipSuccess[key]) || 0,
+        };
+      })
+      .sort((a, b) => b.reqs - a.reqs);
     const registryKeys = await redis.zrange('registry:retriever', 0, -1);
-    const registry = ips.filter(ip => registryKeys.includes(ip.key));
-    const isGce = (e: typeof steamids[number]) => (e.key.startsWith('35.') || e.key.startsWith('34.'));
+    const registry = ips.filter((ip) => registryKeys.includes(ip.key));
+    const isGce = (e: (typeof steamids)[number]) =>
+      e.key.startsWith('35.') || e.key.startsWith('34.');
     return res.json({
-      countReqs: ips.map(e => e.reqs).reduce((a, b) => a + b, 0),
-      countSuccess: ips.map(e => e.success).reduce((a, b) => a + b, 0),
-      gceSuccess: ips.filter(e => isGce(e)).map(e => e.success).reduce((a, b) => a + b, 0),
-      nonGceSuccess: ips.filter(e => !isGce(e)).map(e => e.success).reduce((a, b) => a + b, 0),
+      countReqs: ips.map((e) => e.reqs).reduce((a, b) => a + b, 0),
+      countSuccess: ips.map((e) => e.success).reduce((a, b) => a + b, 0),
+      gceSuccess: ips
+        .filter((e) => isGce(e))
+        .map((e) => e.success)
+        .reduce((a, b) => a + b, 0),
+      nonGceSuccess: ips
+        .filter((e) => !isGce(e))
+        .map((e) => e.success)
+        .reduce((a, b) => a + b, 0),
       numIps: ips.length,
-      gceIps: ips.filter(e => isGce(e)).length,
-      nonGceIps: ips.filter(e => !isGce(e)).length,
+      gceIps: ips.filter((e) => isGce(e)).length,
+      nonGceIps: ips.filter((e) => !isGce(e)).length,
       numSteamIds: steamids.length,
       registry,
       ips,
       steamids,
     });
-  } catch(e) {
+  } catch (e) {
     return cb(e);
   }
 });

@@ -177,30 +177,30 @@ async function start2() {
 }
 
 async function start3() {
-    cassandra.eachRow(
-        `SELECT match_id from matches LIMIT 1`,
-        [],
-        {
-            prepare: true,
-            fetchSize: 1,
-        },
-        (n, row) => {
-            console.log(n, Number(row.match_id));
-            doArchiveFromLegacy(Number(row.match_id));
-        },
-        (err, result) => {
-            if (err) {
-                throw err;
-            }
-            if (result.nextPage) {
-                // Retrieve the following pages:
-                // the same row handler from above will be used
-                result.nextPage();
-            } else {
-                process.exit(0);
-            }
-        },
-    );
+  cassandra.eachRow(
+    `SELECT match_id from matches LIMIT 1`,
+    [],
+    {
+      prepare: true,
+      fetchSize: 1,
+    },
+    (n, row) => {
+      console.log(n, Number(row.match_id));
+      doArchiveFromLegacy(Number(row.match_id));
+    },
+    (err, result) => {
+      if (err) {
+        throw err;
+      }
+      if (result.nextPage) {
+        // Retrieve the following pages:
+        // the same row handler from above will be used
+        result.nextPage();
+      } else {
+        process.exit(0);
+      }
+    },
+  );
 }
 
 start3();

@@ -75,13 +75,12 @@ export async function runReliableQueue(
               const message = c.blue(
                 `[${new Date().toISOString()}] [queue] [complete: ${queueName}] [priority: ${
                   job.priority
-                }] [rem_attempts: ${job.attempts}] [queued: ${moment(job.timestamp).fromNow()}]`,
+                }] [rem_attempts: ${job.attempts}] [queued: ${moment(
+                  job.timestamp,
+                ).fromNow()}]`,
               );
               console.log(message);
-              redis.publish(
-                'queue',
-                message,
-              );
+              redis.publish('queue', message);
             }
             await consumer.query('DELETE FROM queue WHERE id = $1', [job.id]);
             await consumer.query('COMMIT');
@@ -137,10 +136,7 @@ export async function addReliableJob(
         job.priority
       }] [attempts: ${job.attempts}] ${name === 'parse' ? data.match_id : ''}`,
     );
-    redis.publish(
-      'queue',
-      message,
-    );
+    redis.publish('queue', message);
   }
   return job;
 }

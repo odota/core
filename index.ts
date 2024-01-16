@@ -7,12 +7,15 @@ import fs from 'fs';
 
 async function start() {
   if (process.env.PROVIDER === 'gce' && !fs.existsSync('/usr/src/.env')) {
-    const resp = await axios.get('http://metadata.google.internal/computeMetadata/v1/project/attributes/env', {
-      headers: {
-        'Metadata-Flavor': 'Google',
+    const resp = await axios.get(
+      'http://metadata.google.internal/computeMetadata/v1/project/attributes/env',
+      {
+        headers: {
+          'Metadata-Flavor': 'Google',
+        },
+        responseType: 'arraybuffer',
       },
-      responseType: 'arraybuffer',
-    });
+    );
     fs.writeFileSync('/usr/src/.env', resp.data);
   }
   if (process.env.ROLE) {

@@ -20,8 +20,8 @@ const maxAccounts = 4;
 const matchesPerAccount = 180;
 const port = config.PORT || config.RETRIEVER_PORT;
 const getMatchRequestInterval = () => {
-  return (1000 / (Object.keys(steamObj).length || 1)) + extraMatchRequestInterval;
-}
+  return 1000 / (Object.keys(steamObj).length || 1) + extraMatchRequestInterval;
+};
 let extraMatchRequestInterval = 0;
 const matchRequestIntervalStep = 0;
 const noneReady = () => Object.keys(steamObj).length === 0;
@@ -72,7 +72,11 @@ setInterval(() => {
   }
   // Re-register ourselves as available
   if (config.SERVICE_REGISTRY_HOST && !noneReady()) {
-    axios.post(`https://${config.SERVICE_REGISTRY_HOST}/register/retriever/${Object.values(steamObj)[0].publicIP}?key=${config.RETRIEVER_SECRET}`);
+    axios.post(
+      `https://${config.SERVICE_REGISTRY_HOST}/register/retriever/${
+        Object.values(steamObj)[0].publicIP
+      }?key=${config.RETRIEVER_SECRET}`,
+    );
   }
 }, 5000);
 

@@ -146,7 +146,8 @@ const apps = arr.map((app) => {
     exec_mode: app.exec_mode ?? 'fork',
     instances: app.instances ?? 1,
     script: app.script ?? script,
-    interpreter: app.interpreter ??
+    interpreter:
+      app.interpreter ??
       (script.endsWith('.ts') || script.endsWith('.mts')
         ? 'node_modules/.bin/tsx'
         : undefined),

@@ -3,7 +3,11 @@ import config from '../config';
 import db from './db';
 import redis from './redis';
 import cassandra from './cassandra';
-import { getRandomRetrieverUrl, getRegistryUrl, redisCount } from '../util/utility';
+import {
+  getRandomRetrieverUrl,
+  getRegistryUrl,
+  redisCount,
+} from '../util/utility';
 import axios from 'axios';
 import retrieverMatch from '../test/data/retriever_match.json';
 import { insertMatch } from './insert';
@@ -13,9 +17,7 @@ import { insertMatch } from './insert';
  * @param matchId
  * @returns
  */
-export async function readGcData(
-  matchId: number,
-): Promise<GcMatch | null> {
+export async function readGcData(matchId: number): Promise<GcMatch | null> {
   const result = await cassandra.execute(
     'SELECT gcdata FROM match_blobs WHERE match_id = ?',
     [matchId],
@@ -38,8 +40,13 @@ export async function readGcData(
  * @param job
  * @returns
  */
-async function saveGcData(matchId: number, pgroup: PGroup): Promise<string | null> {
-  const url = config.USE_SERVICE_REGISTRY ? await getRegistryUrl('retriever', `/match/${matchId}`) : getRandomRetrieverUrl(`/match/${matchId}`);
+async function saveGcData(
+  matchId: number,
+  pgroup: PGroup,
+): Promise<string | null> {
+  const url = config.USE_SERVICE_REGISTRY
+    ? await getRegistryUrl('retriever', `/match/${matchId}`)
+    : getRandomRetrieverUrl(`/match/${matchId}`);
   const { data, headers } = await axios.get<typeof retrieverMatch>(url, {
     timeout: 5000,
   });

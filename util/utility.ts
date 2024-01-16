@@ -829,10 +829,16 @@ export function getRandomParserUrl(path: string): string {
 export async function getRegistryUrl(service: string, path: string) {
   const redis = (await import('../store/redis.js')).redis;
   // Purge values older than 10 seconds (stale heartbeat)
-  await redis.zremrangebyscore('registry:' + service, '-inf', Date.now() - 10000);
+  await redis.zremrangebyscore(
+    'registry:' + service,
+    '-inf',
+    Date.now() - 10000,
+  );
   const hostWithId = await redis.zrandmember('registry:' + service);
   const host = hostWithId?.split('?')[0];
-  return `http://${host}${path}${service === 'retriever' ? `?key=${config.RETRIEVER_SECRET}` : ''}`;
+  return `http://${host}${path}${
+    service === 'retriever' ? `?key=${config.RETRIEVER_SECRET}` : ''
+  }`;
 }
 
 /**
@@ -850,7 +856,11 @@ export async function redisCount(redis: Redis | null, prefix: MetricName) {
   );
 }
 
-export async function redisCountDistinct(redis: Redis | null, prefix: MetricName, value: string) {
+export async function redisCountDistinct(
+  redis: Redis | null,
+  prefix: MetricName,
+  value: string,
+) {
   const redisToUse = redis ?? (await import('../store/redis.js')).redis;
   const key = `${prefix}:v2:${moment().startOf('hour').format('X')}`;
   await redisToUse?.pfadd(key, value);

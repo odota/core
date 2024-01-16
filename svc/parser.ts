@@ -64,7 +64,10 @@ async function parseProcessor(job: ParseJob) {
 
     // Fetch the gcdata and construct a replay URL
     const gcStart = Date.now();
-    const { data: gcMatch, error: gcError } = await getOrFetchGcDataWithRetry(matchId, pgroup);
+    const { data: gcMatch, error: gcError } = await getOrFetchGcDataWithRetry(
+      matchId,
+      pgroup,
+    );
     if (!gcMatch) {
       // non-retryable error
       log('fail', gcError || 'Missing gcdata');
