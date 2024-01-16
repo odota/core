@@ -73,23 +73,29 @@ export async function runReliableQueue(
           const success = await processor(job.data);
           // If the processor returns true, it's successful and we should delete the job and then commit
           if (success || job.attempts <= 0) {
-            if (success) {
-              const message = c.blue(
-                `[${new Date().toISOString()}] [queue] [complete: ${queueName}] [priority: ${
-                  job.priority
-                }] [attempts: ${job.attempts}] [queued: ${moment(
-                  job.timestamp,
-                ).fromNow()}]`,
-              );
-              console.log(message);
-              redis.publish('queue', message);
-            }
             await consumer.query('DELETE FROM queue WHERE id = $1', [job.id]);
             await consumer.query('COMMIT');
           } else {
             // If the processor returns false, it's an expected failure and we should commit the transaction to consume an attempt
             await consumer.query('COMMIT');
           }
+          let result = '';
+          if (success) {
+            result = 'complete';
+          } else if (job.attempts > 0) {
+            result = 'retrying';
+          } else if (job.attempts === 0) {
+            result = 'attempted';
+          }
+          const message = c.blue(
+            `[${new Date().toISOString()}] [queue: ${queueName}] [${result}] [priority: ${
+              job.priority
+            }] [attempts: ${job.attempts}] [queued: ${moment(
+              job.timestamp,
+            ).fromNow()}]`,
+          );
+          console.log(message);
+          redis.publish('queue', message);
         } catch (e) {
           // If the processor crashes unexpectedly, we should rollback the transaction to not consume an attempt
           await consumer.query('ROLLBACK');
