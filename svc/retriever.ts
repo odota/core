@@ -228,7 +228,7 @@ async function init() {
   const accountsToUse = Math.min(maxAccounts, users.length);
   // Some logins may fail, and sometimes the Steam CM never returns a response
   // So don't await this and we'll just make sure we have at least one working with noneReady
-  const logOns = chooseLoginInfo(accountsToUse);
+  const logOns = chooseLoginInfoRandom(accountsToUse);
   await Promise.allSettled(
     logOns.map(
       (logOnDetails) =>
@@ -311,7 +311,7 @@ function genStats() {
  * Chooses a set of logins to use from the pool
  * @returns
  */
-function chooseLoginInfo(accountsToUse: number) {
+function chooseLoginInfoBlock(accountsToUse: number) {
   const startIndex = Math.floor(Math.random() * (users.length - accountsToUse));
   const arr = users.map((e, i) => ({
     accountName: users[i],
@@ -320,20 +320,15 @@ function chooseLoginInfo(accountsToUse: number) {
   return arr.slice(startIndex, startIndex + accountsToUse);
 }
 
-function chooseLoginInfoShuffle(accountsToUse: number) {
-  const arr = users.map((e, i) => ({
+function chooseLoginInfoRandom(accountsToUse: number) {
+  let indices = new Set<number>();
+  while (indices.size < accountsToUse && indices.size < users.length) {
+    const rand = Math.floor(Math.random() * users.length);
+    indices.add(rand);
+  }
+  const arr = Array.from(indices).map(i => ({
     accountName: users[i],
     password: passes[i],
   }));
-  shuffle(arr);
-  return arr.slice(0, accountsToUse);
-}
-
-export function shuffle(array: any[]) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * i);
-    const temp = array[i];
-    array[i] = array[j];
-    array[j] = temp;
-  }
+  return arr;
 }
