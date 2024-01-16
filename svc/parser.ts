@@ -25,6 +25,14 @@ async function parseProcessor(job: ParseJob) {
     redisCount(redis, 'parser_job');
     const matchId = job.match_id;
 
+    // Check if match is in safe integer range
+    // Javascript supports up to 2^53 -1, although match IDs can go up to 2^63 - 1
+    // If we want to handle values outside the range we'll need to use BigInt type in JS
+    if (matchId > Number.MAX_SAFE_INTEGER || matchId < Number.MIN_SAFE_INTEGER) {
+      log('skip');
+      return true;
+    }
+
     // Check if match is already parsed according to PG
     // Doing the check early means we don't verify API or gcdata
     if (await checkIsParsed(matchId)) {
@@ -108,7 +116,6 @@ async function parseProcessor(job: ParseJob) {
     return true;
   } catch (e: any) {
     log('crash', e?.message);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
     // Rethrow the exception
     throw e;
   }
