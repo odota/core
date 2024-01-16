@@ -115,23 +115,22 @@ export async function buildStatus() {
     error_last_day: async () => countDay('500_error'),
     web_crash_last_day: async () => countDay('web_crash'),
     skip_seq_num_last_day: async () => countDay('skip_seq_num'),
-    parseQueue: async () => {
-      // It's slow to count in postgres so use the value saved by monitor
-      const result = await redis.get('health:v2');
-      return result ? JSON.parse(result)?.parseDelay?.metric : null;
-    },
-    fhQueue: async () => redis.llen('fhQueue'),
-    gcQueue: async () => redis.llen('gcQueue'),
-    mmrQueue: async () => redis.llen('mmrQueue'),
-    countsQueue: async () => redis.llen('countsQueue'),
-    scenariosQueue: async () => redis.llen('scenariosQueue'),
+    // fhQueue: async () => redis.llen('fhQueue'),
+    // gcQueue: async () => redis.llen('gcQueue'),
+    // mmrQueue: async () => redis.llen('mmrQueue'),
+    // countsQueue: async () => redis.llen('countsQueue'),
+    // scenariosQueue: async () => redis.llen('scenariosQueue'),
     // benchmarksQueue: async () => redis.llen('parsedBenchmarksQueue'),
-    seqNumDelay: async () => {
-      // It's slow to query Steam API so use the value saved by monitor
-      const result = await redis.get('health:v2');
-      return result ? JSON.parse(result)?.seqNumDelay?.metric : null;
-    },
-    // scanner_exception_last_day: async () => getRedisCountDay('scanner_exception'),
+    // parseQueue: async () => {
+    //   // It's slow to count in postgres so use the value saved by monitor
+    //   const result = await redis.get('health:v2');
+    //   return result ? JSON.parse(result)?.parseDelay?.metric : null;
+    // },
+    // seqNumDelay: async () => {
+    //   // It's slow to query Steam API so use the value saved by monitor
+    //   const result = await redis.get('health:v2');
+    //   return result ? JSON.parse(result)?.seqNumDelay?.metric : null;
+    // },
     api_paths: async () => {
       const results = await redis.zrangebyscore(
         'api_paths',

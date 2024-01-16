@@ -401,7 +401,6 @@ type MetricName =
   | '500_error'
   | 'api_hits_ui'
   | 'api_hits'
-  | 'scanner_exception'
   | 'skip_seq_num'
   | 'retriever_player'
   | 'fullhistory'
