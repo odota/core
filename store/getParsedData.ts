@@ -71,7 +71,7 @@ export async function saveParseData(
     ? await getRegistryUrl('parser', `/blob?replay_url=${replayUrl}`)
     : getRandomParserUrl(`/blob?replay_url=${replayUrl}`);
   console.log('[PARSER]', parseUrl);
-  const resp = await axios.get<ParserMatch>(parseUrl);
+  const resp = await axios.get<ParserMatch>(parseUrl, { timeout: 150000 });
   if (!resp.data) {
     return { error: 'Parse failed' };
   }

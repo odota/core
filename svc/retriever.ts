@@ -20,7 +20,7 @@ const maxAccounts = 4;
 const matchesPerAccount = 200;
 const port = config.PORT || config.RETRIEVER_PORT;
 const getMatchRequestInterval = () => {
-  return 1000 / (Object.keys(steamObj).length || 1) + extraMatchRequestInterval;
+  return Math.ceil(1000 / (Object.keys(steamObj).length || 1)) + extraMatchRequestInterval;
 };
 let extraMatchRequestInterval = 0;
 const matchRequestIntervalStep = 0;
