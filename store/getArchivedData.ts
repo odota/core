@@ -73,7 +73,7 @@ async function doArchiveFromBlob(matchId: number) {
   );
   if (isArchived) {
     console.log('ALREADY ARCHIVED match %s', matchId);
-    await deleteMatch(matchId);
+    // await deleteMatch(matchId);
     return;
   }
   if (metadata?.has_api && !metadata?.has_gcdata && !metadata?.has_parsed) {
