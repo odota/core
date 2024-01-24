@@ -38,7 +38,7 @@
     "body-parser": "^1.20.2",
     "cassandra-driver": "^4.4.0",
     "compression": "^1.7.4",
-    "cookie-session": "2.0.0-beta.3",
+    "cookie-session": "2.1.0",
     "cors": "^2.8.5",
     "dotaconstants": "^8.3.0",
     "dotenv": "^16.3.1",
