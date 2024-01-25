@@ -117,6 +117,8 @@ async function processFullHistory(job: FullHistoryJob) {
   const docs =
     (await getPlayerMatches(player.account_id, {
       project: ['match_id'],
+      // Only need to check against recent matches since we get back the most recent 500 or 100 matches from Steam API
+      dbLimit: 1000,
     })) ?? [];
   console.log(
     '%s matches found, %s already in db, %s to add',
