@@ -704,6 +704,7 @@ export async function getMatchDataFromBlobWithMetadata(
   let parsed: ParsedMatch | null = row?.parsed ? JSON.parse(row.parsed) : null;
   let identity: any = row?.identity ? JSON.parse(row.identity) : null;
   let ranks: any = row?.ranks ? JSON.parse(row.ranks) : null;
+  let archived: ParsedMatch | null = null;
 
   let odData: GetMatchDataMetadata = {
     has_api: Boolean(api),
@@ -728,21 +729,23 @@ export async function getMatchDataFromBlobWithMetadata(
       odData.backfill_gc = true;
     }
   }
-  if (!parsed && backfill) {
-    parsed = await tryReadArchivedMatch(matchId);
-    if (parsed) {
+  if (backfill) {
+    archived = await tryReadArchivedMatch(matchId);
+    if (archived) {
       odData.archive = true;
     }
   }
 
   // Merge the results together
   const final: Match | ParsedMatch = {
+    ...archived,
     ...parsed,
     ...gcdata,
     ...api,
     ...identity,
     ...ranks,
     players: api?.players.map((apiPlayer) => {
+      const archivedPlayer = archived?.players.find(((ap) => ap.player_slot === apiPlayer.player_slot));
       const gcPlayer = gcdata?.players.find(
         (gcp) => gcp.player_slot === apiPlayer.player_slot,
       );
@@ -756,6 +759,7 @@ export async function getMatchDataFromBlobWithMetadata(
         (rp: any) => rp.player_slot === apiPlayer.player_slot,
       );
       return {
+        ...archivedPlayer,
         ...parsedPlayer,
         ...gcPlayer,
         ...apiPlayer,
