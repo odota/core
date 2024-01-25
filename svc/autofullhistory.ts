@@ -20,4 +20,4 @@ async function doAutoFullHistory() {
     ),
   );
 }
-invokeIntervalAsync(doAutoFullHistory, 10 * 1000);
+invokeIntervalAsync(doAutoFullHistory, 20 * 1000);
