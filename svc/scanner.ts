@@ -79,6 +79,9 @@ async function processMatch(match: ApiMatch) {
 async function start() {
   if (config.START_SEQ_NUM) {
     const result = await redis.get('match_seq_num');
+    if (!result) {
+      throw new Error('failed to initialize sequence number');
+    }
     const numResult = Number(result);
     await scanApi(numResult);
   } else if (config.NODE_ENV === 'development') {
