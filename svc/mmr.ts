@@ -16,7 +16,9 @@ async function processMmr(job: MmrJob) {
   const accountId = job.account_id;
   const url = getRandomRetrieverUrl(`/profile/${accountId}`);
   console.log(url);
-  const { data } = await axios.get(url);
+  const { data } = await axios.get(url, {
+    timeout: 5000,
+  });
   redisCount(redis, 'retriever_player');
 
   // Update player's Dota Plus status if changed
