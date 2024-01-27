@@ -365,9 +365,9 @@ export async function insertMatch(
         await cassandra.execute(query, arr, {
           prepare: true,
         });
-        await scylla.execute(query, arr, {
-          prepare: true
-        });
+        // await scylla.execute(query, arr, {
+        //   prepare: true
+        // });
         if (
           (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') &&
           playerMatch.player_slot === 0

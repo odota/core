@@ -65,7 +65,7 @@ CREATE TABLE IF NOT EXISTS player_caches (
   item_5 text,
   item_neutral text,
   average_rank int,
-);
+) WITH CLUSTERING ORDER BY (match_id DESC);
 
 CREATE TABLE IF NOT EXISTS match_blobs (
   PRIMARY KEY (match_id),
@@ -77,5 +77,5 @@ CREATE TABLE IF NOT EXISTS match_blobs (
   ranks text,
 );
 
-ALTER TABLE player_caches WITH compaction = { 'class' :  'LeveledCompactionStrategy', 'sstable_size_in_mb' : 512 };
+ALTER TABLE player_caches WITH compaction = { 'class' :  'LeveledCompactionStrategy', 'sstable_size_in_mb' : 1000 };
 ALTER TABLE match_blobs WITH compaction = { 'class' :  'LeveledCompactionStrategy' };
