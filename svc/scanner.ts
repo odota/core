@@ -66,14 +66,13 @@ async function processMatch(match: ApiMatch) {
   // check if match was previously processed
   const result = await redis.get(`scanner_insert:${match.match_id}`);
   // don't insert this match if we already processed it recently
-  if (result) {
-    return;
+  if (!result) {
+    await insertMatch(match, {
+      type: 'api',
+      origin: 'scanner',
+    });
+    await redis.setex(`scanner_insert:${match.match_id}`, 3600 * 4, 1);
   }
-  await insertMatch(match, {
-    type: 'api',
-    origin: 'scanner',
-  });
-  await redis.setex(`scanner_insert:${match.match_id}`, 3600 * 4, 1);
 }
 
 async function start() {
