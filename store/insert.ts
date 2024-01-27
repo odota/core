@@ -419,15 +419,15 @@ export async function insertMatch(
           prepare: true,
         },
       );
-      await scylla.execute(
-        `INSERT INTO match_blobs(match_id, ${type}) VALUES(?, ?) ${
-          ifNotExists ? 'IF NOT EXISTS' : ''
-        }`,
-        [matchId, JSON.stringify(blob)],
-        {
-          prepare: true,
-        },
-      );
+      // await scylla.execute(
+      //   `INSERT INTO match_blobs(match_id, ${type}) VALUES(?, ?) ${
+      //     ifNotExists ? 'IF NOT EXISTS' : ''
+      //   }`,
+      //   [matchId, JSON.stringify(blob)],
+      //   {
+      //     prepare: true,
+      //   },
+      // );
       if (result.rows?.[0]?.['[applied]'] === false) {
         // Store a blob that tracks which players played this game
         // This can change from Steam API as players toggle privacy settings
