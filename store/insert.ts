@@ -22,7 +22,7 @@ import {
 } from '../util/utility';
 import { getMatchRankTier } from './queries';
 import { ApiMatch, ApiMatchPro, ApiPlayer, getPGroup } from './pgroup';
-import scylla from './scylla';
+// import scylla from './scylla';
 
 moment.relativeTimeThreshold('ss', 0);
 
