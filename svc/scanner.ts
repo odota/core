@@ -65,7 +65,7 @@ async function processMatch(match: ApiMatch) {
   }
   // check if match was previously processed
   const result = await redis.get(`scanner_insert:${match.match_id}`);
-  console.log(match.match_id, result);
+  // console.log(match.match_id, result);
   // don't insert this match if we already processed it recently
   if (!result) {
     await insertMatch(match, {
