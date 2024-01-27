@@ -22,6 +22,7 @@ import {
 } from '../util/utility';
 import { getMatchRankTier } from './queries';
 import { ApiMatch, ApiMatchPro, ApiPlayer, getPGroup } from './pgroup';
+import scylla from './scylla';
 
 moment.relativeTimeThreshold('ss', 0);
 
@@ -364,6 +365,9 @@ export async function insertMatch(
         await cassandra.execute(query, arr, {
           prepare: true,
         });
+        await scylla.execute(query, arr, {
+          prepare: true
+        });
         if (
           (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') &&
           playerMatch.player_slot === 0
@@ -407,6 +411,15 @@ export async function insertMatch(
       const matchId = blob.match_id;
       // TODO (howard) dual write here
       const result = await cassandra.execute(
+        `INSERT INTO match_blobs(match_id, ${type}) VALUES(?, ?) ${
+          ifNotExists ? 'IF NOT EXISTS' : ''
+        }`,
+        [matchId, JSON.stringify(blob)],
+        {
+          prepare: true,
+        },
+      );
+      await scylla.execute(
         `INSERT INTO match_blobs(match_id, ${type}) VALUES(?, ?) ${
           ifNotExists ? 'IF NOT EXISTS' : ''
         }`,
