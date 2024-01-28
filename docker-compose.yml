@@ -11,9 +11,11 @@ services:
     environment:
       MAX_HEAP_SIZE: 128M
       HEAP_NEWSIZE: 24M
-  # scylla:
-  #   image: scylladb/scylla:5.4
-  #   container_name: odota-scylla
+  scylla:
+    image: scylladb/scylla:5.4
+    container_name: odota-scylla
+    command:
+      - --skip-wait-for-gossip-to-settle 0
   redis:
     image: redis:7
     container_name: odota-redis
@@ -56,5 +58,5 @@ services:
       - redis
       - elasticsearch
       - parser
-      # - scylla
+      - scylla
     container_name: odota-core
