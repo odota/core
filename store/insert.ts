@@ -19,8 +19,9 @@ import {
   isRadiant,
   getPatchIndex,
   redisCount,
+  redisCountDistinct,
 } from '../util/utility';
-import { getMatchRankTier } from './queries';
+import { getMatchRankTier, getPlayerMatches } from './queries';
 import { ApiMatch, ApiMatchPro, ApiPlayer, getPGroup } from './pgroup';
 // import scylla from './scylla';
 
@@ -469,18 +470,38 @@ export async function insertMatch(
     }
     if (options.origin === 'scanner' && options.type === 'api') {
       redisCount(redis, 'added_match');
+      match.players.filter(p => p.account_id).map(p => {
+        p.account_id && redisCountDistinct(redis, 'distinct_match_player', p.account_id.toString());
+      });
     }
   }
-  async function clearRedisMatch(match: InsertMatchInput) {
-    // Clear out the Redis caches, we do this regardless of insert type
-    await redis.del(`match:${match.match_id}`);
+  async function resetRedisMatch(match: InsertMatchInput) {
+    if (config.ENABLE_MATCH_CACHE) {
+      await redis.del(`match:${match.match_id}`);
+    }
   }
-  async function clearRedisPlayer(match: InsertMatchInput) {
-    await Promise.all(
-      match.players
-        .filter((p) => p.account_id)
-        .map((p) => redis.del(`player_cache:${p.account_id?.toString()}`)),
-    );
+  async function resetRedisPlayer(match: InsertMatchInput) {
+    if (config.ENABLE_PLAYER_CACHE) {
+      await Promise.allSettled(
+        match.players
+          .filter((p) => p.account_id)
+          .map(async (p) => {
+          await redis.del(`player_cache:${p.account_id?.toString()}`);
+          // Auto-cache recent visitors
+          if (options.origin === 'scanner' && options.type === 'api' && p.account_id && Number(await redis.zscore('visitors', p.account_id)) > Number(moment().subtract(30, 'day').format('X'))) {
+            // Request the playermatches to populate cache
+            // Don't need to await this since it's just caching
+            // Maybe we want to cache these with longer expire?
+            redisCountDistinct(redis, 'distinct_auto_player_cache', p.account_id.toString());
+            // TODO (howard) enable after gathering data
+            // getPlayerMatches(p.account_id, {
+            //   project: ['match_id'],
+            //   cacheSeconds: 86400,
+            // });
+          }
+        })
+      );
+    }
   }
   async function decideCounts(match: InsertMatchInput) {
     // Update temporary match counts/hero rankings
@@ -681,8 +702,8 @@ export async function insertMatch(
   await upsertMatchPostgres(match);
   await upsertPlayerCaches(match);
   await upsertMatchBlobs(match);
-  await clearRedisMatch(match);
-  await clearRedisPlayer(match);
+  await resetRedisMatch(match);
+  await resetRedisPlayer(match);
   await telemetry(match);
   await decideCounts(match);
   await decideMmr(match);

@@ -22,6 +22,7 @@ type QueryObj = {
   // Number of results to fetch from the database (before filter/sort)
   dbLimit?: number;
   isPrivate?: boolean;
+  cacheSeconds?: number;
 };
 
 type AnyDict = Record<string, any>;
@@ -411,6 +412,7 @@ type MetricName =
   | 'match_archive_write'
   | 'auto_parse'
   | 'added_match'
+  | 'distinct_match_player'
   | 'parser'
   | 'meta_parse'
   | 'retriever'
@@ -419,6 +421,9 @@ type MetricName =
   | 'self_profile_view'
   | 'match_cache_hit'
   | 'player_cache_hit'
+  | 'player_cache_miss'
+  | 'player_cache_write'
+  | 'distinct_auto_player_cache'
   | 'steam_api_backfill'
   | 'steam_api_notfound'
   | 'steam_gc_backfill'
