@@ -30,6 +30,7 @@ import { type ApiMatch } from './pgroup';
 import { gzipSync, gunzipSync } from 'zlib';
 import {
   alwaysCols,
+  cacheableCols,
   countsCols,
   heroesCols,
   itemsCols,
@@ -222,16 +223,7 @@ type PlayerMatchesMetadata = {
   archivedLength: number;
   mergedLength: number;
 };
-// Cache a set of columns for the frontpage and matches queries
-const cacheableColumns = new Set([
-  ...alwaysCols,
-  ...significantCols,
-  ...peersCols,
-  ...heroesCols,
-  ...countsCols,
-  ...matchesCols,
-  ...itemsCols,
-]);
+
 export async function getPlayerMatchesWithMetadata(
   accountId: number,
   queryObj: QueryObj,
@@ -255,7 +247,7 @@ export async function getPlayerMatchesWithMetadata(
     const canCache =
       config.ENABLE_PLAYER_CACHE &&
       !Boolean(queryObj.dbLimit) &&
-      projection.every((field) => cacheableColumns.has(field as any));
+      projection.every((field) => cacheableCols.has(field as any));
     const cache = canCache
       ? await readCachedPlayerMatches(accountId, projection, queryObj.cacheSeconds ?? Number(config.PLAYER_CACHE_SECONDS))
       : undefined;
@@ -378,7 +370,7 @@ async function readCachedPlayerMatches(
     // Populate cache with all columns result
     const all = await readLocalPlayerMatches(
       accountId,
-      Array.from(cacheableColumns),
+      Array.from(cacheableCols),
     );
     if (all.length) {
       const zip = gzipSync(JSON.stringify(all));

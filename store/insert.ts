@@ -493,11 +493,10 @@ export async function insertMatch(
             // Don't need to await this since it's just caching
             // Maybe we want to cache these with longer expire?
             redisCountDistinct(redis, 'distinct_auto_player_cache', p.account_id.toString());
-            // TODO (howard) enable after gathering data
-            // getPlayerMatches(p.account_id, {
-            //   project: ['match_id'],
-            //   cacheSeconds: 86400,
-            // });
+            getPlayerMatches(p.account_id, {
+              project: ['match_id'],
+              cacheSeconds: 86400,
+            });
           }
         })
       );
