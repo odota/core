@@ -488,7 +488,7 @@ export async function insertMatch(
           .map(async (p) => {
           await redis.del(`player_cache:${p.account_id?.toString()}`);
           // Auto-cache recent visitors
-          if (options.origin === 'scanner' && options.type === 'api' && p.account_id && Number(await redis.zscore('visitors', p.account_id)) > Number(moment().subtract(30, 'day').format('X'))) {
+          if (p.account_id && Number(await redis.zscore('visitors', p.account_id)) > Number(moment().subtract(30, 'day').format('X'))) {
             // Request the playermatches to populate cache
             // Don't need to await this since it's just caching
             // Maybe we want to cache these with longer expire?
