@@ -20,6 +20,7 @@ import {
   parallelPromise,
   PeersCount,
   redisCount,
+  redisCountDistinct,
 } from '../util/utility';
 import {
   readArchivedPlayerMatches,
@@ -335,9 +336,14 @@ async function readCachedPlayerMatches(
   project: string[],
   cacheSeconds: number,
 ): Promise<ParsedPlayerMatch[]> {
+  redisCountDistinct(redis, 'distinct_player_cache_read', accountId.toString());
   const result = await redis.getBuffer('player_cache:' + accountId.toString());
   if (result) {
     redisCount(redis, 'player_cache_hit');
+    const ttl = await redis.ttl('player_cache:' + accountId.toString());
+    if (ttl > Number(config.PLAYER_CACHE_SECONDS)) {
+      redisCount(redis, 'auto_player_cache_hit');
+    }
     const unzip = gunzipSync(result).toString();
     const output = JSON.parse(unzip);
     // console.log(
