@@ -426,6 +426,7 @@ type MetricName =
   | 'distinct_player_cache_read'
   | 'auto_player_cache'
   | 'auto_player_cache_hit'
+  | 'auto_player_cache_miss'
   | 'distinct_auto_player_cache'
   | 'steam_api_backfill'
   | 'steam_api_notfound'

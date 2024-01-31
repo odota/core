@@ -39,6 +39,7 @@ import {
   peersCols,
   significantCols,
 } from '../routes/playerFields';
+import moment from 'moment';
 
 /**
  * Adds benchmark data to the players in a match
@@ -340,8 +341,7 @@ async function readCachedPlayerMatches(
   const result = await redis.getBuffer('player_cache:' + accountId.toString());
   if (result) {
     redisCount(redis, 'player_cache_hit');
-    const ttl = await redis.ttl('player_cache:' + accountId.toString());
-    if (ttl > Number(config.PLAYER_CACHE_SECONDS)) {
+    if (Number(await redis.zscore('visitors', accountId)) > Number(moment().subtract(30, 'day').format('X'))) {
       redisCount(redis, 'auto_player_cache_hit');
     }
     const unzip = gunzipSync(result).toString();
@@ -356,6 +356,9 @@ async function readCachedPlayerMatches(
     return output.map((m: any) => pick(m, project));
   } else {
     redisCount(redis, 'player_cache_miss');
+    if (Number(await redis.zscore('visitors', accountId)) > Number(moment().subtract(30, 'day').format('X'))) {
+      redisCount(redis, 'auto_player_cache_miss');
+    }
     // Uses the imprecise lock algorithm described in https://redis.io/commands/setnx/
     // A client might delete the lock held by another client in the case of the population taking more than the timeout time
     // This is because we use del to release rather than delete only if matches random value
