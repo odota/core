@@ -14,7 +14,7 @@ async function processGcData(job: GcDataJob) {
   }
   // We don't need the result, but we do want to respect the DISABLE_REGCDATA setting
   // Currently, just attempt it once and skip if failed
-  await getOrFetchGcData(job.match_id, pgroup);
+  await getOrFetchGcData(job.match_id, { pgroup });
   await new Promise((resolve) => setTimeout(resolve, 1));
 }
 
