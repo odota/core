@@ -12,6 +12,11 @@ import axios from 'axios';
 import retrieverMatch from '../test/data/retriever_match.json';
 import { insertMatch } from './insert';
 
+type GcExtraData = {
+  origin?: DataOrigin;
+  pgroup: PGroup;
+};
+
 /**
  * Return GC data by reading it without fetching.
  * @param matchId
@@ -42,7 +47,7 @@ export async function readGcData(matchId: number): Promise<GcMatch | null> {
  */
 async function saveGcData(
   matchId: number,
-  pgroup: PGroup,
+  extraData: GcExtraData,
 ): Promise<string | null> {
   const url = config.USE_SERVICE_REGISTRY
     ? await getRegistryUrl('retriever', `/match/${matchId}`)
@@ -123,7 +128,8 @@ async function saveGcData(
   // Put extra fields in matches/player_matches (do last since after this we won't fetch from GC again)
   await insertMatch(matchToInsert, {
     type: 'gcdata',
-    pgroup,
+    pgroup: extraData.pgroup,
+    origin: extraData.origin,
     endedAt: data.match.starttime + data.match.duration,
   });
   return null;
@@ -140,7 +146,7 @@ export async function tryFetchGcData(
   pgroup: PGroup,
 ): Promise<GcMatch | null> {
   try {
-    await saveGcData(matchId, pgroup);
+    await saveGcData(matchId, { pgroup });
     return readGcData(matchId);
   } catch (e) {
     console.log(e);
@@ -157,7 +163,7 @@ export async function tryFetchGcData(
  */
 export async function getOrFetchGcData(
   matchId: number,
-  pgroup: PGroup,
+  extraData: GcExtraData,
 ): Promise<{
   data: GcMatch | null;
   error: string | null;
@@ -175,7 +181,7 @@ export async function getOrFetchGcData(
     }
   }
   // If we got here we don't have it saved or want to refetch
-  const error = await saveGcData(matchId, pgroup);
+  const error = await saveGcData(matchId, extraData);
   if (error) {
     return { data: null, error };
   }
@@ -185,7 +191,7 @@ export async function getOrFetchGcData(
 
 export async function getOrFetchGcDataWithRetry(
   matchId: number,
-  pgroup: PGroup,
+  extraData: GcExtraData,
 ): Promise<{
   data: GcMatch | null;
   error: string | null;
@@ -196,7 +202,7 @@ export async function getOrFetchGcDataWithRetry(
   // Try until we either get data or a non-exception error
   while (!data && !error) {
     try {
-      const resp = await getOrFetchGcData(matchId, pgroup);
+      const resp = await getOrFetchGcData(matchId, extraData);
       data = resp.data;
       error = resp.error;
     } catch (e) {

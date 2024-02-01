@@ -74,7 +74,10 @@ async function parseProcessor(job: ParseJob) {
     const gcStart = Date.now();
     const { data: gcMatch, error: gcError } = await getOrFetchGcDataWithRetry(
       matchId,
-      pgroup,
+      {
+        pgroup,
+        origin: job.origin,
+      },
     );
     if (!gcMatch) {
       // non-retryable error
