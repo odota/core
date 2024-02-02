@@ -337,7 +337,7 @@ async function readCachedPlayerMatches(
   project: string[],
   cacheSeconds: number,
 ): Promise<ParsedPlayerMatch[]> {
-  redisCountDistinct(redis, 'distinct_player_cache_read', accountId.toString());
+  redisCountDistinct(redis, 'distinct_player_cache', accountId.toString());
   const result = await redis.getBuffer('player_cache:' + accountId.toString());
   if (result) {
     redisCount(redis, 'player_cache_hit');

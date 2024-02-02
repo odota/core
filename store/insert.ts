@@ -496,7 +496,7 @@ export async function insertMatch(
             redisCount(redis, 'auto_player_cache');
             getPlayerMatches(p.account_id, {
               project: ['match_id'],
-              cacheSeconds: 43200,
+              cacheSeconds: Number(config.AUTO_PLAYER_CACHE_SECONDS),
             });
           }
         })
