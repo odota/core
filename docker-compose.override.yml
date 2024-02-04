@@ -27,19 +27,19 @@ services:
         '-c',
         'sleep 80 && cqlsh -f /usr/src/sql/init.cql odota-cassandra && cqlsh -f /usr/src/sql/create_tables.cql -k yasp odota-cassandra',
       ]
-  scyllainit:
-    image: scylladb/scylla
-    depends_on:
-      - scylla
-    volumes:
-      - .:/usr/src
-    container_name: odota-scyllainit
-    entrypoint:
-      [
-        'bash',
-        '-c',
-        'sleep 10 && cqlsh -f /usr/src/sql/init.cql odota-scylla && cqlsh -f /usr/src/sql/create_tables.cql -k yasp odota-scylla',
-      ]
+  # scyllainit:
+  #   image: scylladb/scylla
+  #   depends_on:
+  #     - scylla
+  #   volumes:
+  #     - .:/usr/src
+  #   container_name: odota-scyllainit
+  #   entrypoint:
+  #     [
+  #       'bash',
+  #       '-c',
+  #       'sleep 10 && cqlsh -f /usr/src/sql/init.cql odota-scylla && cqlsh -f /usr/src/sql/create_tables.cql -k yasp odota-scylla',
+  #     ]
   core:
     entrypoint: bash scripts/launch.sh
     volumes:
