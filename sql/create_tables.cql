@@ -84,4 +84,4 @@ CREATE TABLE IF NOT EXISTS player_temp (
   account_id bigint,
   blob blob
 );
-ALTER TABLE player_temp WITH compaction = { 'class' :  'LeveledCompactionStrategy' } AND gc_grace_seconds = 86400 AND compression = {'enabled':'false'};
+ALTER TABLE player_temp WITH compaction = { 'class' :  'LeveledCompactionStrategy' } AND gc_grace_seconds = 86400 AND compression = {'sstable_compression': ''};

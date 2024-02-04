@@ -89,7 +89,7 @@ before(async function setup() {
   await initElasticsearch();
   await initRedis();
   await initCassandra();
-  // await initScylla();
+  await initScylla();
   await loadMatches();
   await loadPlayers();
   await startServices();
