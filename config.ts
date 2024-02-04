@@ -47,8 +47,8 @@ const defaults = {
   ENABLE_RANDOM_MMR_UPDATE: '', // set to request MMR updates after ranked matches
   MAXIMUM_AGE_SCENARIOS_ROWS: '4', // maximum allowed age of scenarios rows in weeks
   MATCH_CACHE_SECONDS: '60', // number of seconds to cache matches
-  PLAYER_CACHE_SECONDS: '300', // number of seconds to cache player aggregations
-  AUTO_PLAYER_CACHE_SECONDS: '86400', // number of seconds to auto cache player aggregations
+  PLAYER_CACHE_SECONDS: '86400', // number of seconds to cache player aggregations
+  // AUTO_PLAYER_CACHE_SECONDS: '86400', // number of seconds to auto cache player aggregations
   ENABLE_API_LIMIT: '', // if truthy, API calls after exceeding API_FREE_LIMIT are blocked
   API_FREE_LIMIT: '2000', // number of api requests per day before 429 is returned. If using an API key, calls over this are charged.
   API_BILLING_UNIT: '100', // how many calls is equivalent to a unit of calls e.g. 100 calls per $0.01.

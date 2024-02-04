@@ -251,7 +251,7 @@ export async function getPlayerMatchesWithMetadata(
       !Boolean(queryObj.dbLimit) &&
       projection.every((field) => cacheableCols.has(field as any));
     const cache = canCache
-      ? await readCachedPlayerMatches(accountId, projection, queryObj.cacheSeconds ?? Number(config.PLAYER_CACHE_SECONDS))
+      ? await readCachedPlayerMatches(accountId, projection)
       : undefined;
     return (
       cache ?? readLocalPlayerMatches(accountId, projection, queryObj.dbLimit)
@@ -335,17 +335,16 @@ export async function getPlayerMatchesWithMetadata(
 async function readCachedPlayerMatches(
   accountId: number,
   project: string[],
-  cacheSeconds: number,
 ): Promise<ParsedPlayerMatch[]> {
   redisCountDistinct(redis, 'distinct_player_cache', accountId.toString());
-  const result = await redis.getBuffer('player_cache:' + accountId.toString());
+  const { rows } = await cassandra.execute(`SELECT blob from player_temp WHERE account_id = ?`, [accountId], { prepare: true, fetchSize: 1 });
+  const result = rows[0]?.blob;
   if (result) {
     redisCount(redis, 'player_cache_hit');
     if (Number(await redis.zscore('visitors', accountId)) > Number(moment().subtract(30, 'day').format('X'))) {
       redisCount(redis, 'auto_player_cache_hit');
     }
-    const unzip = gunzipSync(result).toString();
-    const output = JSON.parse(unzip);
+    const output = JSON.parse(result);
     // console.log(
     //   '[PLAYERCACHE] %s: read %s matches from %s bytes',
     //   accountId,
@@ -367,14 +366,14 @@ async function readCachedPlayerMatches(
       'player_cache_lock:' + accountId.toString(),
       Date.now().toString(),
       'EX',
-      15,
+      10,
       'NX',
     );
     if (!lock) {
       // console.log('[PLAYERCACHE] waiting for lock on %s', accountId);
       // Couldn't acquire the lock, wait and try again
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      return readCachedPlayerMatches(accountId, project, cacheSeconds);
+      return readCachedPlayerMatches(accountId, project);
     }
     // Populate cache with all columns result
     const all = await readLocalPlayerMatches(
@@ -382,7 +381,7 @@ async function readCachedPlayerMatches(
       Array.from(cacheableCols),
     );
     if (all.length) {
-      const zip = gzipSync(JSON.stringify(all));
+      const zip = JSON.stringify(all);
       // console.log(
       //   '[PLAYERCACHE] %s: caching %s matches in %s bytes',
       //   accountId,
@@ -390,11 +389,7 @@ async function readCachedPlayerMatches(
       //   zip.length,
       // );
       redisCount(redis, 'player_cache_write');
-      await redis.setex(
-        'player_cache:' + accountId.toString(),
-        cacheSeconds,
-        zip,
-      );
+      await cassandra.execute(`INSERT INTO player_temp(account_id, blob) VALUES(?, ?) USING TTL ?`, [accountId, zip, Number(config.PLAYER_CACHE_SECONDS)], { prepare: true });
     }
     // Release the lock
     await redis.del('player_cache_lock:' + accountId.toString());

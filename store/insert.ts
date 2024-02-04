@@ -486,7 +486,7 @@ export async function insertMatch(
         match.players
           .filter((p) => p.account_id)
           .map(async (p) => {
-          await redis.del(`player_cache:${p.account_id?.toString()}`);
+          await cassandra.execute(`DELETE FROM player_temp WHERE account_id = ?`, [p.account_id], { prepare: true });
           // Auto-cache recent visitors
           if (p.account_id && Number(await redis.zscore('visitors', p.account_id)) > Number(moment().subtract(30, 'day').format('X'))) {
             // Request the playermatches to populate cache
@@ -496,7 +496,6 @@ export async function insertMatch(
             redisCount(redis, 'auto_player_cache');
             getPlayerMatches(p.account_id, {
               project: ['match_id'],
-              cacheSeconds: Number(config.AUTO_PLAYER_CACHE_SECONDS),
             });
           }
         })
