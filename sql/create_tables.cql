@@ -82,6 +82,6 @@ ALTER TABLE match_blobs WITH compaction = { 'class' :  'LeveledCompactionStrateg
 CREATE TABLE IF NOT EXISTS player_temp (
   PRIMARY KEY (account_id),
   account_id bigint,
-  blob text
+  blob blob
 );
-ALTER TABLE player_temp WITH compaction = { 'class' :  'LeveledCompactionStrategy' } AND gc_grace_seconds = 86400;
+ALTER TABLE player_temp WITH compaction = { 'class' :  'LeveledCompactionStrategy' } AND gc_grace_seconds = 86400 AND compression = {'enabled':'false'};

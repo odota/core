@@ -344,7 +344,7 @@ async function readCachedPlayerMatches(
     if (Number(await redis.zscore('visitors', accountId)) > Number(moment().subtract(30, 'day').format('X'))) {
       redisCount(redis, 'auto_player_cache_hit');
     }
-    const output = JSON.parse(result);
+    const output = JSON.parse(gunzipSync(result).toString());
     // console.log(
     //   '[PLAYERCACHE] %s: read %s matches from %s bytes',
     //   accountId,
@@ -381,7 +381,7 @@ async function readCachedPlayerMatches(
       Array.from(cacheableCols),
     );
     if (all.length) {
-      const zip = JSON.stringify(all);
+      const zip = gzipSync(JSON.stringify(all));
       // console.log(
       //   '[PLAYERCACHE] %s: caching %s matches in %s bytes',
       //   accountId,
