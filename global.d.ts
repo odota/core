@@ -422,6 +422,7 @@ type MetricName =
   | 'match_cache_hit'
   | 'player_cache_hit'
   | 'player_cache_miss'
+  | 'player_cache_wait'
   | 'player_cache_write'
   | 'distinct_player_cache'
   | 'auto_player_cache'

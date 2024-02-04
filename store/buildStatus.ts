@@ -115,6 +115,7 @@ export async function buildStatus() {
     match_cache_hit_last_day: async () => countDay('match_cache_hit'),
     player_cache_hit_last_day: async () => countDay('player_cache_hit'),
     player_cache_miss_last_day: async () => countDay('player_cache_miss'),
+    player_cache_wait_last_day: async () => countDay('player_cache_wait'),
     player_cache_write_last_day: async () => countDay('player_cache_write'),
     distinct_player_cache_last_day: async () => countDayDistinct('distinct_player_cache'),
     auto_player_cache_hit_last_day: async () => countDay('auto_player_cache_hit'),

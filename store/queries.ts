@@ -370,6 +370,7 @@ async function readCachedPlayerMatches(
       'NX',
     );
     if (!lock) {
+      redisCount(redis, 'player_cache_wait');
       // console.log('[PLAYERCACHE] waiting for lock on %s', accountId);
       // Couldn't acquire the lock, wait and try again
       await new Promise((resolve) => setTimeout(resolve, 1000));
