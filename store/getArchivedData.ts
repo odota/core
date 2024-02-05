@@ -63,19 +63,6 @@ async function doArchiveFromBlob(matchId: number) {
     // Invalid/not found, skip
     return;
   }
-  const isArchived = Boolean(
-    (
-      await db.raw(
-        'select match_id from parsed_matches where match_id = ? and is_archived IS TRUE',
-        [matchId],
-      )
-    ).rows[0],
-  );
-  if (isArchived) {
-    console.log('ALREADY ARCHIVED match %s', matchId);
-    await deleteParsed(matchId);
-    return;
-  }
   if (metadata?.has_api && !metadata?.has_gcdata && !metadata?.has_parsed) {
     // if it only contains API data, delete?
     // If the match is old we might not be able to get back ability builds, HD/TD/HH
@@ -85,6 +72,19 @@ async function doArchiveFromBlob(matchId: number) {
     return;
   }
   if (metadata?.has_parsed) {
+    const isArchived = Boolean(
+      (
+        await db.raw(
+          'select match_id from parsed_matches where match_id = ? and is_archived IS TRUE',
+          [matchId],
+        )
+      ).rows[0],
+    );
+    if (isArchived) {
+      console.log('ALREADY ARCHIVED match %s', matchId);
+      await deleteParsed(matchId);
+      return;
+    }
     // check data completeness with isDataComplete
     if (!isDataComplete(match as ParsedMatch)) {
       redisCount(redis, 'incomplete_archive');
@@ -200,7 +200,7 @@ export async function getCurrentMaxArchiveID() {
   // Get the current max_match_id from postgres, subtract 200000000
   const max = (await db.raw('select max(match_id) from public_matches'))
     ?.rows?.[0]?.max;
-  const limit = max - 200000000;
+  const limit = max - 100000000;
   return limit;
 }
 
