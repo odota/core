@@ -73,7 +73,7 @@ async function doArchiveFromBlob(matchId: number) {
   );
   if (isArchived) {
     console.log('ALREADY ARCHIVED match %s', matchId);
-    // await deleteMatch(matchId);
+    await deleteParsed(matchId);
     return;
   }
   if (metadata?.has_api && !metadata?.has_gcdata && !metadata?.has_parsed) {
@@ -106,7 +106,7 @@ async function doArchiveFromBlob(matchId: number) {
       );
       // Delete the row (there might be other columns, but we'll have it all in the archive blob)
       // This will also also clear the gcdata cache for this match
-      await deleteMatch(matchId);
+      await deleteParsed(matchId);
       console.log('ARCHIVE match %s, parsed', matchId);
     }
     return result;
@@ -116,9 +116,9 @@ async function doArchiveFromBlob(matchId: number) {
   return;
 }
 
-async function deleteMatch(matchId: number) {
+async function deleteParsed(matchId: number) {
   await cassandra.execute(
-    'DELETE from match_blobs WHERE match_id = ?',
+    'DELETE parsed from match_blobs WHERE match_id = ?',
     [matchId],
     {
       prepare: true,
