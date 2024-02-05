@@ -354,10 +354,6 @@ async function readCachedPlayerMatches(
     // Remove columns not asked for
     return output.map((m: any) => pick(m, project));
   } else {
-    redisCount(redis, 'player_cache_miss');
-    if (Number(await redis.zscore('visitors', accountId)) > Number(moment().subtract(30, 'day').format('X'))) {
-      redisCount(redis, 'auto_player_cache_miss');
-    }
     // Uses the imprecise lock algorithm described in https://redis.io/commands/setnx/
     // A client might delete the lock held by another client in the case of the population taking more than the timeout time
     // This is because we use del to release rather than delete only if matches random value
@@ -375,6 +371,10 @@ async function readCachedPlayerMatches(
       // Couldn't acquire the lock, wait and try again
       await new Promise((resolve) => setTimeout(resolve, 1000));
       return readCachedPlayerMatches(accountId, project);
+    }
+    redisCount(redis, 'player_cache_miss');
+    if (Number(await redis.zscore('visitors', accountId)) > Number(moment().subtract(30, 'day').format('X'))) {
+      redisCount(redis, 'auto_player_cache_miss');
     }
     // Populate cache with all columns result
     const all = await readLocalPlayerMatches(
