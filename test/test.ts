@@ -670,8 +670,6 @@ describe(c.blue('[TEST] api limits'), () => {
     config.API_FREE_LIMIT = '5';
     await redis
       .multi()
-      .del('ip_usage_count')
-      .del('usage_count')
       .sadd('api_keys', 'KEY')
       .exec();
   });
@@ -685,18 +683,19 @@ describe(c.blue('[TEST] api limits'), () => {
     await makeWhitelistedRequests('');
   });
 
-  it('should be able to make more than 10 calls when using API KEY', async function testAPIKeyLimitsAndCounting() {
+  it('should be able to make more than 5 calls when using API KEY', async function testAPIKeyLimitsAndCounting() {
     // Try whitelisted routes. Should not increment usage.
     await makeWhitelistedRequests('?api_key=KEY');
+
+    // Make calls that count toward limit
+    await makeRateCheckedRequests('?api_key=KEY', 10);
+
     // Try a 429. Should not increment usage.
     const tooMany = await supertest(app).get('/gen429?api_key=KEY');
     assert.equal(tooMany.statusCode, 429);
     // Try a 500. Should not increment usage.
     const err = await supertest(app).get('/gen500?api_key=KEY');
     assert.equal(err.statusCode, 500);
-
-    // Make calls that count toward limit
-    await makeRateCheckedRequests('?api_key=KEY', 10);
 
     const res = await redis.hgetall('usage_count');
     assert.ok(res);

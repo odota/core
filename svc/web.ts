@@ -95,10 +95,6 @@ const onResFinish = (
       multi
         .hincrby('usage_count', res.locals.usageIdentifier, 1)
         .expireat('usage_count', getEndOfMonth());
-    } else {
-      multi
-        .zincrby('ip_usage_count', 1, res.locals.usageIdentifier)
-        .expireat('ip_usage_count', getEndOfDay());
     }
     multi.exec((err, res) => {
       if (config.NODE_ENV === 'development') {
@@ -374,7 +370,7 @@ app.get('/admin/apiMetrics', async (req, res, cb) => {
   try {
     const startTime = moment().startOf('month').format('YYYY-MM-DD');
     const endTime = moment().endOf('month').format('YYYY-MM-DD');
-    const [topRequests, topUsersKey, numUsersKey, topUsersIP, numUsersIP] =
+    const [topRequests, topUsersKey, numUsersKey] =
       await Promise.all([
         redis.zrevrange('request_usage_count', 0, 19, 'WITHSCORES'),
         db.raw(
@@ -412,15 +408,11 @@ app.get('/admin/apiMetrics', async (req, res, cb) => {
     `,
           [startTime, endTime],
         ),
-        redis.zrevrange('ip_usage_count', 0, 19, 'WITHSCORES'),
-        redis.zcard('ip_usage_count'),
       ]);
     return res.json({
       topRequests,
       topUsersKey: topUsersKey.rows,
       numUsersKey: numUsersKey.rows?.[0]?.count,
-      topUsersIP,
-      numUsersIP,
     });
   } catch (e) {
     return cb(e);
@@ -444,7 +436,6 @@ app.use(async (req, res, cb) => {
       res.locals.isAPIRequest = resp === 1;
     }
     const { ip } = req;
-    res.locals.ip = ip;
     let rateLimit: number | string = '';
     if (res.locals.isAPIRequest) {
       const requestAPIKey =
@@ -459,48 +450,51 @@ app.use(async (req, res, cb) => {
       rateLimit = config.NO_API_KEY_PER_MIN_LIMIT;
       // console.log('[USER] %s visit %s, ip %s', req.user ? req.user.account_id : 'anonymous', req.originalUrl, ip);
     }
-    const command = redis.multi();
-    command
-      .hincrby('rate_limit', res.locals.usageIdentifier, 1)
-      .expireat('rate_limit', getStartOfBlockMinutes(1, 1));
-    if (!res.locals.isAPIRequest) {
-      // not API request so check previous usage
-      command.zscore('ip_usage_count', res.locals.usageIdentifier);
-    }
-    const resp = await command.exec();
-    if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
-      console.log(
-        '[WEB] %s rate limit %s',
-        req.originalUrl,
-        JSON.stringify(resp),
-      );
-    }
-    const incrValue = resp![0]?.[1];
-    const prevUsage = resp![2]?.[1];
-    res.set({
-      'X-Rate-Limit-Remaining-Minute': Number(rateLimit) - Number(incrValue),
-      'X-IP-Address': ip,
-    });
-    if (!res.locals.isAPIRequest) {
-      res.set(
-        'X-Rate-Limit-Remaining-Day',
-        (Number(config.API_FREE_LIMIT) - Number(prevUsage)).toString(),
-      );
-    }
-    if (Number(incrValue) > Number(rateLimit) && config.NODE_ENV !== 'test') {
-      return res.status(429).json({
-        error: 'rate limit exceeded',
+    if (config.ENABLE_API_LIMIT && !unlimitedPaths.includes(req.originalUrl.split('?')[0])) {
+      let rateCost = 1;
+      if (req.method === 'POST' && req.route?.path === '/request/:match_id') {
+        rateCost = 10;
+      }
+      const command = redis.multi();
+      command
+        .hincrby('rate_limit', res.locals.usageIdentifier, rateCost)
+        .expireat('rate_limit', getStartOfBlockMinutes(1, 1));
+      command
+        .hincrby('daily_rate_limit', res.locals.usageIdentifier, rateCost)
+        .expireat('daily_rate_limit', getEndOfDay());
+      const resp = await command.exec();
+      const incrValue = resp?.[0]?.[1];
+      const dailyIncrValue = resp?.[2]?.[1];
+      if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
+        // console.log(resp);
+        console.log(
+          '[WEB] %s, minute: %s, day: %s',
+          req.originalUrl,
+          incrValue,
+          dailyIncrValue,
+        );
+      }
+      const remMinute = Number(rateLimit) - Number(incrValue);
+      const remDay = Number(config.API_FREE_LIMIT) - Number(dailyIncrValue);
+      res.set({
+        'X-Rate-Limit-Remaining-Minute': remMinute,
+        'X-IP-Address': ip,
       });
-    }
-    if (
-      config.ENABLE_API_LIMIT &&
-      !unlimitedPaths.includes(req.originalUrl.split('?')[0]) &&
-      !res.locals.isAPIRequest &&
-      Number(prevUsage) >= Number(config.API_FREE_LIMIT)
-    ) {
-      return res.status(429).json({
-        error: 'daily api limit exceeded',
-      });
+      if (!res.locals.isAPIRequest) {
+        res.set({
+          'X-Rate-Limit-Remaining-Day': remDay,
+        });
+      }
+      if (remMinute < 0) {
+        return res.status(429).json({
+          error: 'minute rate limit exceeded',
+        });
+      }
+      if (!res.locals.isAPIRequest && remDay < 0) {
+        return res.status(429).json({
+          error: 'daily api limit exceeded',
+        });
+      }
     }
     return cb();
   } catch (e) {
