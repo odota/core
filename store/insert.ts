@@ -21,7 +21,7 @@ import {
   redisCount,
   redisCountDistinct,
 } from '../util/utility';
-import { getMatchRankTier, getPlayerMatches } from './queries';
+import { getMatchRankTier, getPlayerMatches, populateCache } from './queries';
 import { ApiMatch, ApiMatchPro, ApiPlayer, getPGroup } from './pgroup';
 // import scylla from './scylla';
 
@@ -489,14 +489,10 @@ export async function insertMatch(
           await cassandra.execute(`DELETE FROM player_temp WHERE account_id = ?`, [p.account_id], { prepare: true });
           // Auto-cache recent visitors
           if (p.account_id && Number(await redis.zscore('visitors', p.account_id)) > Number(moment().subtract(30, 'day').format('X'))) {
-            // Request the playermatches to populate cache
-            // Don't need to await this since it's just caching
-            // Maybe we want to cache these with longer expire?
             redisCountDistinct(redis, 'distinct_auto_player_cache', p.account_id.toString());
             redisCount(redis, 'auto_player_cache');
-            getPlayerMatches(p.account_id, {
-              project: ['match_id'],
-            });
+            // Don't need to await this since it's just caching
+            populateCache(p.account_id, ['match_id']);
           }
         })
       );
