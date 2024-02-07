@@ -71,11 +71,11 @@ setInterval(() => {
   }
   // Re-register ourselves as available
   if (config.SERVICE_REGISTRY_HOST && !noneReady()) {
-    axios.post(
-      `https://${config.SERVICE_REGISTRY_HOST}/register/retriever/${
-        Object.values(steamObj)[0].publicIP
-      }?key=${config.RETRIEVER_SECRET}`,
-    );
+    const registerUrl = `https://${config.SERVICE_REGISTRY_HOST}/register/retriever/${
+      Object.values(steamObj)[0].publicIP
+    }?key=${config.RETRIEVER_SECRET}`;
+    console.log('registerUrl: %s', registerUrl);
+    axios.post(registerUrl);
   }
 }, 5000);
 
@@ -220,7 +220,9 @@ async function init() {
     // Fetch logons from remote
     while(!logOns?.length) {
       try {
-        const resp = await axios.get('https://' + config.SERVICE_REGISTRY_HOST + '/retrieverData?key=' + config.RETRIEVER_SECRET);
+        const logOnUrl = 'https://' + config.SERVICE_REGISTRY_HOST + '/retrieverData?key=' + config.RETRIEVER_SECRET;
+        console.log('logOnUrl: %s', logOnUrl);
+        const resp = await axios.get(logOnUrl);
         logOns = resp.data;
       } catch (e) {
         console.warn(e);
