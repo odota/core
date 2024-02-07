@@ -470,9 +470,16 @@ export async function insertMatch(
     }
     if (options.origin === 'scanner' && options.type === 'api') {
       redisCount(redis, 'added_match');
-      match.players.filter(p => p.account_id).map(p => {
-        p.account_id && redisCountDistinct(redis, 'distinct_match_player', p.account_id.toString());
-      });
+      match.players
+        .filter((p) => p.account_id)
+        .map((p) => {
+          p.account_id &&
+            redisCountDistinct(
+              redis,
+              'distinct_match_player',
+              p.account_id.toString(),
+            );
+        });
     }
   }
   async function resetRedisMatch(match: InsertMatchInput) {
@@ -486,15 +493,27 @@ export async function insertMatch(
         match.players
           .filter((p) => p.account_id)
           .map(async (p) => {
-          await cassandra.execute(`DELETE FROM player_temp WHERE account_id = ?`, [p.account_id], { prepare: true });
-          // Auto-cache recent visitors
-          if (p.account_id && Number(await redis.zscore('visitors', p.account_id)) > Number(moment().subtract(30, 'day').format('X'))) {
-            redisCountDistinct(redis, 'distinct_auto_player_cache', p.account_id.toString());
-            redisCount(redis, 'auto_player_cache');
-            // Don't need to await this since it's just caching
-            populateCache(p.account_id, ['match_id']);
-          }
-        })
+            await cassandra.execute(
+              `DELETE FROM player_temp WHERE account_id = ?`,
+              [p.account_id],
+              { prepare: true },
+            );
+            // Auto-cache recent visitors
+            if (
+              p.account_id &&
+              Number(await redis.zscore('visitors', p.account_id)) >
+                Number(moment().subtract(30, 'day').format('X'))
+            ) {
+              redisCountDistinct(
+                redis,
+                'distinct_auto_player_cache',
+                p.account_id.toString(),
+              );
+              redisCount(redis, 'auto_player_cache');
+              // Don't need to await this since it's just caching
+              populateCache(p.account_id, ['match_id']);
+            }
+          }),
       );
     }
   }

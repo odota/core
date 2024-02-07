@@ -18,11 +18,15 @@ const minUpTimeSeconds = 300;
 const matchesPerAccount = 200;
 const port = config.PORT || config.RETRIEVER_PORT;
 const getMatchRequestInterval = () => {
-  return Math.ceil(1000 / (Object.keys(steamObj).length || 1)) + extraMatchRequestInterval;
+  return (
+    Math.ceil(1000 / (Object.keys(steamObj).length || 1)) +
+    extraMatchRequestInterval
+  );
 };
 let extraMatchRequestInterval = 0;
 const matchRequestIntervalStep = 0;
-const noneReady = () => Object.values(steamObj).filter(client => client.steamID).length === 0;
+const noneReady = () =>
+  Object.values(steamObj).filter((client) => client.steamID).length === 0;
 let lastMatchRequestTime: number | null = null;
 let matchRequests = 0;
 let matchSuccesses = 0;
@@ -59,11 +63,10 @@ const CMsgGCMatchDetailsResponse = builder.lookupType(
 
 setInterval(() => {
   const shouldRestart =
-    ((matchRequests - matchSuccesses) > 100 &&
-      getUptime() > minUpTimeSeconds) ||
+    (matchRequests - matchSuccesses > 100 && getUptime() > minUpTimeSeconds) ||
     (matchRequests > Object.keys(steamObj).length * matchesPerAccount &&
       getUptime() > minUpTimeSeconds) ||
-    ((profileRequests - profileSuccesses) > 1000 &&
+    (profileRequests - profileSuccesses > 1000 &&
       getUptime() > minUpTimeSeconds) ||
     (noneReady() && getUptime() > minUpTimeSeconds);
   if (shouldRestart && config.NODE_ENV !== 'development') {
@@ -71,9 +74,11 @@ setInterval(() => {
   }
   // Re-register ourselves as available
   if (config.SERVICE_REGISTRY_HOST && !noneReady()) {
-    const registerUrl = `https://${config.SERVICE_REGISTRY_HOST}/register/retriever/${
-      Object.values(steamObj)[0].publicIP
-    }?key=${config.RETRIEVER_SECRET}`;
+    const registerUrl = `https://${
+      config.SERVICE_REGISTRY_HOST
+    }/register/retriever/${Object.values(steamObj)[0].publicIP}?key=${
+      config.RETRIEVER_SECRET
+    }`;
     console.log('registerUrl: %s', registerUrl);
     axios.post(registerUrl);
   }
@@ -215,18 +220,22 @@ async function start() {
 start();
 
 async function init() {
-  let logOns: {accountName: string, password: string}[] | null = null;
+  let logOns: { accountName: string; password: string }[] | null = null;
   if (config.SERVICE_REGISTRY_HOST) {
     // Fetch logons from remote
-    while(!logOns?.length) {
+    while (!logOns?.length) {
       try {
-        const logOnUrl = 'https://' + config.SERVICE_REGISTRY_HOST + '/retrieverData?key=' + config.RETRIEVER_SECRET;
+        const logOnUrl =
+          'https://' +
+          config.SERVICE_REGISTRY_HOST +
+          '/retrieverData?key=' +
+          config.RETRIEVER_SECRET;
         console.log('logOnUrl: %s', logOnUrl);
         const resp = await axios.get(logOnUrl);
         logOns = resp.data;
       } catch (e) {
         console.warn(e);
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
     }
   } else {

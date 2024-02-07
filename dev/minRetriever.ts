@@ -1,12 +1,9 @@
 import SteamUser from 'steam-user';
 import express from 'express';
-import compression from 'compression';
 import config from '../config';
 import ProtoBuf from 'protobufjs';
 
 const app = express();
-let users = config.STEAM_USER;
-let passes = config.STEAM_PASS;
 const port = config.PORT || config.RETRIEVER_PORT;
 const DOTA_APPID = 570;
 
@@ -35,10 +32,6 @@ const CMsgGCMatchDetailsResponse = builder.lookupType(
   'CMsgGCMatchDetailsResponse',
 );
 
-app.use(compression());
-app.get('/healthz', (req, res, cb) => {
-  return res.end('ok');
-});
 app.get('/profile/:account_id', async (req, res, cb) => {
   const accountId = req.params.account_id;
   client.sendToGC(
@@ -80,11 +73,9 @@ app.get('/aliases/:steam_ids', async (req, res, cb) => {
   });
 });
 
-const logOnDetails = { accountName: users, password: passes };
+const logOnDetails = { accountName: config.STEAM_USER, password: config.STEAM_PASS };
 const client = new SteamUser();
 client.on('loggedOn', () => {
-  console.log('[STEAM] Logged on %s', client.steamID);
-  // Launch Dota 2
   client.gamesPlayed(DOTA_APPID);
 });
 client.on('appLaunched', (appid) => {
@@ -97,9 +88,7 @@ client.on('appLaunched', (appid) => {
 });
 client.on('receivedFromGC', (appid, msgType, payload) => {
   if (msgType === EGCBaseClientMsg.values.k_EMsgGCClientWelcome) {
-    app.listen(port, () => {
-      console.log('[RETRIEVER] listening on %s', port);
-    });
+    app.listen(port);
   }
 });
 client.on('error', (err: any) => {

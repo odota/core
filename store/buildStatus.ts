@@ -65,10 +65,16 @@ async function countDayDistinct(prefix: MetricName) {
 export async function buildStatus() {
   const obj = {
     user_players: async () => redis.zcard('visitors'),
-    user_players_last_month: async () => redis.zcount('visitors', moment().subtract(30, 'day').format('X'), '+inf'),
+    user_players_last_month: async () =>
+      redis.zcount(
+        'visitors',
+        moment().subtract(30, 'day').format('X'),
+        '+inf',
+      ),
     tracked_players: async () => redis.zcard('tracked'),
     matches_last_day: async () => countDay('added_match'),
-    distinct_match_players_last_day: async () => countDayDistinct('distinct_match_player'),
+    distinct_match_players_last_day: async () =>
+      countDayDistinct('distinct_match_player'),
     matches_prev_hour: async () => countLastHour('added_match'),
     auto_parse_last_day: async () => countDay('auto_parse'),
     requests_last_day: async () => countDay('request'),
@@ -117,11 +123,15 @@ export async function buildStatus() {
     player_cache_miss_last_day: async () => countDay('player_cache_miss'),
     player_cache_wait_last_day: async () => countDay('player_cache_wait'),
     player_cache_write_last_day: async () => countDay('player_cache_write'),
-    distinct_player_cache_last_day: async () => countDayDistinct('distinct_player_cache'),
-    auto_player_cache_hit_last_day: async () => countDay('auto_player_cache_hit'),
-    auto_player_cache_miss_last_day: async () => countDay('auto_player_cache_miss'),
+    distinct_player_cache_last_day: async () =>
+      countDayDistinct('distinct_player_cache'),
+    auto_player_cache_hit_last_day: async () =>
+      countDay('auto_player_cache_hit'),
+    auto_player_cache_miss_last_day: async () =>
+      countDay('auto_player_cache_miss'),
     auto_player_cache_last_day: async () => countDay('auto_player_cache'),
-    distinct_auto_player_cache_last_day: async () => countDayDistinct('distinct_auto_player_cache'),
+    distinct_auto_player_cache_last_day: async () =>
+      countDayDistinct('distinct_auto_player_cache'),
     error_last_day: async () => countDay('500_error'),
     web_crash_last_day: async () => countDay('web_crash'),
     skip_seq_num_last_day: async () => countDay('skip_seq_num'),

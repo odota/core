@@ -210,13 +210,13 @@ app.post('/register/:service/:host', async (req, res, cb) => {
   return res.end();
 });
 
-app.get('/retrieverData', async(req, res) => {
+app.get('/retrieverData', async (req, res) => {
   // check secret matches
   if (config.RETRIEVER_SECRET && config.RETRIEVER_SECRET !== req.query.key) {
     return res.status(403).end();
   }
   const accountCount = 5;
-  if (await redis.zcount('retrieverData', 0, 150) <= accountCount) {
+  if ((await redis.zcount('retrieverData', 0, 150)) <= accountCount) {
     // Refill the zset if running out of low-usage logins
     // Once we approach capacity and all are high usage, we'll refill on every request
     const resp = await axios.get<string>(config.STEAM_ACCOUNT_DATA, {
@@ -224,7 +224,7 @@ app.get('/retrieverData', async(req, res) => {
     });
     const accountData = resp.data.split(/\r\n|\r|\n/g);
     // Store in redis zset with score as num reqs
-    for(let i = 0; i < accountData.length; i++) {
+    for (let i = 0; i < accountData.length; i++) {
       const accountName = accountData[i].split('\t')[0];
       const score = await redis.hget('retrieverSteamIDs', accountName);
       await redis.zadd('retrieverData', Number(score), accountData[i]);
@@ -232,11 +232,13 @@ app.get('/retrieverData', async(req, res) => {
   }
   // Pop elements with the lowest scores
   const pop = await redis.zpopmin('retrieverData', accountCount);
-  const logins =  pop.filter((e, i) => i % 2 === 0).map(login => {
-    const accountName = login.split('\t')[0];
-    const password = login.split('\t')[1];
-    return { accountName, password };
-  });
+  const logins = pop
+    .filter((e, i) => i % 2 === 0)
+    .map((login) => {
+      const accountName = login.split('\t')[0];
+      const password = login.split('\t')[1];
+      return { accountName, password };
+    });
   return res.json(logins);
 });
 
@@ -372,7 +374,7 @@ app.get('/admin/retrieverMetrics', async (req, res, cb) => {
         .filter((e) => isGce(e))
         .map((e) => e.reqs)
         .reduce((a, b) => a + b, 0),
-      nonGceReqs:ips
+      nonGceReqs: ips
         .filter((e) => !isGce(e))
         .map((e) => e.reqs)
         .reduce((a, b) => a + b, 0),
@@ -401,11 +403,10 @@ app.get('/admin/apiMetrics', async (req, res, cb) => {
   try {
     const startTime = moment().startOf('month').format('YYYY-MM-DD');
     const endTime = moment().endOf('month').format('YYYY-MM-DD');
-    const [topRequests, topUsersKey, numUsersKey] =
-      await Promise.all([
-        redis.zrevrange('request_usage_count', 0, 19, 'WITHSCORES'),
-        db.raw(
-          `
+    const [topRequests, topUsersKey, numUsersKey] = await Promise.all([
+      redis.zrevrange('request_usage_count', 0, 19, 'WITHSCORES'),
+      db.raw(
+        `
     SELECT
         account_id,
         ARRAY_AGG(DISTINCT api_key) as api_keys,
@@ -426,10 +427,10 @@ app.get('/admin/apiMetrics', async (req, res, cb) => {
     ORDER BY usage_count DESC
     LIMIT 10
     `,
-          [startTime, endTime],
-        ),
-        db.raw(
-          `
+        [startTime, endTime],
+      ),
+      db.raw(
+        `
     SELECT
         COUNT(DISTINCT account_id)
     FROM api_key_usage
@@ -437,9 +438,9 @@ app.get('/admin/apiMetrics', async (req, res, cb) => {
         timestamp >= ?
         AND timestamp <= ?
     `,
-          [startTime, endTime],
-        ),
-      ]);
+        [startTime, endTime],
+      ),
+    ]);
     return res.json({
       topRequests,
       topUsersKey: topUsersKey.rows,
@@ -481,7 +482,10 @@ app.use(async (req, res, cb) => {
       rateLimit = config.NO_API_KEY_PER_MIN_LIMIT;
       // console.log('[USER] %s visit %s, ip %s', req.user ? req.user.account_id : 'anonymous', req.originalUrl, ip);
     }
-    if (config.ENABLE_API_LIMIT && !unlimitedPaths.includes(req.originalUrl.split('?')[0])) {
+    if (
+      config.ENABLE_API_LIMIT &&
+      !unlimitedPaths.includes(req.originalUrl.split('?')[0])
+    ) {
       let rateCost = 1;
       if (req.method === 'POST' && req.route?.path === '/request/:match_id') {
         rateCost = 10;

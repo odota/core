@@ -7,7 +7,7 @@ async function start() {
   while (true) {
     try {
       await archiveToken(max);
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     } catch (e) {
       console.error(e);
     }

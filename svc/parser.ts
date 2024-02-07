@@ -28,7 +28,10 @@ async function parseProcessor(job: ParseJob) {
     // Check if match is in safe integer range
     // Javascript supports up to 2^53 -1, although match IDs can go up to 2^63 - 1
     // If we want to handle values outside the range we'll need to use BigInt type in JS
-    if (matchId > Number.MAX_SAFE_INTEGER || matchId < Number.MIN_SAFE_INTEGER) {
+    if (
+      matchId > Number.MAX_SAFE_INTEGER ||
+      matchId < Number.MIN_SAFE_INTEGER
+    ) {
       log('skip');
       return true;
     }

@@ -1494,7 +1494,8 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
       post: {
         operationId: generateOperationId('post', '/request/{jobId}'),
         summary: 'POST /request/{match_id}',
-        description: 'Submit a new parse request. This call counts as 10 calls for rate limit (but not billing) purposes.',
+        description:
+          'Submit a new parse request. This call counts as 10 calls for rate limit (but not billing) purposes.',
         tags: ['request'],
         parameters: [{ $ref: '#/components/parameters/matchIdParam' }],
         responses: {
