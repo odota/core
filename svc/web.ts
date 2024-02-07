@@ -216,8 +216,9 @@ app.get('/retrieverData', async(req, res) => {
     return res.status(403).end();
   }
   const accountCount = 5;
-  if (await redis.zcard('retrieverData') <= accountCount) {
-    // Refill the zset
+  if (await redis.zcount('retrieverData', 0, 150) <= accountCount) {
+    // Refill the zset if running out of low-usage logins
+    // Once we approach capacity and all are high usage, we'll refill on every request
     const resp = await axios.get<string>(config.STEAM_ACCOUNT_DATA, {
       responseType: 'text',
     });
@@ -229,15 +230,13 @@ app.get('/retrieverData', async(req, res) => {
       await redis.zadd('retrieverData', Number(score), accountData[i]);
     }
   }
-  let logins: {accountName: string, password: string}[] = [];
-  while(logins.length < accountCount) {
-    // Pop elements with the lowest scores
-    const pop = await redis.zpopmin('retrieverData');
-    const login = pop[0];
+  // Pop elements with the lowest scores
+  const pop = await redis.zpopmin('retrieverData', accountCount);
+  const logins =  pop.filter((e, i) => i % 2 === 0).map(login => {
     const accountName = login.split('\t')[0];
     const password = login.split('\t')[1];
-    logins.push({ accountName, password });
-  }
+    return { accountName, password };
+  });
   return res.json(logins);
 });
 
