@@ -13,10 +13,8 @@ import axios from 'axios';
 
 const app = express();
 const steamObj: Record<string, SteamUser> = {};
-let users = config.STEAM_USER.split(',');
-let passes = config.STEAM_PASS.split(',');
 const minUpTimeSeconds = 300;
-const maxAccounts = 4;
+
 const matchesPerAccount = 200;
 const port = config.PORT || config.RETRIEVER_PORT;
 const getMatchRequestInterval = () => {
@@ -152,7 +150,7 @@ app.get('/match/:match_id', async (req, res, cb) => {
   const client = steamObj[rKey];
   matchRequests += 1;
   // If the selected client has been failing, skip the request
-  if (matchSuccessAccount[rKey] === 0 && matchRequestAccount[rKey] >= 10) {
+  if (matchSuccessAccount[rKey] === 0 && matchRequestAccount[rKey] >= 5) {
     return res.status(500).end();
   }
   res.setHeader('x-match-request-steamid', rKey);
@@ -217,25 +215,36 @@ async function start() {
 start();
 
 async function init() {
-  if (config.STEAM_ACCOUNT_DATA) {
-    const resp = await axios.get<string>(config.STEAM_ACCOUNT_DATA, {
-      responseType: 'text',
-    });
-    const accountData = resp.data.split(/\r\n|\r|\n/g);
-    users = accountData.map((a) => a.split('\t')[0]);
-    passes = accountData.map((a) => a.split('\t')[1]);
+  let logOns: {accountName: string, password: string}[] | null = null;
+  if (config.SERVICE_REGISTRY_HOST) {
+    // Fetch logons from remote
+    while(!logOns?.length) {
+      try {
+        const resp = await axios.get('https://' + config.SERVICE_REGISTRY_HOST + '/retrieverData?key=' + config.RETRIEVER_SECRET);
+        logOns = resp.data;
+      } catch (e) {
+        console.warn(e);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+    }
+  } else {
+    // Generate logons from config
+    let users = config.STEAM_USER.split(',');
+    let passes = config.STEAM_PASS.split(',');
+    logOns = users.map((u, i) => ({
+      accountName: u,
+      password: passes[i],
+    }));
   }
-  const accountsToUse = Math.min(maxAccounts, users.length);
   // Some logins may fail, and sometimes the Steam CM never returns a response
-  // So don't await this and we'll just make sure we have at least one working with noneReady
-  const logOns = chooseLoginInfoRandom(accountsToUse);
+  // So don't await init and we'll just make sure we have at least one working with noneReady
   await Promise.allSettled(
     logOns.map(
       (logOnDetails) =>
         new Promise<void>((resolve, reject) => {
           const client = new SteamUser();
           client.on('loggedOn', () => {
-            console.log('[STEAM] Logged on %s', client.steamID);
+            console.log('[STEAM] Logged on %s', logOnDetails.accountName);
             // Launch Dota 2
             client.gamesPlayed(DOTA_APPID);
           });
@@ -262,10 +271,10 @@ async function init() {
                 logOnDetails.accountName,
                 client.steamID.toString(),
               );
-              steamObj[client.steamID.toString()] = client;
-              if (!(client.steamID.toString() in matchSuccessAccount)) {
-                matchSuccessAccount[client.steamID.toString()] = 0;
-                matchRequestAccount[client.steamID.toString()] = 0;
+              steamObj[logOnDetails.accountName] = client;
+              if (!(logOnDetails.accountName in matchSuccessAccount)) {
+                matchSuccessAccount[logOnDetails.accountName] = 0;
+                matchRequestAccount[logOnDetails.accountName] = 0;
               }
               resolve();
             }
@@ -300,35 +309,8 @@ function genStats() {
     osUptime: getOSUptime(),
     hostname: os.hostname(),
     numReadyAccounts: Object.keys(steamObj).length,
-    totalAccounts: users.length,
     matchSuccessAccount,
     matchRequestAccount,
   };
   return data;
-}
-
-/**
- * Chooses a set of logins to use from the pool
- * @returns
- */
-function chooseLoginInfoBlock(accountsToUse: number) {
-  const startIndex = Math.floor(Math.random() * (users.length - accountsToUse));
-  const arr = users.map((e, i) => ({
-    accountName: users[i],
-    password: passes[i],
-  }));
-  return arr.slice(startIndex, startIndex + accountsToUse);
-}
-
-function chooseLoginInfoRandom(accountsToUse: number) {
-  let indices = new Set<number>();
-  while (indices.size < accountsToUse && indices.size < users.length) {
-    const rand = Math.floor(Math.random() * users.length);
-    indices.add(rand);
-  }
-  const arr = Array.from(indices).map(i => ({
-    accountName: users[i],
-    password: passes[i],
-  }));
-  return arr;
 }

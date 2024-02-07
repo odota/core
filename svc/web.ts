@@ -26,6 +26,7 @@ import {
   redisCount,
 } from '../util/utility';
 import stripe from '../store/stripe';
+import axios from 'axios';
 
 const admins = config.ADMIN_ACCOUNT_IDS.split(',').map((e) => Number(e));
 const SteamStrategy = passportSteam.Strategy;
@@ -207,6 +208,37 @@ app.post('/register/:service/:host', async (req, res, cb) => {
     return res.send(result.toString());
   }
   return res.end();
+});
+
+app.get('/retrieverData', async(req, res) => {
+  // check secret matches
+  if (config.RETRIEVER_SECRET && config.RETRIEVER_SECRET !== req.query.key) {
+    return res.status(403).end();
+  }
+  const accountCount = 5;
+  if (await redis.zcard('retrieverData') <= accountCount) {
+    // Refill the zset
+    const resp = await axios.get<string>(config.STEAM_ACCOUNT_DATA, {
+      responseType: 'text',
+    });
+    const accountData = resp.data.split(/\r\n|\r|\n/g);
+    // Store in redis zset with score as num reqs
+    for(let i = 0; i < accountData.length; i++) {
+      const accountName = accountData[i].split('\t')[0];
+      const score = await redis.hget('retrieverSteamIDs', accountName);
+      await redis.zadd('retrieverData', Number(score), accountData[i]);
+    }
+  }
+  let logins: {accountName: string, password: string}[] = [];
+  while(logins.length < accountCount) {
+    // Pop elements with the lowest scores
+    const pop = await redis.zpopmin('retrieverData');
+    const login = pop[0];
+    const accountName = login.split('\t')[0];
+    const password = login.split('\t')[1];
+    logins.push({ accountName, password });
+  }
+  return res.json(logins);
 });
 
 // Compress everything after this
