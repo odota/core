@@ -41,13 +41,15 @@ api.use('/players/:account_id/:info?', async (req, res, cb) => {
       'SELECT fh_unavailable FROM players WHERE account_id = ?',
       [req.params.account_id],
     );
+    // Show data for pro players
+    const pro = await db.raw('SELECT account_id FROM notable_players WHERE account_id = ?', [req.params.account_id]);
     // User can view their own stats
     const isSelf =
       Number(req.user?.account_id) === Number(req.params.account_id);
     if (isSelf) {
       redisCount(redis, 'self_profile_view');
     }
-    const isPrivate = Boolean(privacy.rows[0]?.fh_unavailable) && !isSelf;
+    const isPrivate = Boolean(privacy.rows[0]?.fh_unavailable) && !isSelf && !Boolean(pro.rows[0]);
     res.locals.queryObj = {
       project: [...alwaysCols, ...filterCols, ...sortCols],
       filter,
