@@ -22,6 +22,10 @@ let arr = [
   {
     name: 'retriever',
     group: 'backend',
+    env: {
+      // Clear registry host since we don't need to register local service
+      SERVICE_REGISTRY_HOST: '',
+    },
   },
   {
     name: 'parser',
@@ -154,6 +158,7 @@ const apps = arr.map((app) => {
         ? 'node_modules/.bin/tsx'
         : undefined),
     env: {
+      ...app.env,
       ROLE: app.name,
     },
   };
