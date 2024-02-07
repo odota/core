@@ -216,7 +216,15 @@ start();
 
 async function init() {
   let logOns: {accountName: string, password: string}[] | null = null;
-  if (config.SERVICE_REGISTRY_HOST) {
+  if (config.STEAM_USER && config.STEAM_PASS) {
+    // Generate logons from config
+    let users = config.STEAM_USER.split(',');
+    let passes = config.STEAM_PASS.split(',');
+    logOns = users.map((u, i) => ({
+      accountName: u,
+      password: passes[i],
+    }));
+  } else if (config.SERVICE_REGISTRY_HOST) {
     // Fetch logons from remote
     while(!logOns?.length) {
       try {
@@ -227,14 +235,6 @@ async function init() {
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
     }
-  } else {
-    // Generate logons from config
-    let users = config.STEAM_USER.split(',');
-    let passes = config.STEAM_PASS.split(',');
-    logOns = users.map((u, i) => ({
-      accountName: u,
-      password: passes[i],
-    }));
   }
   // Some logins may fail, and sometimes the Steam CM never returns a response
   // So don't await init and we'll just make sure we have at least one working with noneReady
