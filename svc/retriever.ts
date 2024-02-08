@@ -83,6 +83,9 @@ app.get('/healthz', (req, res, cb) => {
   return res.end('ok');
 });
 app.use(compression());
+app.get('/stats', async (req, res, cb) => {
+  return res.json(genStats());
+});
 app.use((req, res, cb) => {
   console.log(
     'numReady: %s, matches: %s/%s, profiles: %s/%s, uptime: %s, matchRequestDelay: %s, query: %s',
@@ -103,9 +106,6 @@ app.use((req, res, cb) => {
     return cb('not ready');
   }
   return cb();
-});
-app.get('/stats', async (req, res, cb) => {
-  return res.json(genStats());
 });
 app.get('/profile/:account_id', async (req, res, cb) => {
   const keys = Object.keys(steamObj);
