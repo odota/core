@@ -18,13 +18,8 @@ const minUpTimeSeconds = 300;
 const matchesPerAccount = 200;
 const port = config.PORT || config.RETRIEVER_PORT;
 const getMatchRequestInterval = () => {
-  return (
-    Math.ceil(1000 / (Object.keys(steamObj).length || 1)) +
-    extraMatchRequestInterval
-  );
+  return Math.ceil(1000 / (Object.keys(steamObj).length || 1));
 };
-let extraMatchRequestInterval = 0;
-const matchRequestIntervalStep = 0;
 const noneReady = () =>
   Object.values(steamObj).filter((client) => client.steamID).length === 0;
 let lastMatchRequestTime: number | null = null;
@@ -32,8 +27,7 @@ let matchRequests = 0;
 let matchSuccesses = 0;
 let profileRequests = 0;
 let profileSuccesses = 0;
-const matchSuccessAccount: Record<string, number> = {};
-const matchRequestAccount: Record<string, number> = {};
+const matchAttempts: Record<string, number> = {};
 const DOTA_APPID = 570;
 
 const root = new ProtoBuf.Root();
@@ -88,9 +82,6 @@ app.get('/healthz', (req, res, cb) => {
   return res.end('ok');
 });
 app.use(compression());
-app.get('/stats', async (req, res, cb) => {
-  return res.json(genStats());
-});
 app.use((req, res, cb) => {
   console.log(
     'numReady: %s, matches: %s/%s, profiles: %s/%s, uptime: %s, matchRequestDelay: %s, query: %s',
@@ -112,7 +103,9 @@ app.use((req, res, cb) => {
   }
   return cb();
 });
-
+app.get('/stats', async (req, res, cb) => {
+  return res.json(genStats());
+});
 app.get('/profile/:account_id', async (req, res, cb) => {
   const keys = Object.keys(steamObj);
   const rKey = keys[Math.floor(Math.random() * keys.length)];
@@ -154,14 +147,13 @@ app.get('/match/:match_id', async (req, res, cb) => {
   const matchId = req.params.match_id;
   const client = steamObj[rKey];
   matchRequests += 1;
-  // If the selected client has been failing, skip the request
-  if (matchSuccessAccount[rKey] === 0 && matchRequestAccount[rKey] >= 5) {
+  // If the selected client has multiple consecutive failures, skip the request
+  if (matchAttempts[rKey] >= 5) {
     return res.status(500).end();
   }
   res.setHeader('x-match-request-steamid', rKey);
   res.setHeader('x-match-request-ip', client.publicIP);
-  matchRequestAccount[rKey] += 1;
-  extraMatchRequestInterval += matchRequestIntervalStep;
+  matchAttempts[rKey] = (matchAttempts[rKey] ?? 0) + 1;
   console.time('match:' + matchId);
   const timeout = setTimeout(() => {
     // Respond after 4 seconds to send back header info
@@ -190,9 +182,8 @@ app.get('/match/:match_id', async (req, res, cb) => {
           return res.end();
         }
         matchSuccesses += 1;
-        matchSuccessAccount[rKey] += 1;
-        // Reset delay on success
-        extraMatchRequestInterval = 0;
+        // Reset on success
+        delete matchAttempts[rKey];
         return res.json(matchData);
       }
     },
@@ -283,10 +274,6 @@ async function init() {
                 client.steamID.toString(),
               );
               steamObj[logOnDetails.accountName] = client;
-              if (!(logOnDetails.accountName in matchSuccessAccount)) {
-                matchSuccessAccount[logOnDetails.accountName] = 0;
-                matchRequestAccount[logOnDetails.accountName] = 0;
-              }
               resolve();
             }
             // We can also handle other GC responses here if not using callbacks
@@ -320,8 +307,6 @@ function genStats() {
     osUptime: getOSUptime(),
     hostname: os.hostname(),
     numReadyAccounts: Object.keys(steamObj).length,
-    matchSuccessAccount,
-    matchRequestAccount,
   };
   return data;
 }
