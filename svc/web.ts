@@ -241,9 +241,6 @@ app.get('/retrieverData', async (req, res) => {
       }
       // Release the lock
       await redis.del('retrieverData_lock');
-    } else {
-      // Wait for refill
-      await new Promise(resolve => setTimeout(resolve, 3000));
     }
   }
   // Pop elements with the lowest scores
