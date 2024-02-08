@@ -254,6 +254,12 @@ export async function getPlayerMatchesWithMetadata(
     const cache = canCache
       ? await readCachedPlayerMatches(accountId, projection)
       : undefined;
+    if (canCache) {
+      redisCountDistinct(redis, 'distinct_player_cache', accountId.toString());
+      await redis.zadd('player_matches_visit', moment().format('X'), accountId);
+      // Keep some number of recent players visited for auto-cache
+      await redis.zremrangebyrank('player_matches_visit', '0', '-50001');
+    }
     return (
       cache ?? readLocalPlayerMatches(accountId, projection, queryObj.dbLimit)
     );
@@ -337,10 +343,6 @@ async function readCachedPlayerMatches(
   accountId: number,
   project: string[],
 ): Promise<ParsedPlayerMatch[]> {
-  redisCountDistinct(redis, 'distinct_player_cache', accountId.toString());
-  await redis.zadd('player_matches_visit', moment().format('X'), accountId);
-  // Keep some number of recent players visited for auto-cache
-  await redis.zremrangebyrank('player_matches_visit', '0', '-50001');
   const { rows } = await cassandra.execute(
     `SELECT blob from player_temp WHERE account_id = ?`,
     [accountId],
