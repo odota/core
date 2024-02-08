@@ -380,7 +380,10 @@ async function readCachedPlayerMatches(
     ) {
       redisCount(redis, 'auto_player_cache_miss');
     }
-    return populateCache(accountId, project);
+    const result = await populateCache(accountId, project);
+    // Release the lock
+    await redis.del('player_cache_lock:' + accountId.toString());
+    return result;
   }
 }
 
@@ -408,8 +411,6 @@ export async function populateCache(
       { prepare: true },
     );
   }
-  // Release the lock
-  await redis.del('player_cache_lock:' + accountId.toString());
   return all.map((m: any) => pick(m, project));
 }
 

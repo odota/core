@@ -216,18 +216,34 @@ app.get('/retrieverData', async (req, res) => {
     return res.status(403).end();
   }
   const accountCount = 5;
-  if ((await redis.zcount('retrieverData', 0, 150)) <= accountCount) {
-    // Refill the zset if running out of low-usage logins
-    // Once we approach capacity and all are high usage, we'll refill on every request
-    const resp = await axios.get<string>(config.STEAM_ACCOUNT_DATA, {
-      responseType: 'text',
-    });
-    const accountData = resp.data.split(/\r\n|\r|\n/g);
-    // Store in redis zset with score as num reqs
-    for (let i = 0; i < accountData.length; i++) {
-      const accountName = accountData[i].split('\t')[0];
-      const score = await redis.hget('retrieverSteamIDs', accountName);
-      await redis.zadd('retrieverData', Number(score), accountData[i]);
+  if ((await redis.zcard('retrieverData')) <= accountCount) {
+    // Refill the zset if running out of logins
+    // Lock to avoid duplicate refill
+    const lock = await redis.set(
+      'retrieverData_lock',
+      Date.now().toString(),
+      'EX',
+      3,
+      'NX',
+    );
+    if (lock) {
+      const resp = await axios.get<string>(config.STEAM_ACCOUNT_DATA, {
+        responseType: 'text',
+      });
+      const accountData = resp.data.split(/\r\n|\r|\n/g);
+      // Store in redis zset with score as num reqs
+      for (let i = 0; i < accountData.length; i++) {
+        const accountName = accountData[i].split('\t')[0];
+        const score = Number(await redis.hget('retrieverSteamIDs', accountName));
+        if (score < 200) {
+          await redis.zadd('retrieverData', score, accountData[i]);
+        }
+      }
+      // Release the lock
+      await redis.del('retrieverData_lock');
+    } else {
+      // Wait for refill
+      await new Promise(resolve => setTimeout(resolve, 3000));
     }
   }
   // Pop elements with the lowest scores
