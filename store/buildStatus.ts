@@ -65,7 +65,7 @@ async function countDayDistinct(prefix: MetricName) {
 export async function buildStatus() {
   const obj = {
     user_players: async () => redis.zcard('visitors'),
-    user_players_last_month: async () =>
+    user_players_recent: async () =>
       redis.zcount(
         'visitors',
         moment().subtract(30, 'day').format('X'),
@@ -75,6 +75,10 @@ export async function buildStatus() {
     matches_last_day: async () => countDay('added_match'),
     distinct_match_players_last_day: async () =>
       countDayDistinct('distinct_match_player'),
+    distinct_match_players_user_last_day: async () =>
+      countDayDistinct('distinct_match_player_user'),
+    distinct_match_players_recent_user_last_day: async () =>
+      countDayDistinct('distinct_match_player_recent_user'),
     matches_prev_hour: async () => countLastHour('added_match'),
     auto_parse_last_day: async () => countDay('auto_parse'),
     requests_last_day: async () => countDay('request'),

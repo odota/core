@@ -413,6 +413,8 @@ type MetricName =
   | 'auto_parse'
   | 'added_match'
   | 'distinct_match_player'
+  | 'distinct_match_player_user'
+  | 'distinct_match_player_recent_user'
   | 'parser'
   | 'meta_parse'
   | 'retriever'
