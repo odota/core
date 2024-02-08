@@ -20,6 +20,7 @@ import {
   getPatchIndex,
   redisCount,
   redisCountDistinct,
+  isAutoCachePlayer,
 } from '../util/utility';
 import { getMatchRankTier, getPlayerMatches, populateCache } from './queries';
 import { ApiMatch, ApiMatchPro, ApiPlayer, getPGroup } from './pgroup';
@@ -498,11 +499,10 @@ export async function insertMatch(
               [p.account_id],
               { prepare: true },
             );
-            // Auto-cache recent visitors
+            // Auto-cache players
             if (
               p.account_id &&
-              Number(await redis.zscore('visitors', p.account_id)) >
-                Number(moment().subtract(30, 'day').format('X'))
+              await isAutoCachePlayer(redis, p.account_id)
             ) {
               redisCountDistinct(
                 redis,

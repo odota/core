@@ -1001,3 +1001,9 @@ export function queryParamToArray(
   }
   return [];
 }
+
+export async function isAutoCachePlayer(redis: Redis, accountId: number) {
+  const isLogin = Boolean(Number(await redis.zscore('visitors', accountId)) > Number(moment().subtract(30, 'day').format('X')));
+  const isRecent = Boolean(await redis.zscore('player_matches_visit', accountId));
+  return isLogin || isRecent;
+}

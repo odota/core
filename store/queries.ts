@@ -21,6 +21,7 @@ import {
   PeersCount,
   redisCount,
   redisCountDistinct,
+  isAutoCachePlayer,
 } from '../util/utility';
 import {
   readArchivedPlayerMatches,
@@ -337,6 +338,9 @@ async function readCachedPlayerMatches(
   project: string[],
 ): Promise<ParsedPlayerMatch[]> {
   redisCountDistinct(redis, 'distinct_player_cache', accountId.toString());
+  await redis.zadd('player_matches_visit', moment().format('X'), accountId);
+  // Keep some number of recent players visited for auto-cache
+  await redis.zremrangebyrank('player_matches_visit', '0', '-50001');
   const { rows } = await cassandra.execute(
     `SELECT blob from player_temp WHERE account_id = ?`,
     [accountId],
@@ -346,8 +350,7 @@ async function readCachedPlayerMatches(
   if (result) {
     redisCount(redis, 'player_cache_hit');
     if (
-      Number(await redis.zscore('visitors', accountId)) >
-      Number(moment().subtract(30, 'day').format('X'))
+      await isAutoCachePlayer(redis, accountId)
     ) {
       redisCount(redis, 'auto_player_cache_hit');
     }
@@ -375,8 +378,7 @@ async function readCachedPlayerMatches(
     }
     redisCount(redis, 'player_cache_miss');
     if (
-      Number(await redis.zscore('visitors', accountId)) >
-      Number(moment().subtract(30, 'day').format('X'))
+      await isAutoCachePlayer(redis, accountId)
     ) {
       redisCount(redis, 'auto_player_cache_miss');
     }
