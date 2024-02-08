@@ -216,37 +216,25 @@ app.get('/retrieverData', async (req, res) => {
     return res.status(403).end();
   }
   const accountCount = 5;
-  if ((await redis.zcard('retrieverData')) <= accountCount) {
-    // Refill the zset if running out of logins
-    // Lock to avoid duplicate refill
-    const lock = await redis.set(
-      'retrieverData_lock',
-      Date.now().toString(),
-      'EX',
-      3,
-      'NX',
-    );
-    if (lock) {
-      const resp = await axios.get<string>(config.STEAM_ACCOUNT_DATA, {
-        responseType: 'text',
-      });
-      const accountData = resp.data.split(/\r\n|\r|\n/g);
-      // Store in redis zset with score as num reqs
-      for (let i = 0; i < accountData.length; i++) {
-        const accountName = accountData[i].split('\t')[0];
-        const score = Number(await redis.hget('retrieverSteamIDs', accountName));
-        if (score < 200) {
-          await redis.zadd('retrieverData', score, accountData[i]);
-        }
+  if ((await redis.scard('retrieverDataSet')) < accountCount) {
+    // Refill the set if running out of logins
+    const resp = await axios.get<string>(config.STEAM_ACCOUNT_DATA, {
+      responseType: 'text',
+    });
+    const accountData = resp.data.split(/\r\n|\r|\n/g);
+    // Store in redis set
+    for (let i = 0; i < accountData.length; i++) {
+      const accountName = accountData[i].split('\t')[0];
+      const score = Number(await redis.hget('retrieverSteamIDs', accountName));
+      // Don't add high usage logons
+      if (score < 190) {
+        await redis.sadd('retrieverDataSet', accountData[i]);
       }
-      // Release the lock
-      await redis.del('retrieverData_lock');
     }
   }
-  // Pop elements with the lowest scores
-  const pop = await redis.zpopmin('retrieverData', accountCount);
+  // Pop random elements
+  const pop = await redis.spop('retrieverDataSet', accountCount);
   const logins = pop
-    .filter((e, i) => i % 2 === 0)
     .map((login) => {
       const accountName = login.split('\t')[0];
       const password = login.split('\t')[1];
