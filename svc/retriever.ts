@@ -15,7 +15,8 @@ const app = express();
 const steamObj: Record<string, SteamUser> = {};
 const minUpTimeSeconds = 300;
 
-const matchesPerAccount = 200;
+const numAccounts = 10;
+const matchesPerAccount = 100;
 const port = config.PORT || config.RETRIEVER_PORT;
 const getMatchRequestInterval = () => {
   return Math.ceil(1000 / (Object.keys(steamObj).length || 1));
@@ -220,7 +221,8 @@ async function init() {
           'https://' +
           config.SERVICE_REGISTRY_HOST +
           '/retrieverData?key=' +
-          config.RETRIEVER_SECRET;
+          config.RETRIEVER_SECRET
+          + '&count=' + numAccounts;
         console.log('logOnUrl: %s', logOnUrl);
         const resp = await axios.get(logOnUrl);
         logOns = resp.data;

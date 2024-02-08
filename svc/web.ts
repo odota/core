@@ -215,7 +215,7 @@ app.get('/retrieverData', async (req, res) => {
   if (config.RETRIEVER_SECRET && config.RETRIEVER_SECRET !== req.query.key) {
     return res.status(403).end();
   }
-  const accountCount = 5;
+  const accountCount = Number(req.query.count) || 5;
   if ((await redis.scard('retrieverDataSet')) < accountCount) {
     // Refill the set if running out of logins
     const resp = await axios.get<string>(config.STEAM_ACCOUNT_DATA, {
