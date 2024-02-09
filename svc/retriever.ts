@@ -30,6 +30,7 @@ let profileRequests = 0;
 let profileSuccesses = 0;
 const matchAttempts: Record<string, number> = {};
 const DOTA_APPID = 570;
+let publicIP = '';
 
 const root = new ProtoBuf.Root();
 const builder = root.loadSync(
@@ -71,7 +72,7 @@ setInterval(() => {
   if (config.SERVICE_REGISTRY_HOST && !noneReady()) {
     const registerUrl = `https://${
       config.SERVICE_REGISTRY_HOST
-    }/register/retriever/${Object.values(steamObj)[0].publicIP}?key=${
+    }/register/retriever/${publicIP}?key=${
       config.RETRIEVER_SECRET
     }`;
     console.log('registerUrl: %s', registerUrl);
@@ -153,7 +154,7 @@ app.get('/match/:match_id', async (req, res, cb) => {
     return res.status(500).end();
   }
   res.setHeader('x-match-request-steamid', rKey);
-  res.setHeader('x-match-request-ip', client.publicIP);
+  res.setHeader('x-match-request-ip', publicIP);
   matchAttempts[rKey] = (matchAttempts[rKey] ?? 0) + 1;
   console.time('match:' + matchId);
   const timeout = setTimeout(() => {
@@ -249,6 +250,8 @@ async function init() {
           const client = new SteamUser();
           client.on('loggedOn', () => {
             console.log('[STEAM] Logged on %s', logOnDetails.accountName);
+            // Get our public IP from Steam
+            publicIP = client.publicIP;
             // Launch Dota 2
             client.gamesPlayed(DOTA_APPID);
           });
