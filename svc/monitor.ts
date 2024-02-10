@@ -16,6 +16,7 @@ const health = {
   fhDelay,
   gcDelay,
   mmrDelay,
+  cacheDelay,
   countsDelay,
   scenariosDelay,
 };
@@ -101,6 +102,13 @@ async function fhDelay() {
 }
 async function mmrDelay() {
   const result = await redis.llen('mmrQueue');
+  return {
+    metric: result,
+    threshold: 100000,
+  };
+}
+async function cacheDelay() {
+  const result = await redis.llen('cacheQueue');
   return {
     metric: result,
     threshold: 100000,

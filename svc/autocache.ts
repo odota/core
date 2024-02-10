@@ -6,6 +6,7 @@ import { redisCount, redisCountDistinct } from '../util/utility';
 
 async function processCache(job: CacheJob) {
     const accountId = job;
+    console.log(accountId);
     redisCountDistinct(
         redis,
         'distinct_auto_player_cache',
