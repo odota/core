@@ -45,11 +45,17 @@ export async function runReliableQueue(
   queueName: QueueName,
   parallelism: number,
   processor: (job: any) => Promise<boolean>,
+  getCapacity?: () => Promise<number>,
 ) {
-  const executor = async () => {
+  const executor = async (i: number) => {
     const consumer = new Client(config.POSTGRES_URL);
     await consumer.connect();
     while (true) {
+      // If we have a way to measure capacity, throttle the processing speed based on capacity
+      if (getCapacity && i >= await getCapacity()) {
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        continue;
+      }
       await consumer.query('BEGIN TRANSACTION');
       const result = await consumer.query(
         `
@@ -109,7 +115,7 @@ export async function runReliableQueue(
     }
   };
   for (let i = 0; i < parallelism; i++) {
-    executor();
+    executor(i);
   }
 }
 

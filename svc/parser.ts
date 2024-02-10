@@ -155,4 +155,10 @@ async function parseProcessor(job: ParseJob) {
     }
   }
 }
-runReliableQueue('parse', Number(PARSER_PARALLELISM), parseProcessor);
+async function getCapacity() {
+  if (config.USE_SERVICE_REGISTRY) {
+    return redis.zcard('registry:parser');
+  }
+  return Number(PARSER_PARALLELISM);
+}
+runReliableQueue('parse', Number(PARSER_PARALLELISM), parseProcessor, getCapacity);
