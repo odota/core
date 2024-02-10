@@ -56,6 +56,10 @@ let arr = [
     group: 'disabled',
   },
   {
+    name: 'autocache',
+    group: 'backend',
+  },
+  {
     name: 'autofullhistory',
     group: 'backend',
   },

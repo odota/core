@@ -284,6 +284,7 @@ type GcDataJob = {
 
 type CountsJob = import('./store/pgroup').ApiMatch;
 type ScenariosJob = string;
+type CacheJob = string;
 
 type ParseJob = {
   match_id: number;
@@ -316,7 +317,11 @@ type QueueInput =
   | {
       name: 'gcQueue';
       data: GcDataJob;
-    };
+    }
+  | {
+      name: 'cacheQueue';
+      data: CacheJob;
+  };
 
 type ReliableQueueRow = {
   id: number;

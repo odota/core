@@ -499,12 +499,12 @@ export async function insertMatch(
         });
     }
   }
-  async function resetRedisMatch(match: InsertMatchInput) {
+  async function resetMatchCache(match: InsertMatchInput) {
     if (config.ENABLE_MATCH_CACHE) {
       await redis.del(`match:${match.match_id}`);
     }
   }
-  async function resetRedisPlayer(match: InsertMatchInput) {
+  async function resetPlayerCache(match: InsertMatchInput) {
     if (config.ENABLE_PLAYER_CACHE) {
       await Promise.allSettled(
         match.players
@@ -520,14 +520,10 @@ export async function insertMatch(
               p.account_id &&
               await isAutoCachePlayer(redis, p.account_id)
             ) {
-              redisCountDistinct(
-                redis,
-                'distinct_auto_player_cache',
-                p.account_id.toString(),
-              );
-              redisCount(redis, 'auto_player_cache');
-              // Don't need to await this since it's just caching
-              populateCache(p.account_id, ['match_id']);
+              await addJob({
+                name: 'cacheQueue',
+                data: p.account_id.toString(),
+              });
             }
           }),
       );
@@ -732,8 +728,8 @@ export async function insertMatch(
   await upsertMatchPostgres(match);
   await upsertPlayerCaches(match);
   await upsertMatchBlobs(match);
-  await resetRedisMatch(match);
-  await resetRedisPlayer(match);
+  await resetMatchCache(match);
+  await resetPlayerCache(match);
   await telemetry(match);
   await decideCounts(match);
   await decideMmr(match);
