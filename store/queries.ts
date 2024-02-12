@@ -258,7 +258,7 @@ export async function getPlayerMatchesWithMetadata(
       redisCountDistinct(redis, 'distinct_player_cache', accountId.toString());
       await redis.zadd('player_matches_visit', moment().format('X'), accountId);
       // Keep some number of recent players visited for auto-cache
-      await redis.zremrangebyrank('player_matches_visit', '0', '-100001');
+      await redis.zremrangebyrank('player_matches_visit', '0', '-50001');
     }
     return (
       cache ?? readLocalPlayerMatches(accountId, projection, queryObj.dbLimit)
