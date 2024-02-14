@@ -2057,7 +2057,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
         route: () => '/leagues/:league_id/matches',
         func: async (req, res, cb) => {
           const { rows } = await db.raw(
-            `SELECT matches.*
+            `SELECT match_id, radiant_win, start_time, duration, leagueid, radiant_score, dire_score, radiant_team_id, radiant_team_name, dire_team_id, dire_team_name, series_id, series_type
             FROM matches
             WHERE matches.leagueid = ?`,
             [req.params.league_id],
