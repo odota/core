@@ -959,7 +959,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
               account_id: Number(req.params.account_id),
             },
           });
-          await redis.setex('fh_queue:' + playerId, 60 * 60 * 3, '1');
+          await redis.setex('fh_queue:' + playerId, 30 * 60, '1');
           return res.json({
             length,
           });
