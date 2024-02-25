@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS player_matches (
   match_id bigint REFERENCES matches(match_id) ON DELETE CASCADE,
   account_id bigint,
   player_slot integer,
-  hero_id integer,
+  hero_id integer NOT NULL,
   item_0 integer,
   item_1 integer,
   item_2 integer,

@@ -175,6 +175,7 @@ export async function insertMatch(
     await trx.commit();
 
     async function upsertMatch() {
+      // Remove null values to avoid overwriting data
       await upsert(trx, 'matches', match, {
         match_id: match.match_id,
       });
@@ -190,6 +191,7 @@ export async function insertMatch(
             pm.lane_role = laneData.lane_role ?? null;
             pm.is_roaming = laneData.is_roaming ?? null;
           }
+          // Remove null values to avoid overwriting data
           return upsert(trx, 'player_matches', pm, {
             match_id: pm.match_id,
             player_slot: pm.player_slot,

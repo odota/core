@@ -1,0 +1,22 @@
+const { insertMatch } = await import('../store/insert.js');
+const { db } = await import('../store/db.js');
+const { generateJob, getSteamAPIData } = await import('../util/utility.js');
+
+// From DB
+const { rows } = await db.raw(`select distinct match_id from player_matches where hero_id is null`);
+for (let i = 0; i < rows.length; i++) {
+  const match = rows[i];
+  console.log(match.match_id);
+  const job = generateJob('api_details', {
+    match_id: match.match_id,
+  });
+  const { url } = job;
+  const body: any = await getSteamAPIData({
+    url,
+  });
+  if (body.result) {
+    const match = body.result;
+    await insertMatch(match, { type: 'api' });
+  }
+  await new Promise(resolve => setTimeout(resolve, 1000));
+}
