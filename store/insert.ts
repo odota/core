@@ -157,6 +157,17 @@ export async function insertMatch(
       console.log('[UPSERTMATCHPOSTGRES]: skipping due to check');
       return;
     }
+    // If parsed data, we want to make sure the match exists in DB
+    // Otherwise we could end up with parsed data only rows for matches we skipped above
+    // We might want to switch the upsert to UPDATE instead for parsed case
+    // That requires writing a new SQL query though
+    // If we do that then we can put the NOT NULL constraint on hero_id
+    if (options.type === 'parsed') {
+      const { rows } = await db.raw('select match_id from matches where match_id = ?', [match.match_id]);
+      if (!rows.length) {
+        return;
+      }
+    }
     if (!isProLeague) {
       // Skip if not in a pro league (premium or professional tier)
       console.log('[UPSERTMATCHPOSTGRES]: skipping due to league');
@@ -193,7 +204,7 @@ export async function insertMatch(
             pm.lane_role = laneData.lane_role ?? null;
             pm.is_roaming = laneData.is_roaming ?? null;
           }
-          console.log('[UPSERTMATCHPOSTGRES]: player_match', pm.player_slot, pm.hero_id);
+          console.log('[UPSERTMATCHPOSTGRES]: player_match', pm.match_id, pm.player_slot, pm.hero_id);
           return upsert(trx, 'player_matches', pm, {
             match_id: pm.match_id,
             player_slot: pm.player_slot,
