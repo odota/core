@@ -16,7 +16,11 @@ for (let i = 0; i < rows.length; i++) {
   });
   if (body.result) {
     const match = body.result;
-    await insertMatch(match, { type: 'api' });
+    if (match.radiant_score === 0 && match.dire_score === 0) {
+      await db.raw('DELETE FROM matches WHERE match_id = ?', [match.match_id]);
+    } else {
+      await insertMatch(match, { type: 'api' });
+    }
   }
   await new Promise(resolve => setTimeout(resolve, 1000));
 }
