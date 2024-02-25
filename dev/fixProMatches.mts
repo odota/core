@@ -22,5 +22,5 @@ for (let i = 0; i < rows.length; i++) {
       await insertMatch(match, { type: 'api' });
     }
   }
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  await new Promise(resolve => setTimeout(resolve, 500));
 }

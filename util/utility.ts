@@ -371,7 +371,7 @@ export function isProMatch(match: ApiMatch) {
   return Boolean(
     isSignificant(match) &&
       match.leagueid &&
-      match.human_players === 10 &&
+      // match.human_players === 10 &&
       (match.game_mode === 0 ||
         match.game_mode === 1 ||
         match.game_mode === 2 ||
