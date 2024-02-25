@@ -374,7 +374,9 @@ export function isProMatch(match: ApiMatch) {
       match.human_players === 10 &&
       (match.game_mode === 0 ||
         match.game_mode === 1 ||
-        match.game_mode === 2) &&
+        match.game_mode === 2 ||
+        // This is all pick but should only be for testing
+        match.game_mode === 22) &&
       match.players &&
       match.players.every((player) => player.level > 1) &&
       match.players.every((player) => player.xp_per_min > 0) &&
