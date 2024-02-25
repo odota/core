@@ -1,8 +1,7 @@
-import { isProMatch } from '../util/utility.js';
 
 const { insertMatch } = await import('../store/insert.js');
 const { db } = await import('../store/db.js');
-const { generateJob, getSteamAPIData } = await import('../util/utility.js');
+const { generateJob, getSteamAPIData, isProMatch } = await import('../util/utility.js');
 
 // From DB
 const { rows } = await db.raw(`select distinct match_id from player_matches where hero_id is null`);
