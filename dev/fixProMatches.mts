@@ -1,3 +1,5 @@
+import { isProMatch } from '../util/utility.js';
+
 const { insertMatch } = await import('../store/insert.js');
 const { db } = await import('../store/db.js');
 const { generateJob, getSteamAPIData } = await import('../util/utility.js');
@@ -16,7 +18,7 @@ for (let i = 0; i < rows.length; i++) {
   });
   if (body.result) {
     const match = body.result;
-    if (match.radiant_score === 0 && match.dire_score === 0) {
+    if (!isProMatch(match)) {
       await db.raw('DELETE FROM matches WHERE match_id = ?', [match.match_id]);
     } else {
       await insertMatch(match, { type: 'api' });
