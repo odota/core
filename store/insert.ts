@@ -154,10 +154,12 @@ export async function insertMatch(
     if (options.type === 'api' && !isProMatch(match as ApiMatch)) {
       // Check whether we care about this match for pro purposes
       // We need the basic match data to run the check, so only do it if type is api
+      console.log('[UPSERTMATCHPOSTGRES]: skipping due to check');
       return;
     }
     if (!isProLeague) {
       // Skip if not in a pro league (premium or professional tier)
+      console.log('[UPSERTMATCHPOSTGRES]: skipping due to league');
       return;
     }
     const trx = await db.transaction();
@@ -175,7 +177,7 @@ export async function insertMatch(
     await trx.commit();
 
     async function upsertMatch() {
-      // Remove null values to avoid overwriting data
+      console.log('[UPSERTMATCHPOSTGRES]: match');
       await upsert(trx, 'matches', match, {
         match_id: match.match_id,
       });
@@ -191,7 +193,7 @@ export async function insertMatch(
             pm.lane_role = laneData.lane_role ?? null;
             pm.is_roaming = laneData.is_roaming ?? null;
           }
-          // Remove null values to avoid overwriting data
+          console.log('[UPSERTMATCHPOSTGRES]: player_match');
           return upsert(trx, 'player_matches', pm, {
             match_id: pm.match_id,
             player_slot: pm.player_slot,
