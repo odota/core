@@ -1,4 +1,4 @@
-// NOT WORKING: Updates game items in the database
+// Updates game items in the database
 import db from '../store/db';
 import { upsert } from '../store/insert';
 import {
@@ -8,20 +8,22 @@ import {
 } from '../util/utility';
 
 async function doItems() {
-  // Need to find a replacement for this endpoint or just use dotaconstants
   const container = generateJob('api_items', {
     language: 'english',
   });
   const body = await getSteamAPIData(container.url);
-  if (!body || !body.result || !body.result.items) {
+  if (!body || !body.result || !body.result.data) {
     throw new Error('invalid body');
   }
   await Promise.all(
-    body.result.items.map((item: any) =>
+    body.result.data.itemabilities.map((item: any) => {
+      item.localized_name = item.name_english_loc;
+      // NOTE: properties cost, secret_shop, side_shop and recipe are no longer present
       upsert(db, 'items', item, {
         id: item.id,
-      }),
-    ),
+      });
+    }),
   );
 }
+
 invokeIntervalAsync(doItems, 60 * 60 * 1000);

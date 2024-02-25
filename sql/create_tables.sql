@@ -296,6 +296,7 @@ CREATE TABLE IF NOT EXISTS items(
   secret_shop smallint,
   side_shop smallint,
   recipe smallint,
+  neutral_item_tier smallint,
   localized_name text
 );
 
