@@ -193,7 +193,7 @@ export async function insertMatch(
             pm.lane_role = laneData.lane_role ?? null;
             pm.is_roaming = laneData.is_roaming ?? null;
           }
-          console.log('[UPSERTMATCHPOSTGRES]: player_match');
+          console.log('[UPSERTMATCHPOSTGRES]: player_match', pm.player_slot, pm.hero_id);
           return upsert(trx, 'player_matches', pm, {
             match_id: pm.match_id,
             player_slot: pm.player_slot,
