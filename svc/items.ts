@@ -1,4 +1,5 @@
 // Updates game items in the database
+import { items } from 'dotaconstants';
 import db from '../store/db';
 import { upsert } from '../store/insert';
 import {
@@ -18,7 +19,9 @@ async function doItems() {
   await Promise.all(
     body.result.data.itemabilities.map((item: any) => {
       item.localized_name = item.name_english_loc;
-      // NOTE: properties cost, secret_shop, side_shop and recipe are no longer present
+      item.cost = items?.[item.name.replace(/^item_/, '')]?.cost || 0;
+      item.recipe = item.name.includes('recipe') ? 1 : 0;
+      // NOTE: properties secret_shop and side_shop are no longer present
       upsert(db, 'items', item, {
         id: item.id,
       });
