@@ -227,7 +227,7 @@ app.get('/retrieverData', async (req, res) => {
       const accountName = accountData[i].split('\t')[0];
       const score = Number(await redis.hget('retrieverSteamIDs', accountName));
       // Don't add high usage logons
-      if (score < 190) {
+      if (score < 95) {
         await redis.sadd('retrieverDataSet', accountData[i]);
       }
     }
