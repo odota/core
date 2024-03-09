@@ -89,7 +89,7 @@ let arr = [
   },
   {
     name: 'items',
-    group: 'disabled',
+    group: 'backend',
   },
   {
     name: 'leagues',
