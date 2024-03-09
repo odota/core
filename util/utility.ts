@@ -106,7 +106,7 @@ const jobs = {
   },
   api_items(type: string, payload: any) {
     return {
-      url: `${apiUrl}/IEconDOTA2_570/GetGameItems/v1?key=${apiKey}&language=${payload.language}`,
+      url: `https://www.dota2.com/datafeed/itemlist?language=${payload.language}`,
       type: 'api',
     };
   },
