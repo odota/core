@@ -212,7 +212,7 @@ export async function getOrFetchGcDataWithRetry(
       } else {
         console.error(e);
       }
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 500));
       tryCount += 1;
       console.log('retrying %s, attempt %s', matchId, tryCount);
     }
