@@ -19,7 +19,7 @@ const numAccounts = 10;
 const matchesPerAccount = 100;
 const port = config.PORT || config.RETRIEVER_PORT;
 const getMatchRequestInterval = () => {
-  return Math.ceil(10000 / (Object.keys(steamObj).length || 1));
+  return Math.ceil(5000 / (Object.keys(steamObj).length || 1));
 };
 const noneReady = () =>
   Object.values(steamObj).filter((client) => client.steamID).length === 0;
@@ -150,7 +150,7 @@ app.get('/match/:match_id', async (req, res, cb) => {
   const client = steamObj[rKey];
   matchRequests += 1;
   // If the selected client has multiple consecutive failures, skip the request
-  if (matchAttempts[rKey] >= 5) {
+  if (matchAttempts[rKey] >= 7) {
     return res.status(500).end();
   }
   res.setHeader('x-match-request-steamid', rKey);
