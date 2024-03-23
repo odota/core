@@ -72,7 +72,8 @@ async function saveGcData(
     // Steam is blocking this match for community prediction, so return error to prevent retry
     return 'x-match-noretry';
   }
-  if (!data || !data.match || !data.match.replay_salt || !data.match.players) {
+  if (!data || !data.match || !data.match.players || (!data.match.replay_salt && data.match.replay_state !== 'REPLAY_EXPIRED')) {
+    // Really old matches have a 0 replay salt so if the replay is expired it's a valid response
     // Bad data but we can retry
     throw new Error('invalid data');
   }
