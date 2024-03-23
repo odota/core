@@ -72,8 +72,8 @@ async function saveGcData(
     // Steam is blocking this match for community prediction, so return error to prevent retry
     return 'x-match-noretry';
   }
-  if (!data || !data.match || !data.match.players || (!data.match.replay_salt && data.match.replay_state !== 'REPLAY_EXPIRED')) {
-    // Really old matches have a 0 replay salt so if the replay is expired it's a valid response
+  if (!data || !data.match || !data.match.players || (!data.match.replay_salt && data.match.game_mode !== 'DOTA_GAMEMODE_NONE')) {
+    // Really old matches have a 0 replay salt so if we don't have gamemode either it's a valid response
     // Bad data but we can retry
     throw new Error('invalid data');
   }
