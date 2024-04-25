@@ -15,8 +15,9 @@ const app = express();
 const steamObj: Record<string, SteamUser> = {};
 const minUpTimeSeconds = 300;
 
-const numAccounts = 10;
-const matchesPerAccount = 100;
+const numAccounts = 6;
+const matchesPerAccount = 120;
+const accountAttemptMax = 6
 const port = config.PORT || config.RETRIEVER_PORT;
 const getMatchRequestInterval = () => {
   return Math.ceil(5000 / (Object.keys(steamObj).length || 1));
@@ -150,7 +151,7 @@ app.get('/match/:match_id', async (req, res, cb) => {
   const client = steamObj[rKey];
   matchRequests += 1;
   // If the selected client has multiple consecutive failures, skip the request
-  if (matchAttempts[rKey] >= 7) {
+  if (matchAttempts[rKey] >= accountAttemptMax) {
     return res.status(500).end();
   }
   res.setHeader('x-match-request-steamid', rKey);
