@@ -14,7 +14,6 @@ async function doAutoFullHistory() {
         name: 'fhQueue',
         data: {
           account_id: row.account_id,
-          short_history: true,
         },
       }),
     ),

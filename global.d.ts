@@ -267,7 +267,7 @@ type PlayerRating = {
 
 type FullHistoryJob = {
   account_id: number;
-  short_history?: boolean;
+  long_history?: boolean;
 
   // These fields don't exist on the job but we add them during processing
   fh_unavailable?: boolean;

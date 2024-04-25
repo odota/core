@@ -28,7 +28,7 @@ async function updatePlayer(player: FullHistoryJob) {
     });
   console.log('got full match history for %s', player.account_id);
   redisCount(redis, 'fullhistory');
-  if (player.short_history) {
+  if (!player.long_history) {
     redisCount(redis, 'fullhistory_short');
   }
 }
@@ -56,10 +56,9 @@ async function processFullHistory(job: FullHistoryJob) {
   }
 
   console.time('doFullHistory: ' + player.account_id.toString());
-  // if test or only want last 100 (no paging), set short_history
-  // const heroArray = job.short_history || config.NODE_ENV === 'test' ? ['0'] : Object.keys(constants.heroes);
+  // by default, fetch only 100 matches, unless long_history is specified then fetch 500
   // As of December 2021 filtering by hero ID doesn't work
-  // const heroArray = ['0'];
+  // const heroArray = config.NODE_ENV === 'test' ? ['0'] : Object.keys(constants.heroes);
   const heroId = '0';
   // use steamapi via specific player history and specific hero id (up to 500 games per hero)
   const match_ids: BooleanDict = {};
@@ -89,7 +88,7 @@ async function processFullHistory(job: FullHistoryJob) {
     });
     const rem = body.result.results_remaining;
 
-    if (rem === 0 || player.short_history) {
+    if (rem === 0 || !player.long_history) {
       // no more pages
       return;
     }
