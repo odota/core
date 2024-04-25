@@ -225,9 +225,11 @@ app.get('/retrieverData', async (req, res) => {
     // Store in redis set
     for (let i = 0; i < accountData.length; i++) {
       const accountName = accountData[i].split('\t')[0];
-      const score = Number(await redis.hget('retrieverSteamIDs', accountName));
-      // Don't add high usage logons
-      if (score < 200) {
+      const reqs = Number(await redis.hget('retrieverSteamIDs', accountName));
+      const success = Number(await redis.hget('retrieverSuccessSteamIDs', accountName));
+      const ratio = success / reqs;
+      // Don't add high usage logons or high fail logons
+      if (reqs < 200 && (reqs < 50 || ratio > 0)) {
         await redis.sadd('retrieverDataSet', accountData[i]);
       }
     }
