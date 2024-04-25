@@ -15,12 +15,12 @@ const app = express();
 const steamObj: Record<string, SteamUser> = {};
 const minUpTimeSeconds = 300;
 
-const numAccounts = 15;
-const matchesPerAccount = 70;
+const numAccounts = 5;
+const matchesPerAccount = 100;
 const accountAttemptMax = 5;
 const port = config.PORT || config.RETRIEVER_PORT;
 const getMatchRequestInterval = () => {
-  return Math.ceil(5000 / (Object.keys(steamObj).length || 1));
+  return Math.ceil(10000 / (Object.keys(steamObj).length || 1));
 };
 const noneReady = () =>
   Object.values(steamObj).filter((client) => client.steamID).length === 0;
