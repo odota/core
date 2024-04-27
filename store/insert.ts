@@ -154,7 +154,7 @@ export async function insertMatch(
     if (options.type === 'api' && !isProMatch(match as ApiMatch)) {
       // Check whether we care about this match for pro purposes
       // We need the basic match data to run the check, so only do it if type is api
-      console.log('[UPSERTMATCHPOSTGRES]: skipping due to check');
+      // console.log('[UPSERTMATCHPOSTGRES]: skipping due to check');
       return;
     }
     // If parsed data, we want to make sure the match exists in DB
