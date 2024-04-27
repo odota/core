@@ -16,7 +16,7 @@ const apiKeys = config.STEAM_API_KEY.split(',');
 const apiHosts = config.STEAM_API_HOST.split(',');
 // Approximately 5 req/sec limit per apiHost
 // Short fullhistory uses 1 req, long 5 req, some percentage will need to query for matches
-const parallelism = Math.min(apiHosts.length * 4, apiKeys.length);
+const parallelism = Math.min(apiHosts.length * 3, apiKeys.length);
 
 async function updatePlayer(player: FullHistoryJob) {
   // done with this player, update
