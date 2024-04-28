@@ -19,7 +19,7 @@ const numAccounts = 5;
 const matchesPerAccount = 100;
 const accountAttemptMax = 5;
 const port = config.PORT || config.RETRIEVER_PORT;
-const getMatchRequestInterval = () => 1500;
+const getMatchRequestInterval = () => 1000;
 const noneReady = () =>
   Object.values(steamObj).filter((client) => client.steamID).length === 0;
 let lastMatchRequestTime: number | null = null;
