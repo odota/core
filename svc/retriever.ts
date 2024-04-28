@@ -15,8 +15,8 @@ const app = express();
 const steamObj: Record<string, SteamUser> = {};
 const minUpTimeSeconds = 300;
 
-const numAccounts = 10;
-const matchesPerAccount = 55;
+const numAccounts = 5;
+const matchesPerAccount = 100;
 const accountAttemptMax = 5;
 const port = config.PORT || config.RETRIEVER_PORT;
 const getMatchRequestInterval = () => {
