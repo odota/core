@@ -31,6 +31,7 @@ export async function readApiData(matchId: number): Promise<ApiMatch | null> {
  */
 export async function saveApiData(
   matchId: number,
+  noRetry?: boolean,
 ): Promise<{ error: string | null; pgroup: PGroup | null }> {
   let body;
   try {
@@ -40,6 +41,7 @@ export async function saveApiData(
         match_id: matchId,
       }).url,
       proxy: true,
+      noRetry,
     });
   } catch (e: any) {
     console.log(e);
@@ -68,9 +70,10 @@ export async function saveApiData(
  */
 export async function tryFetchApiData(
   matchId: number,
+  noRetry?: boolean,
 ): Promise<ApiMatch | null> {
   try {
-    await saveApiData(matchId);
+    await saveApiData(matchId, noRetry);
     return readApiData(matchId);
   } catch (e: any) {
     console.log(e);

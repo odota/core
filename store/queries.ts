@@ -734,7 +734,7 @@ export async function getMatchDataFromBlobWithMetadata(
 
   if (!api && backfill) {
     redisCount(redis, 'steam_api_backfill');
-    api = await tryFetchApiData(matchId);
+    api = await tryFetchApiData(matchId, true);
     if (api) {
       odData.backfill_api = true;
     }
