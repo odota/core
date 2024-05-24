@@ -3,7 +3,6 @@
 import { getOrFetchGcData } from '../store/getGcData';
 import { runQueue } from '../store/queue';
 import config from '../config';
-import { getRetrieverCount } from '../util/utility';
 import { getOrFetchApiData } from '../store/getApiData';
 
 async function processGcData(job: GcDataJob) {
@@ -21,6 +20,6 @@ async function processGcData(job: GcDataJob) {
 console.log('[GCDATA] starting');
 runQueue(
   'gcQueue',
-  Number(config.GCDATA_PARALLELISM) * getRetrieverCount(),
+  Number(config.GCDATA_PARALLELISM),
   processGcData,
 );
