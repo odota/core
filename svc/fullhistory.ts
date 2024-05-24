@@ -74,11 +74,7 @@ async function processFullHistory(job: FullHistoryJob) {
     player: FullHistoryJob,
     url: string,
   ): Promise<void> => {
-    const body = await getSteamAPIData({ url, proxy: true });
-    // if !body.result, retry
-    if (!body.result) {
-      return getApiMatchPage(player, url);
-    }
+    const body = await getSteamAPIData({ url, proxy: true, noRetry: true });
     // response for match history for single player
     const resp = body.result.matches;
     let startId = 0;
@@ -104,45 +100,49 @@ async function processFullHistory(job: FullHistoryJob) {
   try {
     // Fetches 1-5 pages of matches for the players and updates the match_ids object
     await getApiMatchPage(player, container.url);
-  } catch (err) {
-    // non-retryable error while scanning, user had a private account
-    console.log('error: %s', JSON.stringify(err));
-    player.fh_unavailable = true;
+    console.log('%s matches found', Object.keys(match_ids).length);
+    player.fh_unavailable = false;
+    // check what matches the player is already associated with
+    const docs =
+      (await getPlayerMatches(player.account_id, {
+        project: ['match_id'],
+        // Only need to check against recent matches since we get back the most recent 500 or 100 matches from Steam API
+        dbLimit: 1000,
+      })) ?? [];
+    console.log(
+      '%s matches found, %s already in db, %s to add',
+      Object.keys(match_ids).length,
+      docs.length,
+      Object.keys(match_ids).length - docs.length,
+    );
+    // iterate through db results, delete match_id key if this player has this match already
+    // will re-request and update matches where this player was previously anonymous
+    for (let i = 0; i < docs.length; i += 1) {
+      const matchId = docs[i].match_id;
+      delete match_ids[matchId];
+    }
+    if (Object.keys(match_ids).length > 0) {
+      redisCount(redis, 'fullhistory_op');
+    }
+    // make api_details requests for matches
+    const promiseFuncs = Object.keys(match_ids).map(
+      (matchId) => () => processMatch(matchId),
+    );
+    // Number of match details requests to send at once--note this is per worker
+    await eachLimitPromise(promiseFuncs, 1);
     await updatePlayer(player);
-    console.timeEnd('doFullHistory: ' + player.account_id.toString());
-    return;
+  } catch (err: any) {
+    console.log('error: %s', JSON.stringify(err));
+    // check for specific error code if user had a private account
+    if (err?.result?.status === 15) {
+      console.log('player %s disabled match history', player.account_id);
+      player.fh_unavailable = true;
+      await updatePlayer(player);
+    } else {
+      // Generic error (maybe API is down?)
+      console.log('player %s generic error', player.account_id);
+    }
   }
-  console.log('%s matches found', Object.keys(match_ids).length);
-  player.fh_unavailable = false;
-  // check what matches the player is already associated with
-  const docs =
-    (await getPlayerMatches(player.account_id, {
-      project: ['match_id'],
-      // Only need to check against recent matches since we get back the most recent 500 or 100 matches from Steam API
-      dbLimit: 1000,
-    })) ?? [];
-  console.log(
-    '%s matches found, %s already in db, %s to add',
-    Object.keys(match_ids).length,
-    docs.length,
-    Object.keys(match_ids).length - docs.length,
-  );
-  // iterate through db results, delete match_id key if this player has this match already
-  // will re-request and update matches where this player was previously anonymous
-  for (let i = 0; i < docs.length; i += 1) {
-    const matchId = docs[i].match_id;
-    delete match_ids[matchId];
-  }
-  if (Object.keys(match_ids).length > 0) {
-    redisCount(redis, 'fullhistory_op');
-  }
-  // make api_details requests for matches
-  const promiseFuncs = Object.keys(match_ids).map(
-    (matchId) => () => processMatch(matchId),
-  );
-  // Number of match details requests to send at once--note this is per worker
-  await eachLimitPromise(promiseFuncs, 1);
-  await updatePlayer(player);
   console.timeEnd('doFullHistory: ' + player.account_id.toString());
 }
 
