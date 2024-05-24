@@ -8,7 +8,7 @@ import { getOrFetchApiData } from '../store/getApiData';
 
 async function processGcData(job: GcDataJob) {
   const matchId = job.match_id;
-  const { pgroup } = await getOrFetchApiData(matchId);
+  const { pgroup } = await getOrFetchApiData(matchId, true);
   if (!pgroup) {
     return;
   }

@@ -88,7 +88,7 @@ export async function tryFetchApiData(
  * @param matchId
  * @returns
  */
-export async function getOrFetchApiData(matchId: number): Promise<{
+export async function getOrFetchApiData(matchId: number, noRetry = false): Promise<{
   data: ApiMatch | null;
   error: string | null;
   pgroup: PGroup | null;
@@ -108,7 +108,7 @@ export async function getOrFetchApiData(matchId: number): Promise<{
     }
   }
   // If we got here we don't have it saved or want to refetch
-  const { error, pgroup } = await saveApiData(matchId, true);
+  const { error, pgroup } = await saveApiData(matchId, noRetry);
   if (error) {
     // We caught an exception from Steam API due to invalid ID
     return { data: null, error, pgroup };
