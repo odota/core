@@ -1556,6 +1556,13 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
               priority,
             },
           );
+          // Also queue the job for gcdata only in case parsing is held up
+          await addJob({
+            name: 'gcQueue',
+            data: {
+              match_id: Number(matchId),
+            },
+          });
           return res.json({
             job: {
               jobId: parseJob.id,

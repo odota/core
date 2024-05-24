@@ -684,13 +684,6 @@ export async function insertMatch(
         attempts,
       },
     );
-    // Also queue the job for gcdata only in case parsing is held up
-    await addJob({
-      name: 'gcQueue',
-      data: {
-        match_id: match.match_id,
-      },
-    });
     return job;
   }
 
