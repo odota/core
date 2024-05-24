@@ -39,7 +39,7 @@ async function processMatch(matchId: string) {
   const container = generateJob('api_details', {
     match_id: Number(matchId),
   });
-  const body = await getSteamAPIData({ url: container.url, proxy: true });
+  const body = await getSteamAPIData({ url: container.url, proxy: true, noRetry: true });
   const match = body.result;
   await insertMatch(match, {
     type: 'api',
