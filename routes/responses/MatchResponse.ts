@@ -552,7 +552,7 @@ export default {
                 type: 'object',
               },
             },
-            selected_facet: {
+            hero_variant: {
               description: '1-indexed facet, see https://github.com/odota/dotaconstants/blob/master/build/hero_abilities.json',
               type: 'integer',
             },

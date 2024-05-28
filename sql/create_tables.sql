@@ -127,7 +127,7 @@ CREATE TABLE IF NOT EXISTS player_matches (
   ability_upgrades_arr integer[],
   party_id int,
   permanent_buffs json[],
-  selected_facet int,
+  hero_variant int,
   lane int,
   lane_role int,
   is_roaming boolean,

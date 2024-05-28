@@ -97,7 +97,6 @@ async function saveGcData(
       player_slot: p.player_slot,
       party_id: Number(p.party_id),
       permanent_buffs: p.permanent_buffs ?? [],
-      selected_facet: p.selected_facet,
       party_size: data.match.players.filter(
         (matchPlayer: any) =>
           Number(matchPlayer.party_id) === Number(p.party_id),
