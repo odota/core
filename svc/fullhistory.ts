@@ -28,7 +28,6 @@ async function updatePlayer(player: FullHistoryJob) {
     .where({
       account_id: player.account_id,
     });
-  console.log('got full match history for %s', player.account_id);
   redisCount(redis, 'fullhistory');
   if (!player.long_history) {
     redisCount(redis, 'fullhistory_short');
@@ -137,12 +136,12 @@ async function processFullHistory(job: FullHistoryJob) {
     if (err?.result?.status === 15) {
       console.log('player %s disabled match history', player.account_id);
       player.fh_unavailable = true;
-      await updatePlayer(player);
     } else {
       // Generic error (maybe API is down?)
       console.log('player %s generic error', player.account_id);
     }
   }
+  await updatePlayer(player);
   console.timeEnd('doFullHistory: ' + player.account_id.toString());
 }
 
