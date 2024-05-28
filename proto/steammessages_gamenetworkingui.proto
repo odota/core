@@ -40,3 +40,22 @@ message CGameNetworkingUI_ConnectionState {
 message CGameNetworkingUI_Message {
 	repeated .CGameNetworkingUI_ConnectionState connection_state = 1;
 }
+
+message CGameNetworkingUI_ConnectionSummary {
+	optional uint32 transport_kind = 1;
+	optional uint32 connection_state = 8;
+	optional string sdrpop_local = 2;
+	optional string sdrpop_remote = 3;
+	optional uint32 ping_ms = 4;
+	optional float packet_loss = 5;
+	optional uint32 ping_default_internet_route = 6;
+	optional bool ip_was_shared = 7;
+}
+
+message CGameNetworkingUI_AppSummary {
+	optional uint32 appid = 1;
+	optional bool ip_was_shared_with_friend = 10;
+	optional bool ip_was_shared_with_nonfriend = 11;
+	optional uint32 active_connections = 20;
+	optional .CGameNetworkingUI_ConnectionSummary main_cxn = 30;
+}

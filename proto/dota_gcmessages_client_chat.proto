@@ -103,7 +103,6 @@ message CMsgDOTAChatMessage {
 	optional uint32 fantasy_draft_player_account_id = 9;
 	optional uint32 event_id = 10;
 	optional bool suggest_invite_to_lobby = 11;
-	optional uint32 event_points = 12;
 	optional bool coin_flip = 13;
 	optional int32 player_id = 14 [default = -1];
 	optional uint32 share_profile_account_id = 15;
@@ -131,6 +130,8 @@ message CMsgDOTAChatMessage {
 	optional int32 suggest_player_draft_pick = 39 [default = -1];
 	optional .CMsgDOTAChatMessage.PlayerDraftPick player_draft_pick = 40;
 	optional .CMsgDOTAChatMessage.ChatWheelMessage chat_wheel_message = 41;
+	optional uint32 event_level = 42;
+	optional uint32 suggest_pick_hero_facet = 43;
 }
 
 message CMsgDOTAChatMember {

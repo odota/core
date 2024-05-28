@@ -17,7 +17,8 @@ enum EDemoCommands {
 	DEM_SaveGame = 14;
 	DEM_SpawnGroups = 15;
 	DEM_AnimationData = 16;
-	DEM_Max = 17;
+	DEM_AnimationHeader = 17;
+	DEM_Max = 18;
 	DEM_IsCompressed = 64;
 }
 
@@ -36,6 +37,7 @@ message CDemoFileHeader {
 	optional string demo_version_guid = 12;
 	optional int32 build_num = 13;
 	optional string game = 14;
+	optional int32 server_start_tick = 15;
 }
 
 message CGameInfo {
@@ -67,7 +69,12 @@ message CGameInfo {
 		optional uint32 end_time = 11;
 	}
 
+	message CCSGameInfo {
+		repeated int32 round_start_ticks = 1;
+	}
+
 	optional .CGameInfo.CDotaGameInfo dota = 4;
+	optional .CGameInfo.CCSGameInfo cs = 5;
 }
 
 message CDemoFileInfo {
@@ -121,6 +128,12 @@ message CDemoCustomData {
 
 message CDemoCustomDataCallbacks {
 	repeated string save_id = 1;
+}
+
+message CDemoAnimationHeader {
+	optional sint32 entity_id = 1;
+	optional int32 tick = 2;
+	optional bytes data = 3;
 }
 
 message CDemoAnimationData {

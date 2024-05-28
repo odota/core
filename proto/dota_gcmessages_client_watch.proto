@@ -4,6 +4,8 @@ message CSourceTVGameSmall {
 	message Player {
 		optional uint32 account_id = 1;
 		optional uint32 hero_id = 2;
+		optional uint32 team_slot = 3;
+		optional uint32 team = 4;
 	}
 
 	optional uint32 activate_time = 1;

@@ -1,6 +1,7 @@
 import "base_gcmessages.proto";
 import "dota_gcmessages_common_match_management.proto";
 import "dota_gcmessages_common_lobby.proto";
+import "dota_gcmessages_common_overworld.proto";
 import "dota_gcmessages_common.proto";
 import "dota_shared_enums.proto";
 import "gcsdk_gcmessages.proto";
@@ -81,7 +82,6 @@ message CDOTAMatchMetadata {
 			optional uint32 action_id = 1;
 			optional uint32 quantity = 2;
 			optional uint32 audit = 3;
-			optional bool requires_win = 4;
 			optional uint64 audit_data = 5;
 		}
 
@@ -142,6 +142,11 @@ message CDOTAMatchMetadata {
 				optional bool completed = 7;
 			}
 
+			message OverworldRewards {
+				optional uint32 overworld_id = 1;
+				optional .CMsgOverworldTokenQuantity tokens = 2;
+			}
+
 			repeated int32 ability_upgrades = 2;
 			optional uint32 player_slot = 3;
 			repeated .CDOTAMatchMetadata.Team.PlayerKill kills = 5;
@@ -195,6 +200,7 @@ message CDOTAMatchMetadata {
 			repeated .CDOTAMatchMetadata.EconItem equipped_econ_items = 56;
 			optional int32 game_player_id = 57 [default = -1];
 			repeated .CMsgTrackedStat player_tracked_stats = 58;
+			optional .CDOTAMatchMetadata.Team.Player.OverworldRewards overworld_rewards = 59;
 		}
 
 		optional uint32 dota_team = 1;
@@ -310,6 +316,7 @@ message CDOTAMatchPrivateMetadata {
 				optional uint32 tome_of_knowledge = 4;
 				optional uint32 outpost = 5;
 				optional uint32 other = 6;
+				optional uint32 abilities = 7;
 			}
 
 			optional uint32 player_slot = 2;

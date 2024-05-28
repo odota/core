@@ -5,6 +5,7 @@ enum EBaseClientMessages {
 	CM_DevPaletteVisibilityChanged = 283;
 	CM_WorldUIControllerHasPanelChanged = 284;
 	CM_RotateAnchor = 285;
+	CM_ListenForResponseFound = 286;
 	CM_MAX_BASE = 300;
 }
 
@@ -45,4 +46,8 @@ message CClientMsg_WorldUIControllerHasPanelChangedEvent {
 
 message CClientMsg_RotateAnchor {
 	optional float angle = 1;
+}
+
+message CClientMsg_ListenForResponseFound {
+	optional int32 player_slot = 1 [default = -1];
 }

@@ -36,7 +36,7 @@ message CDOTAModifierBuffTableEntry {
 	optional int32 dd_ability_id = 28 [default = -1];
 	optional string illusion_label = 29;
 	optional bool active = 30;
-	optional string player_ids = 31 [default = "-1"];
+	optional string player_ids = 31;
 	optional string lua_name = 32;
 	optional int32 attack_speed = 33;
 	optional uint32 aura_owner = 34 [default = 16777215];

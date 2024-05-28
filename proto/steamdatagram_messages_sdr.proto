@@ -129,6 +129,7 @@ message CMsgSteamDatagramGameserverPingReplyData {
 	optional string build = 9;
 	optional uint64 network_config_version = 10;
 	optional fixed32 my_unix_time = 11;
+	optional bytes routing_blob = 12;
 }
 
 message CMsgSteamDatagramNoSessionRelayToClient {

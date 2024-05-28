@@ -106,6 +106,12 @@ enum EDOTADraftTriviaAnswerResult {
 	k_EDOTADraftTriviaAnswerResult_GCDown = 5;
 }
 
+enum CMsgClientToGCUpdateComicBookStat_Type {
+	CMsgClientToGCUpdateComicBookStat_Type_HighestPageRead = 1;
+	CMsgClientToGCUpdateComicBookStat_Type_SecondsSpentReading = 2;
+	CMsgClientToGCUpdateComicBookStat_Type_HighestPercentRead = 3;
+}
+
 message CMsgClientSuspended {
 	optional uint32 time_end = 1;
 }
@@ -568,11 +574,6 @@ message CMsgGCItemEditorReleaseReservationResponse {
 	optional bool released = 2;
 }
 
-message CMsgDOTARewardTutorialPrizes {
-	optional uint32 location_id = 1;
-	optional bool tracking_only = 2;
-}
-
 message CMsgFlipLobbyTeams {
 }
 
@@ -597,50 +598,6 @@ message CMsgDOTAClaimEventAction {
 	optional uint32 action_id = 2;
 	optional uint32 quantity = 3;
 	optional .CMsgDOTAClaimEventActionData data = 4;
-}
-
-message CMsgDOTAClaimEventActionResponse {
-	message MysteryItemRewardData {
-		optional uint32 item_def = 1;
-		optional uint32 item_category = 2;
-	}
-
-	message LootListRewardData {
-		repeated uint32 item_def = 1;
-	}
-
-	message ActionListRewardData {
-		optional uint32 action_id = 1;
-		optional bytes result_reward_data = 2;
-	}
-
-	message GrantedRewardData {
-		optional uint32 grant_index = 1;
-		optional uint32 score_index = 2;
-		optional uint32 reward_index = 3;
-		optional bytes reward_data = 4;
-	}
-
-	enum ResultCode {
-		Success = 0;
-		InvalidEvent = 1;
-		EventNotActive = 2;
-		InvalidAction = 3;
-		ServerError = 4;
-		InsufficientPoints = 5;
-		InsufficentLevel = 6;
-		AlreadyClaimed = 7;
-		SDOLockFailure = 8;
-		SDOLoadFailure = 9;
-		EventNotOwned = 10;
-		Timeout = 11;
-		RequiresPlusSubscription = 12;
-		InvalidItem = 13;
-		AsyncRewards = 14;
-	}
-
-	optional .CMsgDOTAClaimEventActionResponse.ResultCode result = 1 [default = Success];
-	repeated .CMsgDOTAClaimEventActionResponse.GrantedRewardData reward_results = 2;
 }
 
 message CMsgClientToGCClaimEventActionUsingItem {
@@ -758,6 +715,7 @@ message CMsgDOTAGetPlayerMatchHistoryResponse {
 		optional uint32 team_id = 19;
 		optional string team_name = 20;
 		optional uint64 ugc_team_ui_logo = 21;
+		optional uint32 selected_facet = 22;
 	}
 
 	repeated .CMsgDOTAGetPlayerMatchHistoryResponse.Match matches = 1;
@@ -1860,6 +1818,7 @@ message CMsgGCToClientCommendNotification {
 	optional uint32 commender_account_id = 1;
 	optional string commender_name = 2;
 	optional uint32 flags = 3;
+	optional uint32 commender_hero_id = 4;
 }
 
 message CMsgDOTAClientToGCQuickStatsRequest {
@@ -3332,4 +3291,36 @@ message CMsgLobbyRoadToTIMatchQuestData {
 	optional .CMsgRoadToTIAssignedQuest quest_data = 1;
 	optional uint32 quest_period = 2;
 	optional uint32 quest_number = 3;
+}
+
+message CMsgClientToGCNewBloomGift {
+	optional uint32 defindex = 1;
+	optional uint64 lobby_id = 2;
+	repeated uint32 target_account_ids = 3;
+}
+
+message CMsgClientToGCNewBloomGiftResponse {
+	optional .ENewBloomGiftingResponse result = 1 [default = kENewBloomGifting_UnknownFailure];
+	repeated uint32 received_account_ids = 2;
+}
+
+message CMsgClientToGCSetBannedHeroes {
+	repeated uint32 banned_hero_ids = 1;
+}
+
+message CMsgClientToGCUpdateComicBookStats {
+	message SingleStat {
+		optional .CMsgClientToGCUpdateComicBookStat_Type stat_type = 1 [default = CMsgClientToGCUpdateComicBookStat_Type_HighestPageRead];
+		optional uint32 stat_value = 2;
+	}
+
+	message LanguageStats {
+		optional uint32 comic_id = 1;
+		optional uint32 client_language = 2;
+		optional uint32 client_comic_language = 3;
+	}
+
+	optional uint32 comic_id = 1;
+	repeated .CMsgClientToGCUpdateComicBookStats.SingleStat stats = 2;
+	optional .CMsgClientToGCUpdateComicBookStats.LanguageStats language_stats = 3;
 }
