@@ -552,6 +552,10 @@ export default {
                 type: 'object',
               },
             },
+            selected_facet: {
+              description: '1-indexed facet, see https://github.com/odota/dotaconstants/blob/master/build/hero_abilities.json',
+              type: 'integer',
+            },
             pings: {
               description: 'Total number of pings',
               type: 'integer',

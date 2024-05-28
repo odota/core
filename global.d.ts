@@ -213,6 +213,7 @@ interface GcPlayer {
   party_id: number;
   party_size: number;
   permanent_buffs: any[];
+  selected_facet: number;
 
   // Currently not passed
   account_id?: number;
