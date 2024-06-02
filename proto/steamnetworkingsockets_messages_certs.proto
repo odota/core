@@ -3,7 +3,6 @@ option cc_generic_services = false;
 
 message CMsgSteamNetworkingIdentityLegacyBinary {
 	optional fixed64 steam_id = 16;
-	optional string xbox_pairwise_id = 17;
 	optional bytes generic_bytes = 2;
 	optional string generic_string = 3;
 	optional bytes ipv6_and_port = 4;

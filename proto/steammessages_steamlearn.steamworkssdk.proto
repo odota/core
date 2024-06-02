@@ -50,8 +50,9 @@ enum ESteamLearnSnapshotProjectResult {
 	STEAMLEARN_SNAPSHOT_PROJECT_ERROR_INVALID_PUBLISHED_VERSION = 12;
 }
 
-enum ESteamLearnGetHMACKeysResult {
-	STEAMLEARN_GET_HMAC_KEYS_SUCCESS = 0;
+enum ESteamLearnGetAccessTokensResult {
+	STEAMLEARN_GET_ACCESS_TOKENS_ERROR = 0;
+	STEAMLEARN_GET_ACCESS_TOKENS_SUCCESS = 1;
 }
 
 enum ESteamLearnInferenceResult {
@@ -122,15 +123,8 @@ message CMsgSteamLearnDataList {
 	repeated .CMsgSteamLearnData data = 1;
 }
 
-message CMsgSteamLearn_AccessData {
-	optional uint32 publisher_id = 1;
-	optional uint32 timestamp = 2;
-	optional uint64 random_value = 3;
-}
-
 message CMsgSteamLearn_RegisterDataSource_Request {
 	optional string access_token = 1;
-	optional .CMsgSteamLearn_AccessData access_data = 2;
 	optional .CMsgSteamLearnDataSource data_source = 3;
 }
 
@@ -141,7 +135,6 @@ message CMsgSteamLearn_RegisterDataSource_Response {
 
 message CMsgSteamLearn_CacheData_Request {
 	optional string access_token = 1;
-	optional .CMsgSteamLearn_AccessData access_data = 2;
 	optional .CMsgSteamLearnData data = 3;
 }
 
@@ -151,7 +144,6 @@ message CMsgSteamLearn_CacheData_Response {
 
 message CMsgSteamLearn_SnapshotProject_Request {
 	optional string access_token = 1;
-	optional .CMsgSteamLearn_AccessData access_data = 2;
 	optional uint32 project_id = 3;
 	optional uint32 published_version = 7;
 	repeated uint64 keys = 4;
@@ -166,43 +158,48 @@ message CMsgSteamLearn_SnapshotProject_Response {
 message CMsgSteamLearn_BatchOperation_Request {
 	repeated .CMsgSteamLearn_CacheData_Request cache_data_requests = 1;
 	repeated .CMsgSteamLearn_SnapshotProject_Request snapshot_requests = 2;
+	repeated .CMsgSteamLearn_Inference_Request inference_requests = 3;
 }
 
 message CMsgSteamLearn_BatchOperation_Response {
 	repeated .CMsgSteamLearn_CacheData_Response cache_data_responses = 1;
 	repeated .CMsgSteamLearn_SnapshotProject_Response snapshot_responses = 2;
+	repeated .CMsgSteamLearn_Inference_Response inference_responses = 3;
 }
 
-message CMsgSteamLearnHMACKeys {
-	message CacheDataKeys {
+message CMsgSteamLearnAccessTokens {
+	message CacheDataAccessToken {
 		optional uint32 data_source_id = 1;
-		optional uint32 version = 3;
-		optional string key = 2;
+		optional string access_token = 2;
 	}
 
-	message SnapshotProjectKeys {
+	message SnapshotProjectAccessToken {
 		optional uint32 project_id = 1;
-		optional uint32 published_version = 3;
-		optional string key = 2;
+		optional string access_token = 2;
 	}
 
-	optional string register_data_source_key = 1;
-	repeated .CMsgSteamLearnHMACKeys.CacheDataKeys cache_data_keys = 2;
-	repeated .CMsgSteamLearnHMACKeys.SnapshotProjectKeys snapshot_project_keys = 3;
+	message InferenceAccessToken {
+		optional uint32 project_id = 1;
+		optional string access_token = 2;
+	}
+
+	optional string register_data_source_access_token = 1;
+	repeated .CMsgSteamLearnAccessTokens.CacheDataAccessToken cache_data_access_tokens = 2;
+	repeated .CMsgSteamLearnAccessTokens.SnapshotProjectAccessToken snapshot_project_access_tokens = 3;
+	repeated .CMsgSteamLearnAccessTokens.InferenceAccessToken inference_access_tokens = 4;
 }
 
-message CMsgSteamLearn_GetHMACKeys_Request {
+message CMsgSteamLearn_GetAccessTokens_Request {
 	optional uint32 appid = 1;
 }
 
-message CMsgSteamLearn_GetHMACKeys_Response {
-	optional .ESteamLearnGetHMACKeysResult result = 1 [default = STEAMLEARN_GET_HMAC_KEYS_SUCCESS];
-	optional .CMsgSteamLearnHMACKeys keys = 2;
+message CMsgSteamLearn_GetAccessTokens_Response {
+	optional .ESteamLearnGetAccessTokensResult result = 1 [default = STEAMLEARN_GET_ACCESS_TOKENS_ERROR];
+	optional .CMsgSteamLearnAccessTokens access_tokens = 2;
 }
 
 message CMsgSteamLearn_Inference_Request {
 	optional string access_token = 1;
-	optional .CMsgSteamLearn_AccessData access_data = 2;
 	optional uint32 project_id = 3;
 	optional uint32 published_version = 4;
 	optional uint32 override_train_id = 5;
@@ -212,7 +209,6 @@ message CMsgSteamLearn_Inference_Request {
 
 message CMsgSteamLearn_InferenceMetadata_Request {
 	optional string access_token = 1;
-	optional .CMsgSteamLearn_AccessData access_data = 2;
 	optional uint32 project_id = 3;
 	optional uint32 published_version = 4;
 	optional uint32 override_train_id = 5;
@@ -294,6 +290,10 @@ message CMsgSteamLearn_InferenceMetadata_Response {
 }
 
 message CMsgSteamLearn_InferenceBackend_Response {
+	message RegressionOutput {
+		optional float value = 1;
+	}
+
 	message BinaryCrossEntropyOutput {
 		optional float value = 1;
 	}
@@ -313,6 +313,7 @@ message CMsgSteamLearn_InferenceBackend_Response {
 			.CMsgSteamLearn_InferenceBackend_Response.BinaryCrossEntropyOutput binary_crossentropy = 1;
 			.CMsgSteamLearn_InferenceBackend_Response.CategoricalCrossEntropyOutput categorical_crossentropy = 2;
 			.CMsgSteamLearn_InferenceBackend_Response.MutliBinaryCrossEntropyOutput multi_binary_crossentropy = 3;
+			.CMsgSteamLearn_InferenceBackend_Response.RegressionOutput regression = 4;
 		}
 	}
 
@@ -322,6 +323,7 @@ message CMsgSteamLearn_InferenceBackend_Response {
 message CMsgSteamLearn_Inference_Response {
 	optional .ESteamLearnInferenceResult inference_result = 1 [default = STEAMLEARN_INFERENCE_ERROR];
 	optional .CMsgSteamLearn_InferenceBackend_Response backend_response = 2;
+	repeated uint64 keys = 3;
 }
 
 service SteamLearn {
@@ -343,8 +345,8 @@ service SteamLearn {
 		option (method_description) = "Batches multiple data updates, snapshots, and inference requests into a single call";
 	}
 
-	rpc GetHMACKeys (.CMsgSteamLearn_GetHMACKeys_Request) returns (.CMsgSteamLearn_GetHMACKeys_Response) {
-		option (method_description) = "Gets the HMAC keys needed for registering data sources, submitting data to them, and snapshotting projects";
+	rpc GetAccessTokens (.CMsgSteamLearn_GetAccessTokens_Request) returns (.CMsgSteamLearn_GetAccessTokens_Response) {
+		option (method_description) = "Gets the access tokens needed for registering data sources, submitting data to them, and snapshotting projects";
 	}
 
 	rpc Inference (.CMsgSteamLearn_Inference_Request) returns (.CMsgSteamLearn_Inference_Response) {

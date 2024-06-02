@@ -6,6 +6,7 @@ import "econ_gcmessages.proto";
 import "network_connection.proto";
 import "dota_gcmessages_common_lobby.proto";
 import "dota_gcmessages_common_match_management.proto";
+import "dota_gcmessages_common_overworld.proto";
 import "gcsdk_gcmessages.proto";
 import "steammessages_steamlearn.steamworkssdk.proto";
 
@@ -90,7 +91,6 @@ message CMsgGameServerInfo {
 		UNSPECIFIED = 0;
 		GAME = 1;
 		PROXY = 2;
-		TENSORFLOW = 3;
 		DOTA_ONLY = 4;
 		CUSTOM_GAME_ONLY = 5;
 		EVENT_GAME_ONLY = 6;
@@ -127,7 +127,6 @@ message CMsgGameServerInfo {
 	optional uint32 server_cluster = 20;
 	optional .CMsgGameServerInfo.CustomGames allow_custom_games = 23 [default = BOTH];
 	optional uint32 build_version = 24;
-	optional uint32 tf_server_count = 25;
 	optional uint32 srcds_instance = 26;
 	optional bool dev_force_server_type = 28;
 	optional bool is_recording_match_training_data = 29;
@@ -274,6 +273,8 @@ message CMsgGameMatchSignOut {
 			optional uint32 time_purchased_aghs = 78;
 			repeated int32 ability_draft_abilities = 79;
 			repeated .CMsgTrackedStat player_tracked_stats = 80;
+			optional uint32 predicted_rank = 81;
+			optional uint32 selected_facet = 82;
 		}
 
 		repeated .CMsgGameMatchSignOut.CTeam.CPlayer players = 1;
@@ -467,6 +468,7 @@ message CMsgGameMatchSignoutResponse {
 	optional fixed64 ow_private_key = 11;
 	optional fixed32 ow_salt = 12;
 	optional uint64 ow_replay_id = 13;
+	optional .CMsgOverworldMatchRewards overworld_rewards = 14;
 }
 
 message CMsgTimedRewardContainer {
@@ -603,6 +605,9 @@ message CMsgServerToGCRequestBatchPlayerResourcesResponse {
 		optional bool is_guide_player = 8;
 		optional int32 comm_level = 9;
 		optional int32 behavior_level = 10;
+		optional int32 wins = 11;
+		optional int32 losses = 12;
+		optional int32 smurf_category = 13;
 	}
 
 	repeated .CMsgServerToGCRequestBatchPlayerResourcesResponse.Result results = 6;
@@ -758,10 +763,15 @@ message CSerializedCombatLog {
 }
 
 message CMsgServerToGCVictoryPredictions {
+	message PredictionItem {
+		optional uint64 item_id = 1;
+		optional uint32 item_def = 2;
+	}
+
 	message Record {
 		optional uint32 account_id = 1;
-		optional uint64 item_id = 2;
 		repeated uint64 item_ids = 5;
+		repeated .CMsgServerToGCVictoryPredictions.PredictionItem prediction_items = 6;
 	}
 
 	repeated .CMsgServerToGCVictoryPredictions.Record records = 1;
@@ -1128,10 +1138,6 @@ message CMsgServerToGCCavernCrawlIsHeroActiveResponse {
 	optional uint32 potential_plus_shard_winnings = 4;
 }
 
-message CMsgGCtoServerTensorflowInstance {
-	optional uint32 server_instance = 1;
-}
-
 message CMsgNeutralItemStats {
 	message NeutralItem {
 		optional int32 item_id = 1 [default = -1];
@@ -1349,12 +1355,8 @@ message CMsgServerToGCGetStickerHeroesResponse {
 	repeated .CMsgServerToGCGetStickerHeroesResponse.Player players = 1;
 }
 
-message CMsgGCToServerSetSteamLearnInferencing {
-	optional bool enable = 1;
-}
-
-message CMsgGCToServerSetSteamLearnKeysChanged {
-	optional .CMsgSteamLearnHMACKeys keys = 1;
+message CMsgGCToServerSteamLearnAccessTokensChanged {
+	optional .CMsgSteamLearnAccessTokens access_tokens = 1;
 }
 
 message CMsgSteamLearnMatchInfo {
@@ -1371,23 +1373,48 @@ message CMsgSteamLearnMatchInfoPlayer {
 	optional uint32 duration = 3;
 	optional uint32 game_mode = 4;
 	optional uint32 lobby_type = 5;
+	optional uint32 player_mmr = 6;
 }
 
-message CMsgSteamLearnMatchHeroes {
+message CMsgSteamLearnMatchHeroesV2 {
 	repeated uint32 radiant_hero_ids = 1 [(steamlearn_count) = 5];
 	repeated uint32 dire_hero_ids = 2 [(steamlearn_count) = 5];
 	repeated uint32 radiant_lanes = 3 [(steamlearn_count) = 5];
 	repeated uint32 dire_lanes = 4 [(steamlearn_count) = 5];
+	repeated uint32 radiant_hero_facets = 5 [(steamlearn_count) = 5];
+	repeated uint32 dire_hero_facets = 6 [(steamlearn_count) = 5];
 }
 
-message CMsgSteamLearnMatchHero {
+message CMsgSteamLearnMatchHeroV2 {
 	optional uint32 hero_id = 1;
 	optional uint32 lane = 2;
 	repeated uint32 allied_hero_ids = 3 [(steamlearn_count) = 4];
 	repeated uint32 enemy_hero_ids = 4 [(steamlearn_count) = 5];
+	optional uint32 hero_facet = 5;
+	repeated uint32 allied_hero_facets = 6 [(steamlearn_count) = 4];
+	repeated uint32 enemy_herofacets = 7 [(steamlearn_count) = 5];
 }
 
-message CMsgSteamLearnMatchState {
+message CMsgSteamLearnPlayerTimedStats {
+	message StatBucket {
+		optional float game_time = 1;
+		optional uint32 kills = 2;
+		optional uint32 deaths = 3;
+		optional uint32 assists = 4;
+		optional uint32 experience = 5;
+		optional uint32 last_hits = 6;
+		optional uint32 denies = 7;
+		optional uint32 net_worth = 8;
+		optional float idle_time = 9;
+		optional uint32 commands_issued = 10;
+		optional uint32 sentry_wards_placed = 11;
+		optional uint32 observer_wards_placed = 12;
+	}
+
+	repeated .CMsgSteamLearnPlayerTimedStats.StatBucket stat_buckets = 1 [(steamlearn_count) = 90];
+}
+
+message CMsgSteamLearnMatchStateV5 {
 	message PlayerState {
 		optional uint32 hero_id = 1;
 		optional uint32 net_worth = 2;
@@ -1398,11 +1425,12 @@ message CMsgSteamLearnMatchState {
 		optional bool has_aegis = 7;
 		optional bool has_rapier = 8;
 		optional uint32 distance = 9;
+		optional uint32 hero_facet = 10;
 	}
 
 	message TeamState {
 		optional uint32 team = 1;
-		repeated .CMsgSteamLearnMatchState.PlayerState player_states = 2 [(steamlearn_count) = 5];
+		repeated .CMsgSteamLearnMatchStateV5.PlayerState player_states = 2 [(steamlearn_count) = 5];
 		repeated uint32 tower_health_pct = 3 [(steamlearn_count) = 11];
 		repeated uint32 barracks_health_pct = 4 [(steamlearn_count) = 6];
 		optional uint32 ancient_health_pct = 5;
@@ -1414,8 +1442,8 @@ message CMsgSteamLearnMatchState {
 	}
 
 	optional float game_time = 1;
-	optional .CMsgSteamLearnMatchState.TeamState radiant_state = 2;
-	optional .CMsgSteamLearnMatchState.TeamState dire_state = 3;
+	optional .CMsgSteamLearnMatchStateV5.TeamState radiant_state = 2;
+	optional .CMsgSteamLearnMatchStateV5.TeamState dire_state = 3;
 }
 
 message CMsgSteamLearnItemPurchase {
@@ -1472,4 +1500,26 @@ message CMsgSignOutMapStats {
 
 	repeated .CMsgSignOutMapStats.Player players = 1;
 	optional .CMsgMapStatsSnapshot global_stats = 2;
+}
+
+message CMsgServerToGCNewBloomGift {
+	optional uint32 defindex = 1;
+	optional uint32 gifter_account_id = 2;
+	repeated uint32 target_account_ids = 3;
+}
+
+message CMsgServerToGCNewBloomGiftResponse {
+	optional .ENewBloomGiftingResponse result = 1 [default = kENewBloomGifting_UnknownFailure];
+	repeated uint32 received_account_ids = 2;
+}
+
+message CMsgSignOutOverworld {
+	message Player {
+		optional uint32 account_id = 1;
+		optional uint32 overworld_id = 2;
+		repeated uint32 desired_token_rewards = 3;
+	}
+
+	repeated .CMsgSignOutOverworld.Player players = 1;
+	optional .EEvent event_id = 2 [default = EVENT_ID_NONE];
 }

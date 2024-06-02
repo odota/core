@@ -157,6 +157,7 @@ message CMsgDotaScenario {
 		repeated .CMsgDotaScenario.HeroHeroInt enemy_kills = 150;
 		repeated .CMsgDotaScenario.DamageStatsByType damage_stats = 151;
 		repeated .CMsgDotaScenario.HeroAbility abilities = 152;
+		optional uint32 hero_facet = 153;
 	}
 
 	message Stock {

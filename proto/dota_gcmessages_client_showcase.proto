@@ -214,6 +214,7 @@ message CMsgShowcaseItemData {
 		.CMsgShowcaseItem_EconItem creep = 17;
 		.CMsgShowcaseItem_EconItem tower = 18;
 		.CMsgShowcaseItem_EconItem effigy = 19;
+		.CMsgShowcaseItem_EconItem decoration = 20;
 		.CMsgShowcaseBackground background = 100;
 	}
 }

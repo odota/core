@@ -100,6 +100,9 @@ message CMsgReadyUpStatus {
 	optional fixed64 lobby_id = 1;
 	repeated uint32 accepted_ids = 2;
 	repeated uint32 declined_ids = 3;
+	repeated uint32 accepted_indices = 4;
+	repeated uint32 declined_indices = 5;
+	optional .DOTALobbyReadyState local_ready_state = 6 [default = DOTALobbyReadyState_UNDECLARED];
 }
 
 message CMsgAbandonCurrentGame {

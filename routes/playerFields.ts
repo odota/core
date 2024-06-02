@@ -52,6 +52,7 @@ export const matchesCols = [
   'average_rank',
   'leaver_status',
   'party_size',
+  'hero_variant',
 ] as const;
 
 // Used in the UI to show items on match list
@@ -92,6 +93,7 @@ export const recentMatchesCols = [
   'cluster',
   'leaver_status',
   'party_size',
+  'hero_variant',
 ] as (keyof ParsedPlayerMatch)[];
 
 export const heroesCols = ['heroes', 'account_id', 'start_time'] as const;

@@ -249,6 +249,7 @@ message CMsgDPCEvent {
 		INTERNATIONAL_QUALIFIERS = 3;
 		INTERNATIONAL = 4;
 		LEAGUE_FINALS = 5;
+		EXTERNAL = 6;
 	}
 
 	enum ETour {

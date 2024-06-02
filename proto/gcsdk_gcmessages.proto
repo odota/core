@@ -30,9 +30,15 @@ message CExtraMsgBlock {
 }
 
 message CMsgSteamLearnServerInfo {
+	message ProjectInfo {
+		optional uint32 project_id = 1;
+		optional uint32 snapshot_published_version = 2;
+		optional uint32 inference_published_version = 3;
+	}
+
 	optional bool enable_data_submission = 1;
-	optional bool enable_inferencing = 2;
-	optional .CMsgSteamLearnHMACKeys hmac_keys = 3;
+	optional .CMsgSteamLearnAccessTokens access_tokens = 4;
+	repeated .CMsgSteamLearnServerInfo.ProjectInfo project_infos = 5;
 }
 
 message CMsgGCAssertJobData {

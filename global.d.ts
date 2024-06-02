@@ -103,6 +103,7 @@ type Player = {
   hero_healing: number;
   tower_damage: number;
   leaver_status: number;
+  hero_variant?: number;
   ability_upgrades?: any[];
   ability_upgrades_arr: number[];
 

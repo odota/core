@@ -10,6 +10,8 @@ message CSubtickMoveStep {
 	optional uint64 button = 1;
 	optional bool pressed = 2;
 	optional float when = 3;
+	optional float analog_forward_delta = 4;
+	optional float analog_left_delta = 5;
 }
 
 message CBaseUserCmdPB {
@@ -25,7 +27,6 @@ message CBaseUserCmdPB {
 	optional int32 random_seed = 10;
 	optional int32 mousedx = 11;
 	optional int32 mousedy = 12;
-	optional bool hasbeenpredicted = 13;
 	optional uint32 pawn_entity_handle = 14 [default = 16777215];
 	repeated .CSubtickMoveStep subtick_moves = 18;
 	optional bytes move_crc = 19;

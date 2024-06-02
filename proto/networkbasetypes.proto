@@ -13,7 +13,7 @@ enum SignonState_t {
 
 enum NET_Messages {
 	net_NOP = 0;
-	net_Disconnect = 1;
+	net_Disconnect_Legacy = 1;
 	net_SplitScreenUser = 3;
 	net_Tick = 4;
 	net_StringCmd = 5;
@@ -105,7 +105,7 @@ message CNETMsg_SplitScreenUser {
 	optional int32 slot = 1;
 }
 
-message CNETMsg_Disconnect {
+message CNETMsg_Disconnect_Legacy {
 	optional .ENetworkDisconnectionReason reason = 2 [default = NETWORK_DISCONNECT_INVALID];
 }
 
@@ -119,6 +119,8 @@ message CNETMsg_Tick {
 	optional uint32 host_loss = 7;
 	optional uint32 host_unfiltered_frametime = 8;
 	optional uint32 hltv_replay_flags = 9;
+	optional uint32 expected_long_tick = 10;
+	optional string expected_long_tick_reason = 11;
 }
 
 message CNETMsg_StringCmd {

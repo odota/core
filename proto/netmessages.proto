@@ -56,6 +56,7 @@ enum SVC_Messages {
 enum VoiceDataFormat_t {
 	VOICEDATA_FORMAT_STEAM = 0;
 	VOICEDATA_FORMAT_ENGINE = 1;
+	VOICEDATA_FORMAT_OPUS = 2;
 }
 
 enum RequestPause_t {
@@ -132,6 +133,9 @@ message CMsgVoiceAudio {
 	optional uint32 section_number = 4;
 	optional uint32 sample_rate = 5;
 	optional uint32 uncompressed_sample_offset = 6;
+	optional uint32 num_packets = 7;
+	repeated uint32 packet_offsets = 8 [packed = true];
+	optional float voice_level = 9;
 }
 
 message CCLCMsg_VoiceData {
@@ -183,9 +187,6 @@ message CCLCMsg_SplitPlayerDisconnect {
 
 message CCLCMsg_ServerStatus {
 	optional bool simplified = 1;
-}
-
-message CCLCMsg_ServerPing {
 }
 
 message CCLCMsg_RequestPause {
@@ -357,9 +358,7 @@ message CSVCMsg_GameEventList {
 message CSVCMsg_PacketEntities {
 	message command_queue_info_t {
 		optional uint32 commands_queued = 1;
-		optional uint32 command_queue_desired_size = 2;
 		optional uint32 starved_command_ticks = 3;
-		optional float time_dilation_percent = 4;
 		optional uint32 discarded_command_ticks = 5;
 	}
 
@@ -368,9 +367,14 @@ message CSVCMsg_PacketEntities {
 		optional int32 baseline_index = 2;
 	}
 
+	message non_transmitted_entities_t {
+		optional int32 header_count = 1;
+		optional bytes data = 2;
+	}
+
 	optional int32 max_entries = 1;
 	optional int32 updated_entries = 2;
-	optional bool is_delta = 3;
+	optional bool legacy_is_delta = 3;
 	optional bool update_baseline = 4;
 	optional int32 baseline = 5;
 	optional int32 delta_from = 6;
@@ -378,11 +382,16 @@ message CSVCMsg_PacketEntities {
 	optional bool pending_full_frame = 8;
 	optional uint32 active_spawngroup_handle = 9;
 	optional uint32 max_spawngroup_creationsequence = 10;
-	optional uint32 last_cmd_number = 11;
+	optional uint32 last_cmd_number_executed = 11;
+	optional sint32 last_cmd_number_recv_delta = 17;
 	optional uint32 server_tick = 12;
 	optional bytes serialized_entities = 13;
 	optional .CSVCMsg_PacketEntities.command_queue_info_t command_queue_info = 14;
 	repeated .CSVCMsg_PacketEntities.alternate_baseline_t alternate_baselines = 15;
+	optional uint32 has_pvs_vis_bits = 16;
+	optional uint32 last_cmd_recv_margin = 18;
+	optional .CSVCMsg_PacketEntities.non_transmitted_entities_t non_transmitted_entities = 19;
+	optional bytes dev_padding = 999;
 }
 
 message CSVCMsg_TempEntities {
@@ -493,6 +502,7 @@ message ProtoFlattenedSerializerField_t {
 	optional int32 send_node_sym = 9;
 	optional int32 var_encoder_sym = 10;
 	repeated .ProtoFlattenedSerializerField_t.polymorphic_field_t polymorphic_types = 11;
+	optional int32 var_serializer_sym = 12;
 }
 
 message ProtoFlattenedSerializer_t {
@@ -531,10 +541,12 @@ message CMsgServerNetworkStats {
 	message Player {
 		optional uint64 steamid = 1;
 		optional string remote_addr = 2;
-		optional int32 ping_stddev_ms = 3;
 		optional int32 ping_avg_ms = 4;
 		optional float packet_loss_pct = 5;
 		optional bool is_bot = 6;
+		optional float loss_in = 7;
+		optional float loss_out = 8;
+		optional int32 engine_latency_ms = 9;
 	}
 
 	optional bool dedicated = 1;
@@ -549,8 +561,8 @@ message CMsgServerNetworkStats {
 	optional int32 num_tv_relays = 11;
 	optional float fps = 12;
 	repeated .CMsgServerNetworkStats.Port ports = 17;
-	optional float avg_latency_out = 18;
-	optional float avg_latency_in = 19;
+	optional float avg_ping_ms = 18;
+	optional float avg_engine_latency_out = 19;
 	optional float avg_packets_out = 20;
 	optional float avg_packets_in = 21;
 	optional float avg_loss_out = 22;
