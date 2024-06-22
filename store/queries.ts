@@ -731,28 +731,30 @@ export async function getMatchDataFromBlobWithMetadata(
     has_gcdata: Boolean(gcdata),
     has_parsed: Boolean(parsed),
   };
-
-  if (!api && backfill) {
-    redisCount(redis, 'steam_api_backfill');
-    api = await tryFetchApiData(matchId, true);
-    if (api) {
-      odData.backfill_api = true;
-    }
-  }
-  if (!api) {
-    return [null, null];
-  }
-  if (!gcdata && backfill) {
-    redisCount(redis, 'steam_gc_backfill');
-    // gcdata = await tryFetchGcData(matchId, getPGroup(api));
-    if (gcdata) {
-      odData.backfill_gc = true;
-    }
-  }
   if (backfill) {
     archived = await tryReadArchivedMatch(matchId);
     if (archived) {
       odData.archive = true;
+    }
+  }
+
+  if (!archived) {
+    if (!api && backfill) {
+      redisCount(redis, 'steam_api_backfill');
+      api = await tryFetchApiData(matchId, true);
+      if (api) {
+        odData.backfill_api = true;
+      }
+    }
+    if (!api) {
+      return [null, null];
+    }
+    if (!gcdata && backfill) {
+      redisCount(redis, 'steam_gc_backfill');
+      // gcdata = await tryFetchGcData(matchId, getPGroup(api));
+      if (gcdata) {
+        odData.backfill_gc = true;
+      }
     }
   }
 

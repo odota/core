@@ -14,7 +14,7 @@ const SCANNER_WAIT = 5000;
 const SCANNER_WAIT_CATCHUP = SCANNER_WAIT / parallelism;
 
 async function scanApi(seqNum: number) {
-  let nextSeqNum = seqNum;
+  let nextSeqNum = seqNum - Number(config.SCANNER_OFFSET);
   while (true) {
     const container = generateJob('api_sequence', {
       start_at_match_seq_num: nextSeqNum,
@@ -64,15 +64,20 @@ async function processMatch(match: ApiMatch) {
     return;
   }
   // check if match was previously processed
-  const result = await redis.get(`scanner_insert:${match.match_id}`);
+  const result = await redis.zscore('scanner_insert', match.match_id);
   // console.log(match.match_id, result);
   // don't insert this match if we already processed it recently
   if (!result) {
+    if (Number(config.SCANNER_OFFSET)) {
+      // secondary scanner picked up a missing match
+      redisCount(redis, 'secondary_scanner');
+    }
     await insertMatch(match, {
       type: 'api',
       origin: 'scanner',
     });
-    await redis.setex(`scanner_insert:${match.match_id}`, 3600 * 4, 1);
+    await redis.zadd('scanner_insert', match.match_id, match.match_id);
+    await redis.zremrangebyrank('scanner_insert', '0', '-100000');
   }
 }
 

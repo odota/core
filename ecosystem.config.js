@@ -51,6 +51,13 @@ let arr = [
     name: 'scanner',
     group: 'backend',
   },
+  // {
+  //   name: 'scanner2',
+  //   group: 'backend',
+  //   env: {
+  //     SCANNER_OFFSET: '50000',
+  //   }
+  // },
   {
     name: 'backupscanner',
     group: 'disabled',

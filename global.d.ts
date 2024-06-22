@@ -454,7 +454,8 @@ type MetricName =
   | 'incomplete_archive'
   | 'gen_api_key_invalid'
   | 'parser_job'
-  | 'oldparse';
+  | 'oldparse'
+  | 'secondary_scanner';
 
 // Object to map player_slot to basic info
 type PGroup = {

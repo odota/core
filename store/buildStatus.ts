@@ -139,6 +139,7 @@ export async function buildStatus() {
     error_last_day: async () => countDay('500_error'),
     web_crash_last_day: async () => countDay('web_crash'),
     skip_seq_num_last_day: async () => countDay('skip_seq_num'),
+    secondary_scanner_last_day: async () => countDay('secondary_scanner'),
     api_paths: async () => {
       const results = await redis.zrangebyscore(
         'api_paths',
