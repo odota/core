@@ -758,6 +758,7 @@ export async function getMatchDataFromBlobWithMetadata(
     }
   }
 
+  const basePlayers = api?.players || archived?.players;
   // Merge the results together
   const final: Match | ParsedMatch = {
     ...archived,
@@ -766,21 +767,24 @@ export async function getMatchDataFromBlobWithMetadata(
     ...api,
     ...identity,
     ...ranks,
-    players: api?.players.map((apiPlayer) => {
+    players: basePlayers?.map((basePlayer) => {
+      const apiPlayer = api?.players.find(
+        (apiP) => apiP.player_slot === basePlayer.player_slot,
+      );
       const archivedPlayer = archived?.players.find(
-        (ap) => ap.player_slot === apiPlayer.player_slot,
+        (archivedP) => archivedP.player_slot === basePlayer.player_slot,
       );
       const gcPlayer = gcdata?.players.find(
-        (gcp) => gcp.player_slot === apiPlayer.player_slot,
+        (gcp) => gcp.player_slot === basePlayer.player_slot,
       );
       const parsedPlayer = parsed?.players.find(
-        (pp) => pp.player_slot === apiPlayer.player_slot,
+        (pp) => pp.player_slot === basePlayer.player_slot,
       );
       const identityPlayer = identity?.players.find(
-        (ip: any) => ip.player_slot === apiPlayer.player_slot,
+        (ip: any) => ip.player_slot === basePlayer.player_slot,
       );
       const ranksPlayer = ranks?.players.find(
-        (rp: any) => rp.player_slot === apiPlayer.player_slot,
+        (rp: any) => rp.player_slot === basePlayer.player_slot,
       );
       return {
         ...archivedPlayer,
