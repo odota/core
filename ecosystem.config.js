@@ -54,7 +54,7 @@ let arr = [
   {
     name: 'scanner2',
     group: 'backend',
-    script: 'svc/scanner.js',
+    script: 'svc/scanner.ts',
     env: {
       SCANNER_OFFSET: '50000',
     }
