@@ -53,8 +53,8 @@ let arr = [
   },
   {
     name: 'scanner2',
+    name_override: 'scanner',
     group: 'backend',
-    script: 'svc/scanner.ts',
     env: {
       SCANNER_OFFSET: '50000',
     }
@@ -171,7 +171,7 @@ const apps = arr.map((app) => {
         : undefined),
     env: {
       ...app.env,
-      ROLE: app.name,
+      ROLE: app.name_override ?? app.name,
     },
   };
 });
