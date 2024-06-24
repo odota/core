@@ -14,8 +14,16 @@ const SCANNER_WAIT = 5000;
 const SCANNER_WAIT_CATCHUP = SCANNER_WAIT / parallelism;
 
 async function scanApi(seqNum: number) {
-  let nextSeqNum = seqNum - Number(config.SCANNER_OFFSET);
+  const offset = Number(config.SCANNER_OFFSET);
+  let nextSeqNum = seqNum - offset;
   while (true) {
+    const curr = Number(await redis.get('match_seq_num'));
+    if (offset && nextSeqNum > (curr - offset)) {
+      // Secondary scanner is catching up too much. Wait and try again
+      console.log('secondary scanner waiting');
+      await new Promise(resolve => setTimeout(resolve, SCANNER_WAIT));
+      continue;
+    }
     const container = generateJob('api_sequence', {
       start_at_match_seq_num: nextSeqNum,
     });
