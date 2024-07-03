@@ -523,22 +523,23 @@ export async function insertMatch(
     if (config.ENABLE_PLAYER_CACHE) {
       await Promise.allSettled(
         match.players
-          .filter((p) => p.account_id)
           .map(async (p) => {
-            await cassandra.execute(
-              `DELETE FROM player_temp WHERE account_id = ?`,
-              [p.account_id],
-              { prepare: true },
-            );
-            // Auto-cache players
-            if (
-              p.account_id &&
-              await isAutoCachePlayer(redis, p.account_id)
-            ) {
-              await addJob({
-                name: 'cacheQueue',
-                data: p.account_id.toString(),
-              });
+            const account_id = pgroup[p.player_slot]?.account_id ?? p.account_id;
+            if (account_id) {
+              await cassandra.execute(
+                `DELETE FROM player_temp WHERE account_id = ?`,
+                [account_id],
+                { prepare: true },
+              );
+              // Auto-cache players
+              if (
+                await isAutoCachePlayer(redis, account_id)
+              ) {
+                await addJob({
+                  name: 'cacheQueue',
+                  data: account_id.toString(),
+                });
+              }
             }
           }),
       );
