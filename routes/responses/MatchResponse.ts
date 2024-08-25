@@ -913,6 +913,24 @@ export default {
                 'Object containing information on certain benchmarks like GPM, XPM, KDA, tower damage, etc',
               type: 'object',
             },
+            neutral_tokens_log: {
+              description:
+                'Object containing information on neutral tokens drops',
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  time: {
+                    description: 'Time in seconds at which the token was dropped',
+                    type: 'integer',
+                  },
+                  key: {
+                    description: 'Type of token dropped',
+                    type: 'string',
+                  }
+                },
+              },
+            },
           },
         },
       },

@@ -154,6 +154,7 @@ interface ParsedPlayer extends Player {
   obs: any;
   sen: any;
   lane_role: number | null;
+  neutral_tokens_log: any[];
 
   party_size?: number;
 
