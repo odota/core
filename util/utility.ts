@@ -969,7 +969,9 @@ export function isDataComplete(match: Partial<ParsedMatch>) {
       match.version &&
       match.chat &&
       match.players?.[0]?.hero_damage &&
-      match.players?.[0]?.ability_upgrades_arr,
+      // Disconnected players may not have upgrades, so check all slots
+      // If it's ability upgrade expired data none of the players will have it
+      match.players?.some(p => p.ability_upgrades_arr),
   );
 }
 

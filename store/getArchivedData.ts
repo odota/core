@@ -91,28 +91,27 @@ async function doArchiveFromBlob(matchId: number) {
       console.log('INCOMPLETE match %s', matchId);
       return;
     }
+    redisCount(redis, 'match_archive_write');
+    // console.log('SIMULATE ARCHIVE match %s', matchId);
     // TODO (howard) don't actually archive until verification of data format
-    console.log('SIMULATE ARCHIVE match %s', matchId);
     return;
     // Archive the data since it's parsed. This might also contain api and gcdata
     const blob = Buffer.from(JSON.stringify(match));
     const result = await matchArchive.archivePut(matchId.toString(), blob);
     if (result) {
-      redisCount(redis, 'match_archive_write');
       // Mark the match archived
       await db.raw(
         `UPDATE parsed_matches SET is_archived = TRUE WHERE match_id = ?`,
         [matchId],
       );
-      // Delete the row (there might be other columns, but we'll have it all in the archive blob)
-      // This will also also clear the gcdata cache for this match
+      // Delete the parsed data (this keeps the api and gcdata around in Cassandra since it doesn't take a ton of space)
       await deleteParsed(matchId);
       console.log('ARCHIVE match %s, parsed', matchId);
     }
     return result;
   }
   // if it's something else, e.g. contains api and gcdata only, leave it for now
-  console.log('SKIP match %s, other', matchId);
+  // console.log('SKIP match %s, unparsed', matchId);
   return;
 }
 
@@ -127,9 +126,10 @@ async function deleteParsed(matchId: number) {
 }
 
 export async function archivePostgresStream() {
+  // Archive parsed matches that aren't archived from postgres records
   const max = await getCurrentMaxArchiveID();
   const query = new QueryStream(
-    `
+  `
   SELECT match_id 
   from parsed_matches 
   WHERE is_archived IS NULL 
@@ -159,7 +159,7 @@ export async function archivePostgresStream() {
 }
 
 async function archiveSequential(start: number, max: number) {
-  // Archive sequentially starting at a given ID
+  // Archive sequentially starting at a given ID (not all IDs may be valid)
   for (let i = start; i < max; i++) {
     console.log(i);
     try {
@@ -172,7 +172,7 @@ async function archiveSequential(start: number, max: number) {
 
 async function archiveRandom(max: number) {
   const rand = randomInt(0, max);
-  // Bruteforce 1000 IDs starting at a random value
+  // Bruteforce 1000 IDs starting at a random value (not all IDs may be valid)
   const page = [];
   for (let i = 0; i < 1000; i++) {
     page.push(rand + i);
@@ -182,6 +182,7 @@ async function archiveRandom(max: number) {
 }
 
 export async function archiveToken(max: number) {
+  // Archive random matches from Cassandra using token range (not all may be parsed)
   let page = await getTokenRange(1000);
   page = page.filter((id) => id < max);
   console.log(page[0]);
