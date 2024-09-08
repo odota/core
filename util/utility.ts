@@ -969,8 +969,9 @@ export function isDataComplete(match: Partial<ParsedMatch>) {
       match.version &&
       match.chat &&
       match.players?.[0]?.hero_damage &&
-      // Disconnected players may not have upgrades, so check all slots
+      // Some players may not have upgrades (DCed or never upgraded abilities), so check all slots
       // If it's ability upgrade expired data none of the players will have it
+      // Looks like some ability draft matches also don't have this data (not sure if present in source)
       match.players?.some(p => p.ability_upgrades_arr),
   );
 }
