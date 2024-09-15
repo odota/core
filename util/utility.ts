@@ -202,7 +202,7 @@ function getSteamAPIDataCallback(url: string | GetDataOptions, cb: ErrorCb) {
     }
   }
   const target = urllib.format(parse);
-  console.log(target);
+  console.time(target);
   request(
     {
       url: target,
@@ -211,6 +211,7 @@ function getSteamAPIDataCallback(url: string | GetDataOptions, cb: ErrorCb) {
       timeout,
     },
     (err, res, body) => {
+      console.timeEnd(target);
       if (
         err ||
         !res ||
