@@ -741,7 +741,8 @@ export async function getMatchDataFromBlobWithMetadata(
   if (!archived) {
     if (!api && backfill) {
       redisCount(redis, 'steam_api_backfill');
-      api = await tryFetchApiData(matchId, true);
+      // Disable the backfill for now since GetMatchDetails is broken as of June 2024
+      // api = await tryFetchApiData(matchId, true);
       if (api) {
         odData.backfill_api = true;
       }
@@ -751,6 +752,7 @@ export async function getMatchDataFromBlobWithMetadata(
     }
     if (!gcdata && backfill) {
       redisCount(redis, 'steam_gc_backfill');
+      // Disable for now since volume is too high
       // gcdata = await tryFetchGcData(matchId, getPGroup(api));
       if (gcdata) {
         odData.backfill_gc = true;
