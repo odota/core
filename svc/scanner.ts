@@ -47,7 +47,9 @@ async function scanApi(seqNum: number) {
     const resp =
       data && data.result && data.result.matches ? data.result.matches : [];
     console.log('[API] match_seq_num:%s, matches:%s', nextSeqNum, resp.length);
+    console.time('insert');
     await Promise.all(resp.map((match: ApiMatch) => processMatch(match)));
+    console.timeEnd('insert');
     // Completed inserting matches on this page so update redis
     if (resp.length) {
       nextSeqNum = resp[resp.length - 1].match_seq_num + 1;
@@ -88,6 +90,7 @@ async function processMatch(match: ApiMatch) {
       origin: 'scanner',
     });
     await redis.zadd('scanner_insert', match.match_id, match.match_id);
+    // To avoid dups we should always keep more matches here than SCANNER_OFFSET
     await redis.zremrangebyrank('scanner_insert', '0', '-100000');
   }
 }
