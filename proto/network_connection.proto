@@ -2,6 +2,7 @@ import "google/protobuf/descriptor.proto";
 
 extend .google.protobuf.EnumValueOptions {
 	optional string network_connection_token = 50500;
+	optional string network_connection_detail_token = 50501;
 }
 
 enum ENetworkDisconnectionReason {
@@ -123,4 +124,5 @@ enum ENetworkDisconnectionReason {
 	NETWORK_DISCONNECT_KICKED_SUICIDE = 159 [(network_connection_token) = "#Player_DisconnectReason_Suicide"];
 	NETWORK_DISCONNECT_KICKED_NOSTEAMLOGIN = 160 [(network_connection_token) = "#Player_DisconnectReason_NoSteamLogin"];
 	NETWORK_DISCONNECT_KICKED_NOSTEAMTICKET = 161 [(network_connection_token) = "#Player_DisconnectReason_NoSteamTicket"];
+	NETWORK_DISCONNECT_KICKED_INPUTAUTOMATION = 162 [(network_connection_token) = "#Player_DisconnectReason_InputAutomation", (network_connection_detail_token) = "#Player_DisconnectReason_InputAutomation_Detail"];
 }

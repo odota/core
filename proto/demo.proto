@@ -53,7 +53,7 @@ message CGameInfo {
 		message CHeroSelectEvent {
 			optional bool is_pick = 1;
 			optional uint32 team = 2;
-			optional uint32 hero_id = 3;
+			optional int32 hero_id = 3;
 		}
 
 		optional uint64 match_id = 1;

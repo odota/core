@@ -107,6 +107,8 @@ enum PARTICLE_MESSAGE {
 	GAME_PARTICLE_MANAGER_EVENT_CLEAR_MODELLIST_OVERRIDE = 31;
 	GAME_PARTICLE_MANAGER_EVENT_CREATE_PHYSICS_SIM = 32;
 	GAME_PARTICLE_MANAGER_EVENT_DESTROY_PHYSICS_SIM = 33;
+	GAME_PARTICLE_MANAGER_EVENT_SET_VDATA = 34;
+	GAME_PARTICLE_MANAGER_EVENT_SET_MATERIAL_OVERRIDE = 35;
 }
 
 enum EHapticPulseType {
@@ -350,6 +352,7 @@ message CUserMsg_ParticleManager {
 		optional string control_point_configuration = 7;
 		optional bool cluster = 8;
 		optional float endcap_time = 9;
+		optional .CMsgVector aggregation_position = 10;
 	}
 
 	message DestroyParticle {
@@ -531,9 +534,20 @@ message CUserMsg_ParticleManager {
 
 	message CreatePhysicsSim {
 		optional string prop_group_name = 1;
+		optional bool use_high_quality_simulation = 2;
+		optional uint32 max_particle_count = 3;
 	}
 
 	message DestroyPhysicsSim {
+	}
+
+	message SetVData {
+		optional string vdata_name = 1;
+	}
+
+	message SetMaterialOverride {
+		optional string material_name = 1;
+		optional bool include_children = 2;
 	}
 
 	required .PARTICLE_MESSAGE type = 1 [default = GAME_PARTICLE_MANAGER_EVENT_CREATE];
@@ -571,6 +585,8 @@ message CUserMsg_ParticleManager {
 	optional .CUserMsg_ParticleManager.ClearModellistOverride clear_modellist_override = 34;
 	optional .CUserMsg_ParticleManager.CreatePhysicsSim create_physics_sim = 35;
 	optional .CUserMsg_ParticleManager.DestroyPhysicsSim destroy_physics_sim = 36;
+	optional .CUserMsg_ParticleManager.SetVData set_vdata = 37;
+	optional .CUserMsg_ParticleManager.SetMaterialOverride set_material_override = 38;
 
 	extensions 100 to 201;
 }
@@ -777,6 +793,13 @@ message CUserMessage_NotifyResponseFound {
 	optional string response_value = 3;
 	optional string response_concept = 4;
 	repeated .CUserMessage_NotifyResponseFound.Criteria criteria = 5;
+	repeated uint32 int_criteria_names = 6 [packed = true];
+	repeated int32 int_criteria_values = 7 [packed = true];
+	repeated uint32 float_criteria_names = 8 [packed = true];
+	repeated float float_criteria_values = 9;
+	repeated uint32 symbol_criteria_names = 10 [packed = true];
+	repeated uint32 symbol_criteria_values = 11 [packed = true];
+	optional int32 speak_result = 12;
 }
 
 message CUserMessage_PlayResponseConditional {
@@ -784,4 +807,6 @@ message CUserMessage_PlayResponseConditional {
 	repeated int32 player_slots = 2;
 	optional string response = 3;
 	optional .CMsgVector ent_origin = 4;
+	optional float pre_delay = 5;
+	optional int32 mix_priority = 6;
 }

@@ -379,7 +379,7 @@ message CMsgDOTAWelcome {
 
 message CSODOTAGameHeroFavorites {
 	optional uint32 account_id = 1 [(key_field) = true];
-	optional uint32 hero_id = 2 [(key_field) = true];
+	optional int32 hero_id = 2 [(key_field) = true];
 }
 
 message CMsgDOTAMatchVotes {
@@ -458,7 +458,7 @@ message CMsgGCGetHeroStandings {
 
 message CMsgGCGetHeroStandingsResponse {
 	message Hero {
-		optional uint32 hero_id = 1;
+		optional int32 hero_id = 1;
 		optional uint32 wins = 2;
 		optional uint32 losses = 3;
 		optional uint32 win_streak = 4;
@@ -537,7 +537,7 @@ message CMsgGCGetHeroTimedStatsResponse {
 		repeated .CMsgGCGetHeroTimedStatsResponse.TimedStatsContainer timed_stats = 2;
 	}
 
-	optional uint32 hero_id = 1;
+	optional int32 hero_id = 1;
 	repeated .CMsgGCGetHeroTimedStatsResponse.RankChunkedStats rank_chunked_stats = 2;
 }
 
@@ -665,6 +665,14 @@ message CMsgDOTACompendiumSelectionResponse {
 	optional uint32 eresult = 1 [default = 2];
 }
 
+message CMsgDOTACompendiumRemoveAllSelections {
+	optional uint32 leagueid = 1;
+}
+
+message CMsgDOTACompendiumRemoveAllSelectionsResponse {
+	optional uint32 eresult = 1 [default = 2];
+}
+
 message CMsgDOTACompendiumData {
 	repeated .CMsgDOTACompendiumSelection selections = 1;
 }
@@ -685,7 +693,7 @@ message CMsgDOTAGetPlayerMatchHistory {
 	optional uint32 account_id = 1;
 	optional uint64 start_at_match_id = 2;
 	optional uint32 matches_requested = 3;
-	optional uint32 hero_id = 4;
+	optional int32 hero_id = 4;
 	optional uint32 request_id = 5;
 	optional bool include_practice_matches = 7;
 	optional bool include_custom_games = 8;
@@ -696,7 +704,7 @@ message CMsgDOTAGetPlayerMatchHistoryResponse {
 	message Match {
 		optional uint64 match_id = 1;
 		optional uint32 start_time = 2;
-		optional uint32 hero_id = 3;
+		optional int32 hero_id = 3;
 		optional bool winner = 4;
 		optional uint32 game_mode = 5;
 		optional int32 rank_change = 6;
@@ -793,7 +801,7 @@ message CMsgClientToGCGetAllHeroOrder {
 }
 
 message CMsgClientToGCGetAllHeroOrderResponse {
-	repeated uint32 hero_ids = 1;
+	repeated int32 hero_ids = 1;
 }
 
 message CMsgClientToGCGetAllHeroProgress {
@@ -802,7 +810,7 @@ message CMsgClientToGCGetAllHeroProgress {
 
 message CMsgClientToGCGetAllHeroProgressResponse {
 	optional uint32 account_id = 1;
-	optional uint32 curr_hero_id = 2;
+	optional int32 curr_hero_id = 2;
 	optional uint32 laps_completed = 3;
 	optional uint32 curr_hero_games = 4;
 	optional uint32 curr_lap_time_started = 5;
@@ -811,8 +819,8 @@ message CMsgClientToGCGetAllHeroProgressResponse {
 	optional uint32 best_lap_time = 8;
 	optional uint32 lap_heroes_completed = 9;
 	optional uint32 lap_heroes_remaining = 10;
-	optional uint32 next_hero_id = 11;
-	optional uint32 prev_hero_id = 12;
+	optional int32 next_hero_id = 11;
+	optional int32 prev_hero_id = 12;
 	optional uint32 prev_hero_games = 13;
 	optional float prev_avg_tries = 14;
 	optional float curr_avg_tries = 15;
@@ -820,7 +828,7 @@ message CMsgClientToGCGetAllHeroProgressResponse {
 	optional float full_lap_avg_tries = 17;
 	optional float curr_lap_avg_tries = 18;
 	optional string profile_name = 19;
-	optional uint32 start_hero_id = 20;
+	optional int32 start_hero_id = 20;
 }
 
 message CMsgClientToGCGetTrophyList {
@@ -886,7 +894,7 @@ message CMsgClientToGCGetProfileCardStats {
 
 message CMsgClientToGCCreateHeroStatue {
 	optional uint64 source_item_id = 1;
-	optional uint32 hero_id = 3;
+	optional int32 hero_id = 3;
 	optional string sequence_name = 4;
 	optional float cycle = 5;
 	repeated uint32 wearables = 6;
@@ -1043,7 +1051,7 @@ message CMsgClientToGCGetQuestProgressResponse {
 		optional uint32 challenge_id = 1;
 		optional uint32 time_completed = 2;
 		optional uint32 attempts = 3;
-		optional uint32 hero_id = 4;
+		optional int32 hero_id = 4;
 		optional uint32 template_id = 5;
 		optional uint32 quest_rank = 6;
 	}
@@ -1062,11 +1070,11 @@ message CMsgGCToClientMatchSignedOut {
 }
 
 message CMsgGCGetHeroStatsHistory {
-	optional uint32 hero_id = 1;
+	optional int32 hero_id = 1;
 }
 
 message CMsgGCGetHeroStatsHistoryResponse {
-	optional uint32 hero_id = 1;
+	optional int32 hero_id = 1;
 	repeated .CMsgDOTASDOHeroStatsHistory records = 2;
 }
 
@@ -1281,7 +1289,7 @@ message CMsgGCToClientQuestProgressUpdated {
 		optional uint32 challenge_id = 1;
 		optional uint32 time_completed = 2;
 		optional uint32 attempts = 3;
-		optional uint32 hero_id = 4;
+		optional int32 hero_id = 4;
 		optional uint32 template_id = 5;
 		optional uint32 quest_rank = 6;
 		optional uint32 max_quest_rank = 7;
@@ -1818,12 +1826,12 @@ message CMsgGCToClientCommendNotification {
 	optional uint32 commender_account_id = 1;
 	optional string commender_name = 2;
 	optional uint32 flags = 3;
-	optional uint32 commender_hero_id = 4;
+	optional int32 commender_hero_id = 4;
 }
 
 message CMsgDOTAClientToGCQuickStatsRequest {
 	optional uint32 player_account_id = 1;
-	optional uint32 hero_id = 2;
+	optional int32 hero_id = 2;
 	optional int32 item_id = 3 [default = -1];
 	optional uint32 league_id = 4;
 }
@@ -1919,7 +1927,7 @@ message CMsgPurchaseItemWithEventPointsResponse {
 }
 
 message CMsgPurchaseHeroRandomRelic {
-	optional uint32 hero_id = 1;
+	optional int32 hero_id = 1;
 	optional .EHeroRelicRarity relic_rarity = 2 [default = HERO_RELIC_RARITY_INVALID];
 }
 
@@ -1942,7 +1950,7 @@ message CMsgProfileRequest {
 
 message CMsgProfileResponse {
 	message FeaturedHero {
-		optional uint32 hero_id = 1;
+		optional int32 hero_id = 1;
 		repeated .CSOEconItem equipped_econ_items = 2;
 		optional bool manually_set = 3;
 		optional uint32 plus_hero_xp = 4;
@@ -1953,7 +1961,7 @@ message CMsgProfileResponse {
 		optional uint64 match_id = 1;
 		optional uint32 match_timestamp = 2;
 		optional sint32 performance_rating = 3;
-		optional uint32 hero_id = 4;
+		optional int32 hero_id = 4;
 		optional bool won_match = 5;
 	}
 
@@ -1975,7 +1983,7 @@ message CMsgProfileResponse {
 
 message CMsgProfileUpdate {
 	optional uint64 background_item_id = 1;
-	repeated uint32 featured_hero_ids = 2;
+	repeated int32 featured_hero_ids = 2;
 }
 
 message CMsgProfileUpdateResponse {
@@ -2010,7 +2018,7 @@ message CMsgGlobalHeroAverages {
 }
 
 message CMsgHeroGlobalDataRequest {
-	optional uint32 hero_id = 1;
+	optional int32 hero_id = 1;
 }
 
 message CMsgHeroGlobalDataResponse {
@@ -2036,7 +2044,7 @@ message CMsgHeroGlobalDataResponse {
 		repeated .CMsgHeroGlobalDataResponse.WeekData week_data = 5;
 	}
 
-	optional uint32 hero_id = 1;
+	optional int32 hero_id = 1;
 	repeated .CMsgHeroGlobalDataResponse.HeroDataPerRankChunk hero_data_per_chunk = 2;
 }
 
@@ -2046,9 +2054,9 @@ message CMsgHeroGlobalDataAllHeroes {
 
 message CMsgHeroGlobalDataHeroesAlliesAndEnemies {
 	message HeroData {
-		optional uint32 hero_id = 1;
+		optional int32 hero_id = 1;
 		optional uint32 win_rate = 2;
-		optional uint32 first_other_hero_id = 3;
+		optional int32 first_other_hero_id = 3;
 		repeated uint32 ally_win_rate = 5;
 		repeated uint32 enemy_win_rate = 6;
 	}
@@ -2089,7 +2097,7 @@ message CMsgGCToClientCavernCrawlMapPathCompleted {
 	}
 
 	optional uint32 event_id = 1;
-	optional uint32 hero_id_completed = 2;
+	optional int32 hero_id_completed = 2;
 	repeated .CMsgGCToClientCavernCrawlMapPathCompleted.CompletedPathInfo completed_paths = 3;
 	optional uint32 map_variant = 4 [default = 255];
 }
@@ -2611,7 +2619,7 @@ message CMsgClientToGCRequestPlayerRecentAccomplishmentsResponse {
 
 message CMsgClientToGCRequestPlayerHeroRecentAccomplishments {
 	optional uint32 account_id = 1;
-	optional uint32 hero_id = 2;
+	optional int32 hero_id = 2;
 }
 
 message CMsgClientToGCRequestPlayerHeroRecentAccomplishmentsResponse {
@@ -2740,7 +2748,7 @@ message CMsgClientToGCRequestReporterUpdates {
 message CMsgClientToGCRequestReporterUpdatesResponse {
 	message ReporterUpdate {
 		optional uint64 match_id = 1;
-		optional uint32 hero_id = 2;
+		optional int32 hero_id = 2;
 		optional uint32 report_reason = 3;
 		optional uint32 timestamp = 4;
 	}
@@ -2814,7 +2822,7 @@ message CMsgClientToGCGetOWMatchDetailsResponse {
 	optional uint32 target_player_slot = 6;
 	repeated .CMsgClientToGCGetOWMatchDetailsResponse.Marker markers = 7;
 	optional .EOverwatchReportReason report_reason = 8 [default = k_EOverwatchReportReason_Unknown];
-	optional uint32 target_hero_id = 9;
+	optional int32 target_hero_id = 9;
 	optional uint32 rank_tier = 10;
 	optional uint32 lane_selection_flags = 11;
 }
@@ -3086,7 +3094,7 @@ message CMsgClientToGCOrderStickerbookTeamPageResponse {
 }
 
 message CMsgClientToGCSetHeroSticker {
-	optional uint32 hero_id = 1;
+	optional int32 hero_id = 1;
 	optional uint64 new_item_id = 2;
 	optional uint64 old_item_id = 3;
 }
@@ -3305,7 +3313,7 @@ message CMsgClientToGCNewBloomGiftResponse {
 }
 
 message CMsgClientToGCSetBannedHeroes {
-	repeated uint32 banned_hero_ids = 1;
+	repeated int32 banned_hero_ids = 1;
 }
 
 message CMsgClientToGCUpdateComicBookStats {

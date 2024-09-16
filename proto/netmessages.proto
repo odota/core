@@ -5,19 +5,17 @@ enum CLC_Messages {
 	clc_Move = 21;
 	clc_VoiceData = 22;
 	clc_BaselineAck = 23;
-	clc_ListenEvents = 24;
 	clc_RespondCvarValue = 25;
 	clc_FileCRCCheck = 26;
 	clc_LoadingProgress = 27;
 	clc_SplitPlayerConnect = 28;
-	clc_ClientMessage = 29;
 	clc_SplitPlayerDisconnect = 30;
 	clc_ServerStatus = 31;
-	clc_ServerPing = 32;
 	clc_RequestPause = 33;
 	clc_CmdKeyValues = 34;
 	clc_RconServerDetails = 35;
 	clc_HltvReplay = 36;
+	clc_Diagnostic = 37;
 }
 
 enum SVC_Messages {
@@ -48,9 +46,9 @@ enum SVC_Messages {
 	svc_FullFrameSplit = 70;
 	svc_RconServerDetails = 71;
 	svc_UserMessage = 72;
-	svc_HltvReplay = 73;
 	svc_Broadcast_Command = 74;
 	svc_HltvFixupOperatorStatus = 75;
+	svc_UserCmds = 76;
 }
 
 enum VoiceDataFormat_t {
@@ -122,8 +120,7 @@ message CCLCMsg_ClientInfo {
 
 message CCLCMsg_Move {
 	optional bytes data = 3;
-	optional uint32 command_number = 4;
-	optional uint32 num_commands = 5;
+	optional uint32 last_command_number = 4;
 }
 
 message CMsgVoiceAudio {
@@ -176,11 +173,6 @@ message CCLCMsg_SplitPlayerConnect {
 	optional string playername = 1;
 }
 
-message CCLCMsg_ClientMessage {
-	optional int32 msg_type = 1;
-	optional bytes data = 2;
-}
-
 message CCLCMsg_SplitPlayerDisconnect {
 	optional int32 slot = 1;
 }
@@ -200,6 +192,60 @@ message CCLCMsg_CmdKeyValues {
 
 message CCLCMsg_RconServerDetails {
 	optional bytes token = 1;
+}
+
+message CMsgSource2SystemSpecs {
+	optional string cpu_id = 1;
+	optional string cpu_brand = 2;
+	optional uint32 cpu_model = 3;
+	optional uint32 cpu_num_physical = 4;
+	optional uint32 ram_physical_total_mb = 21;
+	optional string gpu_rendersystem_dll_name = 41;
+	optional uint32 gpu_vendor_id = 42;
+	optional string gpu_driver_name = 43;
+	optional uint32 gpu_driver_version_high = 44;
+	optional uint32 gpu_driver_version_low = 45;
+	optional uint32 gpu_dx_support_level = 46;
+	optional uint32 gpu_texture_memory_size_mb = 47;
+}
+
+message CMsgSource2VProfLiteReportItem {
+	optional string name = 1;
+	optional uint32 active_samples = 2;
+	optional uint32 usec_max = 3;
+	optional uint32 usec_avg_active = 11;
+	optional uint32 usec_p50_active = 12;
+	optional uint32 usec_p99_active = 13;
+	optional uint32 usec_avg_all = 21;
+	optional uint32 usec_p50_all = 22;
+	optional uint32 usec_p99_all = 23;
+}
+
+message CMsgSource2VProfLiteReport {
+	optional .CMsgSource2VProfLiteReportItem total = 1;
+	repeated .CMsgSource2VProfLiteReportItem items = 2;
+	optional uint32 discarded_frames = 3;
+}
+
+message CCLCMsg_Diagnostic {
+	optional .CMsgSource2SystemSpecs system_specs = 1;
+	optional .CMsgSource2VProfLiteReport vprof_report = 2;
+}
+
+message CSource2Metrics_MatchPerfSummary_Notification {
+	message Client {
+		optional .CMsgSource2SystemSpecs system_specs = 1;
+		optional .CMsgSource2VProfLiteReport profile = 2;
+		optional uint32 build_id = 3;
+		optional fixed64 steamid = 10;
+	}
+
+	optional uint32 appid = 1;
+	optional string game_mode = 2;
+	optional uint32 server_build_id = 3;
+	optional .CMsgSource2VProfLiteReport server_profile = 10;
+	repeated .CSource2Metrics_MatchPerfSummary_Notification.Client clients = 11;
+	optional string map = 20;
 }
 
 message CSVCMsg_ServerInfo {
@@ -356,12 +402,6 @@ message CSVCMsg_GameEventList {
 }
 
 message CSVCMsg_PacketEntities {
-	message command_queue_info_t {
-		optional uint32 commands_queued = 1;
-		optional uint32 starved_command_ticks = 3;
-		optional uint32 discarded_command_ticks = 5;
-	}
-
 	message alternate_baseline_t {
 		optional int32 entity_index = 1;
 		optional int32 baseline_index = 2;
@@ -386,11 +426,12 @@ message CSVCMsg_PacketEntities {
 	optional sint32 last_cmd_number_recv_delta = 17;
 	optional uint32 server_tick = 12;
 	optional bytes serialized_entities = 13;
-	optional .CSVCMsg_PacketEntities.command_queue_info_t command_queue_info = 14;
 	repeated .CSVCMsg_PacketEntities.alternate_baseline_t alternate_baselines = 15;
 	optional uint32 has_pvs_vis_bits = 16;
-	optional uint32 last_cmd_recv_margin = 18;
+	repeated sint32 cmd_recv_status = 22 [packed = true];
 	optional .CSVCMsg_PacketEntities.non_transmitted_entities_t non_transmitted_entities = 19;
+	optional uint32 cq_starved_command_ticks = 20;
+	optional uint32 cq_discarded_command_ticks = 21;
 	optional bytes dev_padding = 999;
 }
 
@@ -613,4 +654,16 @@ message CCLCMsg_HltvFixupOperatorTick {
 message CSVCMsg_HltvFixupOperatorStatus {
 	optional uint32 mode = 1;
 	optional string override_operator_name = 2;
+}
+
+message CMsgServerUserCmd {
+	optional bytes data = 1;
+	optional int32 cmd_number = 2;
+	optional int32 player_slot = 3 [default = -1];
+	optional int32 server_tick_executed = 4;
+	optional int32 client_tick = 5;
+}
+
+message CSVCMsg_UserCommands {
+	repeated .CMsgServerUserCmd commands = 1;
 }

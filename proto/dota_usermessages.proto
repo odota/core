@@ -69,7 +69,6 @@ enum EDotaUserMessages {
 	DOTA_UM_BoosterState = 528;
 	DOTA_UM_WillPurchaseAlert = 529;
 	DOTA_UM_TutorialMinimapPosition = 530;
-	DOTA_UM_PlayerMMR = 531;
 	DOTA_UM_AbilitySteal = 532;
 	DOTA_UM_CourierKilledAlert = 533;
 	DOTA_UM_EnemyItemAlert = 534;
@@ -163,6 +162,7 @@ enum EDotaUserMessages {
 	DOTA_UM_GiftPlayer = 623;
 	DOTA_UM_FacetPing = 624;
 	DOTA_UM_InnatePing = 625;
+	DOTA_UM_RoshanTimer = 626;
 }
 
 enum DOTA_CHAT_MESSAGE {
@@ -596,6 +596,11 @@ message CDOTAUserMsg_RadarAlert {
 	optional bool negative = 2;
 }
 
+message CDOTAUserMsg_RoshanTimer {
+	optional int32 player_id = 1 [default = -1];
+	optional bool negative = 2;
+}
+
 message CDOTAUserMsg_WillPurchaseAlert {
 	optional int32 item_ability_id = 1 [default = -1];
 	optional int32 player_id = 2 [default = -1];
@@ -745,26 +750,6 @@ message CDOTAUserMsg_HalloweenDrops {
 	optional uint32 prize_list = 3;
 }
 
-message CDOTAUserMsg_PredictionResult {
-	message Prediction {
-		enum EResult {
-			k_eResult_ItemGranted = 1;
-			k_eResult_Destroyed = 2;
-		}
-
-		optional uint32 item_def = 1;
-		optional uint32 num_correct = 2;
-		optional uint32 num_fails = 3;
-		optional .CDOTAUserMsg_PredictionResult.Prediction.EResult result = 4 [default = k_eResult_ItemGranted];
-		repeated uint32 granted_item_defs = 6;
-	}
-
-	optional uint32 account_id = 1;
-	optional uint64 match_id = 2;
-	optional bool correct = 3;
-	repeated .CDOTAUserMsg_PredictionResult.Prediction predictions = 4;
-}
-
 message CDOTAResponseQuerySerialized {
 	message Fact {
 		enum ValueType {
@@ -900,7 +885,7 @@ message CDOTAUserMsg_ChatWheel {
 	optional uint32 chat_message_id = 1 [default = 4294967295];
 	optional int32 player_id = 2 [default = -1];
 	optional uint32 account_id = 3;
-	optional uint32 param_hero_id = 4;
+	optional int32 param_hero_id = 4;
 	optional uint32 emoticon_id = 5;
 }
 
@@ -914,7 +899,7 @@ message CDOTAUserMsg_ShowSurvey {
 	optional int32 survey_id = 1;
 	optional uint64 match_id = 2;
 	optional string response_style = 3;
-	optional uint32 teammate_hero_id = 4;
+	optional int32 teammate_hero_id = 4;
 	optional string teammate_name = 5;
 	optional uint32 teammate_account_id = 6;
 }
@@ -1101,10 +1086,6 @@ message CDOTAUserMsg_BoosterStatePlayer {
 
 message CDOTAUserMsg_BoosterState {
 	repeated .CDOTAUserMsg_BoosterStatePlayer boosted_players = 1;
-}
-
-message CDOTAUserMsg_PlayerMMR {
-	repeated sint32 mmr = 1 [packed = true];
 }
 
 message CDOTAUserMsg_AbilitySteal {
@@ -1316,7 +1297,7 @@ message CDOTAUserMsg_QuestStatus {
 
 message CDOTAUserMsg_SuggestHeroPick {
 	required int32 player_id = 1 [default = -1];
-	optional uint32 hero_id = 2;
+	optional int32 hero_id = 2;
 	optional bool ban = 3;
 	optional uint32 facet_id = 4;
 }
@@ -1384,8 +1365,8 @@ message CDOTAUserMsg_AbilityDraftRequestAbility {
 
 message CDOTAUserMsg_DamageReport {
 	optional int32 player_id = 1 [default = -1];
-	optional uint32 target_hero_id = 2;
-	optional uint32 source_hero_id = 3;
+	optional int32 target_hero_id = 2;
+	optional int32 source_hero_id = 3;
 	optional int32 damage_amount = 4;
 	optional bool broadcast = 5;
 }
@@ -1538,7 +1519,7 @@ message CDOTAUserMsg_HotPotato_Exploded {
 message CDOTAUserMsg_WK_Arcana_Progress {
 	optional uint32 ehandle = 1 [default = 16777215];
 	optional uint32 arcana_level = 2;
-	optional uint32 hero_id = 3;
+	optional int32 hero_id = 3;
 }
 
 message CDOTAUserMsg_GuildChallenge_Progress {

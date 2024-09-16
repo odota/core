@@ -15,8 +15,8 @@ message CSubtickMoveStep {
 }
 
 message CBaseUserCmdPB {
-	optional int32 command_number = 1;
-	optional int32 tick_count = 2;
+	optional int32 legacy_command_number = 1;
+	optional int32 client_tick = 2;
 	optional .CInButtonStatePB buttons_pb = 3;
 	optional .CMsgQAngle viewangles = 4;
 	optional float forwardmove = 5;

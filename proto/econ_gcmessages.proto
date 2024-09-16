@@ -890,6 +890,7 @@ message CMsgGCToGCBroadcastConsoleCommand {
 	optional bool report_output = 2;
 	optional int32 sending_gc = 3 [default = -1];
 	optional string output_initiator = 4;
+	optional string sender_source = 5;
 }
 
 message CMsgGCToGCConsoleOutput {

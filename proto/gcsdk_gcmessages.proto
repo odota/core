@@ -34,9 +34,10 @@ message CMsgSteamLearnServerInfo {
 		optional uint32 project_id = 1;
 		optional uint32 snapshot_published_version = 2;
 		optional uint32 inference_published_version = 3;
+		optional uint32 snapshot_percentage = 6;
+		optional bool snapshot_enabled = 7;
 	}
 
-	optional bool enable_data_submission = 1;
 	optional .CMsgSteamLearnAccessTokens access_tokens = 4;
 	repeated .CMsgSteamLearnServerInfo.ProjectInfo project_infos = 5;
 }
@@ -252,7 +253,6 @@ message CMsgClientWelcome {
 	repeated .CMsgSOCacheSubscribed outofdate_subscribed_caches = 3;
 	repeated .CMsgSOCacheSubscriptionCheck uptodate_subscribed_caches = 4;
 	optional .CMsgClientWelcome.Location location = 5;
-	optional bytes save_game_key = 6;
 	optional uint32 gc_socache_file_version = 9;
 	optional string txn_country_code = 10;
 	optional bytes game_data2 = 11;

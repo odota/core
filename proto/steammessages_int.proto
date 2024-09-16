@@ -1,11 +1,5 @@
 import "steammessages.proto";
 
-enum EMobilePaymentProvider {
-	k_EMobilePaymentProvider_Invalid = 0;
-	k_EMobilePaymentProvider_GooglePlay = 1;
-	k_EMobilePaymentProvider_AppleAppStore = 2;
-}
-
 message CMsgWebAPIKey {
 	optional uint32 status = 1 [default = 255];
 	optional uint32 account_id = 2 [default = 0];
@@ -88,31 +82,6 @@ message CMsgPackageLicense {
 message CMsgAMGetLicensesResponse {
 	repeated .CMsgPackageLicense license = 1;
 	optional uint32 result = 2;
-}
-
-message CMsgAMGetUserGameStats {
-	optional fixed64 steam_id = 1;
-	optional fixed64 game_id = 2;
-	repeated uint32 stats = 3;
-}
-
-message CMsgAMGetUserGameStatsResponse {
-	message Stats {
-		optional uint32 stat_id = 1;
-		optional uint32 stat_value = 2;
-	}
-
-	message Achievement_Blocks {
-		optional uint32 achievement_id = 1;
-		optional uint32 achievement_bit_id = 2;
-		optional fixed32 unlock_time = 3;
-	}
-
-	optional fixed64 steam_id = 1;
-	optional fixed64 game_id = 2;
-	optional int32 eresult = 3 [default = 2];
-	repeated .CMsgAMGetUserGameStatsResponse.Stats stats = 4;
-	repeated .CMsgAMGetUserGameStatsResponse.Achievement_Blocks achievement_blocks = 5;
 }
 
 message CMsgGCGetCommandList {
@@ -216,30 +185,6 @@ message CGCMsgGetIPASNResponse {
 	repeated .CIPASNInfo infos = 1;
 }
 
-message CGCMsgSystemStatsSchema {
-	optional uint32 gc_app_id = 1;
-	optional bytes schema_kv = 2;
-}
-
-message CGCMsgGetSystemStats {
-}
-
-message CGCMsgGetSystemStatsResponse {
-	optional uint32 gc_app_id = 1;
-	optional bytes stats_kv = 2;
-	optional uint32 active_jobs = 3;
-	optional uint32 yielding_jobs = 4;
-	optional uint32 user_sessions = 5;
-	optional uint32 game_server_sessions = 6;
-	optional uint32 socaches = 7;
-	optional uint32 socaches_to_unload = 8;
-	optional uint32 socaches_loading = 9;
-	optional uint32 writeback_queue = 10;
-	optional uint32 steamid_locks = 11;
-	optional uint32 logon_queue = 12;
-	optional uint32 logon_jobs = 13;
-}
-
 message CMsgAMSendEmail {
 	message ReplacementToken {
 		optional string token_name = 1;
@@ -316,6 +261,7 @@ message CMsgGCCheckFriendship_Response {
 message CMsgGCGetAppFriendsList {
 	optional fixed64 steamid = 1;
 	optional bool include_friendship_timestamps = 2;
+	optional bool include_friends_with_no_play_time = 3;
 }
 
 message CMsgGCGetAppFriendsList_Response {
@@ -364,18 +310,6 @@ message CMsgGCHAccountVacStatusChange {
 	optional uint32 rtime_vacban_starts = 3;
 	optional bool is_banned_now = 4;
 	optional bool is_banned_future = 5;
-}
-
-message CMsgGCGetPartnerAccountLink {
-	optional fixed64 steamid = 1;
-}
-
-message CMsgGCGetPartnerAccountLink_Response {
-	optional uint32 pwid = 1;
-	optional uint32 nexonid = 2;
-	optional int32 ageclass = 3 [default = 0];
-	optional bool id_verified = 4 [default = true];
-	optional bool is_adult = 5 [default = true];
 }
 
 message CMsgGCRoutingInfo {
@@ -473,67 +407,10 @@ message CMsgNotificationOfSuspiciousActivity {
 	optional .CMsgNotificationOfSuspiciousActivity.MultipleGameInstances multiple_instances = 3;
 }
 
-message CMsgDPPartnerMicroTxns {
-	message PartnerMicroTxn {
-		optional uint32 init_time = 1;
-		optional uint32 last_update_time = 2;
-		optional uint64 txn_id = 3;
-		optional uint32 account_id = 4;
-		optional uint32 line_item = 5;
-		optional uint64 item_id = 6;
-		optional uint32 def_index = 7;
-		optional uint64 price = 8;
-		optional uint64 tax = 9;
-		optional uint64 price_usd = 10;
-		optional uint64 tax_usd = 11;
-		optional uint32 purchase_type = 12;
-		optional uint32 steam_txn_type = 13;
-		optional string country_code = 14;
-		optional string region_code = 15;
-		optional int32 quantity = 16;
-		optional uint64 ref_trans_id = 17;
-	}
-
-	message PartnerInfo {
-		optional uint32 partner_id = 1;
-		optional string partner_name = 2;
-		optional string currency_code = 3;
-		optional string currency_name = 4;
-	}
-
-	optional uint32 appid = 1;
-	optional string gc_name = 2;
-	optional .CMsgDPPartnerMicroTxns.PartnerInfo partner = 3;
-	repeated .CMsgDPPartnerMicroTxns.PartnerMicroTxn transactions = 4;
-}
-
-message CMsgDPPartnerMicroTxnsResponse {
-	enum EErrorCode {
-		k_MsgValid = 0;
-		k_MsgInvalidAppID = 1;
-		k_MsgInvalidPartnerInfo = 2;
-		k_MsgNoTransactions = 3;
-		k_MsgSQLFailure = 4;
-		k_MsgPartnerInfoDiscrepancy = 5;
-		k_MsgTransactionInsertFailed = 7;
-		k_MsgAlreadyRunning = 8;
-		k_MsgInvalidTransactionData = 9;
-	}
-
-	optional uint32 eresult = 1 [default = 2];
-	optional .CMsgDPPartnerMicroTxnsResponse.EErrorCode eerrorcode = 2 [default = k_MsgValid];
-}
-
 message CMsgGCHVacVerificationChange {
 	optional fixed64 steamid = 1;
 	optional uint32 appid = 2;
 	optional bool is_verified = 3;
-}
-
-message CMsgGCHAccountTwoFactorChange {
-	optional fixed64 steamid = 1;
-	optional uint32 appid = 2;
-	optional bool twofactor_enabled = 3;
 }
 
 message CMsgGCCheckClanMembership {
@@ -575,27 +452,6 @@ message CMsgGCHAppCheersGetAllowedTypesResponse {
 	repeated uint32 cheer_types_valid_all_users = 1;
 	repeated .CMsgGCHAppCheersGetAllowedTypesResponse.CheerRemaps cheer_remaps = 2;
 	optional uint32 cache_duration = 3;
-}
-
-message CGCSystemMsg_ReportExternalPurchase_Request {
-	optional uint32 appid = 1;
-	optional fixed64 steamid = 2;
-	optional .EMobilePaymentProvider provider = 3 [default = k_EMobilePaymentProvider_Invalid];
-	optional uint64 orderid = 4;
-	optional string provider_orderid = 5;
-	optional int64 amount = 6;
-	optional string currency = 7;
-	optional uint32 quantity = 8;
-	optional uint32 itemid = 9;
-	optional string item_description = 10;
-	optional string language = 11;
-	optional string category = 12;
-	optional uint32 time_created = 13;
-}
-
-message CGCSystemMsg_ReportExternalPurchase_Response {
-	optional fixed64 transid = 1;
-	optional uint64 orderid = 2;
 }
 
 message CWorkshop_AddSpecialPayment_Request {

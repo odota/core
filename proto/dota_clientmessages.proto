@@ -108,6 +108,9 @@ enum EDotaClientMessages {
 	DOTA_CM_SelectOverworldTokenRewards = 809;
 	DOTA_CM_FacetAlert = 810;
 	DOTA_CM_InnateAlert = 811;
+	DOTA_CM_SelectOverworldID = 812;
+	DOTA_CM_RerollNeutralItem = 813;
+	DOTA_CM_RoshanTimer = 814;
 }
 
 message CDOTAClientMsg_MapPing {
@@ -228,7 +231,7 @@ message CDOTAClientMsg_RequestGraphUpdate {
 
 message CDOTAClientMsg_ChatWheel {
 	optional uint32 chat_message_id = 1 [default = 4294967295];
-	optional uint32 param_hero_id = 2;
+	optional int32 param_hero_id = 2;
 	optional uint32 emoticon_id = 3;
 }
 
@@ -323,7 +326,7 @@ message CDOTAClientMsg_ChallengeReroll {
 	optional .EEvent event_id = 1 [default = EVENT_ID_NONE];
 	optional uint32 slot_id = 2;
 	optional uint32 sequence_id = 3;
-	optional uint32 hero_id = 4;
+	optional int32 hero_id = 4;
 }
 
 message CDOTAClientMsg_CoinWager {
@@ -449,8 +452,8 @@ message CDOTAClientMsg_GuideSelected {
 }
 
 message CDOTAClientMsg_DamageReport {
-	optional uint32 target_hero_id = 1;
-	optional uint32 source_hero_id = 2;
+	optional int32 target_hero_id = 1;
+	optional int32 source_hero_id = 2;
 	optional int32 damage_amount = 3;
 	optional bool broadcast = 4;
 }
@@ -569,6 +572,11 @@ message CDOTAClientMsg_ChooseNeutralItem {
 	optional int32 slot_index = 3;
 }
 
+message CDOTAClientMsg_RerollNeutralItem {
+	optional int32 target_entindex = 1 [default = -1];
+	optional int32 slot_index = 2;
+}
+
 message CDOTAClientMsg_PlayerDraftPick {
 	optional int32 player_id = 1 [default = -1];
 }
@@ -609,4 +617,12 @@ message CDOTAClientMsg_FacetAlert {
 message CDOTAClientMsg_InnateAlert {
 	optional uint32 ability_entindex = 1 [default = 16777215];
 	optional bool ctrl_held = 2;
+}
+
+message CDOTAClientMsg_SelectOverworldID {
+	optional uint32 overworld_id = 1;
+}
+
+message CDOTAClientMsg_RoshanTimer {
+	optional bool negative = 1;
 }

@@ -117,9 +117,9 @@ message CMsgDOTAChatMessage {
 	optional bool legacy_battle_cup_victory = 24;
 	optional uint32 battle_cup_streak = 29;
 	optional uint32 badge_level = 25;
-	optional uint32 suggest_pick_hero_id = 26;
+	optional int32 suggest_pick_hero_id = 26;
 	optional string suggest_pick_hero_role = 27;
-	optional uint32 suggest_ban_hero_id = 30;
+	optional int32 suggest_ban_hero_id = 30;
 	optional .CMsgDOTAChatMessage.TriviaAnswered trivia_answer = 32;
 	optional int32 requested_ability_id = 33 [default = -1];
 	optional uint32 chat_flags = 34;

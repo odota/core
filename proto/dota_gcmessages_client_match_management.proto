@@ -127,13 +127,11 @@ message CMsgPracticeLobbySetDetails {
 	optional .DOTABotDifficulty bot_difficulty_radiant = 9 [default = BOT_DIFFICULTY_PASSIVE];
 	optional bool allow_cheats = 10;
 	optional bool fill_with_bots = 11;
-	optional bool intro_mode = 12;
 	optional bool allow_spectating = 13;
 	optional string pass_key = 15;
 	optional uint32 leagueid = 16;
 	optional uint32 penalty_level_radiant = 17;
 	optional uint32 penalty_level_dire = 18;
-	optional uint32 load_game_id = 19;
 	optional uint32 series_type = 20;
 	optional uint32 radiant_series_wins = 21;
 	optional uint32 dire_series_wins = 22;
@@ -158,25 +156,17 @@ message CMsgPracticeLobbySetDetails {
 	optional bool custom_game_penalties = 47;
 	optional string lan_host_ping_location = 48;
 	optional uint32 league_node_id = 49;
-	repeated uint32 requested_hero_ids = 50;
+	repeated int32 requested_hero_ids = 50;
 	optional .CMsgLobbyScenarioSave scenario_save = 51;
 	optional .CMsgPracticeLobbySetDetails.AbilityDraftSpecificDetails ability_draft_specific_details = 52;
 	optional bool do_player_draft = 53;
 }
 
 message CMsgPracticeLobbyCreate {
-	message SaveGame {
-		optional bytes data = 1;
-		optional int32 version = 2;
-		optional fixed64 steam_id = 3;
-		optional fixed64 signature = 4;
-	}
-
 	optional string search_key = 1;
 	optional string pass_key = 5;
 	optional uint32 client_version = 6;
 	optional .CMsgPracticeLobbySetDetails lobby_details = 7;
-	optional .CMsgPracticeLobbyCreate.SaveGame save_game = 8;
 }
 
 message CMsgPracticeLobbySetTeamSlot {

@@ -8,18 +8,51 @@ import "econ_gcmessages.proto";
 import "dota_gcmessages_client.proto";
 import "valveextensions.proto";
 
+enum EBingoAuditAction {
+	k_eBingoAuditAction_Invalid = 0;
+	k_eBingoAuditAction_DevModifyTokens = 1;
+	k_eBingoAuditAction_DevClearInventory = 2;
+	k_eBingoAuditAction_DevRerollCard = 3;
+	k_eBingoAuditAction_ShuffleCard = 4;
+	k_eBingoAuditAction_RerollSquare = 5;
+	k_eBingoAuditAction_UpgradeSquare = 6;
+	k_eBingoAuditAction_ClaimRow = 7;
+	k_eBingoAuditAction_EventActionTokenGrant = 8;
+	k_eBingoAuditAction_SupportGrantTokens = 9;
+	k_eBingoAuditAction_SupportStatThresholdFixup = 10;
+}
+
 message CMsgBingoSquare {
 	optional uint32 stat_id = 1;
 	optional int32 stat_threshold = 2;
+	optional uint32 upgrade_level = 3;
+}
+
+message CMsgBingoTokens {
+	optional uint32 token_count = 1;
+}
+
+message CMsgBingoCard {
+	repeated .CMsgBingoSquare squares = 1;
 }
 
 message CMsgBingoUserData {
-	repeated .CMsgBingoSquare squares = 1;
+	message BingoCardsEntry {
+		optional uint32 key = 1;
+		optional .CMsgBingoCard value = 2;
+	}
+
+	message BingoTokensEntry {
+		optional uint32 key = 1;
+		optional .CMsgBingoTokens value = 2;
+	}
+
+	repeated .CMsgBingoUserData.BingoCardsEntry bingo_cards = 1;
+	repeated .CMsgBingoUserData.BingoTokensEntry bingo_tokens = 2;
 }
 
 message CMsgClientToGCBingoGetUserData {
 	optional uint32 league_id = 1;
-	optional uint32 league_phase = 2;
 }
 
 message CMsgClientToGCBingoGetUserDataResponse {
@@ -64,8 +97,7 @@ message CMsgClientToGCBingoGetStatsDataResponse {
 
 message CMsgGCToClientBingoUserDataUpdated {
 	optional uint32 league_id = 1;
-	optional uint32 league_phase = 2;
-	optional .CMsgBingoUserData user_data = 3;
+	optional .CMsgBingoUserData user_data = 2;
 }
 
 message CMsgClientToGCBingoClaimRow {
@@ -88,6 +120,56 @@ message CMsgClientToGCBingoClaimRowResponse {
 	optional .CMsgClientToGCBingoClaimRowResponse.EResponse response = 1 [default = k_eInternalError];
 }
 
+message CMsgClientToGCBingoShuffleCard {
+	optional uint32 league_id = 1;
+	optional uint32 league_phase = 2;
+}
+
+message CMsgClientToGCBingoShuffleCardResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eExpiredCard = 6;
+		k_eNotAllowed = 7;
+		k_eInsufficientTokens = 8;
+	}
+
+	optional .CMsgClientToGCBingoShuffleCardResponse.EResponse response = 1 [default = k_eInternalError];
+}
+
+message CMsgClientToGCBingoModifySquare {
+	enum EModifyAction {
+		k_eRerollStat = 0;
+		k_eUpgrade = 1;
+	}
+
+	optional uint32 league_id = 1;
+	optional uint32 league_phase = 2;
+	optional uint32 square_index = 3;
+	optional .CMsgClientToGCBingoModifySquare.EModifyAction action = 4 [default = k_eRerollStat];
+}
+
+message CMsgClientToGCBingoModifySquareResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eExpiredCard = 6;
+		k_eNotAllowed = 7;
+		k_eInsufficientTokens = 8;
+		k_eCantUpgrade = 9;
+		k_eCantReroll = 10;
+		k_eInvalidSquare = 11;
+	}
+
+	optional .CMsgClientToGCBingoModifySquareResponse.EResponse response = 1 [default = k_eInternalError];
+}
+
 message CMsgClientToGCBingoDevRerollCard {
 	optional uint32 league_id = 1;
 	optional uint32 league_phase = 2;
@@ -105,4 +187,42 @@ message CMsgClientToGCBingoDevRerollCardResponse {
 	}
 
 	optional .CMsgClientToGCBingoDevRerollCardResponse.EResponse response = 1 [default = k_eInternalError];
+}
+
+message CMsgClientToGCBingoDevAddTokens {
+	optional uint32 league_id = 1;
+	optional uint32 league_phase = 2;
+	optional int32 token_count = 3;
+}
+
+message CMsgClientToGCBingoDevAddTokensResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eExpiredCard = 6;
+		k_eNotAllowed = 7;
+	}
+
+	optional .CMsgClientToGCBingoDevAddTokensResponse.EResponse response = 1 [default = k_eInternalError];
+}
+
+message CMsgClientToGCBingoDevClearInventory {
+	optional uint32 league_id = 1;
+}
+
+message CMsgClientToGCBingoDevClearInventoryResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eExpiredCard = 6;
+		k_eNotAllowed = 7;
+	}
+
+	optional .CMsgClientToGCBingoDevClearInventoryResponse.EResponse response = 1 [default = k_eInternalError];
 }

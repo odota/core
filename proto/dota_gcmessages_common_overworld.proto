@@ -26,6 +26,7 @@ enum EOverworldAuditAction {
 	k_eOverworldAuditAction_EncounterRewardTokenCost = 13;
 	k_eOverworldAuditAction_EncounterRewardTokenReward = 14;
 	k_eOverworldAuditAction_SupportGrantTokens = 16;
+	k_eOverworldAuditAction_TokenGiftSent = 17;
 }
 
 message CMsgOverworldTokenCount {
@@ -58,7 +59,7 @@ message CMsgOverworldEncounterTokenQuestData {
 }
 
 message CMsgOverworldHeroList {
-	repeated uint32 hero_ids = 1;
+	repeated int32 hero_ids = 1;
 }
 
 message CMsgOverworldEncounterChooseHeroData {
@@ -231,17 +232,10 @@ message CMsgClientToGCOverworldMoveToNodeResponse {
 }
 
 message CMsgClientToGCOverworldTradeTokens {
-	enum ETradeRecipe {
-		k_eThreeToOneChosen = 1;
-		k_eFourToOneChosen = 2;
-		k_eThreeToTwoRandom = 3;
-		k_eSixScrapToOneChosen = 4;
-	}
-
 	optional uint32 overworld_id = 1;
 	optional .CMsgOverworldTokenQuantity token_offer = 2;
 	optional .CMsgOverworldTokenQuantity token_request = 3;
-	optional .CMsgClientToGCOverworldTradeTokens.ETradeRecipe recipe = 4 [default = k_eThreeToOneChosen];
+	optional uint32 recipe = 4;
 	optional uint32 encounter_id = 5;
 }
 
@@ -259,6 +253,7 @@ message CMsgClientToGCOverworldTradeTokensResponse {
 		k_eNotEnoughTokens = 9;
 		k_eInvalidNode = 10;
 		k_eInvalidEncounter = 11;
+		k_eRewardDoesNotMatchRecipe = 12;
 	}
 
 	optional .CMsgClientToGCOverworldTradeTokensResponse.EResponse response = 1 [default = k_eInternalError];

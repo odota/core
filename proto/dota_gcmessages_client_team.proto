@@ -19,7 +19,7 @@ enum ETeamInviteResult {
 
 message CMsgDOTATeamInfo {
 	message HeroStats {
-		optional uint32 hero_id = 1;
+		optional int32 hero_id = 1;
 		optional uint32 picks = 2;
 		optional uint32 wins = 3;
 		optional uint32 bans = 4;

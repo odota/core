@@ -28,11 +28,29 @@ enum ETeamFanContentAssetStatus {
 	k_eFanContentAssetStatus_Rejected = 2;
 }
 
+enum ETalentContentStatus {
+	TALENT_CONTENT_STATUS_INVALID = 0;
+	TALENT_CONTENT_STATUS_PENDING = 1;
+	TALENT_CONTENT_STATUS_EVALUATED = 2;
+}
+
+enum ETalentContentAssetType {
+	k_eTalentContentAssetType_Photo = 1;
+	k_eTalentContentAssetType_Autograph = 2;
+	k_eTalentContentAssetType_Voicelines = 3;
+}
+
+enum ETalentContentAssetStatus {
+	k_eTalentContentAssetStatus_None = 0;
+	k_eTalentContentAssetStatus_Approved = 1;
+	k_eTalentContentAssetStatus_Rejected = 2;
+}
+
 message CMsgArcanaVotes {
 	message Match {
 		optional uint32 match_id = 1;
-		optional uint32 hero_id_0 = 2;
-		optional uint32 hero_id_1 = 3;
+		optional int32 hero_id_0 = 2;
+		optional int32 hero_id_1 = 3;
 		optional uint32 hero_seeding_0 = 4;
 		optional uint32 hero_seeding_1 = 5;
 		optional uint32 vote_count_0 = 6;
@@ -102,7 +120,7 @@ message CMsgDOTADPCUserInfo {
 
 message CMsgDraftTrivia {
 	message DraftTriviaHeroInfo {
-		optional uint32 hero_id = 1;
+		optional int32 hero_id = 1;
 		optional uint32 role = 2;
 	}
 
@@ -189,6 +207,36 @@ message CMsgTeamFanContentAutographStatus {
 	repeated .CMsgTeamFanContentAutographStatus.TeamStatus team_autographs = 1;
 }
 
+message CMsgTalentContentAssetStatus {
+	optional .ETalentContentAssetType asset_type = 1 [default = k_eTalentContentAssetType_Photo];
+	optional uint32 asset_index = 2;
+	optional .ETalentContentAssetStatus asset_status = 3 [default = k_eTalentContentAssetStatus_None];
+}
+
+message CMsgTalentContentStatus {
+	message TalentDetails {
+		optional uint32 account_id = 1;
+		optional string full_name = 2;
+		optional string nickname = 3;
+		optional uint32 workshop_item_id = 4;
+		optional string zip_file = 5;
+		optional .ETalentContentStatus status = 6 [default = TALENT_CONTENT_STATUS_INVALID];
+		repeated .CMsgTalentContentAssetStatus asset_status = 7;
+		optional uint32 broadcast_language = 8;
+	}
+
+	repeated .CMsgTalentContentStatus.TalentDetails talent_status = 1;
+}
+
+message CMsgSetTalentContentResponse {
+	enum EResult {
+		k_eSuccess = 0;
+		k_eInternalError = 1;
+	}
+
+	optional .CMsgSetTalentContentResponse.EResult result = 1 [default = k_eSuccess];
+}
+
 message CMsgDPCEvent {
 	message PhaseInfo {
 		optional .CMsgDPCEvent.ELeagueEventPhase phase = 1 [default = PHASE_INVALID];
@@ -225,6 +273,7 @@ message CMsgDPCEvent {
 		SUMMER_2023_LEAGUE = 19;
 		SUMMER_2023_MAJOR = 20;
 		INTERNATIONAL_2023 = 21;
+		INTERNATIONAL_2024 = 23;
 	}
 
 	enum ELeagueEventPhase {

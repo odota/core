@@ -1,0 +1,54 @@
+import "netmessages.proto";
+import "networkbasetypes.proto";
+
+message CMsgFightingGame_GameData_Fighting {
+	message InputSample {
+		optional uint32 button_mask = 1;
+	}
+
+	optional int32 last_acked_frame = 1;
+	optional uint32 player_id = 2;
+	optional int32 last_crc_frame = 3;
+	optional uint32 last_crc_value = 4;
+	optional float now = 5;
+	optional float peer_ack_time = 6;
+	optional int32 input_start_frame = 7;
+	repeated .CMsgFightingGame_GameData_Fighting.InputSample input_sample = 8;
+}
+
+message CMsgFightingGame_GameData_CharacterSelect {
+	message Item {
+		optional uint32 item_def = 1;
+		optional uint32 style_index = 2 [default = 255];
+	}
+
+	optional uint32 cursor_index = 1;
+	optional int32 selected_hero_id = 2;
+	optional uint32 selected_style = 3;
+	repeated .CMsgFightingGame_GameData_CharacterSelect.Item econ_item_refs = 4;
+	optional int64 message_ack = 5;
+	optional bool confirmed_style = 6;
+}
+
+message CMsgFightingGame_GameData_Loaded {
+	optional float now = 1;
+	optional float peer_ack_time = 2;
+	optional float proposed_start_time = 3;
+	optional float accepted_start_time = 4;
+}
+
+message CP2P_FightingGame_GameData {
+	enum EState {
+		k_ChoosingCharacter = 1;
+		k_Loaded = 2;
+		k_Fighting = 3;
+	}
+
+	optional .CP2P_FightingGame_GameData.EState state = 1 [default = k_ChoosingCharacter];
+
+	oneof state_data {
+		.CMsgFightingGame_GameData_Fighting fight = 2;
+		.CMsgFightingGame_GameData_CharacterSelect character_select = 3;
+		.CMsgFightingGame_GameData_Loaded loaded = 4;
+	}
+}

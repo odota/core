@@ -1,7 +1,7 @@
 import "google/protobuf/descriptor.proto";
 
 extend .google.protobuf.EnumValueOptions {
-	optional string hud_localize_token = 50501;
+	optional string hud_localize_token = 51501;
 }
 
 enum EHeroSelectionText {

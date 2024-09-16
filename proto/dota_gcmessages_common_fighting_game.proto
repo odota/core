@@ -1,0 +1,58 @@
+import "steammessages.proto";
+import "dota_shared_enums.proto";
+import "dota_gcmessages_common.proto";
+import "gcsdk_gcmessages.proto";
+
+message CMsgClientToGCFightingGameChallengeFriend {
+	optional uint32 friend_account_id = 1;
+}
+
+message CMsgClientToGCFightingGameChallengeFriendResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eInvalidAccountID = 5;
+		k_eStillWaitingOnAnotherChallenge = 6;
+	}
+
+	optional .CMsgClientToGCFightingGameChallengeFriendResponse.EResponse response = 1 [default = k_eInternalError];
+}
+
+message CMsgClientToGCFightingGameCancelChallengeFriend {
+	optional uint32 friend_account_id = 1;
+}
+
+message CMsgClientToGCFightingGameAnswerChallenge {
+	optional uint32 challenger_account_id = 1;
+	optional bool accept = 2;
+}
+
+message CMsgClientToGCFightingGameAnswerChallengeResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eInvalidChallenge = 5;
+	}
+
+	optional .CMsgClientToGCFightingGameAnswerChallengeResponse.EResponse response = 1 [default = k_eInternalError];
+}
+
+message CMsgGCToClientFightingGameChallenge {
+	optional uint32 challenger_account_id = 1;
+}
+
+message CMsgGCToClientFightingGameChallengeCanceled {
+	optional uint32 challenger_account_id = 1;
+	optional uint32 responder_account_id = 2;
+}
+
+message CMsgGCToClientFightingGameStartMatch {
+	optional uint32 challenger_account_id = 1;
+	optional uint32 responder_account_id = 2;
+}

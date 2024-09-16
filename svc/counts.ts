@@ -149,6 +149,8 @@ async function updateLastPlayed(match: Match) {
         {
           account_id: player.account_id,
           last_match_time: lastMatchTime,
+          // If the player's ID is showing up then they aren't anonymous
+          fh_unavailable: false,
         },
         false,
       ),

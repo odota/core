@@ -75,7 +75,7 @@ message CSODOTAPartyMember {
 	optional bool has_hp_resource = 15;
 	optional bool joined_from_partyfinder = 12;
 	optional bool is_steam_china = 16;
-	repeated uint32 banned_hero_ids = 17;
+	repeated int32 banned_hero_ids = 17;
 }
 
 message CSODOTAParty {
@@ -477,6 +477,9 @@ message CMvpData {
 				kKillEaterEventType_Muerta_PierceTheVeilKills = 276;
 				kKillEaterEventType_Muerta_MultiHeroDeadShot = 277;
 				kKillEaterEventType_Muerta_DeadShotsIntoTheCalling = 278;
+				kKillEaterEventType_Ringmaster_LongRangeDaggerHits = 279;
+				kKillEaterEventType_Ringmaster_MultiHeroWhips = 280;
+				kKillEaterEventType_Ringmaster_MultiHeroMesmerizes = 281;
 			}
 
 			optional .CMvpData.MvpDatum.MvpAccolade.MvpAccoladeType type = 1 [default = kills];

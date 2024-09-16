@@ -135,7 +135,7 @@ message CMsgClientToGCGetBattleReport {
 }
 
 message CMsgBattleReport_Game {
-	optional uint32 hero_id = 1;
+	optional int32 hero_id = 1;
 	optional uint32 kills = 2;
 	optional uint32 deaths = 3;
 	optional uint32 assists = 4;
@@ -206,7 +206,7 @@ message CMsgBattleReport {
 		optional .CMsgBattleReport_HighlightRarity rarity = 4 [default = k_eHighlightCommon];
 		optional float score = 5;
 		optional float confidence = 6;
-		optional uint32 hero_id = 7;
+		optional int32 hero_id = 7;
 		optional .CMsgBattleReport_Role role = 8 [default = k_eUnknownRole];
 		optional float comparison_delta_value = 9;
 		optional .CMsgBattleReport_CompareContext context = 10 [default = k_eCompareContextInvalid];
@@ -220,7 +220,7 @@ message CMsgBattleReportInfo {
 	optional uint32 timestamp = 1;
 	optional uint32 duration = 2;
 	optional bool acknowledged = 3;
-	optional uint32 featured_hero_id = 4;
+	optional int32 featured_hero_id = 4;
 	optional uint32 featured_position = 5;
 	optional uint32 games_played = 6;
 	repeated uint32 medal_counts = 7;
@@ -241,7 +241,7 @@ message CMsgBattleReportAggregateStats {
 	}
 
 	message CMsgBattleReportAggregate {
-		optional uint32 hero_id = 1;
+		optional int32 hero_id = 1;
 		optional uint32 predicted_position = 2;
 		optional uint32 game_count = 3;
 		optional uint32 win_count = 4;
@@ -304,7 +304,7 @@ message CMsgClientToGCGetBattleReportResponse {
 
 message CMsgClientToGCGetBattleReportAggregateStats {
 	message CMsgBattleReportAggregateKey {
-		optional uint32 hero_id = 1;
+		optional int32 hero_id = 1;
 		optional uint32 predicted_position = 2;
 	}
 

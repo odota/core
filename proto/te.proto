@@ -197,6 +197,9 @@ message CMsgTEExplosion {
 	optional bool affect_ragdolls = 9;
 	optional string effect_name = 10;
 	optional uint32 explosion_type = 11;
+	optional bool create_debris = 12;
+	optional .CMsgVector debris_origin = 13;
+	optional fixed32 debris_surfaceprop = 14;
 }
 
 message CMsgTEDust {
