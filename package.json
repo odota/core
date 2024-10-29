@@ -56,7 +56,7 @@
     "protobufjs": "^7.2.5",
     "request": "^2.88.2",
     "simple-vdf": "^1.1.1",
-    "steam-user": "^5.0.4",
+    "steam-user": "^5.0.9",
     "stripe": "^9.12.0",
     "uuid": "^9.0.1",
     "ws": "^8.16.0"
@@ -77,7 +77,7 @@
     "@types/pg": "^8.10.9",
     "@types/qs": "^6.9.11",
     "@types/request": "^2.48.12",
-    "@types/steam-user": "^4.26.8",
+    "@types/steam-user": "^5.0.0",
     "@types/supertest": "^6.0.2",
     "@types/uuid": "^9.0.7",
     "@types/ws": "^8.5.10",
