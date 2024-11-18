@@ -21,6 +21,7 @@ import {
   redisCount,
   redisCountDistinct,
   isAutoCachePlayer,
+  transformMatch,
 } from '../util/utility';
 import { getMatchRankTier, getPlayerMatches, populateCache } from './queries';
 import { ApiMatch, ApiMatchPro, ApiPlayer, getPGroup } from './pgroup';
@@ -131,7 +132,7 @@ function createMatchCopy<T>(match: any): T {
   return copy;
 }
 
-type InsertMatchInput = ApiMatch | ApiMatchPro | ParserMatch | GcMatch;
+export type InsertMatchInput = ApiMatch | ApiMatchPro | ParserMatch | GcMatch;
 
 /**
  * Inserts a piece of match data into storage
@@ -413,20 +414,12 @@ export async function insertMatch(
     let copy = createMatchCopy<typeof match>(match);
     await upsertBlob(options.type, copy, options.ifNotExists ?? false);
 
-    // average_rank should be stored in a new blob column too since it's not part of API data
-    // We could also store the ranks of the players here rather than looking up their current rank on view
-    // That's probably better anyway since it's more accurate to show their rank at the time of the match
-    if (ranksBlob) {
-      // await upsertBlob('ranks', ranksBlob);
-    }
-
     async function upsertBlob(
       type: DataType,
       blob: { match_id: number; players: { player_slot: number }[] },
       ifNotExists: boolean,
     ) {
       const matchId = blob.match_id;
-      // TODO (howard) dual write here
       const result = await cassandra.execute(
         `INSERT INTO match_blobs(match_id, ${type}) VALUES(?, ?) ${
           ifNotExists ? 'IF NOT EXISTS' : ''
@@ -436,30 +429,9 @@ export async function insertMatch(
           prepare: true,
         },
       );
-      // await scylla.execute(
-      //   `INSERT INTO match_blobs(match_id, ${type}) VALUES(?, ?) ${
-      //     ifNotExists ? 'IF NOT EXISTS' : ''
-      //   }`,
-      //   [matchId, JSON.stringify(blob)],
-      //   {
-      //     prepare: true,
-      //   },
-      // );
-      if (result.rows?.[0]?.['[applied]'] === false) {
-        // Store a blob that tracks which players played this game
-        // This can change from Steam API as players toggle privacy settings
-        // Write this if we didn't apply the change, since that means we are reinserting and the privacy setting probably changed
-        if (options.type === 'api') {
-          const identityBlob = {
-            match_id: copy.match_id,
-            players: copy.players.map((p) => ({
-              player_slot: p.player_slot,
-              account_id: p.account_id,
-            })),
-          };
-          await upsertBlob('identity', identityBlob, false);
-        }
-      }
+      // Maybe in the future we want to put new matches directly into blobstore?
+      // However there are some additional read costs so might want to use only for old data
+      // blobArchive.archivePut(matchId + '_' + type, Buffer.from(JSON.stringify(blob)), ifNotExists)]);
       if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
         fs.writeFileSync(
           './json/' + matchId + '_' + type + '.json',
@@ -689,31 +661,7 @@ export async function insertMatch(
   }
 
   // Make a copy of the match with some modifications
-  const match: Readonly<InsertMatchInput> = {
-    ...origMatch,
-    players: origMatch.players.map((p) => {
-      const newP = { ...p } as Partial<ApiPlayer>;
-      if (newP.account_id === getAnonymousAccountId()) {
-        // don't insert anonymous account id
-        delete newP.account_id;
-      }
-      if (newP.ability_upgrades) {
-        // Reduce the ability upgrades info into ability_upgrades_arr (just an array of numbers)
-        newP.ability_upgrades_arr = newP.ability_upgrades.map(
-          (au: any) => au.ability,
-        );
-        delete newP.ability_upgrades;
-      }
-      delete newP.scaled_hero_damage;
-      delete newP.scaled_tower_damage;
-      delete newP.scaled_hero_healing;
-      // We can keep scepter/shard/moonshard from API and then we're not as reliant on permanent_buffs from GC
-      // delete p.aghanims_scepter;
-      // delete p.aghanims_shard;
-      // delete p.moonshard;
-      return newP as any;
-    }),
-  };
+  const match = transformMatch(origMatch);
   // Use the passed pgroup if gcdata or parsed, otherwise build it
   // Do this after removing anonymous account IDs
   const pgroup = options.pgroup ?? getPGroup(match as ApiMatch);
@@ -740,6 +688,12 @@ export async function insertMatch(
     }
     ranksBlob = { match_id: match.match_id, average_rank, players };
   }
+  // average_rank should be stored in a new blob column too since it's not part of API data
+  // We could also store the ranks of the players here rather than looking up their current rank on view
+  // That's probably better anyway since it's more accurate to show their rank at the time of the match
+  // if (ranksBlob) {
+  //   await upsertBlob('ranks', ranksBlob);
+  // }
 
   await upsertMatchPostgres(match);
   await upsertPlayerCaches(match);

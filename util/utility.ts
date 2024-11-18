@@ -8,8 +8,9 @@ import config from '../config';
 import contributors from '../CONTRIBUTORS';
 import { promisify } from 'util';
 import type { Redis } from 'ioredis';
-import type { ApiMatch } from '../store/pgroup';
+import type { ApiMatch, ApiPlayer } from '../store/pgroup';
 import type QueryString from 'qs';
+import type { InsertMatchInput } from '../store/insert';
 
 /**
  * Tokenizes an input string.
@@ -1013,3 +1014,31 @@ export async function isAutoCachePlayer(redis: Redis, accountId: number) {
   const isRecent = Boolean(await redis.zscore('player_matches_visit', accountId));
   return isLogin || isRecent;
 }
+
+export function transformMatch(origMatch: Readonly<InsertMatchInput>): Readonly<InsertMatchInput> {
+  return {
+    ...origMatch,
+    players: origMatch.players.map((p) => {
+      const newP = { ...p } as Partial<ApiPlayer>;
+      if (newP.account_id === getAnonymousAccountId()) {
+        // don't insert anonymous account id
+        delete newP.account_id;
+      }
+      if (newP.ability_upgrades) {
+        // Reduce the ability upgrades info into ability_upgrades_arr (just an array of numbers)
+        newP.ability_upgrades_arr = newP.ability_upgrades.map(
+          (au: any) => au.ability,
+        );
+        delete newP.ability_upgrades;
+      }
+      delete newP.scaled_hero_damage;
+      delete newP.scaled_tower_damage;
+      delete newP.scaled_hero_healing;
+      // We can keep scepter/shard/moonshard from API and then we're not as reliant on permanent_buffs from GC
+      // delete p.aghanims_scepter;
+      // delete p.aghanims_shard;
+      // delete p.moonshard;
+      return newP as any;
+    })
+  };      
+};

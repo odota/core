@@ -27,20 +27,15 @@ import {
   readArchivedPlayerMatches,
   tryReadArchivedMatch,
 } from './getArchivedData';
-import { tryFetchApiData } from './getApiData';
+import { readApiData } from './getApiData';
 import { type ApiMatch } from './pgroup';
 import { gzipSync, gunzipSync } from 'zlib';
 import {
-  alwaysCols,
   cacheableCols,
-  countsCols,
-  heroesCols,
-  itemsCols,
-  matchesCols,
-  peersCols,
-  significantCols,
 } from '../routes/playerFields';
 import moment from 'moment';
+import { readGcData } from './getGcData';
+import { readParseData } from './getParsedData';
 
 /**
  * Adds benchmark data to the players in a match
@@ -709,21 +704,7 @@ export async function getMatchDataFromBlobWithMetadata(
   matchId: number,
   backfill: boolean,
 ): Promise<[Match | ParsedMatch | null, GetMatchDataMetadata | null]> {
-  const result = await cassandra.execute(
-    'SELECT api, gcdata, parsed, identity, ranks from match_blobs WHERE match_id = ?',
-    [matchId],
-    {
-      prepare: true,
-      fetchSize: 1,
-      autoPage: true,
-    },
-  );
-  const row = result.rows[0];
-  let api: ApiMatch | null = row?.api ? JSON.parse(row.api) : null;
-  let gcdata: GcMatch | null = row?.gcdata ? JSON.parse(row.gcdata) : null;
-  let parsed: ParsedMatch | null = row?.parsed ? JSON.parse(row.parsed) : null;
-  let identity: any = row?.identity ? JSON.parse(row.identity) : null;
-  let ranks: any = row?.ranks ? JSON.parse(row.ranks) : null;
+  let [api, gcdata, parsed]: [ApiMatch | null, GcMatch | null, ParserMatch | null] = await Promise.all([readApiData(matchId), readGcData(matchId), readParseData(matchId)]);
   let archived: ParsedMatch | null = null;
 
   let odData: GetMatchDataMetadata = {
@@ -767,8 +748,6 @@ export async function getMatchDataFromBlobWithMetadata(
     ...parsed,
     ...gcdata,
     ...api,
-    ...identity,
-    ...ranks,
     players: basePlayers?.map((basePlayer) => {
       const apiPlayer = api?.players.find(
         (apiP) => apiP.player_slot === basePlayer.player_slot,
@@ -782,21 +761,13 @@ export async function getMatchDataFromBlobWithMetadata(
       const parsedPlayer = parsed?.players.find(
         (pp) => pp.player_slot === basePlayer.player_slot,
       );
-      const identityPlayer = identity?.players.find(
-        (ip: any) => ip.player_slot === basePlayer.player_slot,
-      );
-      const ranksPlayer = ranks?.players.find(
-        (rp: any) => rp.player_slot === basePlayer.player_slot,
-      );
       return {
         ...archivedPlayer,
         ...parsedPlayer,
         ...gcPlayer,
         ...apiPlayer,
-        ...identityPlayer,
-        ...ranksPlayer,
       };
-    }),
-  };
+    }) as ParsedPlayer[],
+  } as ParsedMatch;
   return [final, odData];
 }

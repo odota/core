@@ -16,6 +16,10 @@ services:
     container_name: odota-scylla
     command:
       - --skip-wait-for-gossip-to-settle 0
+  minio:
+    image: minio/minio:RELEASE.2024-11-07T00-52-20Z
+    container_name: odota-minio
+    command: server /data
   redis:
     image: redis:7
     container_name: odota-redis
@@ -52,11 +56,13 @@ services:
       CASSANDRA_URL: cassandra://odota-cassandra/yasp
       SCYLLA_URL: scylla://odota-scylla/yasp
       ELASTICSEARCH_URL: odota-elasticsearch:9200
+      BLOB_ARCHIVE_S3_ENDPOINT: http://odota-minio:9000
     links:
       - postgres
       - cassandra
       - redis
       - elasticsearch
       - parser
+      - minio
       # - scylla
     container_name: odota-core

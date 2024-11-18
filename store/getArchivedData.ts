@@ -18,7 +18,7 @@ const playerArchive = new Archive('player');
 
 export async function doArchivePlayerMatches(
   accountId: number,
-): Promise<PutObjectCommandOutput | null> {
+): Promise<PutObjectCommandOutput | { message: string} | null> {
   if (!config.ENABLE_PLAYER_ARCHIVE) {
     return null;
   }

@@ -40,6 +40,18 @@ services:
   #       '-c',
   #       'sleep 10 && cqlsh -f /usr/src/sql/init.cql odota-scylla && cqlsh -f /usr/src/sql/create_tables.cql -k yasp odota-scylla',
   #     ]
+  minioinit:
+    image: minio/mc
+    depends_on:
+      - minio
+    volumes:
+      - .:/usr/src
+    container_name: odota-minioinit
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc mb opendota-blobs;
+      exit 0;
+      "
   core:
     entrypoint: bash scripts/launch.sh
     volumes:

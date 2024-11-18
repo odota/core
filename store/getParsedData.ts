@@ -4,11 +4,14 @@ import {
   getRegistryUrl,
   redisCount,
 } from '../util/utility';
+import { Archive } from './archive';
 import cassandra from './cassandra';
 import db from './db';
 import { insertMatch } from './insert';
 import redis from './redis';
 import axios from 'axios';
+
+const blobArchive = new Archive('blob');
 
 /**
  * Return parse data by reading it without fetching.
@@ -24,9 +27,13 @@ export async function readParseData(
     { prepare: true, fetchSize: 1, autoPage: true },
   );
   const row = result.rows[0];
-  const data = row?.parsed
+  let data = row?.parsed
     ? (JSON.parse(row.parsed) as ParserMatch)
     : undefined;
+  if (!data && config.ENABLE_BLOB_ARCHIVE) {
+    const archive = await blobArchive.archiveGet(`${matchId}_parsed`);
+    data = archive ? JSON.parse(archive.toString()) as ParserMatch : undefined;
+  }
   if (!data) {
     return null;
   }

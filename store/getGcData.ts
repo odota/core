@@ -11,11 +11,14 @@ import {
 import axios from 'axios';
 import retrieverMatch from '../test/data/retriever_match.json';
 import { insertMatch } from './insert';
+import { Archive } from './archive';
 
 type GcExtraData = {
   origin?: DataOrigin;
   pgroup: PGroup;
 };
+
+const blobArchive = new Archive('blob');
 
 /**
  * Return GC data by reading it without fetching.
@@ -29,7 +32,11 @@ export async function readGcData(matchId: number): Promise<GcMatch | null> {
     { prepare: true, fetchSize: 1, autoPage: true },
   );
   const row = result.rows[0];
-  const gcData = row?.gcdata ? (JSON.parse(row.gcdata) as GcMatch) : undefined;
+  let gcData = row?.gcdata ? (JSON.parse(row.gcdata) as GcMatch) : undefined;
+  if(!gcData && config.ENABLE_BLOB_ARCHIVE) {
+    const archive = await blobArchive.archiveGet(`${matchId}_gcdata`);
+    gcData = archive ? JSON.parse(archive.toString()) as GcMatch : undefined;
+  }
   if (!gcData) {
     return null;
   }
@@ -92,7 +99,10 @@ async function saveGcData(
   const players = data.match.players.map(
     (p: any, i: number): GcPlayer => ({
       // NOTE: account ids are not anonymous in this call so we don't include it in the data to insert
-      // We could start storing this data but then the API also needs to respect the user's match history setting
+      // TODO We could start storing this data but then the API also needs to respect the user's match history setting
+      // If we just enable this alone we'll write partial rows with only gcdata to the player_caches table
+      // Fix: in upsertPlayerCaches force only reading account_id from pgroup, not the match object itself
+      // Also, we probably want to queue a job post-parse that reads back the match data and updates all player_caches now that we have identity and parsed data
       // account_id: p.account_id,
       player_slot: p.player_slot,
       party_id: Number(p.party_id),

@@ -4,6 +4,8 @@ import {
   S3Client,
   PutObjectCommand,
   GetObjectCommand,
+  PutObjectCommandInput,
+  PutObjectCommandOutput,
 } from '@aws-sdk/client-s3';
 
 async function stream2buffer(stream: any): Promise<Buffer> {
@@ -21,7 +23,7 @@ export class Archive {
   private secretAccessKey: string = '';
   private bucket: string = '';
   private client: S3Client | null = null;
-  constructor(type: 'match' | 'player') {
+  constructor(type: 'match' | 'player' | 'blob') {
     if (type === 'match') {
       this.endpoint = config.MATCH_ARCHIVE_S3_ENDPOINT;
       this.accessKeyId = config.MATCH_ARCHIVE_S3_KEY_ID;
@@ -32,6 +34,11 @@ export class Archive {
       this.accessKeyId = config.PLAYER_ARCHIVE_S3_KEY_ID;
       this.secretAccessKey = config.PLAYER_ARCHIVE_S3_KEY_SECRET;
       this.bucket = config.PLAYER_ARCHIVE_S3_BUCKET;
+    } else if (type === 'blob') {
+      this.endpoint = config.BLOB_ARCHIVE_S3_ENDPOINT;
+      this.accessKeyId = config.BLOB_ARCHIVE_S3_KEY_ID;
+      this.secretAccessKey = config.BLOB_ARCHIVE_S3_KEY_SECRET;
+      this.bucket = config.BLOB_ARCHIVE_S3_BUCKET;
     }
     this.client = new S3Client({
       region: 'us-east-1',
@@ -39,7 +46,10 @@ export class Archive {
         accessKeyId: this.accessKeyId,
         secretAccessKey: this.secretAccessKey,
       },
-      endpoint: 'https://' + this.endpoint,
+      // expect the endpoint to have http prefix, if not, prepend https
+      endpoint: (this.endpoint.startsWith('http') ? '' : 'https://') + this.endpoint,
+      // put the bucket name in the path rather than the domain to avoid DNS issues with minio
+      forcePathStyle: true,
       // any other options are passed to new AWS.S3()
       // See: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Config.html#constructor-property
     });
@@ -72,22 +82,26 @@ export class Archive {
       return null;
     }
   };
-  public archivePut = async (key: string, blob: Buffer) => {
+  public archivePut = async (key: string, blob: Buffer, ifNotExists?: boolean): Promise<PutObjectCommandOutput | { message: string } | null> => {
     if (!this.client) {
       return null;
     }
-    if (blob.length < 1000) {
+    if (blob.length < 50) {
       throw new Error(
-        '[ARCHIVE] Tried to archive less than 1kb so something is probably wrong',
+        '[ARCHIVE] Tried to archive less than 10 bytes so something is probably wrong',
       );
     }
     try {
       const data = gzipSync(blob);
-      const command = new PutObjectCommand({
+      const options: PutObjectCommandInput = {
         Bucket: this.bucket,
         Key: key,
         Body: data,
-      });
+      };
+      if (ifNotExists) {
+        options.IfNoneMatch = '*';
+      }
+      const command = new PutObjectCommand(options);
       const result = await this.client.send(command);
       console.log(
         '[ARCHIVE] %s: original %s bytes, archived %s bytes',
@@ -98,6 +112,10 @@ export class Archive {
       return result;
     } catch (e: any) {
       console.error('[ARCHIVE] put error:', e.Code || e);
+      if (ifNotExists && e.Code === 412) {
+        // Expected error if ifNotExists was passed
+        return { message: 'already exists' };
+      }
       return null;
     }
   };

@@ -60,13 +60,18 @@ const defaults = {
   ENABLE_MATCH_ARCHIVE: '', // Allow reading/writing parsed match blobs to S3 storage
   MATCH_ARCHIVE_S3_KEY_ID: '', // S3-compatible key ID to archive parsed match blobs
   MATCH_ARCHIVE_S3_KEY_SECRET: '', // S3-compatible key secret to archive parsed match blobs
-  MATCH_ARCHIVE_S3_ENDPOINT: '', // S3-compatible endpoint to archive parsed match blobs
+  MATCH_ARCHIVE_S3_ENDPOINT: '', // S3-compatible endpoint to archive parsed match blobs (should have http prefix)
   MATCH_ARCHIVE_S3_BUCKET: 'opendota', // name of the S3 bucket to archive parsed match blobs
   ENABLE_PLAYER_ARCHIVE: '', // Allow reading/writing player match blobs to S3 storage
   PLAYER_ARCHIVE_S3_KEY_ID: '', // S3-compatible key ID to archive player match blobs
   PLAYER_ARCHIVE_S3_KEY_SECRET: '', // S3-compatible key secret to archive player match blobs
   PLAYER_ARCHIVE_S3_ENDPOINT: '', // S3-compatible endpoint to archive player match blobs
-  PLAYER_ARCHIVE_S3_BUCKET: 'opendota-players', // name of the S3 bucket to archive player match blobs
+  PLAYER_ARCHIVE_S3_BUCKET: 'opendota-players', // name of the S3 bucket to archive player match blobs (should have http prefix)
+  BLOB_ARCHIVE_S3_KEY_ID: 'minioadmin', // S3-compatible key ID for match data blobs
+  BLOB_ARCHIVE_S3_KEY_SECRET: 'minioadmin', // S3-compatiable key secret for match data blobs
+  BLOB_ARCHIVE_S3_ENDPOINT: 'http://localhost:9000', // S3-compatible endpoint for match data blobs (should have http prefix)
+  BLOB_ARCHIVE_S3_BUCKET: 'opendota-blobs', // name of the S3 bucket to use for match data blobs
+  ENABLE_BLOB_ARCHIVE: '', // Allow reading match data blobs from S3 storage
   DISABLE_REPARSE: '', // Disable reparsing matches that are already parsed
   DISABLE_REPARSE_EARLY: '', // Disable reparsing matches by checking parsed_matches table first
   DISABLE_REGCDATA: '', // Disable refetching new GC data on every request (cache it)
