@@ -50,5 +50,5 @@ export async function getOrFetchApiData(matchId: number, noRetry = false): Promi
     // We currently disable refetching because the Steam GetMatchDetails API is broken
     return { data: saved, error: null, pgroup: getPGroup(saved) };
   }
-  throw new Error('[APIDATA]: Could not get API data for match ' + matchId);
+  return { data: null, error: '[APIDATA]: Could not get API data for match ' + matchId, pgroup: null };
 }
