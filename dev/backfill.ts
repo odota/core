@@ -29,8 +29,7 @@ async function scanApi() {
     try {
       data = await getSteamAPIData({
         url: container.url,
-        // To use proxy we need to be running in the same environment as the proxies and STEAM_API_HOST env needs to be set
-        // proxy: true
+        // To use proxy we need to also set STEAM_API_HOST env var
       });
     } catch (err: any) {
         console.log(err);
