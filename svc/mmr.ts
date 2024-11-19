@@ -8,13 +8,12 @@ import {
   getRetrieverCount,
   redisCount,
   getRandomRetrieverUrl,
-  getRegistryUrl,
 } from '../util/utility';
 import axios from 'axios';
 
 async function processMmr(job: MmrJob) {
   const accountId = job.account_id;
-  const url = getRandomRetrieverUrl(`/profile/${accountId}`);
+  const url = await getRandomRetrieverUrl(`/profile/${accountId}`);
   console.log(url);
   const { data } = await axios.get(url, {
     timeout: 5000,

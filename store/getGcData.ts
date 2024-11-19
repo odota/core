@@ -5,7 +5,6 @@ import redis from './redis';
 import cassandra from './cassandra';
 import {
   getRandomRetrieverUrl,
-  getRegistryUrl,
   redisCount,
 } from '../util/utility';
 import axios from 'axios';
@@ -56,9 +55,7 @@ async function saveGcData(
   matchId: number,
   extraData: GcExtraData,
 ): Promise<string | null> {
-  const url = config.USE_SERVICE_REGISTRY
-    ? await getRegistryUrl('retriever', `/match/${matchId}`)
-    : getRandomRetrieverUrl(`/match/${matchId}`);
+  const url = await getRandomRetrieverUrl(`/match/${matchId}`);
   const { data, headers } = await axios.get<typeof retrieverMatch>(url, {
     timeout: 5000,
   });

@@ -171,7 +171,7 @@ type GetDataOptions = {
   timeout?: number;
   raw?: boolean;
   noRetry?: boolean;
-  proxy?: boolean;
+  proxy?: string[];
 };
 function getSteamAPIDataCallback(url: string | GetDataOptions, cb: ErrorCb) {
   let u: string;
@@ -192,9 +192,8 @@ function getSteamAPIDataCallback(url: string | GetDataOptions, cb: ErrorCb) {
     parse.query.key = apiKeys[Math.floor(Math.random() * apiKeys.length)];
     parse.search = null;
     if (typeof url === 'object' && url.proxy) {
-      // choose a steam api host
-      const apiHosts = config.STEAM_API_HOST.split(',');
-      parse.host = apiHosts[Math.floor(Math.random() * apiHosts.length)];
+      // choose one of the passed hosts
+      parse.host = url.proxy[Math.floor(Math.random() * url.proxy.length)];
     }
     if (parse.host === 'api.steampowered.com') {
       redisCount(null, 'steam_api_call');
@@ -816,21 +815,31 @@ export function getRetrieverCount() {
  * Return a URL to use for GC data retrieval.
  * @returns
  */
-export function getRandomRetrieverUrl(path: string): string {
+export async function getRandomRetrieverUrl(path: string): Promise<string> {
+  if (config.USE_SERVICE_REGISTRY) {
+    return getRegistryUrl('retriever', path);
+  }
   const urls = RETRIEVER_ARRAY.map((r) => {
     return `http://${r}${path}?key=${config.RETRIEVER_SECRET}`;
   });
   return urls[Math.floor(Math.random() * urls.length)];
 }
 
-export function getRandomParserUrl(path: string): string {
+/**
+ * Return a URL to use for replay parsing.
+ * @returns
+ */
+export async function getRandomParserUrl(path: string): Promise<string> {
+  if (config.USE_SERVICE_REGISTRY) {
+    return getRegistryUrl('parser', path);
+  }
   const urls = PARSER_ARRAY.map((r) => {
     return `http://${r}${path}`;
   });
   return urls[Math.floor(Math.random() * urls.length)];
 }
 
-export async function getRegistryUrl(service: string, path: string) {
+async function getRegistryUrl(service: string, path: string) {
   const redis = (await import('../store/redis.js')).redis;
   // Purge values older than 10 seconds (stale heartbeat)
   await redis.zremrangebyscore(
@@ -843,6 +852,24 @@ export async function getRegistryUrl(service: string, path: string) {
   return `http://${host}${path}${
     service === 'retriever' ? `?key=${config.RETRIEVER_SECRET}` : ''
   }`;
+}
+
+/**
+ * Return an array of hostnames to use for Steam API requests
+ * @returns
+ */
+export async function getApiHosts(): Promise<string[]> {
+  if (config.USE_SERVICE_REGISTRY) {
+    const redis = (await import('../store/redis.js')).redis;
+    // Purge values older than 10 seconds (stale heartbeat)
+    await redis.zremrangebyscore(
+      'registry:' + 'proxy',
+      '-inf',
+      Date.now() - 10000,
+    );
+    return redis.zrange('registry:proxy', 0, -1);
+  }
+  return config.STEAM_API_HOST.split(',')
 }
 
 /**

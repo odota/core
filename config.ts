@@ -79,8 +79,9 @@ const defaults = {
   DISABLE_OLD_PARSE: '', // Disable parsing for old non-league matches unlikely to have replays
   API_KEY_GEN_THRESHOLD: '0', // Account ID requirement (delta from max) for generating API keys
   SERVICE_REGISTRY_HOST: '', // Host for external services to register themselves at
-  USE_SERVICE_REGISTRY: '', // Use the service registry for determining gc and parser urls
+  USE_SERVICE_REGISTRY: '', // Use the service registry for determining gc, parser, and proxy urls
   SCANNER_OFFSET: '0', // Delay in match seq num value to run secondary scanner (to pick up missing matches)
+  EXTERNAL: '', // Indicates that the service resides outside the registry and should report an external IP
 };
 if (process.env.NODE_ENV === 'development') {
   // force PORT to null in development so we can run multiple web services without conflict

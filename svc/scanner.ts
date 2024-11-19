@@ -3,15 +3,11 @@ import config from '../config';
 import redis from '../store/redis';
 import { insertMatch } from '../store/insert';
 import type { ApiMatch } from '../store/pgroup';
-import { generateJob, getSteamAPIData, redisCount } from '../util/utility';
-
-const apiKeys = config.STEAM_API_KEY.split(',');
-const apiHosts = config.STEAM_API_HOST.split(',');
-const parallelism = Math.min(apiHosts.length, apiKeys.length);
+import { generateJob, getApiHosts, getSteamAPIData, redisCount } from '../util/utility';
+const API_KEYS = config.STEAM_API_KEY.split(',');
 const PAGE_SIZE = 100;
 // This endpoint is limited to something like 1 request every 5 seconds
 const SCANNER_WAIT = 5000;
-const SCANNER_WAIT_CATCHUP = SCANNER_WAIT / parallelism;
 
 async function scanApi(seqNum: number) {
   const offset = Number(config.SCANNER_OFFSET);
@@ -24,6 +20,9 @@ async function scanApi(seqNum: number) {
       await new Promise(resolve => setTimeout(resolve, SCANNER_WAIT));
       continue;
     }
+    const apiHosts = await getApiHosts();
+    const parallelism = Math.min(apiHosts.length, API_KEYS.length);
+    const scannerWaitCatchup = SCANNER_WAIT / parallelism;
     const container = generateJob('api_sequence', {
       start_at_match_seq_num: nextSeqNum,
     });
@@ -31,7 +30,7 @@ async function scanApi(seqNum: number) {
     try {
       data = await getSteamAPIData({
         url: container.url,
-        proxy: true,
+        proxy: apiHosts,
       });
     } catch (err: any) {
       // unretryable steam error
@@ -65,7 +64,7 @@ async function scanApi(seqNum: number) {
     await new Promise((resolve) =>
       setTimeout(
         resolve,
-        resp.length < PAGE_SIZE ? SCANNER_WAIT : SCANNER_WAIT_CATCHUP,
+        resp.length < PAGE_SIZE ? SCANNER_WAIT : scannerWaitCatchup,
       ),
     );
   }

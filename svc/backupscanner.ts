@@ -9,9 +9,7 @@ import {
   invokeIntervalAsync,
   eachLimitPromise,
 } from '../util/utility';
-const apiKeys = config.STEAM_API_KEY.split(',');
-const apiHosts = config.STEAM_API_HOST.split(',');
-const parallelism = Math.min(apiHosts.length, apiKeys.length);
+const parallelism = 1;
 const delay = 1000;
 
 async function processMatch(matchId: number) {

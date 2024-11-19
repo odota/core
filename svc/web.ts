@@ -185,6 +185,11 @@ app.get('/healthz', (req, res) => {
   res.end('ok');
 });
 
+app.get('/ip', async (req, res, cb) => {
+  // Echo back the client's ip
+  res.end(req.ip);
+});
+
 app.post('/register/:service/:host', async (req, res, cb) => {
   // check secret matches
   if (config.RETRIEVER_SECRET && config.RETRIEVER_SECRET !== req.query.key) {

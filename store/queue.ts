@@ -12,12 +12,18 @@ export async function runQueue(
   queueName: QueueName,
   parallelism: number,
   processor: (job: any) => Promise<void>,
+  getCapacity?: () => Promise<number>,
 ) {
-  const executor = async () => {
+  const executor = async (i: number) => {
     // Since this may block, we need a separate client for each parallelism!
     // Otherwise the workers cannot issue redis commands since something is waiting for redis to return a job
     const consumer = new Redis(config.REDIS_URL);
     while (true) {
+      // If we have a way to measure capacity, throttle the processing speed based on capacity
+      if (getCapacity && i >= await getCapacity()) {
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        continue;
+      }
       const job = await consumer.blpop(queueName, '0');
       if (job) {
         const jobData = JSON.parse(job[1]);
@@ -37,7 +43,7 @@ export async function runQueue(
     }
   };
   for (let i = 0; i < parallelism; i++) {
-    executor();
+    executor(i);
   }
 }
 

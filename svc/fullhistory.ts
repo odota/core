@@ -12,11 +12,6 @@ import redis from '../store/redis';
 import { runQueue } from '../store/queue';
 import { getPlayerMatches } from '../store/queries';
 import { insertMatch } from '../store/insert';
-const apiKeys = config.STEAM_API_KEY.split(',');
-const apiHosts = config.STEAM_API_HOST.split(',');
-// Approximately 5 req/sec limit per apiHost
-// Short fullhistory uses 1 req, long 5 req, some percentage will need to query for matches
-const parallelism = Math.min(apiHosts.length * 3, apiKeys.length);
 
 async function updatePlayer(player: FullHistoryJob) {
   // done with this player, update
@@ -145,8 +140,12 @@ async function processFullHistory(job: FullHistoryJob) {
   console.timeEnd('doFullHistory: ' + player.account_id.toString());
 }
 
+// Approximately 5 req/sec limit per apiHost
+// Short fullhistory uses 1 req, long 5 req, some percentage will need to query for up to 500 matches
 runQueue(
   'fhQueue',
-  Number(config.FULLHISTORY_PARALLELISM) || parallelism,
+  Number(config.FULLHISTORY_PARALLELISM) || 1,
   processFullHistory,
+  // Currently not using proxy so don't need to throttle capacity
+  // async () => redis.zcard('registry:proxy'),
 );
