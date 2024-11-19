@@ -11,7 +11,7 @@ import { insertMatch } from './insert';
 import redis from './redis';
 import axios from 'axios';
 
-const blobArchive = new Archive('blob');
+const blobArchive = config.ENABLE_BLOB_ARCHIVE ? new Archive('blob') : null;
 
 /**
  * Return parse data by reading it without fetching.
@@ -30,7 +30,7 @@ export async function readParseData(
   let data = row?.parsed
     ? (JSON.parse(row.parsed) as ParserMatch)
     : undefined;
-  if (!data && config.ENABLE_BLOB_ARCHIVE) {
+  if (!data && blobArchive) {
     const archive = await blobArchive.archiveGet(`${matchId}_parsed`);
     data = archive ? JSON.parse(archive.toString()) as ParserMatch : undefined;
   }
