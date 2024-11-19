@@ -18,7 +18,7 @@ type GcExtraData = {
   pgroup: PGroup;
 };
 
-const blobArchive = new Archive('blob');
+const blobArchive = config.ENABLE_BLOB_ARCHIVE ? new Archive('blob') : null;
 
 /**
  * Return GC data by reading it without fetching.
@@ -33,7 +33,7 @@ export async function readGcData(matchId: number): Promise<GcMatch | null> {
   );
   const row = result.rows[0];
   let gcData = row?.gcdata ? (JSON.parse(row.gcdata) as GcMatch) : undefined;
-  if(!gcData && config.ENABLE_BLOB_ARCHIVE) {
+  if(!gcData && blobArchive) {
     const archive = await blobArchive.archiveGet(`${matchId}_gcdata`);
     gcData = archive ? JSON.parse(archive.toString()) as GcMatch : undefined;
   }
