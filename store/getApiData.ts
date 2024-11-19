@@ -6,7 +6,7 @@ import { insertMatch } from './insert';
 import { getPGroup, type ApiMatch } from './pgroup';
 import redis from './redis';
 
-const blobArchive = new Archive('blob');
+const blobArchive = config.ENABLE_BLOB_ARCHIVE ? new Archive('blob') : null;
 /**
  * Return API data by reading it without fetching.
  * @param matchId
@@ -20,7 +20,7 @@ export async function readApiData(matchId: number): Promise<ApiMatch | null> {
   );
   const row = result.rows[0];
   let data = row?.api ? (JSON.parse(row.api) as ApiMatch) : undefined;
-  if (!data && config.ENABLE_BLOB_ARCHIVE) {
+  if (!data && blobArchive) {
     const archive = await blobArchive.archiveGet(`${matchId}_api`);
     data = archive ? JSON.parse(archive.toString()) as ApiMatch : undefined;
   }
