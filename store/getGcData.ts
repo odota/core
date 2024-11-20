@@ -9,7 +9,7 @@ import {
 } from '../util/utility';
 import axios from 'axios';
 import retrieverMatch from '../test/data/retriever_match.json';
-import { insertMatch } from './insert';
+import { insertMatch, upsertPlayer } from './insert';
 import { Archive } from './archive';
 
 type GcExtraData = {
@@ -131,6 +131,19 @@ async function saveGcData(
       matchToInsert.replay_salt,
       matchId,
     ],
+  );
+  // Insert the players we found
+  await Promise.all(
+    players.map((player) =>
+      upsertPlayer(
+        db,
+        {
+          account_id: player.account_id,
+          last_match_time: new Date(data.match.starttime * 1000),
+        },
+        false,
+      ),
+    ),
   );
   // Put extra fields in matches/player_matches (do last since after this we won't fetch from GC again)
   await insertMatch(matchToInsert, {
