@@ -343,7 +343,7 @@ export async function insertMatch(
     await Promise.all(
       copy.players.map(async (p) => {
         // add account id to each player so we know what caches to update
-        const account_id = pgroup[p.player_slot]?.account_id ?? p.account_id;
+        const account_id = pgroup[p.player_slot]?.account_id;
         // join player with match to form player_match
         const playerMatch: Partial<ParsedPlayerMatch> = {
           ...p,

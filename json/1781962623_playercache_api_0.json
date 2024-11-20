@@ -27,6 +27,7 @@
   "cluster": 132,
   "lobby_type": 7,
   "game_mode": 22,
+  "average_rank": 81,
   "heroes": {
     "0": {
       "account_id": 120269134,
