@@ -33,12 +33,13 @@ async function processMatch(matchId: string) {
   const container = generateJob('api_details', {
     match_id: Number(matchId),
   });
-  const body = await getSteamAPIData({ url: container.url, noRetry: true });
-  const match = body.result;
-  await insertMatch(match, {
-    type: 'api',
-    ifNotExists: true,
-  });
+  // Disabled due to Steam GetMatchDetails being broken
+  // const body = await getSteamAPIData({ url: container.url, noRetry: true });
+  // const match = body.result;
+  // await insertMatch(match, {
+  //   type: 'api',
+  //   ifNotExists: true,
+  // });
   await new Promise((resolve) => setTimeout(resolve, 200));
 }
 
