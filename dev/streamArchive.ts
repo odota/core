@@ -1,4 +1,4 @@
-import { archivePostgresStream } from '../store/getArchivedData';
+import { archivePostgresStream } from "../util/archiveUtil";
 
 // Archive parsed matches from postgres records
 archivePostgresStream();
