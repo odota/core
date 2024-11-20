@@ -11,9 +11,13 @@ import QueryStream from 'pg-query-stream';
 import { Client } from 'pg';
 import crypto from 'crypto';
 import db from '../store/db';
+import { readApiData } from '../store/getApiData';
+import { readGcData } from '../store/getGcData';
+import { checkIsParsed } from '../store/getParsedData';
 
 const matchArchive = config.ENABLE_MATCH_ARCHIVE ? new Archive('match') : null;
 const playerArchive = config.ENABLE_PLAYER_ARCHIVE ? new Archive('player') : null;
+const blobArchive = config.ENABLE_BLOB_ARCHIVE ? new Archive('blob') : null;
 
 export async function doArchivePlayerMatches(
     accountId: number,
@@ -49,7 +53,7 @@ export async function doArchivePlayerMatches(
     // TODO (howard) add redis counts
   }
   
-  async function doArchiveFromBlob(matchId: number) {
+  async function doArchiveMatchFromCassandra(matchId: number) {
     if (!matchArchive) {
       return;
     }
@@ -60,13 +64,6 @@ export async function doArchivePlayerMatches(
     );
     if (!match) {
       // Invalid/not found, skip
-      return;
-    }
-    if (metadata?.has_api && !metadata?.has_gcdata && !metadata?.has_parsed) {
-      // if it only contains API data, delete?
-      // If the match is old we might not be able to get back ability builds, HD/TD/HH
-      // await deleteMatch(matchId);
-      // console.log('DELETE match %s, apionly', matchId);
       return;
     }
     if (metadata?.has_parsed) {
@@ -86,13 +83,10 @@ export async function doArchivePlayerMatches(
       // check data completeness with isDataComplete
       if (!isDataComplete(match as ParsedMatch)) {
         redisCount('incomplete_archive');
-        console.log('INCOMPLETE match %s', matchId);
+        console.log('INCOMPLETE skipping match %s', matchId);
         return;
       }
       redisCount('match_archive_write');
-      // console.log('SIMULATE ARCHIVE match %s', matchId);
-      // TODO (howard) don't actually archive until verification of data format
-      return;
       // Archive the data since it's parsed. This might also contain api and gcdata
       const blob = Buffer.from(JSON.stringify(match));
       const result = await matchArchive?.archivePut(matchId.toString(), blob);
@@ -107,9 +101,38 @@ export async function doArchivePlayerMatches(
       }
       return result;
     }
-    // if it's something else, e.g. contains api and gcdata only, leave it for now
-    // console.log('SKIP match %s, unparsed', matchId);
     return;
+  }
+
+  async function doMigrateMatchToBlobStore(matchId: number) {
+    const api = await readApiData(matchId, true);
+    const gcdata = await readGcData(matchId, true);
+    const isParsed = await checkIsParsed(matchId);
+    // If API only, migrate the blob and delete row
+    // If API and gcdata, skip (maybe in the future we want to migrate both blobs to blobstore)
+    // If parsed we should archive it in doArchiveFromBlob
+    if (api && !gcdata && !isParsed) {
+      if (api) {
+        // If the match is old we might not be able to get back ability builds, HD/TD/HH from Steam so we want to keep the API data
+        const result = await blobArchive?.archivePut(matchId.toString() + '_api', Buffer.from(JSON.stringify(api)));
+        if (result) {
+          console.log('SUCCESS BLOB api match %s', matchId);
+        } else {
+          console.log('FAILED BLOB api match %s', matchId);
+          return;
+        }
+      }
+      // if (gcdata) {
+      //   const result = await blobArchive?.archivePut(matchId.toString() + '_gcdata', Buffer.from(JSON.stringify(gcdata)));
+      //   if (result) {
+      //     console.log('SUCCESS BLOB gcdata match %s', matchId);
+      //   } else {
+      //     console.log('FAILED BLOB gcdata match %s', matchId);
+      //     return;
+      //   }
+      // }
+      await deleteMatch(matchId);
+    }
   }
   
   async function deleteMatch(matchId: number) {
@@ -144,7 +167,7 @@ export async function doArchivePlayerMatches(
         i += 1;
         console.log(i);
         try {
-          await doArchiveFromBlob(row.match_id);
+          await doArchiveMatchFromCassandra(row.match_id);
         } catch (e) {
           console.error(e);
         }
@@ -160,7 +183,7 @@ export async function doArchivePlayerMatches(
     for (let i = start; i < max; i++) {
       console.log(i);
       try {
-        await doArchiveFromBlob(i);
+        await doArchiveMatchFromCassandra(i);
       } catch (e) {
         console.error(e);
       }
@@ -175,7 +198,7 @@ export async function doArchivePlayerMatches(
       page.push(rand + i);
     }
     console.log(page[0]);
-    await Promise.allSettled(page.map((i) => doArchiveFromBlob(i)));
+    await Promise.allSettled(page.map((i) => doArchiveMatchFromCassandra(i)));
   }
   
   export async function archiveToken(max: number) {
@@ -183,7 +206,7 @@ export async function doArchivePlayerMatches(
     let page = await getTokenRange(1000);
     page = page.filter((id) => id < max);
     console.log(page[0]);
-    await Promise.allSettled(page.map((i) => doArchiveFromBlob(i)));
+    await Promise.allSettled(page.map((i) => doArchiveMatchFromCassandra(i)));
   }
   
   function randomBigInt(byteCount: number) {
@@ -197,6 +220,7 @@ export async function doArchivePlayerMatches(
   export async function getCurrentMaxArchiveID() {
     const max = (await db.raw('select max(match_id) from public_matches'))
       ?.rows?.[0]?.max;
+    // Use a higher max to archive everything
     const limit = max + 100000000;
     return limit;
   }
