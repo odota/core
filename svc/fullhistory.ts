@@ -41,7 +41,7 @@ async function processMatch(matchId: string) {
   //   type: 'api',
   //   ifNotExists: true,
   // });
-  await new Promise((resolve) => setTimeout(resolve, 200));
+  // await new Promise((resolve) => setTimeout(resolve, 200));
 }
 
 async function processFullHistory(job: FullHistoryJob) {
