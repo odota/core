@@ -1,5 +1,4 @@
 // Fetches old matches from Steam API and writes to blob storage
-import config from '../config';
 import { Archive } from '../store/archive';
 import type { ApiMatch } from '../store/pgroup';
 import { generateJob, getSteamAPIData, transformMatch } from '../util/utility';
@@ -15,7 +14,6 @@ import fs from 'fs';
 // This endpoint is limited to something like 1 request every 5 seconds
 const SCANNER_WAIT = 5000;
 const blobArchive = new Archive('blob');
-console.log(config.BLOB_ARCHIVE_S3_BUCKET, config.BLOB_ARCHIVE_S3_ENDPOINT);
 
 // We can stop at approximately 6400000000 (Feb 2024)
 async function scanApi() {
@@ -54,7 +52,8 @@ async function scanApi() {
     try {
     const insertResult = await Promise.all(resp.map(async (origMatch: ApiMatch) => {
       const match = transformMatch(origMatch);
-      const result = await blobArchive.archivePut(match.match_id + '_api', Buffer.from(JSON.stringify(match)), true);
+      // ifNotExists functionality not implemented by some s3 providers
+      const result = await blobArchive.archivePut(match.match_id + '_api', Buffer.from(JSON.stringify(match)), false);
       if (!result) {
         throw new Error('failed to insert match ' + match.match_id);
       }
