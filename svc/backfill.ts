@@ -1,4 +1,5 @@
 // Fetches old matches from Steam API and writes to blob storage
+import config from '../config';
 import { Archive } from '../store/archive';
 import type { ApiMatch } from '../store/pgroup';
 import { generateJob, getSteamAPIData, transformMatch } from '../util/utility';
@@ -14,6 +15,7 @@ import fs from 'fs';
 // This endpoint is limited to something like 1 request every 5 seconds
 const SCANNER_WAIT = 5000;
 const blobArchive = new Archive('blob');
+console.log(config.BLOB_ARCHIVE_S3_BUCKET, config.BLOB_ARCHIVE_S3_ENDPOINT);
 
 // We can stop at approximately 6400000000 (Feb 2024)
 async function scanApi() {
@@ -32,16 +34,18 @@ async function scanApi() {
         // To use proxy we need to also set STEAM_API_HOST env var
       });
     } catch (err: any) {
-        console.log(err);
-        continue;
+      console.log(err);
       // unretryable steam error
-    //   if (err?.result?.status === 2) {
-    //     nextSeqNum += 1;
-    //     // continue with next seq num
-    //     continue;
-    //   } else {
-    //     throw err;
-    //   }
+      //   if (err?.result?.status === 2) {
+      //     nextSeqNum += 1;
+      // }
+        await new Promise((resolve) =>
+        setTimeout(
+          resolve,
+          SCANNER_WAIT,
+        ),
+      );
+      continue;
     }
     const resp =
       data && data.result && data.result.matches ? data.result.matches : [];
