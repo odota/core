@@ -63,38 +63,24 @@ async function countDayDistinct(prefix: MetricName) {
 }
 
 export async function buildStatus() {
-  const obj = {
-    user_players: async () => redis.zcard('visitors'),
-    user_players_recent: async () =>
-      redis.zcount(
-        'visitors',
-        moment().subtract(30, 'day').format('X'),
-        '+inf',
-      ),
-    tracked_players: async () => redis.zcard('tracked'),
-  
+  const obj = {  
     registry_proxy: async () => redis.zcard('registry:proxy'),
     registry_retriever: async () => redis.zcard('registry:retriever'),
     registry_parser: async () => redis.zcard('registry:parser'),
 
     matches_last_day: async () => countDay('added_match'),
     matches_prev_hour: async () => countLastHour('added_match'),
-    distinct_match_players_last_day: async () =>
-      countDayDistinct('distinct_match_player'),
-    distinct_match_players_user_last_day: async () =>
-      countDayDistinct('distinct_match_player_user'),
-    distinct_match_players_recent_user_last_day: async () =>
-      countDayDistinct('distinct_match_player_recent_user'),
-  
-    retriever_matches_current_hour: async () => countHour('retriever'),
     retriever_matches_last_day: async () => countDay('retriever'),
-    retriever_players_last_day: async () => countDay('retriever_player'),
+    parsed_matches_last_day: async () => countDay('parser'),
+    tracked_players: async () => redis.zcard('tracked'),
     auto_parse_last_day: async () => countDay('auto_parse'),
+
+    retriever_matches_current_hour: async () => countHour('retriever'),
+    retriever_players_last_day: async () => countDay('retriever_player'),
     parse_jobs_last_day: async () => countDay('parser_job'),
     parse_fails_last_day: async () => countDay('parser_fail'),
     parse_crashes_last_day: async () => countDay('parser_crash'),
     parse_skips_last_day: async () => countDay('parser_skip'),
-    parsed_matches_last_day: async () => countDay('parser'),
 
     requests_last_day: async () => countDay('request'),
     distinct_requests_last_day: async () =>
@@ -107,35 +93,44 @@ export async function buildStatus() {
     fullhistory_skips_last_day: async () => countDay('fullhistory_skip'),
     meta_parsed_last_day: async () => countDay('meta_parse'),
 
-    // reapi_last_day: async () => countDay('reapi'),
-    regcdata_last_day: async () => countDay('regcdata'),
-    reparse_last_day: async () => countDay('reparse'),
-    reparse_early_last_day: async () => countDay('reparse_early'),
-    // oldparse_last_day: async () => countDay('oldparse'),
- 
-    blob_archive_read_last_day: async () => countDay('blob_archive_read'),
-    match_archive_read_last_day: async () => countDay('match_archive_read'),
-    match_archive_write_last_day: async () => countDay('match_archive_write'),
-    incomplete_archive_last_day: async () => countDay('incomplete_archive'),
+    steam_api_calls_last_day: async () => countDay('steam_api_call'),
+    steam_proxy_calls_last_day: async () => countDay('steam_proxy_call'),
+    steam_429_last_day: async () => countDay('steam_429'),
+    steam_403_last_day: async () => countDay('steam_403'),
+    // steam_api_notfound_last_day: async () => countDay('steam_api_notfound'),
+    // steam_gc_backfill_last_day: async () => countDay('steam_gc_backfill'),
   
     api_hits_last_day: async () => countDay('api_hits'),
     api_hits_ui_last_day: async () => countDay('api_hits_ui'),
     build_match_last_day: async () => countDay('build_match'),
     get_player_matches_last_day: async () => countDay('player_matches'),
     // self_player_matches_last_day: async () => countDay('self_profile_view'),
-    // gen_api_key_invalid_last_day: async () => getRedisCountDay('gen_api_key_invalid'),
+
+    blob_archive_read_last_day: async () => countDay('blob_archive_read'),
+    match_archive_read_last_day: async () => countDay('match_archive_read'),
+    match_archive_write_last_day: async () => countDay('match_archive_write'),
+    incomplete_archive_last_day: async () => countDay('incomplete_archive'),
+
     error_last_day: async () => countDay('500_error'),
     web_crash_last_day: async () => countDay('web_crash'),
     skip_seq_num_last_day: async () => countDay('skip_seq_num'),
     secondary_scanner_last_day: async () => countDay('secondary_scanner'),
-
-    steam_api_calls_last_day: async () => countDay('steam_api_call'),
-    steam_proxy_calls_last_day: async () => countDay('steam_proxy_call'),
-    steam_429_last_day: async () => countDay('steam_429'),
-    steam_403_last_day: async () => countDay('steam_403'),
     steam_api_backfill_last_day: async () => countDay('steam_api_backfill'),
-    // steam_api_notfound_last_day: async () => countDay('steam_api_notfound'),
-    // steam_gc_backfill_last_day: async () => countDay('steam_gc_backfill'),
+    // gen_api_key_invalid_last_day: async () => getRedisCountDay('gen_api_key_invalid'),
+
+    user_players: async () => redis.zcard('visitors'),
+    user_players_recent: async () =>
+      redis.zcount(
+        'visitors',
+        moment().subtract(30, 'day').format('X'),
+        '+inf',
+      ),
+    distinct_match_players_last_day: async () =>
+      countDayDistinct('distinct_match_player'),
+    distinct_match_players_user_last_day: async () =>
+      countDayDistinct('distinct_match_player_user'),
+    distinct_match_players_recent_user_last_day: async () =>
+      countDayDistinct('distinct_match_player_recent_user'),
     
     match_cache_hit_last_day: async () => countDay('match_cache_hit'),
     player_cache_hit_last_day: async () => countDay('player_cache_hit'),
@@ -151,6 +146,13 @@ export async function buildStatus() {
     auto_player_cache_last_day: async () => countDay('auto_player_cache'),
     distinct_auto_player_cache_last_day: async () =>
       countDayDistinct('distinct_auto_player_cache'),
+
+    // reapi_last_day: async () => countDay('reapi'),
+    regcdata_last_day: async () => countDay('regcdata'),
+    reparse_last_day: async () => countDay('reparse'),
+    reparse_early_last_day: async () => countDay('reparse_early'),
+    // oldparse_last_day: async () => countDay('oldparse'),
+
     api_paths: async () => {
       const results = await redis.zrangebyscore(
         'api_paths',
