@@ -12,7 +12,7 @@ const blobArchive = config.ENABLE_BLOB_ARCHIVE ? new Archive('blob') : null;
  * @param matchId
  * @returns
  */
-export async function readApiData(matchId: number): Promise<ApiMatch | null> {
+export async function readApiData(matchId: number, noBlobStore?: boolean): Promise<ApiMatch | null> {
   const result = await cassandra.execute(
     'SELECT api FROM match_blobs WHERE match_id = ?',
     [matchId],
@@ -20,8 +20,11 @@ export async function readApiData(matchId: number): Promise<ApiMatch | null> {
   );
   const row = result.rows[0];
   let data = row?.api ? (JSON.parse(row.api) as ApiMatch) : undefined;
-  if (!data && blobArchive) {
+  if (!data && blobArchive && !noBlobStore) {
     const archive = await blobArchive.archiveGet(`${matchId}_api`);
+    if (archive) {
+      redisCount(redis, 'blob_archive_read');
+    }
     data = archive ? JSON.parse(archive.toString()) as ApiMatch : undefined;
   }
   if (!data) {

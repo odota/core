@@ -19,6 +19,7 @@ const blobArchive = config.ENABLE_BLOB_ARCHIVE ? new Archive('blob') : null;
  */
 export async function readParseData(
   matchId: number,
+  noBlobStore?: boolean,
 ): Promise<ParserMatch | null> {
   const result = await cassandra.execute(
     'SELECT parsed FROM match_blobs WHERE match_id = ?',
@@ -29,7 +30,7 @@ export async function readParseData(
   let data = row?.parsed
     ? (JSON.parse(row.parsed) as ParserMatch)
     : undefined;
-  if (!data && blobArchive) {
+  if (!data && blobArchive && !noBlobStore) {
     const archive = await blobArchive.archiveGet(`${matchId}_parsed`);
     data = archive ? JSON.parse(archive.toString()) as ParserMatch : undefined;
   }

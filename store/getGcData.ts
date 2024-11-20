@@ -24,7 +24,7 @@ const blobArchive = config.ENABLE_BLOB_ARCHIVE ? new Archive('blob') : null;
  * @param matchId
  * @returns
  */
-export async function readGcData(matchId: number): Promise<GcMatch | null> {
+export async function readGcData(matchId: number, noBlobStore?: boolean): Promise<GcMatch | null> {
   const result = await cassandra.execute(
     'SELECT gcdata FROM match_blobs WHERE match_id = ?',
     [matchId],
@@ -32,7 +32,7 @@ export async function readGcData(matchId: number): Promise<GcMatch | null> {
   );
   const row = result.rows[0];
   let gcData = row?.gcdata ? (JSON.parse(row.gcdata) as GcMatch) : undefined;
-  if(!gcData && blobArchive) {
+  if(!gcData && blobArchive && !noBlobStore) {
     const archive = await blobArchive.archiveGet(`${matchId}_gcdata`);
     gcData = archive ? JSON.parse(archive.toString()) as GcMatch : undefined;
   }

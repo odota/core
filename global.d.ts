@@ -417,6 +417,7 @@ type MetricName =
   | 'fullhistory_short'
   | 'match_archive_read'
   | 'match_archive_write'
+  | 'blob_archive_read'
   | 'auto_parse'
   | 'added_match'
   | 'distinct_match_player'

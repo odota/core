@@ -109,7 +109,7 @@ async function buildMatch(
   let [match, odData]: [
     Match | ParsedMatch | null,
     GetMatchDataMetadata | null,
-  ] = await getMatchDataFromBlobWithMetadata(matchId, true);
+  ] = await getMatchDataFromBlobWithMetadata(matchId);
   if (!match) {
     return null;
   }

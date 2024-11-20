@@ -24,7 +24,7 @@ import {
   isAutoCachePlayer,
 } from '../util/utility';
 import {
-  readArchivedPlayerMatches,
+  tryReadArchivedPlayerMatches,
   tryReadArchivedMatch,
 } from './getArchivedData';
 import { readApiData } from './getApiData';
@@ -264,7 +264,7 @@ export async function getPlayerMatchesWithMetadata(
     localOrCached(),
     // if dbLimit (recentMatches), don't use archive
     config.ENABLE_PLAYER_ARCHIVE && !queryObj.dbLimit
-      ? readArchivedPlayerMatches(accountId)
+      ? tryReadArchivedPlayerMatches(accountId)
       : Promise.resolve([]),
   ]);
   const localLength = localMatches.length;
@@ -702,9 +702,9 @@ export async function isSubscriber(account_id: string) {
 
 export async function getMatchDataFromBlobWithMetadata(
   matchId: number,
-  backfill: boolean,
+  options?: { noArchive: boolean, noBlobStore: boolean },
 ): Promise<[Match | ParsedMatch | null, GetMatchDataMetadata | null]> {
-  let [api, gcdata, parsed]: [ApiMatch | null, GcMatch | null, ParserMatch | null] = await Promise.all([readApiData(matchId), readGcData(matchId), readParseData(matchId)]);
+  let [api, gcdata, parsed]: [ApiMatch | null, GcMatch | null, ParserMatch | null] = await Promise.all([readApiData(matchId, options?.noBlobStore), readGcData(matchId, options?.noBlobStore), readParseData(matchId, options?.noBlobStore)]);
   let archived: ParsedMatch | null = null;
 
   let odData: GetMatchDataMetadata = {
@@ -712,33 +712,18 @@ export async function getMatchDataFromBlobWithMetadata(
     has_gcdata: Boolean(gcdata),
     has_parsed: Boolean(parsed),
   };
-  if (backfill) {
+  if (!options?.noArchive) {
     archived = await tryReadArchivedMatch(matchId);
     if (archived) {
       odData.archive = true;
     }
   }
 
-  if (!archived) {
-    if (!api && backfill) {
-      redisCount(redis, 'steam_api_backfill');
-      // Disable the backfill for now since GetMatchDetails is broken as of June 2024
-      // api = await tryFetchApiData(matchId, true);
-      if (api) {
-        odData.backfill_api = true;
-      }
-    }
-    if (!api) {
-      return [null, null];
-    }
-    if (!gcdata && backfill) {
-      redisCount(redis, 'steam_gc_backfill');
-      // Disable for now since volume is too high
-      // gcdata = await tryFetchGcData(matchId, getPGroup(api));
-      if (gcdata) {
-        odData.backfill_gc = true;
-      }
-    }
+  if (!archived && !api) {
+    // Use this event to count the number of failed requests
+    // Could be due to missing data or invalid ID--need to analyze
+    redisCount(redis, 'steam_api_backfill');
+    return [null, null];
   }
 
   const basePlayers = api?.players || archived?.players;
