@@ -196,7 +196,7 @@ keys
         Number(req.user?.account_id) >
         threshold.account_id - Number(config.API_KEY_GEN_THRESHOLD);
       if (fail) {
-        redisCount(redis, 'gen_api_key_invalid');
+        redisCount('gen_api_key_invalid');
         return res.sendStatus(400).json({ error: 'Failed validation' });
       }
     }

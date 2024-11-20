@@ -85,11 +85,11 @@ export async function doArchivePlayerMatches(
       }
       // check data completeness with isDataComplete
       if (!isDataComplete(match as ParsedMatch)) {
-        redisCount(null, 'incomplete_archive');
+        redisCount('incomplete_archive');
         console.log('INCOMPLETE match %s', matchId);
         return;
       }
-      redisCount(null, 'match_archive_write');
+      redisCount('match_archive_write');
       // console.log('SIMULATE ARCHIVE match %s', matchId);
       // TODO (howard) don't actually archive until verification of data format
       return;

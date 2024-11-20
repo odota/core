@@ -22,7 +22,7 @@ async function parseProcessor(job: ParseJob) {
   let gcTime = 0;
   let parseTime = 0;
   try {
-    redisCount(redis, 'parser_job');
+    redisCount('parser_job');
     const matchId = job.match_id;
 
     // Check if match is in safe integer range
@@ -39,7 +39,7 @@ async function parseProcessor(job: ParseJob) {
     // Check if match is already parsed according to PG
     // Doing the check early means we don't verify API or gcdata
     if (await checkIsParsed(matchId)) {
-      redisCount(redis, 'reparse_early');
+      redisCount('reparse_early');
       if (config.DISABLE_REPARSE_EARLY) {
         // If high load, we can disable parsing already parsed matches
         log('skip');
@@ -65,7 +65,7 @@ async function parseProcessor(job: ParseJob) {
 
     const { leagueid, duration, start_time } = apiMatch;
     if (!leagueid && Date.now() / 1000 - start_time > 30 * 24 * 60 * 60) {
-      redisCount(redis, 'oldparse');
+      redisCount('oldparse');
       if (config.DISABLE_OLD_PARSE) {
         // Valve doesn't keep non-league replays for more than a few weeks.
         // Skip even attempting the parse if it's too old
@@ -148,11 +148,11 @@ async function parseProcessor(job: ParseJob) {
     redis.publish('parsed', message);
     console.log(message);
     if (type === 'fail') {
-      redisCount(redis, 'parser_fail');
+      redisCount('parser_fail');
     } else if (type === 'crash') {
-      redisCount(redis, 'parser_crash');
+      redisCount('parser_crash');
     } else if (type === 'skip') {
-      redisCount(redis, 'parser_skip');
+      redisCount('parser_skip');
     }
   }
 }

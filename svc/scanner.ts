@@ -36,7 +36,7 @@ async function scanApi(seqNum: number) {
       // unretryable steam error
       if (err?.result?.status === 2) {
         nextSeqNum += 1;
-        redisCount(redis, 'skip_seq_num');
+        redisCount('skip_seq_num');
         // continue with next seq num
         continue;
       } else {
@@ -82,7 +82,7 @@ async function processMatch(match: ApiMatch) {
   if (!result) {
     if (Number(config.SCANNER_OFFSET)) {
       // secondary scanner picked up a missing match
-      redisCount(redis, 'secondary_scanner');
+      redisCount('secondary_scanner');
     }
     await insertMatch(match, {
       type: 'api',

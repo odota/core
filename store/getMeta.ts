@@ -1,9 +1,6 @@
 import ProtoBuf from 'protobufjs';
-import axios from 'axios';
-import fs from 'fs';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import redis from './redis';
 import { buildReplayUrl, redisCount } from '../util/utility';
 import { readGcData } from './getGcData';
 const execPromise = promisify(exec);
@@ -32,7 +29,7 @@ export async function getMeta(matchId: number) {
   const message = await getMetaFromUrl(url);
   if (message) {
     // Count the number of meta parses
-    redisCount(redis, 'meta_parse');
+    redisCount('meta_parse');
   }
   // Return the info, it may be null if we failed at any step or meta isn't available
   return message;

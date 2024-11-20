@@ -101,7 +101,7 @@ async function buildMatch(
   const key = `match:${matchId}`;
   const reply = await redis.get(key);
   if (reply) {
-    redisCount(redis, 'match_cache_hit');
+    redisCount('match_cache_hit');
     return JSON.parse(reply);
   }
 
@@ -114,7 +114,7 @@ async function buildMatch(
     return null;
   }
   match.od_data = odData;
-  redisCount(redis, 'build_match');
+  redisCount('build_match');
   let playersMatchData: (Player | ParsedPlayer)[] = match.players;
   // Get names, last login for players from DB
   playersMatchData = await Promise.all(

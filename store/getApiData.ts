@@ -1,10 +1,8 @@
 import config from '../config';
-import { generateJob, getSteamAPIData, redisCount } from '../util/utility';
+import { redisCount } from '../util/utility';
 import { Archive } from './archive';
 import cassandra from './cassandra';
-import { insertMatch } from './insert';
 import { getPGroup, type ApiMatch } from './pgroup';
-import redis from './redis';
 
 const blobArchive = config.ENABLE_BLOB_ARCHIVE ? new Archive('blob') : null;
 /**
@@ -23,7 +21,7 @@ export async function readApiData(matchId: number, noBlobStore?: boolean): Promi
   if (!data && blobArchive && !noBlobStore) {
     const archive = await blobArchive.archiveGet(`${matchId}_api`);
     if (archive) {
-      redisCount(redis, 'blob_archive_read');
+      redisCount('blob_archive_read');
     }
     data = archive ? JSON.parse(archive.toString()) as ApiMatch : undefined;
   }

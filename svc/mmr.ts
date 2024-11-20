@@ -1,7 +1,6 @@
 // Processes a queue of requests to update MMR/rank medal for players
 import { runQueue } from '../store/queue';
 import db from '../store/db';
-import redis from '../store/redis';
 import { insertPlayerRating } from '../store/insert';
 import config from '../config';
 import {
@@ -18,7 +17,7 @@ async function processMmr(job: MmrJob) {
   const { data } = await axios.get(url, {
     timeout: 5000,
   });
-  redisCount(redis, 'retriever_player');
+  redisCount('retriever_player');
 
   // Update player's Dota Plus status if changed
   const player = {

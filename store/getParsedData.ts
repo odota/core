@@ -7,7 +7,6 @@ import { Archive } from './archive';
 import cassandra from './cassandra';
 import db from './db';
 import { insertMatch } from './insert';
-import redis from './redis';
 import axios from 'axios';
 
 const blobArchive = config.ENABLE_BLOB_ARCHIVE ? new Archive('blob') : null;
@@ -108,7 +107,7 @@ export async function getOrFetchParseData(
 }> {
   const saved = await readParseData(matchId);
   if (saved) {
-    redisCount(redis, 'reparse');
+    redisCount('reparse');
     if (config.DISABLE_REPARSE) {
       // If high load, we can disable parsing already parsed matches
       return { data: saved, skipped: true, error: null };

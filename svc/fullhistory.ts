@@ -8,7 +8,6 @@ import {
   eachLimitPromise,
 } from '../util/utility';
 import db from '../store/db';
-import redis from '../store/redis';
 import { runQueue } from '../store/queue';
 import { getPlayerMatches } from '../store/queries';
 import { insertMatch } from '../store/insert';
@@ -23,9 +22,9 @@ async function updatePlayer(player: FullHistoryJob) {
     .where({
       account_id: player.account_id,
     });
-  redisCount(redis, 'fullhistory');
+  redisCount('fullhistory');
   if (!player.long_history) {
-    redisCount(redis, 'fullhistory_short');
+    redisCount('fullhistory_short');
   }
 }
 
@@ -119,7 +118,7 @@ async function processFullHistory(job: FullHistoryJob) {
       delete match_ids[matchId];
     }
     if (Object.keys(match_ids).length > 0) {
-      redisCount(redis, 'fullhistory_op');
+      redisCount('fullhistory_op');
     }
     // make api_details requests for matches
     const promiseFuncs = Object.keys(match_ids).map(

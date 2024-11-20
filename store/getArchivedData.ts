@@ -2,7 +2,6 @@ import config from '../config';
 import { redisCount } from '../util/utility';
 import { Archive } from './archive';
 import db from './db';
-import redis from './redis';
 
 const matchArchive = config.ENABLE_MATCH_ARCHIVE ? new Archive('match') : null;
 const playerArchive = config.ENABLE_PLAYER_ARCHIVE ? new Archive('player') : null;
@@ -50,7 +49,7 @@ export async function tryReadArchivedMatch(
       ? JSON.parse(blob.toString())
       : null;
     if (result) {
-      redisCount(redis, 'match_archive_read');
+      redisCount('match_archive_read');
       return result;
     }
   } catch (e) {

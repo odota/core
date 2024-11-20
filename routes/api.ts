@@ -2,7 +2,6 @@ import { Router } from 'express';
 import { FilterType, filterDeps } from '../util/filter';
 import spec from './spec';
 import db from '../store/db';
-import redis from '../store/redis';
 import { alwaysCols } from './playerFields';
 import { queryParamToArray, redisCount } from '../util/utility';
 
@@ -50,7 +49,7 @@ api.use('/players/:account_id/:info?', async (req, res, cb) => {
     const isSelf =
       Number(req.user?.account_id) === Number(req.params.account_id);
     if (isSelf) {
-      redisCount(redis, 'self_profile_view');
+      redisCount('self_profile_view');
     }
     const isPrivate =
       Boolean(privacy.rows[0]?.fh_unavailable) &&

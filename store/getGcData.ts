@@ -82,7 +82,7 @@ async function saveGcData(
     throw new Error('invalid data');
   }
   // Count successful calls
-  redisCount(redis, 'retriever');
+  redisCount('retriever');
   redis.hincrby('retrieverSuccessSteamIDs', steamid, 1);
   redis.expireat(
     'retrieverSuccessSteamIDs',
@@ -194,7 +194,7 @@ export async function getOrFetchGcData(
   // Check if we have gcdata cached
   const saved = await readGcData(matchId);
   if (saved) {
-    redisCount(redis, 'regcdata');
+    redisCount('regcdata');
     if (config.DISABLE_REGCDATA) {
       // If high load, we can disable refetching gcdata
       return { data: saved, error: null };

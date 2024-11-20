@@ -454,29 +454,26 @@ export async function insertMatch(
     }] [ended: ${moment.unix(endedAt ?? 0).fromNow()}] ${match.match_id}`;
     redis.publish(options.type, message);
     if (options.type === 'parsed') {
-      redisCount(redis, 'parser');
+      redisCount('parser');
     }
     if (options.origin === 'scanner' && options.type === 'api') {
-      redisCount(redis, 'added_match');
+      redisCount('added_match');
       match.players
         .filter((p) => p.account_id)
         .forEach(async (p) => {
           if (p.account_id) {
             redisCountDistinct(
-              redis,
               'distinct_match_player',
               p.account_id.toString(),
             );
             const visitTime = Number(await redis.zscore('visitors', p.account_id.toString()));
             if (visitTime) {
               redisCountDistinct(
-                redis,
                 'distinct_match_player_user',
                 p.account_id.toString(),
               );
               if (visitTime > Number(moment().subtract(30, 'day').format('X'))) {
                 redisCountDistinct(
-                  redis,
                   'distinct_match_player_recent_user',
                   p.account_id.toString(),
                 );
@@ -634,7 +631,7 @@ export async function insertMatch(
     if (!doParse) {
       return null;
     }
-    redisCount(redis, 'auto_parse');
+    redisCount('auto_parse');
     let priority = 5;
     if (isProLeague) {
       priority = -1;

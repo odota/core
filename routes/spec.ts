@@ -950,7 +950,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
             config.NODE_ENV !== 'development' &&
             (await redis.get('fh_queue:' + playerId))
           ) {
-            redisCount(redis, 'fullhistory_skip');
+            redisCount('fullhistory_skip');
             return res.json({ length: 0 });
           }
           const length = await addJob({
@@ -1517,12 +1517,12 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           // We validated the ID in middleware
           const matchId = req.params.match_id;
           // Count this request
-          redisCount(redis, 'request');
-          redisCountDistinct(redis, 'distinct_request', matchId);
+          redisCount('request');
+          redisCountDistinct('distinct_request', matchId);
           let priority = 1;
           if (req.query.api_key) {
             priority = 1;
-            redisCount(redis, 'request_api_key');
+            redisCount('request_api_key');
             redis.zincrby(
               'request_usage_count',
               1,
@@ -1537,7 +1537,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           if (req.headers.origin === config.UI_HOST) {
             // Give UI requests priority
             priority = 0;
-            redisCount(redis, 'request_ui');
+            redisCount('request_ui');
           }
           if (
             req.user?.account_id &&

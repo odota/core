@@ -196,9 +196,9 @@ function getSteamAPIDataCallback(url: string | GetDataOptions, cb: ErrorCb) {
       parse.host = url.proxy[Math.floor(Math.random() * url.proxy.length)];
     }
     if (parse.host === 'api.steampowered.com') {
-      redisCount(null, 'steam_api_call');
+      redisCount('steam_api_call');
     } else {
-      redisCount(null, 'steam_proxy_call');
+      redisCount('steam_proxy_call');
     }
   }
   const target = urllib.format(parse);
@@ -237,9 +237,9 @@ function getSteamAPIDataCallback(url: string | GetDataOptions, cb: ErrorCb) {
           target,
         );
         if (res?.statusCode === 429) {
-          redisCount(null, 'steam_429');
+          redisCount('steam_429');
         } else if (res?.statusCode === 403) {
-          redisCount(null, 'steam_403');
+          redisCount('steam_403');
         }
         const backoff = res?.statusCode === 429 ? 3000 : 1000;
         return setTimeout(() => {
@@ -877,8 +877,8 @@ export async function getApiHosts(): Promise<string[]> {
  * @param redis The Redis instance (null to dynamic import the default redis)
  * @param prefix The counter name
  */
-export async function redisCount(redis: Redis | null, prefix: MetricName) {
-  const redisToUse = redis ?? (await import('../store/redis.js')).redis;
+export async function redisCount(prefix: MetricName) {
+  const redisToUse = config.REDIS_URL ? (await import('../store/redis.js')).redis : null;
   const key = `${prefix}:v2:${moment().startOf('hour').format('X')}`;
   await redisToUse?.incr(key);
   await redisToUse?.expireat(
@@ -888,11 +888,10 @@ export async function redisCount(redis: Redis | null, prefix: MetricName) {
 }
 
 export async function redisCountDistinct(
-  redis: Redis | null,
   prefix: MetricName,
   value: string,
 ) {
-  const redisToUse = redis ?? (await import('../store/redis.js')).redis;
+  const redisToUse = config.REDIS_URL ? (await import('../store/redis.js')).redis : null;
   const key = `${prefix}:v2:${moment().startOf('hour').format('X')}`;
   await redisToUse?.pfadd(key, value);
   await redisToUse?.expireat(

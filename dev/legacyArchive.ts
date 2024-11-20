@@ -1,6 +1,5 @@
 import crypto from 'crypto';
 import cassandra from '../store/cassandra';
-import redis from '../store/redis';
 import config from '../config';
 import db from '../store/db';
 import { deserialize, redisCount } from '../util/utility';
@@ -90,7 +89,7 @@ async function doArchiveFromLegacy(matchId: number) {
     JSON.stringify({ ...match, players: match.players || playerMatches }),
   );
   const result = await matchArchive.archivePut(matchId.toString(), blob);
-  redisCount(redis, 'match_archive_write');
+  redisCount('match_archive_write');
   if (result) {
     // Mark the match archived
     await db.raw(

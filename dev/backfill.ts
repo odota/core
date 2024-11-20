@@ -37,7 +37,6 @@ async function scanApi() {
       // unretryable steam error
     //   if (err?.result?.status === 2) {
     //     nextSeqNum += 1;
-    //     redisCount(redis, 'skip_seq_num');
     //     // continue with next seq num
     //     continue;
     //   } else {

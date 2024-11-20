@@ -234,7 +234,7 @@ export async function getPlayerMatchesWithMetadata(
     // User disabled public match history from Dota, so don't return matches
     return [[], null];
   }
-  redisCount(redis, 'player_matches');
+  redisCount('player_matches');
   const columns = await getCassandraColumns('player_caches');
   const sanitizedProject = queryObj.project.filter((f: string) => columns[f]);
   const projection = queryObj.projectAll ? ['*'] : sanitizedProject;
@@ -250,7 +250,7 @@ export async function getPlayerMatchesWithMetadata(
       ? await readCachedPlayerMatches(accountId, projection)
       : undefined;
     if (cache?.length) {
-      redisCountDistinct(redis, 'distinct_player_cache', accountId.toString());
+      redisCountDistinct('distinct_player_cache', accountId.toString());
       await redis.zadd('player_matches_visit', moment().format('X'), accountId);
       // Keep some number of recent players visited for auto-cache
       await redis.zremrangebyrank('player_matches_visit', '0', '-50001');
@@ -345,11 +345,11 @@ async function readCachedPlayerMatches(
   );
   const result = rows[0]?.blob;
   if (result) {
-    redisCount(redis, 'player_cache_hit');
+    redisCount('player_cache_hit');
     if (
       await isAutoCachePlayer(redis, accountId)
     ) {
-      redisCount(redis, 'auto_player_cache_hit');
+      redisCount('auto_player_cache_hit');
     }
     const output = JSON.parse(gunzipSync(result).toString());
     // Remove columns not asked for
@@ -367,17 +367,17 @@ async function readCachedPlayerMatches(
       'NX',
     );
     if (!lock) {
-      redisCount(redis, 'player_cache_wait');
+      redisCount('player_cache_wait');
       // console.log('[PLAYERCACHE] waiting for lock on %s', accountId);
       // Couldn't acquire the lock, wait and try again
       await new Promise((resolve) => setTimeout(resolve, 1000));
       return readCachedPlayerMatches(accountId, project);
     }
-    redisCount(redis, 'player_cache_miss');
+    redisCount('player_cache_miss');
     if (
       await isAutoCachePlayer(redis, accountId)
     ) {
-      redisCount(redis, 'auto_player_cache_miss');
+      redisCount('auto_player_cache_miss');
     }
     const result = await populateCache(accountId, project);
     // Release the lock
@@ -403,7 +403,7 @@ export async function populateCache(
     //   all.length,
     //   zip.length,
     // );
-    redisCount(redis, 'player_cache_write');
+    redisCount('player_cache_write');
     await cassandra.execute(
       `INSERT INTO player_temp(account_id, blob) VALUES(?, ?) USING TTL ?`,
       [accountId, zip, Number(config.PLAYER_CACHE_SECONDS)],
@@ -722,7 +722,7 @@ export async function getMatchDataFromBlobWithMetadata(
   if (!archived && !api) {
     // Use this event to count the number of failed requests
     // Could be due to missing data or invalid ID--need to analyze
-    redisCount(redis, 'steam_api_backfill');
+    redisCount('steam_api_backfill');
     return [null, null];
   }
 

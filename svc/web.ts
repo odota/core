@@ -103,9 +103,9 @@ const onResFinish = (
       }
     });
   }
-  redisCount(redis, 'api_hits');
+  redisCount('api_hits');
   if (req.headers.origin === config.UI_HOST) {
-    redisCount(redis, 'api_hits_ui');
+    redisCount('api_hits_ui');
   }
   const normPath = req.route?.path;
   redis.zincrby('api_paths', 1, req.method + ' ' + normPath);
@@ -564,7 +564,7 @@ app.use((req, res) =>
 app.use(
   (err: Error, req: express.Request, res: express.Response, cb: ErrorCb) => {
     console.log('[ERR]', req.originalUrl, err);
-    redisCount(redis, '500_error');
+    redisCount('500_error');
     if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
       // default express handler
       return cb(err?.message || JSON.stringify(err));
@@ -601,6 +601,6 @@ logSub.on('message', (channel: string, message: string) => {
 
 process.on('exit', (code) => {
   if (code > 0) {
-    redisCount(redis, 'web_crash');
+    redisCount('web_crash');
   }
 });
