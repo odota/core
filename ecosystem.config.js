@@ -10,8 +10,19 @@ const prod = process.env.NODE_ENV === 'production';
 let arr = [
   // Services in non-backend groups are deployed separately
   {
+    // Proxy requests to Steam API
     name: 'proxy',
     group: 'proxy',
+  },
+  {
+    // Load old matches into storage
+    name: 'backfill',
+    group: 'backfill',
+  },
+  {
+    // Alternative way of getting matches if GetMatchHistoryBySequenceNum is broken
+    name: 'backupscanner',
+    group: 'disabled',
   },
   {
     name: 'web',
@@ -19,6 +30,7 @@ let arr = [
     exec_mode: prod ? 'cluster' : undefined,
     instances: prod ? os.cpus().length : undefined,
   },
+  // One local instance of retriever for getting player profiles since this isn't rate limited
   {
     name: 'retriever',
     group: 'backend',
@@ -28,6 +40,7 @@ let arr = [
     },
   },
   {
+    // Requests and inserts replay parse data. Note this is different from parseServer which is in Java and runs externally
     name: 'parser',
     group: 'backend',
   },
@@ -52,16 +65,13 @@ let arr = [
     group: 'backend',
   },
   {
+    // Secondary scanner that runs behind and picks up matches previously missing
     name: 'scanner2',
     name_override: 'scanner',
     group: 'backend',
     env: {
       SCANNER_OFFSET: '50000',
     }
-  },
-  {
-    name: 'backupscanner',
-    group: 'disabled',
   },
   {
     name: 'autocache',
