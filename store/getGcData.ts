@@ -96,7 +96,9 @@ async function saveGcData(
   const players = data.match.players.map(
     (p: any, i: number): GcPlayer => ({
       // NOTE: account ids are not anonymous in this call
-      // Also, we probably want to queue a job post-parse that reads back the match data and updates all player_caches now that we have identity and parsed data
+      // Also, we probably want to queue a reconciliation job post-parse
+      // to read back the match data and update all player_caches now that we have identity and parsed data
+      // Maybe also want to do it after GC, and call it from fullhistory to update on request?
       account_id: p.account_id,
       player_slot: p.player_slot,
       party_id: Number(p.party_id),

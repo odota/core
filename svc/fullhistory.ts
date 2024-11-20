@@ -30,10 +30,12 @@ async function updatePlayer(player: FullHistoryJob) {
 }
 
 async function processMatch(matchId: string) {
-  const container = generateJob('api_details', {
-    match_id: Number(matchId),
-  });
   // Disabled due to Steam GetMatchDetails being broken
+  // This would update the match blob with the visibility and update player caches to make them show up under a player
+  // Could possibly queue these matches for GC data fetch and then trigger a reconciliation from our own DB (similar to proposed change after parsing a match)
+  // const container = generateJob('api_details', {
+  //   match_id: Number(matchId),
+  // });
   // const body = await getSteamAPIData({ url: container.url, noRetry: true });
   // const match = body.result;
   // await insertMatch(match, {
