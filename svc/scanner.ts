@@ -8,7 +8,7 @@ import db from '../store/db';
 const API_KEYS = config.STEAM_API_KEY.split(',');
 const PAGE_SIZE = 100;
 // This endpoint is limited to something like 1 request every 5 seconds
-const SCANNER_WAIT = 5000;
+const SCANNER_WAIT = 5000 / config.STEAM_API_HOST.split(',').length;
 
 async function scanApi(seqNum: number) {
   const offset = Number(config.SCANNER_OFFSET);
