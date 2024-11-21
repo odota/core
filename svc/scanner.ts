@@ -15,9 +15,7 @@ async function scanApi(seqNum: number) {
   let nextSeqNum = seqNum - offset;
   while (true) {
     if (offset) {
-      const numResult = Number(await redis.get('match_seq_num'));
-      // Replace with PG once written
-      // const numResult = await getCurrentSeqNum();
+      const numResult = await getCurrentSeqNum();
       if(nextSeqNum > (numResult - offset)) {
         // Secondary scanner is catching up too much. Wait and try again
         console.log('secondary scanner waiting');
@@ -61,7 +59,6 @@ async function scanApi(seqNum: number) {
     }
     if (!Number(config.SCANNER_OFFSET)) {
       // Only set match seq num on primary
-      await redis.set('match_seq_num', nextSeqNum);
       await db.raw('INSERT INTO last_seq_num(match_seq_num) VALUES (?)', [nextSeqNum]);
     }
     // If not a full page, delay the next iteration
@@ -104,10 +101,7 @@ async function getCurrentSeqNum(): Promise<number> {
 }
 
 async function start() {
-    const result = await redis.get('match_seq_num');
-    let numResult = Number(result) || 0;
-    // Replace with PG once written
-    // let numResult = await getCurrentSeqNum();
+    let numResult = await getCurrentSeqNum();
     if (!numResult && config.NODE_ENV === 'development') {
       // Never do this in production to avoid skipping sequence number if we didn't pull .env properly
       const container = generateJob('api_history', {});
