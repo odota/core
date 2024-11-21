@@ -867,7 +867,7 @@ export async function getApiHosts(): Promise<string[]> {
       '-inf',
       Date.now() - 10000,
     );
-    return redis.zrange('registry:proxy', 0, -1);
+    return [...await redis.zrange('registry:proxy', 0, -1), ...config.STEAM_API_HOST.split(',')];
   }
   return config.STEAM_API_HOST.split(',')
 }
