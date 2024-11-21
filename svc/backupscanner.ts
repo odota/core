@@ -50,7 +50,6 @@ async function processPlayer(accountId: string) {
     // Skip this player on this iteration
     return;
   }
-  const res = await redis.get('match_seq_num');
   // Get matches with recent seqnums
   const matches = body.result.matches
     .filter((m: any) => m.match_seq_num > Number(res))

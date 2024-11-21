@@ -434,6 +434,11 @@ CREATE TABLE IF NOT EXISTS subscriber (
   status varchar(100)
 );
 
+CREATE TABLE IF NOT EXISTS last_seq_num (
+  PRIMARY KEY (match_seq_num),
+  match_seq_num bigint
+);
+
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'readonly') THEN

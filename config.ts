@@ -9,7 +9,6 @@ const defaults = {
   STEAM_PASS: '', // for getting replay salt/profile data, in retriever
   ROLE: '', // for specifying the file that should be run when entry point is invoked
   GROUP: '', // for specifying the group of apps that should be run when entry point is invoked
-  START_SEQ_NUM: '', // truthy: use sequence number stored in redis, else: use approximate value from live API
   PROVIDER: '', // The cloud provider used by the application (determines how environment data is downloaded)
   STEAM_ACCOUNT_DATA: '', // The URL to read Steam account data from
   NODE_ENV: 'development',

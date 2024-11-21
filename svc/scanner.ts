@@ -4,6 +4,7 @@ import redis from '../store/redis';
 import { insertMatch } from '../store/insert';
 import type { ApiMatch } from '../store/pgroup';
 import { generateJob, getApiHosts, getSteamAPIData, redisCount } from '../util/utility';
+import db from '../store/db';
 const API_KEYS = config.STEAM_API_KEY.split(',');
 const PAGE_SIZE = 100;
 // This endpoint is limited to something like 1 request every 5 seconds
@@ -13,12 +14,16 @@ async function scanApi(seqNum: number) {
   const offset = Number(config.SCANNER_OFFSET);
   let nextSeqNum = seqNum - offset;
   while (true) {
-    const curr = Number(await redis.get('match_seq_num'));
-    if (offset && nextSeqNum > (curr - offset)) {
-      // Secondary scanner is catching up too much. Wait and try again
-      console.log('secondary scanner waiting');
-      await new Promise(resolve => setTimeout(resolve, SCANNER_WAIT));
-      continue;
+    if (offset) {
+      const numResult = Number(await redis.get('match_seq_num'));
+      // Replace with PG once written
+      // const numResult = await getCurrentSeqNum();
+      if(nextSeqNum > (numResult - offset)) {
+        // Secondary scanner is catching up too much. Wait and try again
+        console.log('secondary scanner waiting');
+        await new Promise(resolve => setTimeout(resolve, SCANNER_WAIT));
+        continue;
+      }
     }
     const apiHosts = await getApiHosts();
     const parallelism = Math.min(apiHosts.length, API_KEYS.length);
@@ -57,9 +62,8 @@ async function scanApi(seqNum: number) {
     if (!Number(config.SCANNER_OFFSET)) {
       // Only set match seq num on primary
       await redis.set('match_seq_num', nextSeqNum);
+      await db.raw('INSERT INTO last_seq_num(match_seq_num) VALUES (?)', [nextSeqNum]);
     }
-    // We might want to store this in pg eventually for consistency
-    // await db.raw('INSERT INTO last_seq_num(match_seq_num) VALUES (?)', [nextSeqNum]);
     // If not a full page, delay the next iteration
     await new Promise((resolve) =>
       setTimeout(
@@ -94,22 +98,23 @@ async function processMatch(match: ApiMatch) {
   }
 }
 
+async function getCurrentSeqNum(): Promise<number> {
+  const result = await db.raw('select max(match_seq_num) from last_seq_num;');
+  return Number(result.rows[0].max) || 0;
+}
+
 async function start() {
-  if (config.START_SEQ_NUM) {
     const result = await redis.get('match_seq_num');
-    if (!result) {
-      throw new Error('failed to initialize sequence number');
-    }
-    const numResult = Number(result);
+    let numResult = Number(result) || 0;
+    // Replace with PG once written
+    // let numResult = await getCurrentSeqNum();
+    if (!numResult && config.NODE_ENV === 'development') {
+      // Never do this in production to avoid skipping sequence number if we didn't pull .env properly
+      const container = generateJob('api_history', {});
+      // Just get the approximate current seq num
+      const data = await getSteamAPIData(container.url);
+      numResult = data.result.matches[0].match_seq_num;
+    } 
     await scanApi(numResult);
-  } else if (config.NODE_ENV === 'development') {
-    // Never do this in production to avoid skipping sequence number if we didn't pull .env properly
-    const container = generateJob('api_history', {});
-    // Just get the approximate current seq num
-    const data = await getSteamAPIData(container.url);
-    await scanApi(data.result.matches[0].match_seq_num);
-  } else {
-    throw new Error('failed to initialize sequence number');
-  }
 }
 start();

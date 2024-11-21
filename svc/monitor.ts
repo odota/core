@@ -69,9 +69,9 @@ async function seqNumDelay() {
   const body = resp.data;
   // get match_seq_num, compare with real seqnum
   const currSeqNum = body.result.matches[0].match_seq_num;
-  let num: string | null | number = await redis.get('match_seq_num');
-  num = Number(num);
-  const metric = currSeqNum - num;
+  const result = await db.raw('select max(match_seq_num) from last_seq_num;');
+  const numResult = Number(result.rows[0].max) || 0;
+  const metric = currSeqNum - numResult;
   return {
     metric,
     threshold: 50000,
