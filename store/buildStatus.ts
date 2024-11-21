@@ -118,19 +118,19 @@ export async function buildStatus() {
     steam_api_backfill_last_day: async () => countDay('steam_api_backfill'),
     // gen_api_key_invalid_last_day: async () => getRedisCountDay('gen_api_key_invalid'),
 
-    user_players: async () => redis.zcard('visitors'),
-    user_players_recent: async () =>
-      redis.zcount(
-        'visitors',
-        moment().subtract(30, 'day').format('X'),
-        '+inf',
-      ),
-    distinct_match_players_last_day: async () =>
-      countDayDistinct('distinct_match_player'),
-    distinct_match_players_user_last_day: async () =>
-      countDayDistinct('distinct_match_player_user'),
-    distinct_match_players_recent_user_last_day: async () =>
-      countDayDistinct('distinct_match_player_recent_user'),
+    // user_players: async () => redis.zcard('visitors'),
+    // user_players_recent: async () =>
+    //   redis.zcount(
+    //     'visitors',
+    //     moment().subtract(30, 'day').format('X'),
+    //     '+inf',
+    //   ),
+    // distinct_match_players_last_day: async () =>
+    //   countDayDistinct('distinct_match_player'),
+    // distinct_match_players_user_last_day: async () =>
+    //   countDayDistinct('distinct_match_player_user'),
+    // distinct_match_players_recent_user_last_day: async () =>
+    //   countDayDistinct('distinct_match_player_recent_user'),
     
     match_cache_hit_last_day: async () => countDay('match_cache_hit'),
     player_cache_hit_last_day: async () => countDay('player_cache_hit'),

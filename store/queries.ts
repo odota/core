@@ -677,7 +677,6 @@ export async function getTeamScenarios(req: Request): Promise<any[]> {
 export async function getMetadata(req: Request) {
   const obj = {
     scenarios: async () => metadata,
-    banner: async () => redis.get('banner'),
     user: async () => req.user,
     isSubscriber: async () => {
       if (req.user?.account_id) {

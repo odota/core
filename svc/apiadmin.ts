@@ -9,6 +9,8 @@ import type { knex } from 'knex';
 import { invokeInterval } from '../util/utility';
 import type Stripe from 'stripe';
 
+// NOTE: cannot currently delete and rebuild redis data because API usage counts for the month will be lost
+// probably can alleviate by storing usage per day and then summing it here, or by writing usage to pg directly
 function storeUsageCounts(cursor: string | number, cb: ErrorCb) {
   redis.hscan('usage_count', cursor, (err, results) => {
     if (err) {
