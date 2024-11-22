@@ -114,7 +114,6 @@ async function processFullHistory(job: FullHistoryJob) {
   await getApiMatchPage(player, container.url);
   if (Object.keys(match_ids).length > 0) {
     isMatchDataDisabled = false;
-    redisCount('fullhistory_op');
     // check what matches the player is already associated with
     const docs =
       (await getPlayerMatches(player.account_id, {
@@ -136,6 +135,9 @@ async function processFullHistory(job: FullHistoryJob) {
       docs.length,
       Object.keys(match_ids).length,
     );
+    if (Object.keys(match_ids).length) {
+      redisCount('fullhistory_op');
+    }
     // make api_details requests for matches
     const promiseFuncs = Object.keys(match_ids).map(
       (matchId) => () => processMatch(matchId),
