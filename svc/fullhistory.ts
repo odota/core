@@ -60,6 +60,7 @@ async function processFullHistory(job: FullHistoryJob) {
   const heroId = '0';
   // use steamapi via specific player history and specific hero id (up to 500 games per hero)
   const match_ids: BooleanDict = {};
+  let isMatchDataDisabled = null;
   // make a request for every possible hero
   const container = generateJob('api_history', {
     account_id: player.account_id,
@@ -70,7 +71,23 @@ async function processFullHistory(job: FullHistoryJob) {
     player: FullHistoryJob,
     url: string,
   ): Promise<void> => {
-    const body = await getSteamAPIData({ url });
+    let body;
+    while(!body) {
+      try {
+        body = await getSteamAPIData({ url });
+      } catch (err: any) {
+        // Can retry on transient error
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+    }
+
+    // check for specific error code if user had a private account, if so, update player and don't retry
+    if (body?.result?.status === 15) {
+      console.log('player %s disabled match history', player.account_id);
+      isMatchDataDisabled = true;
+      return;
+    }
+
     // response for match history for single player
     const resp = body.result.matches;
     let startId = 0;
@@ -93,11 +110,12 @@ async function processFullHistory(job: FullHistoryJob) {
     url = urllib.format(parse);
     return getApiMatchPage(player, url);
   };
-  try {
-    // Fetches 1-5 pages of matches for the players and updates the match_ids object
-    await getApiMatchPage(player, container.url);
+  // Fetches 1-5 pages of matches for the players and updates the match_ids object
+  await getApiMatchPage(player, container.url);
+  if (Object.keys(match_ids).length > 0) {
+    isMatchDataDisabled = false;
+    redisCount('fullhistory_op');
     console.log('%s matches found', Object.keys(match_ids).length);
-    player.fh_unavailable = false;
     // check what matches the player is already associated with
     const docs =
       (await getPlayerMatches(player.account_id, {
@@ -117,26 +135,15 @@ async function processFullHistory(job: FullHistoryJob) {
       const matchId = docs[i].match_id;
       delete match_ids[matchId];
     }
-    if (Object.keys(match_ids).length > 0) {
-      redisCount('fullhistory_op');
-    }
     // make api_details requests for matches
     const promiseFuncs = Object.keys(match_ids).map(
       (matchId) => () => processMatch(matchId),
     );
-    // Number of match details requests to send at once--note this is per worker
+    // Control number of match details requests to send at once--note this is per worker
     await eachLimitPromise(promiseFuncs, 1);
-    await updatePlayer(player);
-  } catch (err: any) {
-    console.log('error: %s', JSON.stringify(err));
-    // check for specific error code if user had a private account
-    if (err?.result?.status === 15) {
-      console.log('player %s disabled match history', player.account_id);
-      player.fh_unavailable = true;
-    } else {
-      // Generic error (maybe API is down?)
-      console.log('player %s generic error', player.account_id);
-    }
+  }
+  if (isMatchDataDisabled != null) {
+    player.fh_unavailable = isMatchDataDisabled;
   }
   await updatePlayer(player);
   console.timeEnd('doFullHistory: ' + player.account_id.toString());

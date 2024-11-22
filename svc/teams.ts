@@ -17,20 +17,27 @@ async function doTeams() {
     if (!m.team_id) {
       continue;
     }
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     // GetTeamInfo disabled as of october 2017
     /*
-          const container = utility.generateJob('api_teams', {
-            // 2 is the smallest team id, use as default
-            team_id: m.team_id || 2,
-          });
-          */
+    const container = utility.generateJob('api_teams', {
+      // 2 is the smallest team id, use as default
+      team_id: m.team_id || 2,
+    });
+    */
     const container = generateJob('api_team_info_by_team_id', {
       start_at_team_id: m.team_id,
     });
-    let body = await getSteamAPIData({
-      url: container.url,
-      raw: true,
-    });
+    let body;
+    try {
+      body = await getSteamAPIData({
+        url: container.url,
+        raw: true,
+      });
+    } catch (err) {
+      // Just move on if we failed due to transient error (will retry on next iteration)
+      continue;
+    }
     const raw = body;
     body = JSON.parse(body);
     if (!body.result || !body.result.teams) {
@@ -79,7 +86,6 @@ async function doTeams() {
         console.log(e);
       }
     }
-    await new Promise((resolve) => setTimeout(resolve, 1000));
   }
 }
 invokeIntervalAsync(doTeams, 12 * 60 * 60 * 1000);
