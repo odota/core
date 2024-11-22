@@ -195,8 +195,10 @@ export async function getSteamAPIData(options: GetDataOptions): Promise<any> {
       if (statusCode === 429) {
         await new Promise((resolve) => setTimeout(resolve, 2000));
       }
+      throw new Error('[EXCEPTION] status: ' + statusCode + ' message: ' + err.message);
+    } else {
+      throw err;
     }
-    throw err;
   }
   console.timeEnd(target);
   if (options.raw) {
