@@ -14,7 +14,7 @@ import fs from 'fs';
 
 // This endpoint is limited to something like 1 request every 5 seconds
 const apiHosts = config.STEAM_API_HOST.split(',');
-const SCANNER_WAIT = 1000 / apiHosts.length;
+const SCANNER_WAIT = 100 / apiHosts.length;
 const blobArchive = new Archive('blob');
 
 // We can stop at approximately 6400000000 (Feb 2024)
