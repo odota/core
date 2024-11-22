@@ -58,7 +58,7 @@ async function scanApi(seqNum: number) {
     }
     if (!Number(config.SCANNER_OFFSET)) {
       // Only set match seq num on primary
-      await db.raw('INSERT INTO last_seq_num(match_seq_num) VALUES (?)', [nextSeqNum]);
+      await db.raw('INSERT INTO last_seq_num(match_seq_num) VALUES (?) ON CONFLICT DO NOTHING', [nextSeqNum]);
     }
     // If not a full page, delay the next iteration
     await new Promise((resolve) =>
