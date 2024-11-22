@@ -35,7 +35,7 @@ async function processMatch(matchId: string) {
   // const container = generateJob('api_details', {
   //   match_id: Number(matchId),
   // });
-  // const body = await getSteamAPIData({ url: container.url, noRetry: true });
+  // const body = await getSteamAPIData({ url: container.url });
   // const match = body.result;
   // await insertMatch(match, {
   //   type: 'api',
@@ -70,7 +70,7 @@ async function processFullHistory(job: FullHistoryJob) {
     player: FullHistoryJob,
     url: string,
   ): Promise<void> => {
-    const body = await getSteamAPIData({ url, noRetry: true });
+    const body = await getSteamAPIData({ url });
     // response for match history for single player
     const resp = body.result.matches;
     let startId = 0;

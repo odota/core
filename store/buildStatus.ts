@@ -111,13 +111,6 @@ export async function buildStatus() {
     match_archive_write_last_day: async () => countDay('match_archive_write'),
     incomplete_archive_last_day: async () => countDay('incomplete_archive'),
 
-    error_last_day: async () => countDay('500_error'),
-    web_crash_last_day: async () => countDay('web_crash'),
-    skip_seq_num_last_day: async () => countDay('skip_seq_num'),
-    secondary_scanner_last_day: async () => countDay('secondary_scanner'),
-    steam_api_backfill_last_day: async () => countDay('steam_api_backfill'),
-    // gen_api_key_invalid_last_day: async () => getRedisCountDay('gen_api_key_invalid'),
-
     // user_players: async () => redis.zcard('visitors'),
     // user_players_recent: async () =>
     //   redis.zcount(
@@ -152,6 +145,13 @@ export async function buildStatus() {
     reparse_last_day: async () => countDay('reparse'),
     reparse_early_last_day: async () => countDay('reparse_early'),
     // oldparse_last_day: async () => countDay('oldparse'),
+
+    error_last_day: async () => countDay('500_error'),
+    web_crash_last_day: async () => countDay('web_crash'),
+    secondary_scanner_last_day: async () => countDay('secondary_scanner'),
+    steam_api_backfill_last_day: async () => countDay('steam_api_backfill'),
+    // skip_seq_num_last_day: async () => countDay('skip_seq_num'),
+    // gen_api_key_invalid_last_day: async () => getRedisCountDay('gen_api_key_invalid'),
 
     api_paths: async () => {
       const results = await redis.zrangebyscore(

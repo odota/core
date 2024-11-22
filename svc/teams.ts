@@ -40,6 +40,7 @@ async function doTeams() {
     // The logo value is a 64 bit integer which is too large to represent in JSON
     // so need to read the raw response value
     // JSON.parse will return an incorrect value in the logo field
+    // Maybe can use JSONbig here?
     const logoRegex = /^"logo":(.*),$/m;
     const match = logoRegex.exec(raw);
     const logoUgc = match?.[1];
@@ -64,7 +65,6 @@ async function doTeams() {
       try {
         const ugcBody = await getSteamAPIData({
           url: ugcJob.url,
-          noRetry: true,
         });
         t.team_id = m.team_id;
         if (ugcBody && ugcBody.data) {

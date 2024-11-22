@@ -1,16 +1,15 @@
 import constants from 'dotaconstants';
-import request from 'request';
 import urllib from 'url';
 import moment from 'moment';
 import crypto from 'crypto';
 import laneMappings from './laneMappings';
 import config from '../config';
 import contributors from '../CONTRIBUTORS';
-import { promisify } from 'util';
 import type { Redis } from 'ioredis';
 import type { ApiMatch, ApiPlayer } from '../store/pgroup';
 import type QueryString from 'qs';
 import type { InsertMatchInput } from '../store/insert';
+import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 
 /**
  * Tokenizes an input string.
@@ -55,9 +54,6 @@ const jobs = {
   api_details(type: string, payload: { match_id: string | number }) {
     return {
       url: `${apiUrl}/IDOTA2Match_570/GetMatchDetails/V001/?key=${apiKey}&match_id=${payload.match_id}`,
-      title: [type, payload.match_id].join(),
-      type: 'api',
-      payload,
     };
   },
   api_history(type: string, payload: any) {
@@ -75,9 +71,6 @@ const jobs = {
           ? `&start_at_match_id=${payload.start_at_match_id}`
           : ''
       }`,
-      title: [type, payload.account_id].join(),
-      type: 'api',
-      payload,
     };
   },
   api_summaries(type: string, payload: any) {
@@ -85,76 +78,56 @@ const jobs = {
       url: `${apiUrl}/ISteamUser/GetPlayerSummaries/v0002/?key=${apiKey}&steamids=${payload.players
         .map((p: Player) => convert32to64(String(p.account_id)))
         .join()}`,
-      title: [type, payload.summaries_id].join(),
-      type: 'api',
-      payload,
     };
   },
   api_sequence(type: string, payload: any) {
     return {
       url: `${apiUrl}/IDOTA2Match_570/GetMatchHistoryBySequenceNum/V001/?key=${apiKey}&start_at_match_seq_num=${payload.start_at_match_seq_num}`,
-      title: [type, payload.seq_num].join(),
-      type: 'api',
     };
   },
   api_heroes(type: string, payload: any) {
     return {
       url: `${apiUrl}/IEconDOTA2_570/GetHeroes/v0001/?key=${apiKey}&language=${payload.language}`,
-      title: [type, payload.language].join(),
-      type: 'api',
-      payload,
     };
   },
   api_items(type: string, payload: any) {
     return {
       url: `https://www.dota2.com/datafeed/itemlist?language=${payload.language}`,
-      type: 'api',
     };
   },
   api_live(type: string, payload: any) {
     return {
       url: `${apiUrl}/IDOTA2Match_570/GetLiveLeagueGames/v0001/?key=${apiKey}`,
-      title: [type].join(),
-      type: 'api',
-      payload,
     };
   },
   api_teams(type: string, payload: any) {
     return {
       url: `${apiUrl}/IDOTA2Teams_570/GetTeamInfo/v1/?key=${apiKey}&team_id=${payload.team_id}`,
-      title: [type].join(),
-      type: 'api',
-      payload,
     };
   },
   api_item_schema(type: string, payload: any) {
     return {
       url: `${apiUrl}/IEconItems_570/GetSchemaURL/v1?key=${apiKey}`,
-      type: 'api',
     };
   },
   api_top_live_game(type: string, payload: any) {
     return {
-      url: `${apiUrl}/IDOTA2Match_570/GetTopLiveGame/v1/?key=${apiKey}&partner=0`,
-      type: 'api',
+      url: `${apiUrl}/IDOTA2Match_570/GetTopLiveGame/v1/?key=${apiKey}&partner=${Math.random() < 0.5 ? '1' : '2'}`,
     };
   },
   api_realtime_stats(type: string, payload: any) {
     return {
       url: `${apiUrl}/IDOTA2MatchStats_570/GetRealtimeStats/v1?key=${apiKey}&server_steam_id=${payload.server_steam_id}`,
-      type: 'api',
     };
   },
   api_team_info_by_team_id(type: string, payload: any) {
     return {
       url: `${apiUrl}/IDOTA2Match_570/GetTeamInfoByTeamID/v1?key=${apiKey}&start_at_team_id=${payload.start_at_team_id}&teams_requested=1`,
-      type: 'api',
     };
   },
   api_get_ugc_file_details(type: string, payload: any) {
     return {
       url: `${apiUrl}/ISteamRemoteStorage/GetUGCFileDetails/v1/?key=${apiKey}&appid=570&ugcid=${payload.ugcid}`,
-      type: 'api',
     };
   },
 };
@@ -167,122 +140,101 @@ const jobs = {
  * */
 type GetDataOptions = {
   url: string;
-  delay?: number;
   timeout?: number;
+  // Don't parse the response as JSON
   raw?: boolean;
-  noRetry?: boolean;
   proxy?: string[];
 };
-function getSteamAPIDataCallback(url: string | GetDataOptions, cb: ErrorCb) {
-  let u: string;
-  let timeout = 5000;
-  if (typeof url === 'object' && url && url.url) {
-    u = url.url;
-    timeout = url.timeout || timeout;
-  } else {
-    u = url as string;
+export async function getSteamAPIData(options: GetDataOptions): Promise<any> {
+  let url = options.url;
+  const parse = urllib.parse(url, true);
+  // choose an api key to use
+  const apiKeys = config.STEAM_API_KEY.split(',');
+  parse.query.key = apiKeys[Math.floor(Math.random() * apiKeys.length)];
+  parse.search = null;
+  if (options.proxy) {
+    // choose one of the passed hosts
+    parse.host = options.proxy[Math.floor(Math.random() * options.proxy.length)];
   }
-  const isRaw = typeof url === 'object' && url.raw;
-  const isNoRetry = typeof url === 'object' && url.noRetry;
-  const parse = urllib.parse(u, true);
-  const steamApi = parse.host === 'api.steampowered.com';
-  if (steamApi) {
-    // choose an api key to use
-    const apiKeys = config.STEAM_API_KEY.split(',');
-    parse.query.key = apiKeys[Math.floor(Math.random() * apiKeys.length)];
-    parse.search = null;
-    if (typeof url === 'object' && url.proxy) {
-      // choose one of the passed hosts
-      parse.host = url.proxy[Math.floor(Math.random() * url.proxy.length)];
-    }
-    if (parse.host === 'api.steampowered.com') {
-      redisCount('steam_api_call');
-    } else {
-      redisCount('steam_proxy_call');
-    }
+  if (parse.host === 'api.steampowered.com') {
+    redisCount('steam_api_call');
+  } else {
+    redisCount('steam_proxy_call');
   }
   const target = urllib.format(parse);
+  const axiosOptions: AxiosRequestConfig = {
+    timeout: options.timeout ?? 5000,
+    headers: {
+      'Content-Encoding': 'gzip',
+   },
+  };
+  if (options.raw) {
+    // Return string instead of JSON
+    axiosOptions.responseType = 'text';
+  }
+  let body = null;
   console.time(target);
-  request(
-    {
-      url: target,
-      json: !isRaw,
-      gzip: true,
-      timeout,
-    },
-    (err, res, body) => {
-      console.timeEnd(target);
-      if (
-        err ||
-        !res ||
-        res.statusCode !== 200 ||
-        !body ||
-        (steamApi &&
-          !isRaw &&
-          !body.result &&
-          !body.response &&
-          !body.player_infos &&
-          !body.teams &&
-          !body.game_list &&
-          !body.match &&
-          !body.data)
-      ) {
-        // invalid response
-        if (isNoRetry) {
-          return cb(err || 'invalid response', body);
-        }
-        console.error(
-          '[INVALID] status: %s, retrying: %s',
-          res?.statusCode,
-          target,
-        );
-        if (res?.statusCode === 429) {
-          redisCount('steam_429');
-        } else if (res?.statusCode === 403) {
-          redisCount('steam_403');
-        }
-        const backoff = res?.statusCode === 429 ? 3000 : 1000;
-        return setTimeout(() => {
-          getSteamAPIDataCallback(url, cb);
-        }, backoff);
+  try {
+    // Throws an exception if we get a non-200 status code
+    const response = await axios.get(target, axiosOptions);
+    body = response.data;
+  } catch(err: any | AxiosError) {
+    console.timeEnd(target);
+    if (axios.isAxiosError(err)) {
+      const statusCode = err.response?.status;
+      console.error(
+        '[EXCEPTION] %s, %s',
+        statusCode,
+        target,
+      );
+      if (statusCode === 429) {
+        redisCount('steam_429');
+      } else if (statusCode === 403) {
+        redisCount('steam_403');
       }
-      if (body.result) {
-        // steam api usually returns data with body.result, getplayersummaries has body.response
-        if (
-          body.result.status === 15 ||
-          body.result.error ===
-            'Practice matches are not available via GetMatchDetails' ||
-          body.result.error === 'No Match ID specified' ||
-          body.result.error === 'Match ID not found' ||
-          (body.result.status === 2 &&
-            body.result.statusDetail === 'Error retrieving match data.' &&
-            Math.random() < 0.05)
-        ) {
-          // private match history or attempting to get practice match/invalid id, don't retry
-          // non-retryable
-          return cb(body);
-        }
-        if (body.result.error || body.result.status === 2) {
-          // valid response, but invalid data, retry
-          if (isNoRetry) {
-            return cb(err || 'invalid data', body);
-          }
-          console.error(
-            'invalid data, retrying: %s, %s',
-            target,
-            JSON.stringify(body),
-          );
-          const backoff = 1000;
-          return setTimeout(() => {
-            getSteamAPIDataCallback(url, cb);
-          }, backoff);
-        }
+      if (statusCode === 429) {
+        await new Promise((resolve) => setTimeout(resolve, 2000));
       }
-      return cb(null, body);
-    },
-  );
+    }
+    throw err;
+  }
+  console.timeEnd(target);
+  if (options.raw) {
+    return body;
+  }
+  // Validate the response, even if we got a successful result
+  if (body.result) {
+    // steam api usually returns data with body.result, getplayersummaries has body.response
+    if (
+      body.result.status === 15 ||
+      body.result.error ===
+        'Practice matches are not available via GetMatchDetails' ||
+      body.result.error === 'No Match ID specified' ||
+      body.result.error === 'Match ID not found' ||
+      (body.result.status === 2 &&
+        body.result.statusDetail === 'Error retrieving match data.')
+    ) {
+      // private match history or attempting to get practice match/invalid id, don't retry
+      // These shouldn't be retried, so just return the response directly but we might want to incllude some metadata to tell the user it's not retryable
+      console.error(
+        '[INVALID] (non-retryable) %s, %s',
+        target,
+        JSON.stringify(body),
+      );
+      return body;
+    }
+    if (body.result.error || body.result.status === 2) {
+      // this is invalid data but we can retry, so throw an exception and let the caller handle
+      console.error(
+        '[INVALID] (retryable) %s, %s',
+        target,
+        JSON.stringify(body),
+      );
+      throw new Error('invalid data (retryable)');
+    }
+  }
+  return body;
 }
-export const getSteamAPIData = promisify(getSteamAPIDataCallback);
 /**
  * Determines if a player is radiant
  * */

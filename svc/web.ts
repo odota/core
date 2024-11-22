@@ -2,7 +2,6 @@
  * Provides the OpenDota API and serves web requests
  * Also supports login through Steam
  * */
-import request from 'request';
 import compression from 'compression';
 import session from 'cookie-session';
 import moment from 'moment';
@@ -138,13 +137,14 @@ if (config.NODE_ENV === 'test') {
 }
 
 // Proxy to serve team logos over https
-app.use('/ugc', (req, res) => {
-  request(`http://cloud-3.steamusercontent.com/${req.originalUrl}`)
-    .on('response', (resp: any) => {
-      resp.headers['content-type'] = 'image/png';
-    })
-    .pipe(res);
-});
+// TODO this stopped working at some point, find new way to get team logos?
+// app.use('/ugc', (req, res) => {
+  // request(`http://cloud-3.steamusercontent.com/${req.originalUrl}`)
+  //   .on('response', (resp: any) => {
+  //     resp.headers['content-type'] = 'image/png';
+  //   })
+  //   .pipe(res);
+// });
 
 // Session/Passport middleware
 // req.user available after this

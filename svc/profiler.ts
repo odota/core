@@ -19,7 +19,7 @@ async function doProfiler() {
     players: result.rows,
   });
   // We can also queue a rank tier/MMR request for these players
-  const body = await getSteamAPIData(container.url);
+  const body = await getSteamAPIData({url: container.url});
   const results = body.response.players.filter(
     (player: User) => player.steamid,
   );

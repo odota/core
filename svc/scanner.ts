@@ -36,15 +36,14 @@ async function scanApi(seqNum: number) {
         proxy: apiHosts,
       });
     } catch (err: any) {
-      // unretryable steam error
-      if (err?.result?.status === 2) {
-        nextSeqNum += 1;
-        redisCount('skip_seq_num');
-        // continue with next seq num
-        continue;
-      } else {
-        throw err;
-      }
+      console.log(err);
+      // failed, try the same number again
+      await new Promise((resolve) =>
+        setTimeout(
+          resolve,
+          SCANNER_WAIT,
+        ),
+      );
     }
     const resp =
       data && data.result && data.result.matches ? data.result.matches : [];
@@ -106,7 +105,7 @@ async function start() {
       // Never do this in production to avoid skipping sequence number if we didn't pull .env properly
       const container = generateJob('api_history', {});
       // Just get the approximate current seq num
-      const data = await getSteamAPIData(container.url);
+      const data = await getSteamAPIData({url: container.url});
       numResult = data.result.matches[0].match_seq_num;
     } 
     await scanApi(numResult);

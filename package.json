@@ -54,7 +54,6 @@
     "pg": "^8.11.3",
     "pg-query-stream": "^4.5.3",
     "protobufjs": "^7.2.5",
-    "request": "^2.88.2",
     "simple-vdf": "^1.1.1",
     "steam-user": "^5.0.4",
     "stripe": "^9.12.0",

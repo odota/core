@@ -1,4 +1,5 @@
 // Fetches old matches from Steam API and writes to blob storage
+import config from '../config';
 import { Archive } from '../store/archive';
 import type { ApiMatch } from '../store/pgroup';
 import { generateJob, getSteamAPIData, transformMatch } from '../util/utility';
@@ -12,7 +13,8 @@ import fs from 'fs';
 // BLOB_ARCHIVE_S3_BUCKET: 'opendota-blobs',
 
 // This endpoint is limited to something like 1 request every 5 seconds
-const SCANNER_WAIT = 2000;
+const apiHosts = config.STEAM_API_HOST.split(',');
+const SCANNER_WAIT = 2000 / apiHosts.length;
 const blobArchive = new Archive('blob');
 
 // We can stop at approximately 6400000000 (Feb 2024)
@@ -31,14 +33,11 @@ async function scanApi(seqNum: number) {
     try {
       data = await getSteamAPIData({
         url: container.url,
+        // We could rotate through proxies here to ensure consistent load
         // proxy: apiHosts,
       });
     } catch (err: any) {
       console.log(err);
-      // unretryable steam error
-      //   if (err?.result?.status === 2) {
-      //     nextSeqNum += 1;
-      // }
         await new Promise((resolve) =>
         setTimeout(
           resolve,
