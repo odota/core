@@ -115,7 +115,6 @@ async function processFullHistory(job: FullHistoryJob) {
   if (Object.keys(match_ids).length > 0) {
     isMatchDataDisabled = false;
     redisCount('fullhistory_op');
-    console.log('%s matches found', Object.keys(match_ids).length);
     // check what matches the player is already associated with
     const docs =
       (await getPlayerMatches(player.account_id, {
@@ -123,18 +122,20 @@ async function processFullHistory(job: FullHistoryJob) {
         // Only need to check against recent matches since we get back the most recent 500 or 100 matches from Steam API
         dbLimit: 1000,
       })) ?? [];
-    console.log(
-      '%s matches found, %s already in db, %s to add',
-      Object.keys(match_ids).length,
-      docs.length,
-      Object.keys(match_ids).length - docs.length,
-    );
+    const origCount = Object.keys(match_ids).length;
     // iterate through db results, delete match_id key if this player has this match already
     // will re-request and update matches where this player was previously anonymous
     for (let i = 0; i < docs.length; i += 1) {
       const matchId = docs[i].match_id;
       delete match_ids[matchId];
     }
+    console.log(
+      '%s: %s matches found, diffing %s from db, %s to add',
+      player.account_id,
+      origCount,
+      docs.length,
+      Object.keys(match_ids).length,
+    );
     // make api_details requests for matches
     const promiseFuncs = Object.keys(match_ids).map(
       (matchId) => () => processMatch(matchId),
