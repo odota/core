@@ -12,7 +12,7 @@ import fs from 'fs';
 // BLOB_ARCHIVE_S3_BUCKET: 'opendota-blobs',
 
 // This endpoint is limited to something like 1 request every 5 seconds
-const SCANNER_WAIT = 1000;
+const SCANNER_WAIT = 2000;
 const blobArchive = new Archive('blob');
 
 // We can stop at approximately 6400000000 (Feb 2024)
