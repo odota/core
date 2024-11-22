@@ -12,17 +12,18 @@ import fs from 'fs';
 // BLOB_ARCHIVE_S3_BUCKET: 'opendota-blobs',
 
 // This endpoint is limited to something like 1 request every 5 seconds
-const SCANNER_WAIT = 500;
+const SCANNER_WAIT = 1000;
 const blobArchive = new Archive('blob');
 
 // We can stop at approximately 6400000000 (Feb 2024)
 const stop = Number(process.env.BACKFILL_STOP) || 6400000000;
-async function scanApi() {
+async function scanApi(seqNum: number) {
+  let nextSeqNum = seqNum;
   while (true) {
-    let nextSeqNum = Number(fs.readFileSync('./match_seq_num.txt')) || 0;
     if (nextSeqNum > stop) {
       process.exit(0);
     }
+    const begin = Date.now();
     const container = generateJob('api_sequence', {
       start_at_match_seq_num: nextSeqNum,
     });
@@ -51,34 +52,39 @@ async function scanApi() {
     console.log('[API] match_seq_num:%s, matches:%s', nextSeqNum, resp.length);
     // write to blobstore, process the blob using same function as insertMatch
     try {
-    const insertResult = await Promise.all(resp.map(async (origMatch: ApiMatch) => {
-      const match = transformMatch(origMatch);
-      // ifNotExists functionality not implemented by some s3 providers
-      const result = await blobArchive.archivePut(match.match_id + '_api', Buffer.from(JSON.stringify(match)), false);
-      if (!result) {
-        throw new Error('failed to insert match ' + match.match_id);
+      const insertResult = await Promise.all(resp.map(async (origMatch: ApiMatch) => {
+        const match = transformMatch(origMatch);
+        // ifNotExists functionality not implemented by some s3 providers
+        const result = await blobArchive.archivePut(match.match_id + '_api', Buffer.from(JSON.stringify(match)), false);
+        if (!result) {
+          throw new Error('failed to insert match ' + match.match_id);
+        }
+      }));
+      if (resp.length) {
+        nextSeqNum = resp[resp.length - 1].match_seq_num + 1;
+        console.log('next_seq_num: %s', nextSeqNum);
+        // Completed inserting matches on this page so update
+        fs.writeFileSync('./match_seq_num.txt', nextSeqNum.toString());
       }
-    }));
-    if (resp.length) {
-      nextSeqNum = resp[resp.length - 1].match_seq_num + 1;
-      console.log('next_seq_num: %s', nextSeqNum);
-      // Completed inserting matches on this page so update
-      fs.writeFileSync('./match_seq_num.txt', nextSeqNum.toString());
+    } catch (e) {
+      // If any fail, log the error and try the same number again
+      console.error(e);
     }
-  } catch (e) {
-    // If any fail, log the error and try the same number again
-    console.error(e);
-  }
+    const end = Date.now();
+    const elapsed = end - begin;
+    const adjustedWait = Math.max(SCANNER_WAIT - elapsed, 0);
+    console.log('iteration: %dms', elapsed);
     await new Promise((resolve) =>
       setTimeout(
         resolve,
-        SCANNER_WAIT,
+        adjustedWait,
       ),
     );
   }
 }
 
 async function start() {
-  await scanApi();
+  let seqNum = Number(fs.readFileSync('./match_seq_num.txt')) || 0;
+  await scanApi(seqNum);
 }
 start();
