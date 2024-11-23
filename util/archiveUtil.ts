@@ -55,7 +55,12 @@ export async function doArchivePlayerMatches(
   // TODO (howard) add redis counts
 }
 
-async function doArchiveMatchFromCassandra(matchId: number) {
+/**
+ * Consolidates separate match data blobs and stores as a single blob in archive
+ * @param matchId 
+ * @returns 
+ */
+async function doArchiveMatchFromBlobs(matchId: number) {
   if (!matchArchive) {
     return;
   }
@@ -106,36 +111,71 @@ async function doArchiveMatchFromCassandra(matchId: number) {
   return;
 }
 
+/**
+ * Moves individual match blobs from Cassandra to blob store
+ * @param matchId 
+ * @returns 
+ */
 async function doMigrateMatchToBlobStore(matchId: number) {
+  if (matchId > 7000000000) {
+    return;
+  }
   const api = await readApiData(matchId, true);
   const gcdata = await readGcData(matchId, true);
   const isParsed = await checkIsParsed(matchId);
-  // If API only, migrate the blob and delete row
-  // If API and gcdata, skip (maybe in the future we want to migrate both blobs to blobstore)
-  // If parsed we should archive it in doArchiveFromBlob
-  if (api && !gcdata && !isParsed) {
-    if (api) {
-      // If the match is old we might not be able to get back ability builds, HD/TD/HH from Steam so we want to keep the API data
-      const result = await blobArchive?.archivePut(
-        matchId.toString() + '_api',
-        Buffer.from(JSON.stringify(api)),
+  // migrate the api data
+  // if parsed, ignore since we should handle this in doArchiveMatchFromBlobs
+  if (isParsed) {
+    return;
+  }
+  if (api) {
+    // If the match is old we might not be able to get back ability builds, HD/TD/HH from Steam so we want to keep the API data
+    const result = await blobArchive?.archivePut(
+      matchId.toString() + '_api',
+      Buffer.from(JSON.stringify(api)),
+    );
+    if (result) {
+      console.log('SUCCESS BLOB api match %s', matchId);
+      await cassandra.execute(
+        'DELETE api from match_blobs WHERE match_id = ?',
+        [matchId],
+        {
+          prepare: true,
+        },
       );
-      if (result) {
-        console.log('SUCCESS BLOB api match %s', matchId);
-      } else {
-        console.log('FAILED BLOB api match %s', matchId);
-        return;
-      }
+    } else {
+      console.log('FAILED BLOB api match %s', matchId);
     }
-    // if (gcdata) {
+  }
+  if (gcdata) {
     //   const result = await blobArchive?.archivePut(matchId.toString() + '_gcdata', Buffer.from(JSON.stringify(gcdata)));
     //   if (result) {
     //     console.log('SUCCESS BLOB gcdata match %s', matchId);
+    // await cassandra.execute(
+    //   'DELETE gcdata from match_blobs WHERE match_id = ?',
+    //   [matchId],
+    //   {
+    //     prepare: true,
+    //   },
+    // );
     //   } else {
     //     console.log('FAILED BLOB gcdata match %s', matchId);
     //     return;
     //   }
-    // }
+  }
+  // there may be rows left with only gcdata that we can migrate at a later point
+  // Check if we can clean up the whole row
+  await doCleanupCassandraBlobRows(matchId);
+}
+
+/**
+ * Removes empty rows from Cassandra after we've moved the blobs
+ */
+async function doCleanupCassandraBlobRows(matchId: number) {
+  const api = await readApiData(matchId, true);
+  const gcdata = await readGcData(matchId, true);
+  const isParsed = await checkIsParsed(matchId);
+  if (!api && !gcdata && !isParsed) {
     await deleteMatch(matchId);
   }
 }
@@ -150,9 +190,8 @@ async function deleteMatch(matchId: number) {
   );
 }
 
-export async function archivePostgresStream() {
+export async function archivePostgresStream(max: number) {
   // Archive parsed matches that aren't archived from postgres records
-  const max = await getCurrentMaxArchiveID();
   const query = new QueryStream(
     `
     SELECT match_id 
@@ -172,7 +211,7 @@ export async function archivePostgresStream() {
       i += 1;
       console.log(i);
       try {
-        await doArchiveMatchFromCassandra(row.match_id);
+        await doArchiveMatchFromBlobs(row.match_id);
       } catch (e) {
         console.error(e);
       }
@@ -188,7 +227,7 @@ async function archiveSequential(start: number, max: number) {
   for (let i = start; i < max; i++) {
     console.log(i);
     try {
-      await doArchiveMatchFromCassandra(i);
+      await doArchiveMatchFromBlobs(i);
     } catch (e) {
       console.error(e);
     }
@@ -203,7 +242,7 @@ async function archiveRandom(max: number) {
     page.push(rand + i);
   }
   console.log(page[0]);
-  await Promise.allSettled(page.map((i) => doArchiveMatchFromCassandra(i)));
+  await Promise.allSettled(page.map((i) => doArchiveMatchFromBlobs(i)));
 }
 
 export async function archiveToken(max: number) {
@@ -211,7 +250,7 @@ export async function archiveToken(max: number) {
   let page = await getTokenRange(1000);
   page = page.filter((id) => id < max);
   console.log(page[0]);
-  await Promise.allSettled(page.map((i) => doArchiveMatchFromCassandra(i)));
+  await Promise.allSettled(page.map((i) => doArchiveMatchFromBlobs(i)));
 }
 
 function randomBigInt(byteCount: number) {
@@ -225,15 +264,14 @@ function randomInt(min: number, max: number) {
 export async function getCurrentMaxArchiveID() {
   const max = (await db.raw('select max(match_id) from public_matches'))
     ?.rows?.[0]?.max;
-  // Use a higher max to archive everything
-  const limit = max + 100000000;
+  const limit = max - 100000000;
   return limit;
 }
 
 async function getTokenRange(size: number) {
   // Convert to signed 64-bit integer
   const signedBigInt = BigInt.asIntN(64, randomBigInt(8));
-  // Get a page of matches (efffectively random, but guaranteed sequential read on one node)
+  // Get a page of matches (effectively random, but guaranteed sequential read on one node)
   const result = await cassandra.execute(
     'select match_id, token(match_id) from match_blobs where token(match_id) >= ? limit ? ALLOW FILTERING;',
     [signedBigInt.toString(), size],
