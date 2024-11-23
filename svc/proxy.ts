@@ -22,15 +22,13 @@ console.log('listening on port %s', port);
 if (config.SERVICE_REGISTRY_HOST) {
   let ip = os.networkInterfaces()?.eth0?.[0]?.address;
   if (config.EXTERNAL) {
-    ip = child_process.spawnSync(`curl ${config.SERVICE_REGISTRY_HOST}/ip`).stdout.toString();
+    ip = child_process
+      .spawnSync(`curl ${config.SERVICE_REGISTRY_HOST}/ip`)
+      .stdout.toString();
   }
   setInterval(() => {
     // Re-register ourselves as available
-    const registerUrl = `https://${
-      config.SERVICE_REGISTRY_HOST
-    }/register/proxy/${ip}?key=${
-      config.RETRIEVER_SECRET
-    }`;
+    const registerUrl = `https://${config.SERVICE_REGISTRY_HOST}/register/proxy/${ip}?key=${config.RETRIEVER_SECRET}`;
     console.log('registerUrl: %s', registerUrl);
     axios.post(registerUrl);
   }, 5000);

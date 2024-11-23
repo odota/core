@@ -112,7 +112,9 @@ const jobs = {
   },
   api_top_live_game(type: string, payload: any) {
     return {
-      url: `${apiUrl}/IDOTA2Match_570/GetTopLiveGame/v1/?key=${apiKey}&partner=${Math.random() < 0.5 ? '1' : '2'}`,
+      url: `${apiUrl}/IDOTA2Match_570/GetTopLiveGame/v1/?key=${apiKey}&partner=${
+        Math.random() < 0.5 ? '1' : '2'
+      }`,
     };
   },
   api_realtime_stats(type: string, payload: any) {
@@ -154,7 +156,8 @@ export async function getSteamAPIData(options: GetDataOptions): Promise<any> {
   parse.search = null;
   if (options.proxy) {
     // choose one of the passed hosts
-    parse.host = options.proxy[Math.floor(Math.random() * options.proxy.length)];
+    parse.host =
+      options.proxy[Math.floor(Math.random() * options.proxy.length)];
   }
   if (parse.host === 'api.steampowered.com') {
     redisCount('steam_api_call');
@@ -166,7 +169,7 @@ export async function getSteamAPIData(options: GetDataOptions): Promise<any> {
     timeout: options.timeout ?? 5000,
     headers: {
       'Content-Encoding': 'gzip',
-   },
+    },
   };
   if (options.raw) {
     // Return string instead of JSON
@@ -178,15 +181,11 @@ export async function getSteamAPIData(options: GetDataOptions): Promise<any> {
     // Throws an exception if we get a non-200 status code
     const response = await axios.get(target, axiosOptions);
     body = response.data;
-  } catch(err: any | AxiosError) {
+  } catch (err: any | AxiosError) {
     console.timeEnd(target);
     if (axios.isAxiosError(err)) {
       const statusCode = err.response?.status;
-      console.error(
-        '[EXCEPTION] %s, %s',
-        statusCode,
-        target,
-      );
+      console.error('[EXCEPTION] %s, %s', statusCode, target);
       if (statusCode === 429) {
         redisCount('steam_429');
       } else if (statusCode === 403) {
@@ -195,7 +194,9 @@ export async function getSteamAPIData(options: GetDataOptions): Promise<any> {
       if (statusCode === 429) {
         await new Promise((resolve) => setTimeout(resolve, 2000));
       }
-      throw new Error('[EXCEPTION] status: ' + statusCode + ' message: ' + err.message);
+      throw new Error(
+        '[EXCEPTION] status: ' + statusCode + ' message: ' + err.message,
+      );
     } else {
       throw err;
     }
@@ -821,9 +822,12 @@ export async function getApiHosts(): Promise<string[]> {
       '-inf',
       Date.now() - 10000,
     );
-    return [...await redis.zrange('registry:proxy', 0, -1), ...config.STEAM_API_HOST.split(',')];
+    return [
+      ...(await redis.zrange('registry:proxy', 0, -1)),
+      ...config.STEAM_API_HOST.split(','),
+    ];
   }
-  return config.STEAM_API_HOST.split(',')
+  return config.STEAM_API_HOST.split(',');
 }
 
 /**
@@ -832,7 +836,9 @@ export async function getApiHosts(): Promise<string[]> {
  * @param prefix The counter name
  */
 export async function redisCount(prefix: MetricName) {
-  const redisToUse = config.REDIS_URL ? (await import('../store/redis.js')).redis : null;
+  const redisToUse = config.REDIS_URL
+    ? (await import('../store/redis.js')).redis
+    : null;
   const key = `${prefix}:v2:${moment().startOf('hour').format('X')}`;
   await redisToUse?.incr(key);
   await redisToUse?.expireat(
@@ -841,11 +847,10 @@ export async function redisCount(prefix: MetricName) {
   );
 }
 
-export async function redisCountDistinct(
-  prefix: MetricName,
-  value: string,
-) {
-  const redisToUse = config.REDIS_URL ? (await import('../store/redis.js')).redis : null;
+export async function redisCountDistinct(prefix: MetricName, value: string) {
+  const redisToUse = config.REDIS_URL
+    ? (await import('../store/redis.js')).redis
+    : null;
   const key = `${prefix}:v2:${moment().startOf('hour').format('X')}`;
   await redisToUse?.pfadd(key, value);
   await redisToUse?.expireat(
@@ -954,7 +959,7 @@ export function isDataComplete(match: Partial<ParsedMatch>) {
       // Some players may not have upgrades (DCed or never upgraded abilities), so check all slots
       // If it's ability upgrade expired data none of the players will have it
       // Looks like some ability draft matches also don't have this data (not sure if present in source)
-      match.players?.some(p => p.ability_upgrades_arr),
+      match.players?.some((p) => p.ability_upgrades_arr),
   );
 }
 
@@ -990,12 +995,19 @@ export function queryParamToArray(
 }
 
 export async function isAutoCachePlayer(redis: Redis, accountId: number) {
-  const isLogin = Boolean(Number(await redis.zscore('visitors', accountId)) > Number(moment().subtract(30, 'day').format('X')));
-  const isRecent = Boolean(await redis.zscore('player_matches_visit', accountId));
+  const isLogin = Boolean(
+    Number(await redis.zscore('visitors', accountId)) >
+      Number(moment().subtract(30, 'day').format('X')),
+  );
+  const isRecent = Boolean(
+    await redis.zscore('player_matches_visit', accountId),
+  );
   return isLogin || isRecent;
 }
 
-export function transformMatch(origMatch: Readonly<InsertMatchInput>): Readonly<InsertMatchInput> {
+export function transformMatch(
+  origMatch: Readonly<InsertMatchInput>,
+): Readonly<InsertMatchInput> {
   return {
     ...origMatch,
     players: origMatch.players.map((p) => {
@@ -1019,6 +1031,6 @@ export function transformMatch(origMatch: Readonly<InsertMatchInput>): Readonly<
       // delete p.aghanims_shard;
       // delete p.moonshard;
       return newP as any;
-    })
-  };      
-};
+    }),
+  };
+}

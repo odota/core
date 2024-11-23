@@ -73,7 +73,10 @@ app.get('/aliases/:steam_ids', async (req, res, cb) => {
   });
 });
 
-const logOnDetails = { accountName: config.STEAM_USER, password: config.STEAM_PASS };
+const logOnDetails = {
+  accountName: config.STEAM_USER,
+  password: config.STEAM_PASS,
+};
 const client = new SteamUser();
 client.on('loggedOn', () => {
   client.gamesPlayed(DOTA_APPID);

@@ -72,7 +72,7 @@ async function processFullHistory(job: FullHistoryJob) {
     url: string,
   ): Promise<void> => {
     let body;
-    while(!body) {
+    while (!body) {
       try {
         body = await getSteamAPIData({ url });
       } catch (err: any) {

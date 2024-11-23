@@ -38,12 +38,7 @@ async function scanApi(seqNum: number) {
       });
     } catch (err: any) {
       console.log(err);
-        await new Promise((resolve) =>
-        setTimeout(
-          resolve,
-          SCANNER_WAIT,
-        ),
-      );
+      await new Promise((resolve) => setTimeout(resolve, SCANNER_WAIT));
       continue;
     }
     const resp =
@@ -51,14 +46,20 @@ async function scanApi(seqNum: number) {
     console.log('[API] match_seq_num:%s, matches:%s', nextSeqNum, resp.length);
     // write to blobstore, process the blob using same function as insertMatch
     try {
-      const insertResult = await Promise.all(resp.map(async (origMatch: ApiMatch) => {
-        const match = transformMatch(origMatch);
-        // ifNotExists functionality not implemented by some s3 providers
-        const result = await blobArchive.archivePut(match.match_id + '_api', Buffer.from(JSON.stringify(match)), false);
-        if (!result) {
-          throw new Error('failed to insert match ' + match.match_id);
-        }
-      }));
+      const insertResult = await Promise.all(
+        resp.map(async (origMatch: ApiMatch) => {
+          const match = transformMatch(origMatch);
+          // ifNotExists functionality not implemented by some s3 providers
+          const result = await blobArchive.archivePut(
+            match.match_id + '_api',
+            Buffer.from(JSON.stringify(match)),
+            false,
+          );
+          if (!result) {
+            throw new Error('failed to insert match ' + match.match_id);
+          }
+        }),
+      );
       if (resp.length) {
         nextSeqNum = resp[resp.length - 1].match_seq_num + 1;
         console.log('next_seq_num: %s', nextSeqNum);
@@ -73,12 +74,7 @@ async function scanApi(seqNum: number) {
     const elapsed = end - begin;
     const adjustedWait = Math.max(SCANNER_WAIT - elapsed, 0);
     console.log('iteration: %dms', elapsed);
-    await new Promise((resolve) =>
-      setTimeout(
-        resolve,
-        adjustedWait,
-      ),
-    );
+    await new Promise((resolve) => setTimeout(resolve, adjustedWait));
   }
 }
 

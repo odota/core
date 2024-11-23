@@ -3,7 +3,12 @@ import config from '../config';
 import redis from '../store/redis';
 import { insertMatch } from '../store/insert';
 import type { ApiMatch } from '../store/pgroup';
-import { generateJob, getApiHosts, getSteamAPIData, redisCount } from '../util/utility';
+import {
+  generateJob,
+  getApiHosts,
+  getSteamAPIData,
+  redisCount,
+} from '../util/utility';
 import db from '../store/db';
 const API_KEYS = config.STEAM_API_KEY.split(',');
 const PAGE_SIZE = 100;
@@ -16,10 +21,10 @@ async function scanApi(seqNum: number) {
   while (true) {
     if (offset) {
       const numResult = await getCurrentSeqNum();
-      if(nextSeqNum > (numResult - offset)) {
+      if (nextSeqNum > numResult - offset) {
         // Secondary scanner is catching up too much. Wait and try again
         console.log('secondary scanner waiting');
-        await new Promise(resolve => setTimeout(resolve, SCANNER_WAIT));
+        await new Promise((resolve) => setTimeout(resolve, SCANNER_WAIT));
         continue;
       }
     }
@@ -38,12 +43,7 @@ async function scanApi(seqNum: number) {
     } catch (err: any) {
       console.log(err);
       // failed, try the same number again
-      await new Promise((resolve) =>
-        setTimeout(
-          resolve,
-          SCANNER_WAIT,
-        ),
-      );
+      await new Promise((resolve) => setTimeout(resolve, SCANNER_WAIT));
     }
     const resp =
       data && data.result && data.result.matches ? data.result.matches : [];
@@ -58,7 +58,10 @@ async function scanApi(seqNum: number) {
     }
     if (!Number(config.SCANNER_OFFSET)) {
       // Only set match seq num on primary
-      await db.raw('INSERT INTO last_seq_num(match_seq_num) VALUES (?) ON CONFLICT DO NOTHING', [nextSeqNum]);
+      await db.raw(
+        'INSERT INTO last_seq_num(match_seq_num) VALUES (?) ON CONFLICT DO NOTHING',
+        [nextSeqNum],
+      );
     }
     // If not a full page, delay the next iteration
     await new Promise((resolve) =>
@@ -100,14 +103,14 @@ async function getCurrentSeqNum(): Promise<number> {
 }
 
 async function start() {
-    let numResult = await getCurrentSeqNum();
-    if (!numResult && config.NODE_ENV === 'development') {
-      // Never do this in production to avoid skipping sequence number if we didn't pull .env properly
-      const container = generateJob('api_history', {});
-      // Just get the approximate current seq num
-      const data = await getSteamAPIData({url: container.url});
-      numResult = data.result.matches[0].match_seq_num;
-    } 
-    await scanApi(numResult);
+  let numResult = await getCurrentSeqNum();
+  if (!numResult && config.NODE_ENV === 'development') {
+    // Never do this in production to avoid skipping sequence number if we didn't pull .env properly
+    const container = generateJob('api_history', {});
+    // Just get the approximate current seq num
+    const data = await getSteamAPIData({ url: container.url });
+    numResult = data.result.matches[0].match_seq_num;
+  }
+  await scanApi(numResult);
 }
 start();

@@ -12,7 +12,7 @@ async function doItems() {
   const container = generateJob('api_items', {
     language: 'english',
   });
-  const body = await getSteamAPIData({url: container.url});
+  const body = await getSteamAPIData({ url: container.url });
   if (!body || !body.result || !body.result.data) {
     throw new Error('invalid body');
   }

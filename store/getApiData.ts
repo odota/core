@@ -10,7 +10,10 @@ const blobArchive = config.ENABLE_BLOB_ARCHIVE ? new Archive('blob') : null;
  * @param matchId
  * @returns
  */
-export async function readApiData(matchId: number, noBlobStore?: boolean): Promise<ApiMatch | null> {
+export async function readApiData(
+  matchId: number,
+  noBlobStore?: boolean,
+): Promise<ApiMatch | null> {
   const result = await cassandra.execute(
     'SELECT api FROM match_blobs WHERE match_id = ?',
     [matchId],
@@ -23,7 +26,7 @@ export async function readApiData(matchId: number, noBlobStore?: boolean): Promi
     if (archive) {
       redisCount('blob_archive_read');
     }
-    data = archive ? JSON.parse(archive.toString()) as ApiMatch : undefined;
+    data = archive ? (JSON.parse(archive.toString()) as ApiMatch) : undefined;
   }
   if (!data) {
     return null;
@@ -37,7 +40,10 @@ export async function readApiData(matchId: number, noBlobStore?: boolean): Promi
  * @param matchId
  * @returns
  */
-export async function getOrFetchApiData(matchId: number, noRetry = false): Promise<{
+export async function getOrFetchApiData(
+  matchId: number,
+  noRetry = false,
+): Promise<{
   data: ApiMatch | null;
   error: string | null;
   pgroup: PGroup | null;
@@ -51,5 +57,9 @@ export async function getOrFetchApiData(matchId: number, noRetry = false): Promi
     // We currently disable refetching because the Steam GetMatchDetails API is broken
     return { data: saved, error: null, pgroup: getPGroup(saved) };
   }
-  return { data: null, error: '[APIDATA]: Could not get API data for match ' + matchId, pgroup: null };
+  return {
+    data: null,
+    error: '[APIDATA]: Could not get API data for match ' + matchId,
+    pgroup: null,
+  };
 }

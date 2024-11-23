@@ -1,8 +1,5 @@
 import config from '../config';
-import {
-  getRandomParserUrl,
-  redisCount,
-} from '../util/utility';
+import { getRandomParserUrl, redisCount } from '../util/utility';
 import { Archive } from './archive';
 import cassandra from './cassandra';
 import db from './db';
@@ -26,12 +23,12 @@ export async function readParseData(
     { prepare: true, fetchSize: 1, autoPage: true },
   );
   const row = result.rows[0];
-  let data = row?.parsed
-    ? (JSON.parse(row.parsed) as ParserMatch)
-    : undefined;
+  let data = row?.parsed ? (JSON.parse(row.parsed) as ParserMatch) : undefined;
   if (!data && blobArchive && !noBlobStore) {
     const archive = await blobArchive.archiveGet(`${matchId}_parsed`);
-    data = archive ? JSON.parse(archive.toString()) as ParserMatch : undefined;
+    data = archive
+      ? (JSON.parse(archive.toString()) as ParserMatch)
+      : undefined;
   }
   if (!data) {
     return null;

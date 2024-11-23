@@ -2,14 +2,18 @@
 import JSONbig from 'json-bigint';
 import redis from '../store/redis';
 import db from '../store/db';
-import { generateJob, getSteamAPIData, invokeIntervalAsync } from '../util/utility';
+import {
+  generateJob,
+  getSteamAPIData,
+  invokeIntervalAsync,
+} from '../util/utility';
 
 async function doLiveGames() {
   // Get the list of pro players
   const proPlayers: ProPlayer[] = await db.select().from('notable_players');
   // Get the list of live games
   const container = generateJob('api_top_live_game', {});
-  const body = await getSteamAPIData({url: container.url, raw: true});
+  const body = await getSteamAPIData({ url: container.url, raw: true });
   const json = JSONbig.parse(body);
   // If a match contains a pro player
   // add their name to the match object, save it to redis zset, keyed by server_steam_id

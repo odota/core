@@ -4,7 +4,9 @@ import { Archive } from './archive';
 import db from './db';
 
 const matchArchive = config.ENABLE_MATCH_ARCHIVE ? new Archive('match') : null;
-const playerArchive = config.ENABLE_PLAYER_ARCHIVE ? new Archive('player') : null;
+const playerArchive = config.ENABLE_PLAYER_ARCHIVE
+  ? new Archive('player')
+  : null;
 
 export async function tryReadArchivedPlayerMatches(
   accountId: number,

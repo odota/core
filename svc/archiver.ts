@@ -1,5 +1,8 @@
 // Cleans up old data from Cassandra and optionally archives it
-import { archivePostgresStream, getCurrentMaxArchiveID } from '../util/archiveUtil';
+import {
+  archivePostgresStream,
+  getCurrentMaxArchiveID,
+} from '../util/archiveUtil';
 
 async function start() {
   const max = await getCurrentMaxArchiveID();

@@ -61,7 +61,8 @@ export default {
         nullable: true,
       },
       hero_variant: {
-        description: '1-indexed facet, see https://github.com/odota/dotaconstants/blob/master/build/hero_abilities.json',
+        description:
+          '1-indexed facet, see https://github.com/odota/dotaconstants/blob/master/build/hero_abilities.json',
         type: 'integer',
       },
     },

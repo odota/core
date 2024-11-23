@@ -323,7 +323,7 @@ type QueueInput =
   | {
       name: 'cacheQueue';
       data: CacheJob;
-  };
+    };
 
 type ReliableQueueRow = {
   id: number;

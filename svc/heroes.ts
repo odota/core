@@ -12,7 +12,7 @@ async function doHeroes() {
   const container = generateJob('api_heroes', {
     language: 'english',
   });
-  const body = await getSteamAPIData({url: container.url});
+  const body = await getSteamAPIData({ url: container.url });
   if (!body || !body.result || !body.result.heroes) {
     return;
   }

@@ -63,7 +63,7 @@ async function countDayDistinct(prefix: MetricName) {
 }
 
 export async function buildStatus() {
-  const obj = {  
+  const obj = {
     registry_proxy: async () => redis.zcard('registry:proxy'),
     registry_retriever: async () => redis.zcard('registry:retriever'),
     registry_parser: async () => redis.zcard('registry:parser'),
@@ -99,7 +99,7 @@ export async function buildStatus() {
     steam_403_last_day: async () => countDay('steam_403'),
     // steam_api_notfound_last_day: async () => countDay('steam_api_notfound'),
     // steam_gc_backfill_last_day: async () => countDay('steam_gc_backfill'),
-  
+
     api_hits_last_day: async () => countDay('api_hits'),
     api_hits_ui_last_day: async () => countDay('api_hits_ui'),
     build_match_last_day: async () => countDay('build_match'),
@@ -124,7 +124,7 @@ export async function buildStatus() {
     //   countDayDistinct('distinct_match_player_user'),
     // distinct_match_players_recent_user_last_day: async () =>
     //   countDayDistinct('distinct_match_player_recent_user'),
-    
+
     match_cache_hit_last_day: async () => countDay('match_cache_hit'),
     player_cache_hit_last_day: async () => countDay('player_cache_hit'),
     player_cache_miss_last_day: async () => countDay('player_cache_miss'),

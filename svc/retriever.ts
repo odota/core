@@ -69,11 +69,7 @@ setInterval(() => {
   }
   // Re-register ourselves as available
   if (config.SERVICE_REGISTRY_HOST && !noneReady()) {
-    const registerUrl = `https://${
-      config.SERVICE_REGISTRY_HOST
-    }/register/retriever/${publicIP}?key=${
-      config.RETRIEVER_SECRET
-    }`;
+    const registerUrl = `https://${config.SERVICE_REGISTRY_HOST}/register/retriever/${publicIP}?key=${config.RETRIEVER_SECRET}`;
     console.log('registerUrl: %s', registerUrl);
     axios.post(registerUrl);
   }
@@ -221,8 +217,9 @@ async function init() {
           'https://' +
           config.SERVICE_REGISTRY_HOST +
           '/retrieverData?key=' +
-          config.RETRIEVER_SECRET
-          + '&count=' + numAccounts;
+          config.RETRIEVER_SECRET +
+          '&count=' +
+          numAccounts;
         console.log('logOnUrl: %s', logOnUrl);
         const resp = await axios.get(logOnUrl);
         logOns = resp.data;

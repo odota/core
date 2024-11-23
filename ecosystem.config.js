@@ -71,7 +71,7 @@ let arr = [
     group: 'backend',
     env: {
       SCANNER_OFFSET: '50000',
-    }
+    },
   },
   {
     name: 'autocache',

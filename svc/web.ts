@@ -139,11 +139,11 @@ if (config.NODE_ENV === 'test') {
 // Proxy to serve team logos over https
 // TODO this stopped working at some point, find new way to get team logos?
 // app.use('/ugc', (req, res) => {
-  // request(`http://cloud-3.steamusercontent.com/${req.originalUrl}`)
-  //   .on('response', (resp: any) => {
-  //     resp.headers['content-type'] = 'image/png';
-  //   })
-  //   .pipe(res);
+// request(`http://cloud-3.steamusercontent.com/${req.originalUrl}`)
+//   .on('response', (resp: any) => {
+//     resp.headers['content-type'] = 'image/png';
+//   })
+//   .pipe(res);
 // });
 
 // Session/Passport middleware
@@ -231,7 +231,9 @@ app.get('/retrieverData', async (req, res) => {
     for (let i = 0; i < accountData.length; i++) {
       const accountName = accountData[i].split('\t')[0];
       const reqs = Number(await redis.hget('retrieverSteamIDs', accountName));
-      const success = Number(await redis.hget('retrieverSuccessSteamIDs', accountName));
+      const success = Number(
+        await redis.hget('retrieverSuccessSteamIDs', accountName),
+      );
       const ratio = success / reqs;
       // Don't add high usage logons or high fail logons
       if (reqs < 190 && (reqs < 25 || ratio > 0)) {
@@ -241,12 +243,11 @@ app.get('/retrieverData', async (req, res) => {
   }
   // Pop random elements
   const pop = await redis.spop('retrieverDataSet', accountCount);
-  const logins = pop
-    .map((login) => {
-      const accountName = login.split('\t')[0];
-      const password = login.split('\t')[1];
-      return { accountName, password };
-    });
+  const logins = pop.map((login) => {
+    const accountName = login.split('\t')[0];
+    const password = login.split('\t')[1];
+    return { accountName, password };
+  });
   return res.json(logins);
 });
 

@@ -164,7 +164,10 @@ export async function insertMatch(
     // That requires writing a new SQL query though
     // If we do that then we can put the NOT NULL constraint on hero_id
     if (options.type === 'parsed') {
-      const { rows } = await db.raw('select match_id from matches where match_id = ?', [match.match_id]);
+      const { rows } = await db.raw(
+        'select match_id from matches where match_id = ?',
+        [match.match_id],
+      );
       if (!rows.length) {
         return;
       }
@@ -205,7 +208,12 @@ export async function insertMatch(
             pm.lane_role = laneData.lane_role ?? null;
             pm.is_roaming = laneData.is_roaming ?? null;
           }
-          console.log('[UPSERTMATCHPOSTGRES]: player_match', pm.match_id, pm.player_slot, pm.hero_id);
+          console.log(
+            '[UPSERTMATCHPOSTGRES]: player_match',
+            pm.match_id,
+            pm.player_slot,
+            pm.hero_id,
+          );
           return upsert(trx, 'player_matches', pm, {
             match_id: pm.match_id,
             player_slot: pm.player_slot,
@@ -461,26 +469,26 @@ export async function insertMatch(
       // match.players
       //   .filter((p) => p.account_id)
       //   .forEach(async (p) => {
-          // if (p.account_id) {
-          //   redisCountDistinct(
-          //     'distinct_match_player',
-          //     p.account_id.toString(),
-          //   );
-            // const visitTime = Number(await redis.zscore('visitors', p.account_id.toString()));
-            // if (visitTime) {
-            //   redisCountDistinct(
-            //     'distinct_match_player_user',
-            //     p.account_id.toString(),
-            //   );
-            //   if (visitTime > Number(moment().subtract(30, 'day').format('X'))) {
-            //     redisCountDistinct(
-            //       'distinct_match_player_recent_user',
-            //       p.account_id.toString(),
-            //     );
-            //   }
-            // }
-          // }
-        // });
+      // if (p.account_id) {
+      //   redisCountDistinct(
+      //     'distinct_match_player',
+      //     p.account_id.toString(),
+      //   );
+      // const visitTime = Number(await redis.zscore('visitors', p.account_id.toString()));
+      // if (visitTime) {
+      //   redisCountDistinct(
+      //     'distinct_match_player_user',
+      //     p.account_id.toString(),
+      //   );
+      //   if (visitTime > Number(moment().subtract(30, 'day').format('X'))) {
+      //     redisCountDistinct(
+      //       'distinct_match_player_recent_user',
+      //       p.account_id.toString(),
+      //     );
+      //   }
+      // }
+      // }
+      // });
     }
   }
   async function resetMatchCache(match: InsertMatchInput) {
@@ -491,26 +499,23 @@ export async function insertMatch(
   async function resetPlayerCache(match: InsertMatchInput) {
     if (config.ENABLE_PLAYER_CACHE) {
       await Promise.allSettled(
-        match.players
-          .map(async (p) => {
-            const account_id = pgroup[p.player_slot]?.account_id ?? p.account_id;
-            if (account_id) {
-              await cassandra.execute(
-                `DELETE FROM player_temp WHERE account_id = ?`,
-                [account_id],
-                { prepare: true },
-              );
-              // Auto-cache players
-              if (
-                await isAutoCachePlayer(redis, account_id)
-              ) {
-                await addJob({
-                  name: 'cacheQueue',
-                  data: account_id.toString(),
-                });
-              }
+        match.players.map(async (p) => {
+          const account_id = pgroup[p.player_slot]?.account_id ?? p.account_id;
+          if (account_id) {
+            await cassandra.execute(
+              `DELETE FROM player_temp WHERE account_id = ?`,
+              [account_id],
+              { prepare: true },
+            );
+            // Auto-cache players
+            if (await isAutoCachePlayer(redis, account_id)) {
+              await addJob({
+                name: 'cacheQueue',
+                data: account_id.toString(),
+              });
             }
-          }),
+          }
+        }),
       );
     }
   }

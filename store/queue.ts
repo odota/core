@@ -20,8 +20,8 @@ export async function runQueue(
     const consumer = new Redis(config.REDIS_URL);
     while (true) {
       // If we have a way to measure capacity, throttle the processing speed based on capacity
-      if (getCapacity && i >= await getCapacity()) {
-        await new Promise(resolve => setTimeout(resolve, 5000));
+      if (getCapacity && i >= (await getCapacity())) {
+        await new Promise((resolve) => setTimeout(resolve, 5000));
         continue;
       }
       const job = await consumer.blpop(queueName, '0');
@@ -58,8 +58,8 @@ export async function runReliableQueue(
     await consumer.connect();
     while (true) {
       // If we have a way to measure capacity, throttle the processing speed based on capacity
-      if (getCapacity && i >= await getCapacity()) {
-        await new Promise(resolve => setTimeout(resolve, 5000));
+      if (getCapacity && i >= (await getCapacity())) {
+        await new Promise((resolve) => setTimeout(resolve, 5000));
         continue;
       }
       await consumer.query('BEGIN TRANSACTION');

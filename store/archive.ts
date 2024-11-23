@@ -47,7 +47,8 @@ export class Archive {
         secretAccessKey: this.secretAccessKey,
       },
       // expect the endpoint to have http prefix, if not, prepend https
-      endpoint: (this.endpoint.startsWith('http') ? '' : 'https://') + this.endpoint,
+      endpoint:
+        (this.endpoint.startsWith('http') ? '' : 'https://') + this.endpoint,
       // put the bucket name in the path rather than the domain to avoid DNS issues with minio
       forcePathStyle: true,
       // any other options are passed to new AWS.S3()
@@ -82,7 +83,11 @@ export class Archive {
       return null;
     }
   };
-  public archivePut = async (key: string, blob: Buffer, ifNotExists?: boolean): Promise<PutObjectCommandOutput | { message: string } | null> => {
+  public archivePut = async (
+    key: string,
+    blob: Buffer,
+    ifNotExists?: boolean,
+  ): Promise<PutObjectCommandOutput | { message: string } | null> => {
     if (!this.client) {
       return null;
     }

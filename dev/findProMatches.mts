@@ -3,7 +3,7 @@ const { db } = await import('../store/db.js');
 const { generateJob, getSteamAPIData } = await import('../util/utility.js');
 
 async function getPage(url: string, leagueid: number) {
-  const data: any = await getSteamAPIData({url});
+  const data: any = await getSteamAPIData({ url });
   console.log(
     leagueid,
     data.result.total_results,

@@ -1,10 +1,13 @@
-
 const { insertMatch } = await import('../store/insert.js');
 const { db } = await import('../store/db.js');
-const { generateJob, getSteamAPIData, isProMatch } = await import('../util/utility.js');
+const { generateJob, getSteamAPIData, isProMatch } = await import(
+  '../util/utility.js'
+);
 
 // From DB
-const { rows } = await db.raw(`select distinct match_id from player_matches where hero_id is null`);
+const { rows } = await db.raw(
+  `select distinct match_id from player_matches where hero_id is null`,
+);
 for (let i = 0; i < rows.length; i++) {
   const match = rows[i];
   console.log(match.match_id);
@@ -23,5 +26,5 @@ for (let i = 0; i < rows.length; i++) {
       await insertMatch(match, { type: 'api' });
     }
   }
-  await new Promise(resolve => setTimeout(resolve, 500));
+  await new Promise((resolve) => setTimeout(resolve, 500));
 }

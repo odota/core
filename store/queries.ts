@@ -30,9 +30,7 @@ import {
 import { readApiData } from './getApiData';
 import { type ApiMatch } from './pgroup';
 import { gzipSync, gunzipSync } from 'zlib';
-import {
-  cacheableCols,
-} from '../routes/playerFields';
+import { cacheableCols } from '../routes/playerFields';
 import moment from 'moment';
 import { readGcData } from './getGcData';
 import { readParseData } from './getParsedData';
@@ -346,9 +344,7 @@ async function readCachedPlayerMatches(
   const result = rows[0]?.blob;
   if (result) {
     redisCount('player_cache_hit');
-    if (
-      await isAutoCachePlayer(redis, accountId)
-    ) {
+    if (await isAutoCachePlayer(redis, accountId)) {
       redisCount('auto_player_cache_hit');
     }
     const output = JSON.parse(gunzipSync(result).toString());
@@ -374,9 +370,7 @@ async function readCachedPlayerMatches(
       return readCachedPlayerMatches(accountId, project);
     }
     redisCount('player_cache_miss');
-    if (
-      await isAutoCachePlayer(redis, accountId)
-    ) {
+    if (await isAutoCachePlayer(redis, accountId)) {
       redisCount('auto_player_cache_miss');
     }
     const result = await populateCache(accountId, project);
@@ -701,9 +695,17 @@ export async function isSubscriber(account_id: string) {
 
 export async function getMatchDataFromBlobWithMetadata(
   matchId: number,
-  options?: { noArchive: boolean, noBlobStore: boolean },
+  options?: { noArchive: boolean; noBlobStore: boolean },
 ): Promise<[Match | ParsedMatch | null, GetMatchDataMetadata | null]> {
-  let [api, gcdata, parsed]: [ApiMatch | null, GcMatch | null, ParserMatch | null] = await Promise.all([readApiData(matchId, options?.noBlobStore), readGcData(matchId, options?.noBlobStore), readParseData(matchId, options?.noBlobStore)]);
+  let [api, gcdata, parsed]: [
+    ApiMatch | null,
+    GcMatch | null,
+    ParserMatch | null,
+  ] = await Promise.all([
+    readApiData(matchId, options?.noBlobStore),
+    readGcData(matchId, options?.noBlobStore),
+    readParseData(matchId, options?.noBlobStore),
+  ]);
   let archived: ParsedMatch | null = null;
 
   let odData: GetMatchDataMetadata = {

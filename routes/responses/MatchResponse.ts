@@ -553,7 +553,8 @@ export default {
               },
             },
             hero_variant: {
-              description: '1-indexed facet, see https://github.com/odota/dotaconstants/blob/master/build/hero_abilities.json',
+              description:
+                '1-indexed facet, see https://github.com/odota/dotaconstants/blob/master/build/hero_abilities.json',
               type: 'integer',
             },
             pings: {
@@ -921,13 +922,14 @@ export default {
                 type: 'object',
                 properties: {
                   time: {
-                    description: 'Time in seconds at which the token was dropped',
+                    description:
+                      'Time in seconds at which the token was dropped',
                     type: 'integer',
                   },
                   key: {
                     description: 'Type of token dropped',
                     type: 'string',
-                  }
+                  },
                 },
               },
             },

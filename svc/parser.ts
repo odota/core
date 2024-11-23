@@ -162,4 +162,9 @@ async function getCapacity() {
   }
   return Number(PARSER_PARALLELISM);
 }
-runReliableQueue('parse', Number(PARSER_PARALLELISM), parseProcessor, getCapacity);
+runReliableQueue(
+  'parse',
+  Number(PARSER_PARALLELISM),
+  parseProcessor,
+  getCapacity,
+);

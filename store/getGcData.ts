@@ -3,10 +3,7 @@ import config from '../config';
 import db from './db';
 import redis from './redis';
 import cassandra from './cassandra';
-import {
-  getRandomRetrieverUrl,
-  redisCount,
-} from '../util/utility';
+import { getRandomRetrieverUrl, redisCount } from '../util/utility';
 import axios from 'axios';
 import retrieverMatch from '../test/data/retriever_match.json';
 import { insertMatch, upsertPlayer } from './insert';
@@ -24,7 +21,10 @@ const blobArchive = config.ENABLE_BLOB_ARCHIVE ? new Archive('blob') : null;
  * @param matchId
  * @returns
  */
-export async function readGcData(matchId: number, noBlobStore?: boolean): Promise<GcMatch | null> {
+export async function readGcData(
+  matchId: number,
+  noBlobStore?: boolean,
+): Promise<GcMatch | null> {
   const result = await cassandra.execute(
     'SELECT gcdata FROM match_blobs WHERE match_id = ?',
     [matchId],
@@ -32,9 +32,9 @@ export async function readGcData(matchId: number, noBlobStore?: boolean): Promis
   );
   const row = result.rows[0];
   let gcData = row?.gcdata ? (JSON.parse(row.gcdata) as GcMatch) : undefined;
-  if(!gcData && blobArchive && !noBlobStore) {
+  if (!gcData && blobArchive && !noBlobStore) {
     const archive = await blobArchive.archiveGet(`${matchId}_gcdata`);
-    gcData = archive ? JSON.parse(archive.toString()) as GcMatch : undefined;
+    gcData = archive ? (JSON.parse(archive.toString()) as GcMatch) : undefined;
   }
   if (!gcData) {
     return null;
@@ -76,7 +76,12 @@ async function saveGcData(
     // Steam is blocking this match for community prediction, so return error to prevent retry
     return 'x-match-noretry';
   }
-  if (!data || !data.match || !data.match.players || (!data.match.replay_salt && data.match.game_mode !== 'DOTA_GAMEMODE_NONE')) {
+  if (
+    !data ||
+    !data.match ||
+    !data.match.players ||
+    (!data.match.replay_salt && data.match.game_mode !== 'DOTA_GAMEMODE_NONE')
+  ) {
     // Really old matches have a 0 replay salt so if we don't have gamemode either it's a valid response
     // Bad data but we can retry
     throw new Error('invalid data');
