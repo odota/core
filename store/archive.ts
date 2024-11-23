@@ -6,7 +6,6 @@ import {
   GetObjectCommand,
   PutObjectCommandInput,
   PutObjectCommandOutput,
-  NoSuchKey,
 } from '@aws-sdk/client-s3';
 import { redisCount } from '../util/utility';
 import axios from 'axios';
@@ -83,8 +82,8 @@ export class Archive {
           return null;
         }
         buffer = await stream2buffer(data.Body);
-      } catch (e) {
-        if (e instanceof NoSuchKey) {
+      } catch (e: any) {
+        if (e.Code === 'NoSuchKey') {
           // expected response if key not valid
           redisCount('archive_miss');
           return null;
