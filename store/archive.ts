@@ -7,6 +7,7 @@ import {
   PutObjectCommandInput,
   PutObjectCommandOutput,
 } from '@aws-sdk/client-s3';
+import { redisCount } from '../util/utility';
 
 async function stream2buffer(stream: any): Promise<Buffer> {
   return new Promise((resolve, reject) => {
@@ -60,6 +61,8 @@ export class Archive {
     if (!this.client) {
       return null;
     }
+    // TODO if the bucket is public, we can read via http request rather than using the s3 lib
+
     const command = new GetObjectCommand({
       Bucket: this.bucket,
       Key: key,
@@ -77,9 +80,11 @@ export class Archive {
         buffer.length,
         result.length,
       );
+      redisCount('archive_hit');
       return result;
     } catch (e: any) {
-      console.error('[ARCHIVE] get error:', e.Code);
+      redisCount('archive_miss');
+      console.error('[ARCHIVE] %s get error:', key, e.Code);
       return null;
     }
   };
@@ -104,6 +109,7 @@ export class Archive {
         Body: data,
       };
       if (ifNotExists) {
+        // May not be implemented by some s3 providers
         options.IfNoneMatch = '*';
       }
       const command = new PutObjectCommand(options);

@@ -1,8 +1,7 @@
 import constants from 'dotaconstants';
-import fs from 'fs';
 import config from '../config';
 import { computeMatchData } from '../util/compute';
-import { buildReplayUrl, isContributor, redisCount } from '../util/utility';
+import { buildReplayUrl, isContributor, redisCount, redisCountDistinct } from '../util/utility';
 import redis from './redis';
 import db from './db';
 import {
@@ -97,6 +96,11 @@ async function buildMatch(
   if (!matchId || !Number.isInteger(matchId) || matchId <= 0) {
     return null;
   }
+
+  // track distribution of matches requested
+  const bucket = Math.floor(matchId / 1000000000);
+  redisCount(bucket + '_match_req' as MetricName);
+
   // Check for cache
   const key = `match:${matchId}`;
   const reply = await redis.get(key);
