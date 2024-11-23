@@ -1,8 +1,8 @@
 import axios from 'axios';
+import { gunzipSync } from 'zlib';
 
-console.log(
-  await axios.head(
-    'http://replay154.valve.net/570/7501808437_519745192.dem.bz2',
-    { timeout: 5000 },
-  ),
-);
+const resp = await axios.get<Buffer>('https://f005.backblazeb2.com/file/opendota-blobs/5984386492_api', { responseType: 'arraybuffer'});
+let buffer = resp.data;
+console.log(buffer);
+const unzip = gunzipSync(buffer);
+console.log(unzip);

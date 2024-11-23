@@ -70,6 +70,8 @@ export class Archive {
         buffer = resp.data;
       } catch(e) {
         if (axios.isAxiosError(e)) {
+          console.log(url);
+          console.log(e.message);
           if (e.response?.status === 404) {
             // expected if key not valid
             redisCount('archive_miss');
