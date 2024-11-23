@@ -43,7 +43,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: odota/core
     entrypoint: sleep infinity
     ports:
       - '5000:5000'
