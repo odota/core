@@ -6,11 +6,10 @@ import { generateJob, getSteamAPIData, transformMatch } from '../util/utility';
 import fs from 'fs';
 
 // following need to be set
-// STEAM_API_KEY needs to be set in .env
-// BLOB_ARCHIVE_S3_KEY_ID: 'minioadmin',
-// BLOB_ARCHIVE_S3_KEY_SECRET: 'minioadmin',
-// BLOB_ARCHIVE_S3_ENDPOINT: 'http://localhost:9000',
-// BLOB_ARCHIVE_S3_BUCKET: 'opendota-blobs',
+// STEAM_API_KEY
+// ARCHIVE_S3_KEY_ID: 'minioadmin',
+// ARCHIVE_S3_KEY_SECRET: 'minioadmin',
+// ARCHIVE_S3_ENDPOINT: 'http://localhost:9000',
 
 // This endpoint is limited to something like 1 request every 5 seconds
 const apiHosts = config.STEAM_API_HOST.split(',');

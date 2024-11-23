@@ -29,20 +29,14 @@ export class Archive {
   private bucket: string = '';
   private client: S3Client | null = null;
   constructor(type: 'match' | 'player' | 'blob') {
+    this.endpoint = config.ARCHIVE_S3_ENDPOINT;
+    this.accessKeyId = config.ARCHIVE_S3_KEY_ID;
+    this.secretAccessKey = config.ARCHIVE_S3_KEY_SECRET;
     if (type === 'match') {
-      this.endpoint = config.MATCH_ARCHIVE_S3_ENDPOINT;
-      this.accessKeyId = config.MATCH_ARCHIVE_S3_KEY_ID;
-      this.secretAccessKey = config.MATCH_ARCHIVE_S3_KEY_SECRET;
       this.bucket = config.MATCH_ARCHIVE_S3_BUCKET;
     } else if (type === 'player') {
-      this.endpoint = config.PLAYER_ARCHIVE_S3_ENDPOINT;
-      this.accessKeyId = config.PLAYER_ARCHIVE_S3_KEY_ID;
-      this.secretAccessKey = config.PLAYER_ARCHIVE_S3_KEY_SECRET;
       this.bucket = config.PLAYER_ARCHIVE_S3_BUCKET;
     } else if (type === 'blob') {
-      this.endpoint = config.BLOB_ARCHIVE_S3_ENDPOINT;
-      this.accessKeyId = config.BLOB_ARCHIVE_S3_KEY_ID;
-      this.secretAccessKey = config.BLOB_ARCHIVE_S3_KEY_SECRET;
       this.bucket = config.BLOB_ARCHIVE_S3_BUCKET;
     }
     this.client = new S3Client({
@@ -62,9 +56,9 @@ export class Archive {
 
   public archiveGet = async (key: string) => {
     let buffer: Buffer | undefined;
-    if (config.PUBLIC_ARCHIVE_URL) {
+    if (config.ARCHIVE_PUBLIC_URL) {
       // if the bucket is public, we can read via http request rather than using the s3 client
-      const url = `${config.PUBLIC_ARCHIVE_URL}/${this.bucket}/${key}`;
+      const url = `${config.ARCHIVE_PUBLIC_URL}/${this.bucket}/${key}`;
       try {
         const resp = await axios.get<Buffer>(url, { responseType: 'arraybuffer'});
         buffer = resp.data;
