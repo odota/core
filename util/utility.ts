@@ -822,10 +822,10 @@ export async function getApiHosts(): Promise<string[]> {
       '-inf',
       Date.now() - 10000,
     );
-    return [
-      ...(await redis.zrange('registry:proxy', 0, -1)),
-      ...config.STEAM_API_HOST.split(','),
-    ];
+    const hosts = await redis.zrange('registry:proxy', 0, -1);
+    if (hosts.length) {
+      return hosts;
+    }
   }
   return config.STEAM_API_HOST.split(',');
 }
