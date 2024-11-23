@@ -62,7 +62,23 @@ export class Archive {
 
   public archiveGet = async (key: string) => {
     let buffer: Buffer | undefined;
-    if (config.IS_ARCHIVE_PRIVATE) {
+    if (config.PUBLIC_ARCHIVE_URL) {
+      // if the bucket is public, we can read via http request rather than using the s3 client
+      const url = `${config.PUBLIC_ARCHIVE_URL}/${this.bucket}/${key}}`;
+      try {
+        const resp = await axios.get<Buffer>(url, { responseType: 'arraybuffer'});
+        buffer = resp.data;
+      } catch(e) {
+        if (axios.isAxiosError(e)) {
+          if (e.response?.status === 404) {
+            // expected if key not valid
+            redisCount('archive_miss');
+            return null;
+          }
+        }
+        throw e;
+      }
+    } else {
       if (!this.client) {
         return null;
       }
@@ -80,22 +96,6 @@ export class Archive {
           // expected response if key not valid
           redisCount('archive_miss');
           return null;
-        }
-        throw e;
-      }
-    } else {
-      // if the bucket is public, we can read via http request rather than using the s3 client
-      const url = `${this.endpoint}/${this.bucket}/${key}}`;
-      try {
-        const resp = await axios.get<Buffer>(url, { responseType: 'arraybuffer'});
-        buffer = resp.data;
-      } catch(e) {
-        if (axios.isAxiosError(e)) {
-          if (e.response?.status === 404) {
-            // expected if key not valid
-            redisCount('archive_miss');
-            return null;
-          }
         }
         throw e;
       }
