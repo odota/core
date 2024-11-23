@@ -6,8 +6,6 @@ import {
   GetObjectCommand,
   PutObjectCommandInput,
   PutObjectCommandOutput,
-} from '@aws-sdk/client-s3';
-import {
   NoSuchKey,
 } from '@aws-sdk/client-s3';
 import { redisCount } from '../util/utility';
