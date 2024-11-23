@@ -64,14 +64,12 @@ export class Archive {
     let buffer: Buffer | undefined;
     if (config.PUBLIC_ARCHIVE_URL) {
       // if the bucket is public, we can read via http request rather than using the s3 client
-      const url = `${config.PUBLIC_ARCHIVE_URL}/${this.bucket}/${key}}`;
+      const url = `${config.PUBLIC_ARCHIVE_URL}/${this.bucket}/${key}`;
       try {
         const resp = await axios.get<Buffer>(url, { responseType: 'arraybuffer'});
         buffer = resp.data;
       } catch(e) {
         if (axios.isAxiosError(e)) {
-          console.log(url);
-          console.log(e.message);
           if (e.response?.status === 404) {
             // expected if key not valid
             redisCount('archive_miss');
