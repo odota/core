@@ -71,6 +71,7 @@ const defaults = {
   BLOB_ARCHIVE_S3_ENDPOINT: 'http://localhost:9000', // S3-compatible endpoint for match data blobs (should have http prefix)
   BLOB_ARCHIVE_S3_BUCKET: 'opendota-blobs', // name of the S3 bucket to use for match data blobs
   ENABLE_BLOB_ARCHIVE: '', // Allow reading match data blobs from S3 storage
+  IS_ARCHIVE_PRIVATE: '', // Set if the archive is set to private to use authentication keys when reading
   DISABLE_REPARSE: '', // Disable reparsing matches that are already parsed
   DISABLE_REPARSE_EARLY: '', // Disable reparsing matches by checking parsed_matches table first
   DISABLE_REGCDATA: '', // Disable refetching new GC data on every request (cache it)

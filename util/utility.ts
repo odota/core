@@ -181,7 +181,7 @@ export async function getSteamAPIData(options: GetDataOptions): Promise<any> {
     // Throws an exception if we get a non-200 status code
     const response = await axios.get(target, axiosOptions);
     body = response.data;
-  } catch (err: any | AxiosError) {
+  } catch (err) {
     console.timeEnd(target);
     if (axios.isAxiosError(err)) {
       const statusCode = err.response?.status;

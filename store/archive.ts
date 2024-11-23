@@ -7,7 +7,11 @@ import {
   PutObjectCommandInput,
   PutObjectCommandOutput,
 } from '@aws-sdk/client-s3';
+import {
+  NoSuchKey,
+} from '@aws-sdk/client-s3/dist-types/models';
 import { redisCount } from '../util/utility';
+import axios from 'axios';
 
 async function stream2buffer(stream: any): Promise<Buffer> {
   return new Promise((resolve, reject) => {
@@ -48,8 +52,7 @@ export class Archive {
         secretAccessKey: this.secretAccessKey,
       },
       // expect the endpoint to have http prefix, if not, prepend https
-      endpoint:
-        (this.endpoint.startsWith('http') ? '' : 'https://') + this.endpoint,
+      endpoint: this.endpoint,
       // put the bucket name in the path rather than the domain to avoid DNS issues with minio
       forcePathStyle: true,
       // any other options are passed to new AWS.S3()
@@ -58,35 +61,54 @@ export class Archive {
   }
 
   public archiveGet = async (key: string) => {
-    if (!this.client) {
-      return null;
-    }
-    // TODO if the bucket is public, we can read via http request rather than using the s3 lib
-
-    const command = new GetObjectCommand({
-      Bucket: this.bucket,
-      Key: key,
-    });
-    try {
-      const data = await this.client.send(command);
-      if (!data.Body) {
+    let buffer: Buffer | undefined;
+    if (config.IS_ARCHIVE_PRIVATE) {
+      if (!this.client) {
         return null;
       }
-      const buffer = await stream2buffer(data.Body);
-      const result = gunzipSync(buffer);
-      console.log(
-        '[ARCHIVE] %s: read %s bytes, decompressed %s bytes',
-        key,
-        buffer.length,
-        result.length,
-      );
-      redisCount('archive_hit');
-      return result;
-    } catch (e: any) {
-      redisCount('archive_miss');
-      console.error('[ARCHIVE] %s get error:', key, e.Code);
-      return null;
+      try {
+        const data = await this.client.send(new GetObjectCommand({
+          Bucket: this.bucket,
+          Key: key,
+        }));
+        if (!data.Body) {
+          return null;
+        }
+        buffer = await stream2buffer(data.Body);
+      } catch (e) {
+        if (e instanceof NoSuchKey) {
+          // expected response if key not valid
+          redisCount('archive_miss');
+          return null;
+        }
+        throw e;
+      }
+    } else {
+      // if the bucket is public, we can read via http request rather than using the s3 client
+      const url = `${this.endpoint}/${this.bucket}/${key}}`;
+      try {
+        const resp = await axios.get<Buffer>(url, { responseType: 'arraybuffer'});
+        buffer = resp.data;
+      } catch(e) {
+        if (axios.isAxiosError(e)) {
+          if (e.response?.status === 404) {
+            // expected if key not valid
+            redisCount('archive_miss');
+            return null;
+          }
+        }
+        throw e;
+      }
     }
+    redisCount('archive_hit');
+    const result = gunzipSync(buffer);
+    console.log(
+      '[ARCHIVE] %s: read %s bytes, decompressed %s bytes',
+      key,
+      buffer.length,
+      result.length,
+    );
+    return result;
   };
   public archivePut = async (
     key: string,
@@ -123,7 +145,7 @@ export class Archive {
       return result;
     } catch (e: any) {
       console.error('[ARCHIVE] put error:', e.Code || e);
-      if (ifNotExists && e.Code === 412) {
+      if (ifNotExists && e.Code === 'PreconditionFailed') {
         // Expected error if ifNotExists was passed
         return { message: 'already exists' };
       }
