@@ -9,7 +9,7 @@ import {
 } from '@aws-sdk/client-s3';
 import {
   NoSuchKey,
-} from '@aws-sdk/client-s3/dist-types/models';
+} from '@aws-sdk/client-s3';
 import { redisCount } from '../util/utility';
 import axios from 'axios';
 
