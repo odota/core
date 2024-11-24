@@ -44,6 +44,7 @@ async function scanApi(seqNum: number) {
       console.log(err);
       // failed, try the same number again
       await new Promise((resolve) => setTimeout(resolve, SCANNER_WAIT));
+      continue;
     }
     const resp =
       data && data.result && data.result.matches ? data.result.matches : [];
