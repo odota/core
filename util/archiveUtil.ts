@@ -14,6 +14,7 @@ import db from '../store/db';
 import { readApiData } from '../store/getApiData';
 import { readGcData } from '../store/getGcData';
 import { checkIsParsed } from '../store/getParsedData';
+import { checkIsArchived } from '../store/getArchivedData';
 
 const matchArchive = config.ENABLE_MATCH_ARCHIVE ? new Archive('match') : null;
 const playerArchive = config.ENABLE_PLAYER_ARCHIVE
@@ -55,6 +56,29 @@ export async function doArchivePlayerMatches(
   // TODO (howard) add redis counts
 }
 
+async function doCleanupMatch(matchId: number) {
+  // Check if we should archive the blobs (should be parsed and not archived)
+  const isParsed = await checkIsParsed(matchId);
+  if (isParsed) {
+    const isArchived = await checkIsArchived(matchId);
+    if (isArchived) {
+      console.log('ALREADY ARCHIVED match %s', matchId);
+      await deleteMatch(matchId);
+      return;
+    }
+    await doArchiveMatchFromBlobs(matchId);
+  } else {
+    if (matchId > 8000000000) {
+      // Don't run on recent matches to avoid splitting data between stores (in case we hit this while parsing a match)
+      return;
+    }
+    // Check if we should migrate the blob
+    await doMigrateMatchToBlobStore(matchId);
+    // Check if we can clean up the whole row
+    await doCleanupCassandraBlobRows(matchId);
+  }
+}
+
 /**
  * Consolidates separate match data blobs and stores as a single blob in archive
  * @param matchId 
@@ -64,29 +88,12 @@ async function doArchiveMatchFromBlobs(matchId: number) {
   if (!matchArchive) {
     return;
   }
-  // Don't backfill when determining whether to archive
+  // Don't read from archive when determining whether to archive
   const [match, metadata] = await getMatchDataFromBlobWithMetadata(matchId, {
     noArchive: true,
     noBlobStore: true,
   });
-  if (!match) {
-    // Invalid/not found, skip
-    return;
-  }
-  if (metadata?.has_parsed) {
-    const isArchived = Boolean(
-      (
-        await db.raw(
-          'select match_id from parsed_matches where match_id = ? and is_archived IS TRUE',
-          [matchId],
-        )
-      ).rows[0],
-    );
-    if (isArchived) {
-      console.log('ALREADY ARCHIVED match %s', matchId);
-      await deleteMatch(matchId);
-      return;
-    }
+  if (match && metadata?.has_parsed) {
     // check data completeness with isDataComplete
     if (!isDataComplete(match as ParsedMatch)) {
       redisCount('incomplete_archive');
@@ -108,7 +115,6 @@ async function doArchiveMatchFromBlobs(matchId: number) {
     }
     return result;
   }
-  return;
 }
 
 /**
@@ -117,17 +123,9 @@ async function doArchiveMatchFromBlobs(matchId: number) {
  * @returns 
  */
 async function doMigrateMatchToBlobStore(matchId: number) {
-  if (matchId > 7000000000) {
-    return;
-  }
   const api = await readApiData(matchId, true);
   const gcdata = await readGcData(matchId, true);
-  const isParsed = await checkIsParsed(matchId);
   // migrate the api data
-  // if parsed, ignore since we should handle this in doArchiveMatchFromBlobs
-  if (isParsed) {
-    return;
-  }
   if (api) {
     // If the match is old we might not be able to get back ability builds, HD/TD/HH from Steam so we want to keep the API data
     const result = await blobArchive?.archivePut(
@@ -164,8 +162,6 @@ async function doMigrateMatchToBlobStore(matchId: number) {
     //   }
   }
   // there may be rows left with only gcdata that we can migrate at a later point
-  // Check if we can clean up the whole row
-  await doCleanupCassandraBlobRows(matchId);
 }
 
 /**
@@ -211,7 +207,7 @@ export async function archivePostgresStream(max: number) {
       i += 1;
       console.log(i);
       try {
-        await doArchiveMatchFromBlobs(row.match_id);
+        await doCleanupMatch(row.match_id);
       } catch (e) {
         console.error(e);
       }
@@ -227,7 +223,7 @@ async function archiveSequential(start: number, max: number) {
   for (let i = start; i < max; i++) {
     console.log(i);
     try {
-      await doArchiveMatchFromBlobs(i);
+      await doCleanupMatch(i);
     } catch (e) {
       console.error(e);
     }
@@ -242,7 +238,7 @@ async function archiveRandom(max: number) {
     page.push(rand + i);
   }
   console.log(page[0]);
-  await Promise.allSettled(page.map((i) => doArchiveMatchFromBlobs(i)));
+  await Promise.allSettled(page.map((i) => doCleanupMatch(i)));
 }
 
 export async function archiveToken(max: number) {
@@ -250,7 +246,7 @@ export async function archiveToken(max: number) {
   let page = await getTokenRange(1000);
   page = page.filter((id) => id < max);
   console.log(page[0]);
-  await Promise.allSettled(page.map((i) => doArchiveMatchFromBlobs(i)));
+  await Promise.allSettled(page.map((i) => doCleanupMatch(i)));
 }
 
 function randomBigInt(byteCount: number) {

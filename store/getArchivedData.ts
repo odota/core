@@ -59,3 +59,14 @@ export async function tryReadArchivedMatch(
   }
   return null;
 }
+
+export async function checkIsArchived(matchId: number): Promise<boolean> {
+  return Boolean(
+    (
+      await db.raw(
+        'select match_id from parsed_matches where match_id = ? and is_archived IS TRUE',
+        [matchId],
+      )
+    ).rows[0],
+  );
+}
