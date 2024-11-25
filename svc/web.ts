@@ -83,10 +83,12 @@ const onResFinish = (
   const elapsed = timeEnd - timeStart;
   if (elapsed > 2000 || config.NODE_ENV === 'development') {
     console.log('[SLOWLOG] %s, %s', req.originalUrl, elapsed);
+    redisCount('slow_api_hit');
   }
   if (
     res.statusCode !== 500 &&
     res.statusCode !== 429 &&
+    res.statusCode !== 404 &&
     !unlimitedPaths.includes(req.originalUrl.split('?')[0]) &&
     elapsed < 10000
   ) {

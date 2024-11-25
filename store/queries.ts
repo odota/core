@@ -237,29 +237,40 @@ export async function getPlayerMatchesWithMetadata(
   const sanitizedProject = queryObj.project.filter((f: string) => columns[f]);
   const projection = queryObj.projectAll ? ['*'] : sanitizedProject;
 
-  const localOrCached = async () => {
-    // Don't use cache if dbLimit (recentMatches) or projectAll (archiving)
-    // Check if every requested column can be satisified by cache
-    const canCache =
+  // Archive model
+  // For inactive, unvisited players with a large number of matches, get all columns for their player_caches and store in single blob in archive
+  // Record some metadata indicating this player is archived
+  // Delete the data from player_caches
+  // On read, check metadata to see whether this player is archived
+  // if so reinsert the data into player_caches from archive
+  // Maybe want to track the reinsert time as well so we don't fetch and merge from archive every time?
+  // maybe we can merge rows on reinsert? But need to decide whether to keep current or archived if both are present, use in-memory merge
+  // Background process continually rechecks for players eligible to be archived and re-archives the data from player_caches
+  // This should help keep player_caches size under control (and may avoid the need to maintain player_temp)
+
+  const localOrTemp = async () => {
+    // Don't use temp table if dbLimit (recentMatches) or projectAll (archiving)
+    // Check if every requested column can be satisified by temp
+    const canUseTemp =
       config.ENABLE_PLAYER_CACHE &&
       !Boolean(queryObj.dbLimit) &&
       projection.every((field) => cacheableCols.has(field as any));
-    const cache = canCache
-      ? await readCachedPlayerMatches(accountId, projection)
+    const temp = canUseTemp
+      ? await readTempPlayerMatches(accountId, projection)
       : undefined;
-    if (cache?.length) {
+    if (temp?.length) {
       redisCountDistinct('distinct_player_cache', accountId.toString());
       await redis.zadd('player_matches_visit', moment().format('X'), accountId);
       // Keep some number of recent players visited for auto-cache
       await redis.zremrangebyrank('player_matches_visit', '0', '-50001');
     }
     return (
-      cache ?? readLocalPlayerMatches(accountId, projection, queryObj.dbLimit)
+      temp ?? readPlayerCaches(accountId, projection, queryObj.dbLimit)
     );
   };
 
   const [localMatches, archivedMatches] = await Promise.all([
-    localOrCached(),
+    localOrTemp(),
     // if dbLimit (recentMatches), don't use archive
     config.ENABLE_PLAYER_ARCHIVE && !queryObj.dbLimit
       ? tryReadArchivedPlayerMatches(accountId)
@@ -332,7 +343,7 @@ export async function getPlayerMatchesWithMetadata(
   ];
 }
 
-async function readCachedPlayerMatches(
+async function readTempPlayerMatches(
   accountId: number,
   project: string[],
 ): Promise<ParsedPlayerMatch[]> {
@@ -367,25 +378,25 @@ async function readCachedPlayerMatches(
       // console.log('[PLAYERCACHE] waiting for lock on %s', accountId);
       // Couldn't acquire the lock, wait and try again
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      return readCachedPlayerMatches(accountId, project);
+      return readTempPlayerMatches(accountId, project);
     }
     redisCount('player_cache_miss');
     if (await isAutoCachePlayer(redis, accountId)) {
       redisCount('auto_player_cache_miss');
     }
-    const result = await populateCache(accountId, project);
+    const result = await populateTemp(accountId, project);
     // Release the lock
     await redis.del('player_cache_lock:' + accountId.toString());
     return result;
   }
 }
 
-export async function populateCache(
+export async function populateTemp(
   accountId: number,
   project: string[],
 ): Promise<ParsedPlayerMatch[]> {
   // Populate cache with all columns result
-  const all = await readLocalPlayerMatches(
+  const all = await readPlayerCaches(
     accountId,
     Array.from(cacheableCols),
   );
@@ -407,7 +418,7 @@ export async function populateCache(
   return all.map((m: any) => pick(m, project));
 }
 
-async function readLocalPlayerMatches(
+async function readPlayerCaches(
   accountId: number,
   project: string[],
   limit?: number,

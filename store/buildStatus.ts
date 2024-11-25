@@ -102,6 +102,7 @@ export async function buildStatus() {
 
     api_hits_last_day: async () => countDay('api_hits'),
     api_hits_ui_last_day: async () => countDay('api_hits_ui'),
+    slow_api_last_day: async () => countDay('slow_api_hit'),
     build_match_last_day: async () => countDay('build_match'),
     match_0_last_day: async () => countDay('0_match_req' as MetricName),
     match_1_last_day: async () => countDay('1_match_req' as MetricName),

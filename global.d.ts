@@ -459,7 +459,8 @@ type MetricName =
   | 'oldparse'
   | 'secondary_scanner'
   | 'archive_hit'
-  | 'archive_miss';
+  | 'archive_miss'
+  | 'slow_api_hit';
 
 // Object to map player_slot to basic info
 type PGroup = {

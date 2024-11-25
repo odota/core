@@ -23,7 +23,7 @@ import {
   isAutoCachePlayer,
   transformMatch,
 } from '../util/utility';
-import { getMatchRankTier, getPlayerMatches, populateCache } from './queries';
+import { getMatchRankTier } from './queries';
 import { ApiMatch, ApiMatchPro, ApiPlayer, getPGroup } from './pgroup';
 // import scylla from './scylla';
 
