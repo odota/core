@@ -21,7 +21,6 @@ import {
   PeersCount,
   redisCount,
   redisCountDistinct,
-  isAutoCachePlayer,
 } from '../util/utility';
 import {
   tryReadArchivedPlayerMatches,
@@ -248,48 +247,53 @@ export async function getPlayerMatchesWithMetadata(
   // Background process continually rechecks for players eligible to be archived and re-archives the data from player_caches
   // This should help keep player_caches size under control (and may avoid the need to maintain player_temp)
 
-  const localOrTemp = async () => {
-    // Don't use temp table if dbLimit (recentMatches) or projectAll (archiving)
-    // Check if every requested column can be satisified by temp
-    const canUseTemp =
-      config.ENABLE_PLAYER_CACHE &&
-      !Boolean(queryObj.dbLimit) &&
-      projection.every((field) => cacheableCols.has(field as any));
-    const temp = canUseTemp
-      ? await readTempPlayerMatches(accountId, projection)
-      : undefined;
-    if (temp?.length) {
-      redisCountDistinct('distinct_player_cache', accountId.toString());
-      await redis.zadd('player_matches_visit', moment().format('X'), accountId);
-      // Keep some number of recent players visited for auto-cache
-      await redis.zremrangebyrank('player_matches_visit', '0', '-50001');
-    }
-    return (
-      temp ?? readPlayerCaches(accountId, projection, queryObj.dbLimit)
-    );
-  };
-
-  const [localMatches, archivedMatches] = await Promise.all([
-    localOrTemp(),
-    // if dbLimit (recentMatches), don't use archive
-    config.ENABLE_PLAYER_ARCHIVE && !queryObj.dbLimit
-      ? tryReadArchivedPlayerMatches(accountId)
-      : Promise.resolve([]),
-  ]);
+  const canUseTemp =
+    config.ENABLE_PLAYER_CACHE &&
+    !Boolean(queryObj.dbLimit) &&
+    projection.every((field) => cacheableCols.has(field as any));
+  // Don't use temp table if dbLimit (recentMatches) or projectAll (archiving)
+  // Check if every requested column can be satisified by temp
+  const localMatches = canUseTemp ? await readTempPlayerMatches(accountId, projection) : await readPlayerCaches(accountId, projection, queryObj.dbLimit);
+  // if dbLimit (recentMatches), don't use archive
+  const archivedMatches = config.ENABLE_PLAYER_ARCHIVE && !queryObj.dbLimit
+    ? await tryReadArchivedPlayerMatches(accountId)
+    : [];
   const localLength = localMatches.length;
   const archivedLength = archivedMatches.length;
 
-  let matches = localMatches;
+  const keys = queryObj.projectAll
+  ? (Object.keys(columns) as (keyof ParsedPlayerMatch)[])
+  : queryObj.project;
+  // Merge the two sets of matches
+  let matches = mergeMatches(localMatches, archivedMatches, keys);
+  const filtered = filterMatches(matches, queryObj.filter);
+  const sort = queryObj.sort;
+  if (sort) {
+    filtered.sort((a, b) => b[sort] - a[sort]);
+  } else {
+    // Default sort by match_id desc
+    filtered.sort((a, b) => b.match_id - a.match_id);
+  }
+  const offset = filtered.slice(queryObj.offset || 0);
+  const final = offset.slice(0, queryObj.limit || offset.length);
+  return [
+    final,
+    {
+      finalLength: final.length,
+      localLength,
+      archivedLength,
+      mergedLength: matches.length,
+    },
+  ];
+}
+
+function mergeMatches(localMatches: ParsedPlayerMatch[], archivedMatches: ParsedPlayerMatch[], keys: (keyof ParsedPlayerMatch)[]): ParsedPlayerMatch[] {
   if (archivedMatches.length) {
-    console.time('merge:' + accountId);
-    const keys = queryObj.projectAll
-      ? (Object.keys(columns) as (keyof ParsedPlayerMatch)[])
-      : queryObj.project;
+    const matches: ParsedPlayerMatch[] = [];
     // Merge together the results
     // Sort both lists into descending order
     localMatches.sort((a, b) => b.match_id - a.match_id);
     archivedMatches.sort((a, b) => b.match_id - a.match_id);
-    matches = [];
     while (localMatches.length || archivedMatches.length) {
       const localMatch = localMatches[0];
       const archivedMatch = archivedMatches[0];
@@ -319,28 +323,8 @@ export async function getPlayerMatchesWithMetadata(
         }
       }
     }
-    console.timeEnd('merge:' + accountId);
   }
-
-  const filtered = filterMatches(matches, queryObj.filter);
-  const sort = queryObj.sort;
-  if (sort) {
-    filtered.sort((a, b) => b[sort] - a[sort]);
-  } else {
-    // Default sort by match_id desc
-    filtered.sort((a, b) => b.match_id - a.match_id);
-  }
-  const offset = filtered.slice(queryObj.offset || 0);
-  const final = offset.slice(0, queryObj.limit || offset.length);
-  return [
-    final,
-    {
-      finalLength: final.length,
-      localLength,
-      archivedLength,
-      mergedLength: matches.length,
-    },
-  ];
+  return localMatches;
 }
 
 async function readTempPlayerMatches(
@@ -355,9 +339,7 @@ async function readTempPlayerMatches(
   const result = rows[0]?.blob;
   if (result) {
     redisCount('player_cache_hit');
-    if (await isAutoCachePlayer(redis, accountId)) {
-      redisCount('auto_player_cache_hit');
-    }
+    redisCountDistinct('distinct_player_cache', accountId.toString());
     const output = JSON.parse(gunzipSync(result).toString());
     // Remove columns not asked for
     return output.map((m: any) => pick(m, project));
@@ -381,9 +363,6 @@ async function readTempPlayerMatches(
       return readTempPlayerMatches(accountId, project);
     }
     redisCount('player_cache_miss');
-    if (await isAutoCachePlayer(redis, accountId)) {
-      redisCount('auto_player_cache_miss');
-    }
     const result = await populateTemp(accountId, project);
     // Release the lock
     await redis.del('player_cache_lock:' + accountId.toString());
