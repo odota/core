@@ -414,22 +414,18 @@ export async function insertMatch(
 
     // NOTE: apparently the Steam API started deleting some fields on old matches, like HD/TD/ability builds
     // Currently this means fullhistory could overwrite the blob later and we could lose some data
-    // So add the ifNotExists option to avoid overwriting
-    // We added a new "identity" blob to hold the currently visible account IDs
+    // Implement "ifNotExists" behavior if we need to avoid overwriting
 
     let copy = createMatchCopy<typeof match>(match);
-    await upsertBlob(options.type, copy, options.ifNotExists ?? false);
+    await upsertBlob(options.type, copy);
 
     async function upsertBlob(
       type: DataType,
       blob: { match_id: number; players: { player_slot: number }[] },
-      ifNotExists: boolean,
     ) {
       const matchId = blob.match_id;
       const result = await cassandra.execute(
-        `INSERT INTO match_blobs(match_id, ${type}) VALUES(?, ?) ${
-          ifNotExists ? 'IF NOT EXISTS' : ''
-        }`,
+        `INSERT INTO match_blobs(match_id, ${type}) VALUES(?, ?)`,
         [matchId, JSON.stringify(blob)],
         {
           prepare: true,
@@ -437,7 +433,7 @@ export async function insertMatch(
       );
       // Maybe in the future we want to put new matches directly into blobstore?
       // However there are some additional read costs so might want to use only for old data
-      // blobArchive.archivePut(matchId + '_' + type, Buffer.from(JSON.stringify(blob)), ifNotExists)]);
+      // blobArchive.archivePut(matchId + '_' + type, Buffer.from(JSON.stringify(blob)))]);
       if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
         fs.writeFileSync(
           './json/' + matchId + '_' + type + '.json',

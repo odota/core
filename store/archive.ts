@@ -104,7 +104,6 @@ export class Archive {
   public archivePut = async (
     key: string,
     blob: Buffer,
-    ifNotExists?: boolean,
   ): Promise<PutObjectCommandOutput | { message: string } | null> => {
     if (!this.client) {
       return null;
@@ -121,10 +120,10 @@ export class Archive {
         Key: key,
         Body: data,
       };
-      if (ifNotExists) {
-        // May not be implemented by some s3 providers
-        options.IfNoneMatch = '*';
-      }
+      // if (ifNotExists) {
+      //   // May not be implemented by some s3 providers
+      //   options.IfNoneMatch = '*';
+      // }
       const command = new PutObjectCommand(options);
       const result = await this.client.send(command);
       console.log(
@@ -136,10 +135,10 @@ export class Archive {
       return result;
     } catch (e: any) {
       console.error('[ARCHIVE] put error:', e.Code || e);
-      if (ifNotExists && e.Code === 'PreconditionFailed') {
-        // Expected error if ifNotExists was passed
-        return { message: 'already exists' };
-      }
+      // if (ifNotExists && e.Code === 'PreconditionFailed') {
+      //   // Expected error if ifNotExists was passed
+      //   return { message: 'already exists' };
+      // }
       return null;
     }
   };

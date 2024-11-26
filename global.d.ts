@@ -350,7 +350,6 @@ type CommonInsertOptions = {
   skipParse?: boolean;
   pgroup?: PGroup;
   endedAt?: number;
-  ifNotExists?: boolean;
 };
 
 type ApiInsertOptions = {
