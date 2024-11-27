@@ -23,9 +23,12 @@ import {
 } from '../util/utility';
 import { getMatchRankTier } from './queries';
 import { ApiMatch, ApiMatchPro, ApiPlayer, getPGroup } from './pgroup';
+import { Archive } from './archive';
 // import scylla from './scylla';
 
 moment.relativeTimeThreshold('ss', 0);
+
+const blobArchive = config.ENABLE_BLOB_ARCHIVE ? new Archive('blob') : null;
 
 export async function upsert(
   db: knex.Knex,
@@ -424,16 +427,7 @@ export async function insertMatch(
       blob: { match_id: number; players: { player_slot: number }[] },
     ) {
       const matchId = blob.match_id;
-      const result = await cassandra.execute(
-        `INSERT INTO match_blobs(match_id, ${type}) VALUES(?, ?)`,
-        [matchId, JSON.stringify(blob)],
-        {
-          prepare: true,
-        },
-      );
-      // Maybe in the future we want to put new matches directly into blobstore?
-      // However there are some additional read costs so might want to use only for old data
-      // blobArchive.archivePut(matchId + '_' + type, Buffer.from(JSON.stringify(blob)))]);
+      await blobArchive?.archivePut(matchId + '_' + type, Buffer.from(JSON.stringify(blob)));
       if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
         fs.writeFileSync(
           './json/' + matchId + '_' + type + '.json',

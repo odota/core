@@ -17,23 +17,26 @@ export async function readParseData(
   matchId: number,
   noBlobStore?: boolean,
 ): Promise<ParserMatch | null> {
-  const result = await cassandra.execute(
-    'SELECT parsed FROM match_blobs WHERE match_id = ?',
-    [matchId],
-    { prepare: true, fetchSize: 1, autoPage: true },
-  );
-  const row = result.rows[0];
-  let data = row?.parsed ? (JSON.parse(row.parsed) as ParserMatch) : undefined;
-  if (!data && blobArchive && !noBlobStore) {
-    const archive = await blobArchive.archiveGet(`${matchId}_parsed`);
+  let data = null;
+  if (!noBlobStore) {
+    const archive = await blobArchive?.archiveGet(`${matchId}_parsed`);
+    if (archive) {
+      redisCount('blob_archive_read');
+    }
     data = archive
       ? (JSON.parse(archive.toString()) as ParserMatch)
-      : undefined;
+      : null
   }
   if (!data) {
-    return null;
+    const result = await cassandra.execute(
+      'SELECT parsed FROM match_blobs WHERE match_id = ?',
+      [matchId],
+      { prepare: true, fetchSize: 1, autoPage: true },
+    );
+    const row = result.rows[0];
+    data = row?.parsed ? (JSON.parse(row.parsed) as ParserMatch) : null;
   }
-  return data;
+  return data
 }
 
 type ExtraData = {

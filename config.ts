@@ -65,7 +65,7 @@ const defaults = {
   BLOB_ARCHIVE_S3_BUCKET: 'opendota-blobs', // name of the S3 bucket to use for match data blobs
   ENABLE_MATCH_ARCHIVE: '', // Allow reading/writing parsed match blobs to S3 storage
   ENABLE_PLAYER_ARCHIVE: '', // Allow reading/writing player match blobs to S3 storage
-  ENABLE_BLOB_ARCHIVE: '', // Allow reading match data blobs from S3 storage
+  ENABLE_BLOB_ARCHIVE: '1', // Allow reading match data blobs from S3 storage
   DISABLE_REPARSE: '', // Disable reparsing matches that are already parsed
   DISABLE_REPARSE_EARLY: '', // Disable reparsing matches by checking parsed_matches table first
   DISABLE_REGCDATA: '', // Disable refetching new GC data on every request (cache it)

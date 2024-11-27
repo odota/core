@@ -25,25 +25,27 @@ export async function readGcData(
   matchId: number,
   noBlobStore?: boolean,
 ): Promise<GcMatch | null> {
-  const result = await cassandra.execute(
-    'SELECT gcdata FROM match_blobs WHERE match_id = ?',
-    [matchId],
-    { prepare: true, fetchSize: 1, autoPage: true },
-  );
-  const row = result.rows[0];
-  let gcData = row?.gcdata ? (JSON.parse(row.gcdata) as GcMatch) : undefined;
-  if (!gcData && blobArchive && !noBlobStore) {
-    const archive = await blobArchive.archiveGet(`${matchId}_gcdata`);
-    gcData = archive ? (JSON.parse(archive.toString()) as GcMatch) : undefined;
+  let data = null;
+  if (!noBlobStore) {
+    const archive = await blobArchive?.archiveGet(`${matchId}_gcdata`);
+    if (archive) {
+      redisCount('blob_archive_read');
+    }
+    data = archive ? (JSON.parse(archive.toString()) as GcMatch) : null;
   }
-  if (!gcData) {
+  if (!data) {
+    const result = await cassandra.execute(
+      'SELECT gcdata FROM match_blobs WHERE match_id = ?',
+      [matchId],
+      { prepare: true, fetchSize: 1, autoPage: true },
+    );
+    const row = result.rows[0];
+    data = row?.gcdata ? (JSON.parse(row.gcdata) as GcMatch) : null
+  }
+  if (data?.match_id == null || data?.cluster == null || data?.replay_salt == null) {
     return null;
   }
-  const { match_id, cluster, replay_salt } = gcData;
-  if (match_id == null || cluster == null || replay_salt == null) {
-    return null;
-  }
-  return gcData;
+  return data;
 }
 
 /**

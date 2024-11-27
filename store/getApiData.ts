@@ -14,22 +14,22 @@ export async function readApiData(
   matchId: number,
   noBlobStore?: boolean,
 ): Promise<ApiMatch | null> {
-  const result = await cassandra.execute(
-    'SELECT api FROM match_blobs WHERE match_id = ?',
-    [matchId],
-    { prepare: true, fetchSize: 1, autoPage: true },
-  );
-  const row = result.rows[0];
-  let data = row?.api ? (JSON.parse(row.api) as ApiMatch) : undefined;
-  if (!data && blobArchive && !noBlobStore) {
-    const archive = await blobArchive.archiveGet(`${matchId}_api`);
+  let data = null;
+  if (!noBlobStore) {
+    const archive = await blobArchive?.archiveGet(`${matchId}_api`);
     if (archive) {
       redisCount('blob_archive_read');
     }
-    data = archive ? (JSON.parse(archive.toString()) as ApiMatch) : undefined;
+    data = archive ? (JSON.parse(archive.toString()) as ApiMatch) : null;
   }
   if (!data) {
-    return null;
+    const result = await cassandra.execute(
+      'SELECT api FROM match_blobs WHERE match_id = ?',
+      [matchId],
+      { prepare: true, fetchSize: 1, autoPage: true },
+    );
+    const row = result.rows[0];
+    data = row?.api ? (JSON.parse(row.api) as ApiMatch) : null;
   }
   return data;
 }

@@ -104,13 +104,13 @@ export class Archive {
   public archivePut = async (
     key: string,
     blob: Buffer,
-  ): Promise<PutObjectCommandOutput | { message: string } | null> => {
+  ): Promise<PutObjectCommandOutput | null> => {
     if (!this.client) {
       return null;
     }
     if (blob.length < 50) {
       throw new Error(
-        '[ARCHIVE] Tried to archive less than 10 bytes so something is probably wrong',
+        '[ARCHIVE] Tried to archive small blob so something is probably wrong',
       );
     }
     try {
@@ -139,7 +139,7 @@ export class Archive {
       //   // Expected error if ifNotExists was passed
       //   return { message: 'already exists' };
       // }
-      return null;
+      throw e;
     }
   };
 }
