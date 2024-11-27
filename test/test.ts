@@ -31,6 +31,7 @@ import redis from '../store/redis';
 import db from '../store/db';
 import cassandra from '../store/cassandra';
 import c from 'ansi-colors';
+import { CreateBucketCommand, S3Client } from '@aws-sdk/client-s3';
 
 const { Pool } = pg;
 const { RETRIEVER_HOST, POSTGRES_URL, CASSANDRA_URL, SCYLLA_URL } = config;
@@ -90,6 +91,7 @@ before(async function setup() {
   await initRedis();
   await initCassandra();
   await initScylla();
+  await initMinio();
   await loadMatches();
   await loadPlayers();
   await startServices();
@@ -201,6 +203,26 @@ before(async function setup() {
       await init.execute('USE yasp_test');
       await init.execute(cql);
     }
+  }
+
+  async function initMinio() {
+    const client = new S3Client({
+      region: 'us-east-1',
+      credentials: {
+        accessKeyId: config.ARCHIVE_S3_KEY_ID,
+        secretAccessKey: config.ARCHIVE_S3_KEY_SECRET,
+      },
+      endpoint: config.ARCHIVE_S3_ENDPOINT,
+      forcePathStyle: true,
+    });
+    // Make a new test bucket with a new name
+    // There's no good way to delete the test bucket automatically since we can't delete nonempty buckets
+    console.log('create minio test bucket');
+    await client.send(new CreateBucketCommand({
+      ACL: 'public-read',
+      Bucket: config.BLOB_ARCHIVE_S3_BUCKET,
+    },
+    ));
   }
 
   async function startServices() {
