@@ -10,7 +10,7 @@ import {
 
 async function doTeams() {
   const result = await db.raw(
-    'select distinct team_id from team_match order by team_id desc',
+    'select distinct team_id from team_match TABLESAMPLE SYSTEM_ROWS(1000)',
   );
   for (let i = 0; i < result.rows.length; i++) {
     const m = result.rows[i];
@@ -88,4 +88,4 @@ async function doTeams() {
     }
   }
 }
-invokeIntervalAsync(doTeams, 12 * 60 * 60 * 1000);
+invokeIntervalAsync(doTeams, 60 * 60 * 1000);
