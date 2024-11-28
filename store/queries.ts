@@ -253,7 +253,7 @@ export async function getPlayerMatchesWithMetadata(
     projection.every((field) => cacheableCols.has(field as any));
   // Don't use temp table if dbLimit (recentMatches) or projectAll (archiving)
   // Check if every requested column can be satisified by temp
-  const localMatches = canUseTemp ? await readTempPlayerMatches(accountId, projection) : await readPlayerCaches(accountId, projection, queryObj.dbLimit);
+  const localMatches = canUseTemp ? await readPlayerTemp(accountId, projection) : await readPlayerCaches(accountId, projection, queryObj.dbLimit);
   // if dbLimit (recentMatches), don't use archive
   const archivedMatches = config.ENABLE_PLAYER_ARCHIVE && !queryObj.dbLimit
     ? await tryReadArchivedPlayerMatches(accountId)
@@ -327,7 +327,7 @@ function mergeMatches(localMatches: ParsedPlayerMatch[], archivedMatches: Parsed
   return localMatches;
 }
 
-async function readTempPlayerMatches(
+async function readPlayerTemp(
   accountId: number,
   project: string[],
 ): Promise<ParsedPlayerMatch[]> {
@@ -360,7 +360,7 @@ async function readTempPlayerMatches(
       // console.log('[PLAYERCACHE] waiting for lock on %s', accountId);
       // Couldn't acquire the lock, wait and try again
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      return readTempPlayerMatches(accountId, project);
+      return readPlayerTemp(accountId, project);
     }
     redisCount('player_cache_miss');
     const result = await populateTemp(accountId, project);

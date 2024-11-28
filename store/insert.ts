@@ -484,7 +484,7 @@ export async function insertMatch(
       await redis.del(`match:${match.match_id}`);
     }
   }
-  async function resetPlayerCache(match: InsertMatchInput) {
+  async function resetPlayerTemp(match: InsertMatchInput) {
     if (config.ENABLE_PLAYER_CACHE) {
       await Promise.allSettled(
         match.players.map(async (p) => {
@@ -686,7 +686,7 @@ export async function insertMatch(
   await upsertPlayerCaches(match);
   await upsertMatchBlobs(match);
   await resetMatchCache(match);
-  await resetPlayerCache(match);
+  await resetPlayerTemp(match);
   await telemetry(match);
   await decideCounts(match);
   await decideMmr(match);
