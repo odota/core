@@ -459,7 +459,8 @@ type MetricName =
   | 'secondary_scanner'
   | 'archive_hit'
   | 'archive_miss'
-  | 'slow_api_hit';
+  | 'slow_api_hit'
+  | 'blob_cassandra_read';
 
 // Object to map player_slot to basic info
 type PGroup = {

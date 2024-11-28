@@ -41,6 +41,9 @@ export async function readGcData(
     );
     const row = result.rows[0];
     data = row?.gcdata ? (JSON.parse(row.gcdata) as GcMatch) : null
+    if (data) {
+      redisCount('blob_cassandra_read');
+    }
   }
   if (data?.match_id == null || data?.cluster == null || data?.replay_salt == null) {
     return null;

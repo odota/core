@@ -30,6 +30,9 @@ export async function readApiData(
     );
     const row = result.rows[0];
     data = row?.api ? (JSON.parse(row.api) as ApiMatch) : null;
+    if (data) {
+      redisCount('blob_cassandra_read');
+    }
   }
   return data;
 }

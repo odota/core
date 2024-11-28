@@ -57,7 +57,7 @@ export class Archive {
       // if the bucket is public, we can read via http request rather than using the s3 client
       const url = `${config.ARCHIVE_PUBLIC_URL}/${this.bucket}/${key}`;
       try {
-        const resp = await axios.get<Buffer>(url, { responseType: 'arraybuffer'});
+        const resp = await axios.get<Buffer>(url, { timeout: 5000, responseType: 'arraybuffer'});
         buffer = resp.data;
       } catch(e) {
         if (axios.isAxiosError(e)) {
@@ -93,12 +93,14 @@ export class Archive {
     }
     redisCount('archive_hit');
     const result = gunzipSync(buffer);
-    console.log(
-      '[ARCHIVE] %s: read %s bytes, decompressed %s bytes',
-      key,
-      buffer.length,
-      result.length,
-    );
+    if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
+      console.log(
+        '[ARCHIVE] %s: read %s bytes, decompressed %s bytes',
+        key,
+        buffer.length,
+        result.length,
+      );
+    }
     return result;
   };
   public archivePut = async (
@@ -126,12 +128,14 @@ export class Archive {
       // }
       const command = new PutObjectCommand(options);
       const result = await this.client.send(command);
-      console.log(
-        '[ARCHIVE] %s: original %s bytes, archived %s bytes',
-        key,
-        blob.length,
-        data.length,
-      );
+      if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
+        console.log(
+          '[ARCHIVE] %s: original %s bytes, archived %s bytes',
+          key,
+          blob.length,
+          data.length,
+        );
+      }
       return result;
     } catch (e: any) {
       console.error('[ARCHIVE] put error:', e.Code || e);

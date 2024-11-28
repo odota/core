@@ -490,19 +490,15 @@ export async function insertMatch(
         match.players.map(async (p) => {
           const account_id = pgroup[p.player_slot]?.account_id ?? p.account_id;
           if (account_id) {
-            const existsCheck = await cassandra.execute('SELECT account_id from player_temp WHERE account_id = ?', [account_id], { prepare: true });
-            // Auto-cache to update with this match if cache was already present
-            if (existsCheck.rows.length) {
-              await addJob({
-                name: 'cacheQueue',
-                data: account_id.toString(),
-              });
-              await cassandra.execute(
-                `DELETE FROM player_temp WHERE account_id = ?`,
-                [account_id],
-                { prepare: true },
-              );
-            }
+            await cassandra.execute(
+              `DELETE FROM player_temp WHERE account_id = ?`,
+              [account_id],
+              { prepare: true },
+            );
+            await addJob({
+              name: 'cacheQueue',
+              data: account_id.toString(),
+            });
           }
         }),
       );
