@@ -5,14 +5,8 @@ services:
     container_name: odota-postgres
     environment:
       POSTGRES_PASSWORD: postgres
-  cassandra:
-    image: cassandra:4
-    container_name: odota-cassandra
-    environment:
-      MAX_HEAP_SIZE: 128M
-      HEAP_NEWSIZE: 24M
   scylla:
-    image: scylladb/scylla:5.4
+    image: scylladb/scylla:6.2
     container_name: odota-scylla
     command:
       - --skip-wait-for-gossip-to-settle 0
@@ -52,16 +46,14 @@ services:
       POSTGRES_URL: postgresql://postgres:postgres@odota-postgres/yasp
       READONLY_POSTGRES_URL: postgresql://readonly:readonly@odota-postgres/yasp
       REDIS_URL: redis://odota-redis:6379/0
-      CASSANDRA_URL: cassandra://odota-cassandra/yasp
-      SCYLLA_URL: scylla://odota-scylla/yasp
+      CASSANDRA_URL: cassandra://odota-scylla/yasp
       ELASTICSEARCH_URL: odota-elasticsearch:9200
       ARCHIVE_S3_ENDPOINT: http://odota-minio:9000
     links:
       - postgres
-      - cassandra
       - redis
       - elasticsearch
       - parser
       - minio
-      # - scylla
+      - scylla
     container_name: odota-core

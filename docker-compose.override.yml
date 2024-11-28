@@ -14,32 +14,19 @@ services:
         '-c',
         'sleep 10 && psql --file /usr/src/sql/init.sql postgres://postgres:postgres@odota-postgres/postgres && psql --file /usr/src/sql/create_tables.sql postgres://postgres:postgres@odota-postgres/yasp',
       ]
-  cassandrainit:
-    image: cassandra
+  scyllainit:
+    image: scylladb/scylla
     depends_on:
-      - cassandra
+      - scylla
     volumes:
       - .:/usr/src
-    container_name: odota-cassandrainit
+    container_name: odota-scyllainit
     entrypoint:
       [
         'bash',
         '-c',
-        'sleep 80 && cqlsh -f /usr/src/sql/init.cql odota-cassandra && cqlsh -f /usr/src/sql/create_tables.cql -k yasp odota-cassandra',
+        'sleep 10 && cqlsh -f /usr/src/sql/init.cql odota-scylla && cqlsh -f /usr/src/sql/create_tables.cql -k yasp odota-scylla',
       ]
-  # scyllainit:
-  #   image: scylladb/scylla
-  #   depends_on:
-  #     - scylla
-  #   volumes:
-  #     - .:/usr/src
-  #   container_name: odota-scyllainit
-  #   entrypoint:
-  #     [
-  #       'bash',
-  #       '-c',
-  #       'sleep 10 && cqlsh -f /usr/src/sql/init.cql odota-scylla && cqlsh -f /usr/src/sql/create_tables.cql -k yasp odota-scylla',
-  #     ]
   minioinit:
     image: minio/mc
     depends_on:

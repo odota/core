@@ -85,7 +85,6 @@ if (process.env.NODE_ENV === 'test') {
   process.env.PORT = ''; // use service defaults
   process.env.POSTGRES_URL = process.env.POSTGRES_URL + '_test';
   process.env.CASSANDRA_URL = process.env.CASSANDRA_URL + '_test';
-  process.env.SCYLLA_URL = process.env.SCYLLA_URL + '_test';
   process.env.REDIS_URL = process.env.REDIS_URL?.slice(0, -1) + '1';
   process.env.BLOB_ARCHIVE_S3_BUCKET = 'opendota-test' + Date.now();
   process.env.ARCHIVE_S3_KEY_ID = 'minioadmin';

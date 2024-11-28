@@ -388,10 +388,13 @@ export async function insertMatch(
             .join(','),
         );
         const arr = Object.keys(serializedMatch).map((k) => serializedMatch[k]);
-        // TODO (howard) dual write here
         await cassandra.execute(query, arr, {
           prepare: true,
         });
+        // TODO (scylla) dual write here
+        // TODO (scylla) need to write a migrater with checkpointing (one player at a time and then do all players?) copy all data from cassandra to scylla
+        // Don't need to dual read if we don't delete the original data until fully migrated
+        // New tokens might be inserted behind the migrater or double migrate some rows but since we are dual writing we should have the same data in both
         // await scylla.execute(query, arr, {
         //   prepare: true
         // });

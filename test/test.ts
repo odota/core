@@ -34,10 +34,9 @@ import c from 'ansi-colors';
 import { CreateBucketCommand, S3Client } from '@aws-sdk/client-s3';
 
 const { Pool } = pg;
-const { RETRIEVER_HOST, POSTGRES_URL, CASSANDRA_URL, SCYLLA_URL } = config;
+const { RETRIEVER_HOST, POSTGRES_URL, CASSANDRA_URL } = config;
 const initPostgresHost = POSTGRES_URL.replace('/yasp_test', '/postgres');
 const initCassandraHost = url.parse(CASSANDRA_URL).host as string;
-const initScyllaHost = url.parse(SCYLLA_URL).host as string;
 
 let app: Express;
 // fake api responses
@@ -90,7 +89,6 @@ before(async function setup() {
   await initElasticsearch();
   await initRedis();
   await initCassandra();
-  await initScylla();
   await initMinio();
   await loadMatches();
   await loadPlayers();
@@ -172,29 +170,6 @@ before(async function setup() {
       "CREATE KEYSPACE yasp_test WITH REPLICATION = { 'class': 'NetworkTopologyStrategy', 'datacenter1': 1 };",
     );
     console.log('create cassandra tables');
-    const tables = readFileSync('./sql/create_tables.cql', 'utf8')
-      .split(';')
-      .filter((cql) => cql.length > 1);
-    for (let i = 0; i < tables.length; i++) {
-      const cql = tables[i];
-      await init.execute('USE yasp_test');
-      await init.execute(cql);
-    }
-  }
-
-  async function initScylla() {
-    const init = new Client({
-      contactPoints: [initScyllaHost],
-      localDataCenter: 'datacenter1',
-    });
-    console.log(initScyllaHost);
-    console.log('drop scylla test keyspace');
-    await init.execute('DROP KEYSPACE IF EXISTS yasp_test');
-    console.log('create scylla test keyspace');
-    await init.execute(
-      "CREATE KEYSPACE yasp_test WITH REPLICATION = { 'class': 'NetworkTopologyStrategy', 'datacenter1': 1 };",
-    );
-    console.log('create scylla tables');
     const tables = readFileSync('./sql/create_tables.cql', 'utf8')
       .split(';')
       .filter((cql) => cql.length > 1);
