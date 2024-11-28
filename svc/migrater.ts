@@ -11,17 +11,18 @@ const scylla = new scyllaDriver.Client({
 });
 
 async function start() {
+    const allFields = await getCassandraColumns('player_caches');
     // Estimate--approximately 25 billion rows to migrate?
-    // Split the full token range so each chunk is reasonably sized (100k or so?)
-    const tokenRangeSize = BigInt(2**64) / BigInt(25000000000) * BigInt(100000);
+    // Split the full token range so each chunk is reasonably sized (50k or so?)
+    while (true) {
+    const tokenRangeSize = BigInt(2**64) / BigInt(25000000000) * BigInt(50000);
     const begin = BigInt(await redis.get('scyllaMigrateCheckpoint') ?? '-9223372036854775808');
     const end = begin + BigInt(tokenRangeSize);
     console.log(begin, end, tokenRangeSize);
-    const allFields = await getCassandraColumns('player_caches');
     let count = 0;
     await new Promise(resolve => {
         cassandra.stream(
-            `select token(account_id) as tkn, ${Object.keys(allFields).join(', ')} from player_caches where token(account_id) >= ? and token(account_id) < ?`,
+            `select * from player_caches where token(account_id) >= ? and token(account_id) < ?`,
             [begin.toString(), end.toString()],
             {
                 prepare: true,
@@ -41,7 +42,7 @@ async function start() {
                         serializedMatch[k] = row[k].toString();
                     }
                 });
-                console.log(serializedMatch, row.tkn.toString());
+                console.log(serializedMatch.account_id, serializedMatch.match_id);
                 count += 1;
                 // Copy from Cassandra to Scylla
                 /*
@@ -67,7 +68,10 @@ async function start() {
     console.log('found %s matches in range', count);
     console.log(end);
     // Checkpoint progress to redis
+    // await redis.set('scyllaMigrateCheckpoint', end.toString());
     // When we get to the end we should find no more rows and stop
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    }
 }
 start();
 
