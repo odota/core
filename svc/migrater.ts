@@ -1,9 +1,11 @@
+import config from '../config';
 import cassandra, { getCassandraColumns } from '../store/cassandra';
 import redis from '../store/redis';
 import scyllaDriver from 'cassandra-driver';
+import url from 'url';
 
 const scylla = new scyllaDriver.Client({
-    contactPoints: ['odota-scylla'],
+    contactPoints: [url.parse(config.SCYLLA_URL, false).host ?? ''],
     localDataCenter: 'datacenter1',
     keyspace: 'yasp',
 });
@@ -16,49 +18,55 @@ async function start() {
     const end = begin + BigInt(tokenRangeSize);
     console.log(begin, end, tokenRangeSize);
     const allFields = await getCassandraColumns('player_caches');
-    const result = await cassandra.execute(
-        `select token(account_id) as tkn, ${Object.keys(allFields).join(', ')} from player_caches where token(account_id) >= ? and token(account_id) < ?`,
-        [begin.toString(), end.toString()],
-        {
-            prepare: true,
-            fetchSize: 1000,
-            autoPage: true,
-        },
-    );
     let count = 0;
-    result.rows.forEach(row => {
-        // console.log(row.tkn.toString());
-        // console.log(row);
-        const obj: any = {};
-        Object.keys(allFields).forEach(k => {
-            if (row[k] !== null) {
-                obj[k] = row[k].toString();
+    await new Promise(resolve => {
+        cassandra.stream(
+            `select token(account_id) as tkn, ${Object.keys(allFields).join(', ')} from player_caches where token(account_id) >= ? and token(account_id) < ?`,
+            [begin.toString(), end.toString()],
+            {
+                prepare: true,
+                fetchSize: 1000,
+                autoPage: true,
+            },
+        ).on('readable', function () {
+            // readable is emitted as soon a row is received and parsed
+            let row: any;
+            //@ts-ignore
+            while (row = this.read()) {
+                // console.log(row.tkn.toString());
+                // console.log(row);
+                const serializedMatch: any = {};
+                Object.keys(allFields).forEach(k => {
+                    if (row[k] !== null) {
+                        serializedMatch[k] = row[k].toString();
+                    }
+                });
+                console.log(serializedMatch, row.tkn.toString());
+                count += 1;
+                // Copy from Cassandra to Scylla
+                /*
+                const query = util.format(
+                'INSERT INTO player_caches (%s) VALUES (%s)',
+                Object.keys(serializedMatch).join(','),
+                Object.keys(serializedMatch)
+                    .map(() => '?')
+                    .join(','),
+                );
+                const arr = Object.keys(serializedMatch).map((k) => serializedMatch[k]);
+                await scylla.execute(query, arr, {
+                prepare: true,
+                });
+                */
             }
+        })
+        .on('end', resolve)
+        .on('error', () => {
+            throw new Error('error while reading');
         });
-        console.log(obj, row.tkn.toString());
-        count += 1;
     });
     console.log('found %s matches in range', count);
-    const nextToken = end + BigInt(1);
-    console.log(nextToken);
-    // Copy from Cassandra to Scylla
-    /*
-    const query = util.format(
-      'INSERT INTO player_caches (%s) VALUES (%s)',
-      Object.keys(serializedMatch).join(','),
-      Object.keys(serializedMatch)
-        .map(() => '?')
-        .join(','),
-    );
-    const arr = Object.keys(serializedMatch).map((k) => serializedMatch[k]);
-    await scylla.execute(query, arr, {
-      prepare: true,
-    });
-    */
-    // Page through all rows using token range
+    console.log(end);
     // Checkpoint progress to redis
-    // Is output ordered by token?
-    // Next value should be last row token + 1
     // When we get to the end we should find no more rows and stop
 }
 start();
