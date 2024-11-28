@@ -9,26 +9,23 @@ const scylla = new scyllaDriver.Client({
 });
 
 async function start() {
+    // Estimate--approximately 25 billion rows to migrate?
+    // Split the full token range so each chunk is reasonably sized (100k or so?)
+    const tokenRangeSize = BigInt(2**64) / BigInt(25000000000) * BigInt(100000);
     const begin = BigInt(await redis.get('scyllaMigrateCheckpoint') ?? '-9223372036854775808');
-    // Try out using COPY TO/COPY FROM (requires cqlsh)
-    // Figure out approx how many rows are in data set and partition the token range so each export is reasonable
-    // const result = await cassandra.execute(
-    //     `COPY player_caches TO STDOUT WITH BEGINTOKEN = ?`,
-    //     [begin.toString()],
-    //     {
-    //       prepare: true,
-    //     },
-    //   );
-    // console.log(result);
+    const end = begin + BigInt(tokenRangeSize);
+    console.log(begin, end, tokenRangeSize);
     const allFields = await getCassandraColumns('player_caches');
     const result = await cassandra.execute(
-        `select token(account_id) as tkn, ${Object.keys(allFields).join(', ')} from player_caches where token(account_id) >= ?`,
-        [begin.toString()],
+        `select token(account_id) as tkn, ${Object.keys(allFields).join(', ')} from player_caches where token(account_id) >= ? and token(account_id) < ?`,
+        [begin.toString(), end.toString()],
         {
             prepare: true,
-            fetchSize: 1,
+            fetchSize: 1000,
+            autoPage: true,
         },
     );
+    let count = 0;
     result.rows.forEach(row => {
         // console.log(row.tkn.toString());
         // console.log(row);
@@ -39,8 +36,10 @@ async function start() {
             }
         });
         console.log(obj, row.tkn.toString());
+        count += 1;
     });
-    const nextToken = BigInt(result.rows[result.rows.length - 1].tkn.toString()) + BigInt(1);
+    console.log('found %s matches in range', count);
+    const nextToken = end + BigInt(1);
     console.log(nextToken);
     // Copy from Cassandra to Scylla
     /*
@@ -63,3 +62,14 @@ async function start() {
     // When we get to the end we should find no more rows and stop
 }
 start();
+
+    // Try out using COPY TO/COPY FROM (requires cqlsh)
+    // Figure out approx how many rows are in data set and partition the token range so each export is reasonable
+    // const result = await cassandra.execute(
+    //     `COPY player_caches TO STDOUT WITH BEGINTOKEN = ?`,
+    //     [begin.toString()],
+    //     {
+    //       prepare: true,
+    //     },
+    //   );
+    // console.log(result);
