@@ -69,7 +69,7 @@ type GetMatchDataMetadata = {
   has_parsed: boolean;
   backfill_api?: boolean;
   backfill_gc?: boolean;
-  archive?: boolean;
+  has_archive: boolean;
 };
 
 interface LiveMatch extends Match {
@@ -460,7 +460,9 @@ type MetricName =
   | 'archive_hit'
   | 'archive_miss'
   | 'slow_api_hit'
-  | 'blob_cassandra_read';
+  | 'api_cassandra_read'
+  | 'gcdata_cassandra_read'
+  | 'parsed_cassandra_read';
 
 // Object to map player_slot to basic info
 type PGroup = {

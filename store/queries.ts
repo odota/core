@@ -687,28 +687,24 @@ export async function getMatchDataFromBlobWithMetadata(
   matchId: number,
   options?: { noArchive: boolean; noBlobStore: boolean },
 ): Promise<[Match | ParsedMatch | null, GetMatchDataMetadata | null]> {
-  let [api, gcdata, parsed]: [
+  let [api, gcdata, parsed, archived]: [
     ApiMatch | null,
     GcMatch | null,
     ParserMatch | null,
+    ParsedMatch | null,
   ] = await Promise.all([
     readApiData(matchId, options?.noBlobStore),
     readGcData(matchId, options?.noBlobStore),
     readParseData(matchId, options?.noBlobStore),
+    !options?.noArchive ? tryReadArchivedMatch(matchId) : Promise.resolve(null),
   ]);
-  let archived: ParsedMatch | null = null;
 
   let odData: GetMatchDataMetadata = {
     has_api: Boolean(api),
     has_gcdata: Boolean(gcdata),
     has_parsed: Boolean(parsed),
+    has_archive: Boolean(archived),
   };
-  if (!options?.noArchive) {
-    archived = await tryReadArchivedMatch(matchId);
-    if (archived) {
-      odData.archive = true;
-    }
-  }
 
   if (!archived && !api) {
     // Use this event to count the number of failed requests

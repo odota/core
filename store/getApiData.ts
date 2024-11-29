@@ -31,7 +31,7 @@ export async function readApiData(
     const row = result.rows[0];
     data = row?.api ? (JSON.parse(row.api) as ApiMatch) : null;
     if (data) {
-      redisCount('blob_cassandra_read');
+      redisCount('api_cassandra_read');
     }
   }
   return data;
@@ -45,7 +45,6 @@ export async function readApiData(
  */
 export async function getOrFetchApiData(
   matchId: number,
-  noRetry = false,
 ): Promise<{
   data: ApiMatch | null;
   error: string | null;
@@ -57,7 +56,7 @@ export async function getOrFetchApiData(
   // Check if we have apidata cached
   const saved = await readApiData(matchId);
   if (saved) {
-    // We currently disable refetching because the Steam GetMatchDetails API is broken
+    // We currently can't refetch because the Steam GetMatchDetails API is broken
     return { data: saved, error: null, pgroup: getPGroup(saved) };
   }
   return {

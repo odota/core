@@ -36,7 +36,7 @@ export async function readParseData(
     const row = result.rows[0];
     data = row?.parsed ? (JSON.parse(row.parsed) as ParserMatch) : null;
     if (data) {
-      redisCount('blob_cassandra_read');
+      redisCount('parsed_cassandra_read');
     }
   }
   return data

@@ -70,7 +70,6 @@ const defaults = {
   DISABLE_REPARSE_EARLY: '', // Disable reparsing matches by checking parsed_matches table first
   DISABLE_REGCDATA: '', // Disable refetching new GC data on every request (cache it)
   DISABLE_REAPI: '', // Disable refetching new API data on every request
-  DISABLE_OLD_PARSE: '', // Disable parsing for old non-league matches unlikely to have replays
   API_KEY_GEN_THRESHOLD: '0', // Account ID requirement (delta from max) for generating API keys
   SERVICE_REGISTRY_HOST: '', // Host for external services to register themselves at
   USE_SERVICE_REGISTRY: '', // Use the service registry for determining gc, parser, and proxy urls

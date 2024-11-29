@@ -51,12 +51,11 @@ async function parseProcessor(job: ParseJob) {
     const apiStart = Date.now();
     // The pgroup is used to update player_caches on insert.
     // Since currently gcdata and parse data have no knowledge of anonymity, we pass it from API data
-    const noRetry = job.origin !== 'scanner';
     let {
       data: apiMatch,
       error: apiError,
       pgroup,
-    } = await getOrFetchApiData(matchId, noRetry);
+    } = await getOrFetchApiData(matchId);
     apiTime = Date.now() - apiStart;
     if (apiError || !apiMatch || !pgroup) {
       log('fail', apiError || 'Missing API data or pgroup');
@@ -64,15 +63,15 @@ async function parseProcessor(job: ParseJob) {
     }
 
     const { leagueid, duration, start_time } = apiMatch;
-    if (!leagueid && Date.now() / 1000 - start_time > 30 * 24 * 60 * 60) {
-      redisCount('oldparse');
-      if (config.DISABLE_OLD_PARSE) {
-        // Valve doesn't keep non-league replays for more than a few weeks.
-        // Skip even attempting the parse if it's too old
-        log('skip');
-        return true;
-      }
-    }
+    // if (!leagueid && Date.now() / 1000 - start_time > 30 * 24 * 60 * 60) {
+    //   redisCount('oldparse');
+    //   if (config.DISABLE_OLD_PARSE) {
+    //     // Valve doesn't keep non-league replays for more than a few weeks.
+    //     // Skip even attempting the parse if it's too old
+    //     log('skip');
+    //     return true;
+    //   }
+    // }
 
     // Fetch the gcdata and construct a replay URL
     const gcStart = Date.now();
