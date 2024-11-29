@@ -384,7 +384,7 @@ export async function populateTemp(
     // const zip = JSON.stringify(all);
     redisCount('player_cache_write');
     await db.raw(
-      `INSERT INTO player_temp(account_id, writetime, blob) VALUES(?, NOW(), ?)`,
+      `INSERT INTO player_temp(account_id, writetime, blob) VALUES(?, NOW(), ?) ON CONFLICT DO NOTHING`,
       [accountId, JSON.stringify(all)],
     );
   }

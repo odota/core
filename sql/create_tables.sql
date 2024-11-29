@@ -443,7 +443,7 @@ CREATE TABLE IF NOT EXISTS player_temp (
   PRIMARY KEY (account_id),
   account_id bigint,
   writetime timestamp with time zone,
-  blob json
+  blob text
 );
 
 DO $$
