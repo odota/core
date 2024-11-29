@@ -14,17 +14,17 @@ const API_KEYS = config.STEAM_API_KEY.split(',');
 const PAGE_SIZE = 100;
 // This endpoint is limited to something like 1 request every 5 seconds
 const SCANNER_WAIT = 5000;
-const isSecondary = Boolean(config.SCANNER_OFFSET);
+const isSecondary = Boolean(Number(config.SCANNER_OFFSET));
 
 async function scanApi(seqNum: number) {
   const offset = Number(config.SCANNER_OFFSET);
   let nextSeqNum = seqNum - offset;
   while (true) {
     if (offset) {
-      const numResult = await getCurrentSeqNum();
-      if (nextSeqNum > numResult - offset) {
+      const current = await getCurrentSeqNum();
+      if (nextSeqNum > current - offset) {
         // Secondary scanner is catching up too much. Wait and try again
-        console.log('secondary scanner waiting');
+        console.log('secondary scanner waiting', nextSeqNum, current, offset);
         await new Promise((resolve) => setTimeout(resolve, SCANNER_WAIT));
         continue;
       }
