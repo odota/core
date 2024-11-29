@@ -385,7 +385,7 @@ export async function populateTemp(
     redisCount('player_cache_write');
     await db.raw(
       `INSERT INTO player_temp(account_id, writetime, blob) VALUES(?, NOW(), ?)`,
-      [accountId, all],
+      [accountId, JSON.stringify(all)],
     );
   }
   return all.map((m: any) => pick(m, project));
