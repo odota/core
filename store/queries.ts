@@ -339,8 +339,8 @@ async function readPlayerTemp(
   if (result) {
     redisCount('player_cache_hit');
     redisCountDistinct('distinct_player_cache', accountId.toString());
-    // zip maybe?
-    const output = JSON.parse(result);
+    const zip = gunzipSync(result).toString();
+    const output = JSON.parse(zip);
     // Remove columns not asked for
     return output.map((m: any) => pick(m, project));
   } else {
@@ -380,12 +380,11 @@ export async function populateTemp(
     Array.from(cacheableCols),
   );
   if (all.length) {
-    // const zip = gzipSync(JSON.stringify(all));
-    // const zip = JSON.stringify(all);
+    const zip = gzipSync(JSON.stringify(all));
     redisCount('player_cache_write');
     await db.raw(
       `INSERT INTO player_temp(account_id, writetime, blob) VALUES(?, NOW(), ?) ON CONFLICT DO NOTHING`,
-      [accountId, JSON.stringify(all)],
+      [accountId, zip],
     );
   }
   return all.map((m: any) => pick(m, project));

@@ -443,8 +443,9 @@ CREATE TABLE IF NOT EXISTS player_temp (
   PRIMARY KEY (account_id),
   account_id bigint,
   writetime timestamp with time zone,
-  blob text
+  blob bytea
 );
+ALTER TABLE player_temp ALTER COLUMN blob SET STORAGE EXTERNAL;
 
 DO $$
 BEGIN
