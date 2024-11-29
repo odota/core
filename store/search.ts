@@ -9,14 +9,14 @@ export async function search(query: string) {
     : [];
   const personaNameMatch = await db.raw(
     `
-  SELECT * FROM 
-  (SELECT account_id, avatarfull, personaname, last_match_time
-  FROM players 
-  WHERE personaname ILIKE ?
-  LIMIT 100) search
-  ORDER BY last_match_time DESC NULLS LAST;
+    SELECT account_id, avatarfull, personaname, last_match_time, similarity(personaname, ?) as similarity
+    FROM players
+    WHERE ? % personaname
+    ORDER BY similarity(personaname, ?) DESC, last_match_time DESC NULLS LAST
+    LIMIT 50;
   `,
-    [`%${query}%`],
+    [query, query, query],
   );
+  // Later versions of postgres have word_similarity which may be more accurate
   return [...accountIdMatch, ...personaNameMatch.rows];
 }
