@@ -78,9 +78,3 @@ CREATE TABLE IF NOT EXISTS match_blobs (
   identity text,
   ranks text,
 );
-
-CREATE TABLE IF NOT EXISTS player_temp (
-  PRIMARY KEY (account_id),
-  account_id bigint,
-  blob blob
-);

@@ -331,16 +331,16 @@ async function readPlayerTemp(
   accountId: number,
   project: string[],
 ): Promise<ParsedPlayerMatch[]> {
-  const { rows } = await cassandra.execute(
+  const { rows } = await db.raw(
     `SELECT blob from player_temp WHERE account_id = ?`,
     [accountId],
-    { prepare: true, fetchSize: 1 },
   );
   const result = rows[0]?.blob;
   if (result) {
     redisCount('player_cache_hit');
     redisCountDistinct('distinct_player_cache', accountId.toString());
-    const output = JSON.parse(gunzipSync(result).toString());
+    // zip maybe?
+    const output = JSON.parse(result);
     // Remove columns not asked for
     return output.map((m: any) => pick(m, project));
   } else {
@@ -380,17 +380,12 @@ export async function populateTemp(
     Array.from(cacheableCols),
   );
   if (all.length) {
-    const zip = gzipSync(JSON.stringify(all));
-    // console.log(
-    //   '[PLAYERCACHE] %s: caching %s matches in %s bytes',
-    //   accountId,
-    //   all.length,
-    //   zip.length,
-    // );
+    // const zip = gzipSync(JSON.stringify(all));
+    const zip = JSON.stringify(all);
     redisCount('player_cache_write');
     await cassandra.execute(
-      `INSERT INTO player_temp(account_id, blob) VALUES(?, ?) USING TTL ?`,
-      [accountId, zip, Number(config.PLAYER_CACHE_SECONDS)],
+      `INSERT INTO player_temp(account_id, writetime, blob) VALUES(?, NOW(), ?)`,
+      [accountId, zip],
       { prepare: true },
     );
   }

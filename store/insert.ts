@@ -493,15 +493,17 @@ export async function insertMatch(
         match.players.map(async (p) => {
           const account_id = pgroup[p.player_slot]?.account_id ?? p.account_id;
           if (account_id) {
-            await cassandra.execute(
-              `DELETE FROM player_temp WHERE account_id = ?`,
+            const { rows } = await db.raw(
+              `DELETE FROM player_temp WHERE account_id = ? RETURNING account_id`,
               [account_id],
-              { prepare: true },
             );
-            await addJob({
-              name: 'cacheQueue',
-              data: account_id.toString(),
-            });
+            // if we deleted a row, recompute it
+            if (rows.length) {
+              await addJob({
+                name: 'cacheQueue',
+                data: account_id.toString(),
+              });
+            }
           }
         }),
       );

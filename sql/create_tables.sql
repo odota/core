@@ -439,6 +439,13 @@ CREATE TABLE IF NOT EXISTS last_seq_num (
   match_seq_num bigint
 );
 
+CREATE TABLE IF NOT EXISTS player_temp (
+  PRIMARY KEY (account_id),
+  account_id bigint,
+  writetime timestamp with time zone,
+  blob json
+);
+
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'readonly') THEN
