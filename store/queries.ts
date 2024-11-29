@@ -383,10 +383,9 @@ export async function populateTemp(
     // const zip = gzipSync(JSON.stringify(all));
     // const zip = JSON.stringify(all);
     redisCount('player_cache_write');
-    await cassandra.execute(
+    await db.raw(
       `INSERT INTO player_temp(account_id, writetime, blob) VALUES(?, NOW(), ?)`,
       [accountId, all],
-      { prepare: true },
     );
   }
   return all.map((m: any) => pick(m, project));
