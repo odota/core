@@ -445,7 +445,7 @@ CREATE TABLE IF NOT EXISTS player_temp (
   writetime timestamp with time zone,
   blob bytea
 );
-ALTER TABLE player_temp ALTER COLUMN blob SET STORAGE EXTERNAL
+ALTER TABLE player_temp ALTER COLUMN blob SET STORAGE EXTERNAL;
 CREATE INDEX IF NOT EXISTS player_temp_writetime ON player_temp(writetime);
 
 DO $$
