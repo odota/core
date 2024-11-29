@@ -14,6 +14,7 @@ const API_KEYS = config.STEAM_API_KEY.split(',');
 const PAGE_SIZE = 100;
 // This endpoint is limited to something like 1 request every 5 seconds
 const SCANNER_WAIT = 5000;
+const isSecondary = Boolean(config.SCANNER_OFFSET);
 
 async function scanApi(seqNum: number) {
   const offset = Number(config.SCANNER_OFFSET);
@@ -57,7 +58,7 @@ async function scanApi(seqNum: number) {
       nextSeqNum = resp[resp.length - 1].match_seq_num + 1;
       console.log('next_seq_num: %s', nextSeqNum);
     }
-    if (!Number(config.SCANNER_OFFSET)) {
+    if (!isSecondary) {
       // Only set match seq num on primary
       await db.raw(
         'INSERT INTO last_seq_num(match_seq_num) VALUES (?) ON CONFLICT DO NOTHING',
@@ -84,7 +85,12 @@ async function processMatch(match: ApiMatch) {
   // console.log(match.match_id, result);
   // don't insert this match if we already processed it recently
   if (!result) {
-    if (Number(config.SCANNER_OFFSET)) {
+    if (isSecondary) {
+      // On secondary, don't insert if no min value or too far behind
+      const minInRange = Number((await redis.zrange('scanner_insert', 0, 1))[0]);
+      if (!minInRange || match.match_id < minInRange) {
+        return;
+      }
       // secondary scanner picked up a missing match
       redisCount('secondary_scanner');
     }
