@@ -6,7 +6,7 @@ import {
 async function start() {
   while (true) {
     try {
-      // await archiveToken();
+      await archiveToken();
       await new Promise((resolve) => setTimeout(resolve, 1000));
     } catch (e) {
       console.error(e);
