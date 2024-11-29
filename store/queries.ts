@@ -381,11 +381,11 @@ export async function populateTemp(
   );
   if (all.length) {
     // const zip = gzipSync(JSON.stringify(all));
-    const zip = JSON.stringify(all);
+    // const zip = JSON.stringify(all);
     redisCount('player_cache_write');
     await cassandra.execute(
       `INSERT INTO player_temp(account_id, writetime, blob) VALUES(?, NOW(), ?)`,
-      [accountId, zip],
+      [accountId, all],
       { prepare: true },
     );
   }
