@@ -337,8 +337,8 @@ async function readPlayerTemp(
   );
   const result = rows[0]?.blob;
   if (result) {
-    redisCount('player_cache_hit');
-    redisCountDistinct('distinct_player_cache', accountId.toString());
+    redisCount('player_temp_hit');
+    redisCountDistinct('distinct_player_temp', accountId.toString());
     const zip = gunzipSync(result).toString();
     const output = JSON.parse(zip);
     // Remove columns not asked for
@@ -349,23 +349,23 @@ async function readPlayerTemp(
     // This is because we use del to release rather than delete only if matches random value
     // But that's ok since this is just an optimization to reduce load
     const lock = await redis.set(
-      'player_cache_lock:' + accountId.toString(),
+      'player_temp_lock:' + accountId.toString(),
       Date.now().toString(),
       'EX',
       10,
       'NX',
     );
     if (!lock) {
-      redisCount('player_cache_wait');
+      redisCount('player_temp_wait');
       // console.log('[PLAYERCACHE] waiting for lock on %s', accountId);
       // Couldn't acquire the lock, wait and try again
       await new Promise((resolve) => setTimeout(resolve, 1000));
       return readPlayerTemp(accountId, project);
     }
-    redisCount('player_cache_miss');
+    redisCount('player_temp_miss');
     const result = await populateTemp(accountId, project);
     // Release the lock
-    await redis.del('player_cache_lock:' + accountId.toString());
+    await redis.del('player_temp_lock:' + accountId.toString());
     return result;
   }
 }
@@ -381,7 +381,7 @@ export async function populateTemp(
   );
   if (all.length) {
     const zip = gzipSync(JSON.stringify(all));
-    redisCount('player_cache_write');
+    redisCount('player_temp_write');
     await db.raw(
       `INSERT INTO player_temp(account_id, writetime, blob) VALUES(?, NOW(), ?) ON CONFLICT DO NOTHING`,
       [accountId, zip],

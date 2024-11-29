@@ -6,8 +6,8 @@ import { redisCount, redisCountDistinct } from '../util/utility';
 async function processCache(job: CacheJob) {
   const accountId = job;
   console.time(accountId);
-  redisCountDistinct('distinct_auto_player_cache', accountId);
-  redisCount('auto_player_cache');
+  redisCountDistinct('distinct_auto_player_temp', accountId);
+  redisCount('auto_player_temp');
   await populateTemp(Number(accountId), ['match_id']);
   console.timeEnd(accountId);
 }

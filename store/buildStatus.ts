@@ -142,15 +142,15 @@ export async function buildStatus() {
     //   countDayDistinct('distinct_match_player_recent_user'),
 
     match_cache_hit_last_day: async () => countDay('match_cache_hit'),
-    player_cache_hit_last_day: async () => countDay('player_cache_hit'),
-    player_cache_miss_last_day: async () => countDay('player_cache_miss'),
-    player_cache_wait_last_day: async () => countDay('player_cache_wait'),
-    player_cache_write_last_day: async () => countDay('player_cache_write'),
-    distinct_player_cache_last_day: async () =>
-      countDayDistinct('distinct_player_cache'),
-    auto_player_cache_last_day: async () => countDay('auto_player_cache'),
-    distinct_auto_player_cache_last_day: async () =>
-      countDayDistinct('distinct_auto_player_cache'),
+    player_temp_hit_last_day: async () => countDay('player_temp_hit'),
+    player_temp_miss_last_day: async () => countDay('player_temp_miss'),
+    player_temp_wait_last_day: async () => countDay('player_temp_wait'),
+    player_temp_write_last_day: async () => countDay('player_temp_write'),
+    distinct_player_temp_last_day: async () =>
+      countDayDistinct('distinct_player_temp'),
+    auto_player_temp_last_day: async () => countDay('auto_player_temp'),
+    distinct_auto_player_temp_last_day: async () =>
+      countDayDistinct('distinct_auto_player_temp'),
 
     // reapi_last_day: async () => countDay('reapi'),
     regcdata_last_day: async () => countDay('regcdata'),
