@@ -1390,32 +1390,6 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
         },
       },
     },
-    '/status': {
-      get: {
-        operationId: generateOperationId('get', '/status'),
-        summary: 'GET /status',
-        description: 'Get current service statistics',
-        tags: ['status'],
-        responses: {
-          200: {
-            description: 'Success',
-            content: {
-              'application/json; charset=utf-8': {
-                schema: {
-                  title: 'StatusResponse',
-                  type: 'object',
-                },
-              },
-            },
-          },
-        },
-        route: () => '/status',
-        func: async (req, res, cb) => {
-          const status = await buildStatus();
-          return res.json(status);
-        },
-      },
-    },
     '/health': {
       get: {
         operationId: generateOperationId('get', '/health'),

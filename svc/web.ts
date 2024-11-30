@@ -26,6 +26,7 @@ import {
 } from '../util/utility';
 import stripe from '../store/stripe';
 import axios from 'axios';
+import { buildStatus } from '../store/buildStatus';
 
 const admins = config.ADMIN_ACCOUNT_IDS.split(',').map((e) => Number(e));
 const SteamStrategy = passportSteam.Strategy;
@@ -40,7 +41,6 @@ const sessOptions = {
 const unlimitedPaths = [
   '/api', // OpenAPI spec
   '/api/metadata', // User metadata
-  '/api/status', // Status page
 ];
 
 // PASSPORT config
@@ -177,9 +177,14 @@ app.get('/healthz', (req, res) => {
   res.end('ok');
 });
 
-app.get('/ip', async (req, res, cb) => {
+app.get('/ip', async (req, res) => {
   // Echo back the client's ip
   res.end(req.ip);
+});
+
+app.get('/status', async (req, res) => {
+  const status = await buildStatus();
+  return res.json(status);
 });
 
 app.post('/register/:service/:host', async (req, res, cb) => {
