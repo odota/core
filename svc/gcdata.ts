@@ -7,6 +7,7 @@ import { getOrFetchApiData } from '../store/getApiData';
 
 async function processGcData(job: GcDataJob) {
   const matchId = job.match_id;
+  // Note: If we want to enable fetching this for more matches, we can probably store the pgroup in the job to avoid having to fetch the api data blob
   const { pgroup } = await getOrFetchApiData(matchId);
   if (!pgroup) {
     return;

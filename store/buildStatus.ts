@@ -1,13 +1,14 @@
 import moment from 'moment';
 import redis from '../store/redis';
 import { parallelPromise } from '../util/utility';
+import constants from 'dotaconstants';
 
 function generatePercentiles(arr: string[]) {
   // sort the list
   arr.sort((a, b) => Number(a) - Number(b));
   // console.log(arr);
   const percentiles = [50, 75, 90, 95, 99];
-  const result: NumberDict = {};
+  const result: Record<string, number> = {};
   arr.forEach((time, i) => {
     if (i >= arr.length * (percentiles[0] / 100)) {
       result[percentiles[0]] = Number(time);
@@ -167,49 +168,70 @@ export async function buildStatus() {
     // skip_seq_num_last_day: async () => countDay('skip_seq_num'),
     // gen_api_key_invalid_last_day: async () => getRedisCountDay('gen_api_key_invalid'),
 
-    api_paths: async () => {
+    health: async (): Promise<Record<string, any>> => {
+      const result = await redis.get('health:v2');
+      return result ? JSON.parse(result) : null;
+    },
+    api_paths: async (): Promise<Record<string, number>> => {
       const results = await redis.zrangebyscore(
         'api_paths',
         '-inf',
         'inf',
         'WITHSCORES',
       );
-      const response: any[] = [];
+      const response: Record<string, number> = {};
       results?.forEach((result, i) => {
         if (i % 2 === 0) {
-          response.push({
-            hostname: result.split('.')[0],
-            count: results[i + 1],
-          });
+          response[result.split('.')[0]] = Number(results[i + 1]);
         }
       });
       return response;
     },
-    api_status: async () => {
+    api_status: async (): Promise<Record<string, number>> => {
       const results = await redis.zrangebyscore(
         'api_status',
         '-inf',
         'inf',
         'WITHSCORES',
       );
-      const response: any[] = [];
+      const response: Record<string, number> = {};
       results?.forEach((result, i) => {
         if (i % 2 === 0) {
-          response.push({
-            status: result.split('.')[0],
-            count: results[i + 1],
-          });
+          response[result.split('.')[0]] = Number(results[i + 1]);
         }
       });
       return response;
     },
-    load_times: async () => {
+    load_times: async (): Promise<Record<string, number>> => {
       const arr = await redis.lrange('load_times', 0, -1);
       return generatePercentiles(arr ?? []);
     },
-    health: async () => {
-      const result = await redis.get('health:v2');
-      return result ? JSON.parse(result) : null;
+    game_mode: async (): Promise<Record<string, number>> => {
+      const result: Record<string, number> = {};
+      const keys = Object.keys(constants.game_mode);
+      for(let i = 0; i < keys.length; i++) {
+        const key = keys[i];
+        result[key] = Number(await redis.get(`${key}_game_mode`));
+      }
+      return result;
+    },
+    lobby_type: async (): Promise<Record<string, number>> => {
+      const result: Record<string, number> = {};
+      const keys = Object.keys(constants.lobby_type);
+      for(let i = 0; i < keys.length; i++) {
+        const key = keys[i];
+        result[key] = Number(await redis.get(`${key}_lobby_type`));
+      }
+      return result;
+    },
+    cluster: async (): Promise<Record<string, number>> => {
+      const result: Record<string, number> = {};
+      const keys = Object.keys(constants.cluster);
+      for(let i = 0; i < keys.length; i++) {
+        const key = keys[i];
+        result[key] = Number(await redis.get(`${key}_cluster`));
+      }
+      return result;
     },
   };
   return parallelPromise<{

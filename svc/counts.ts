@@ -12,6 +12,7 @@ import {
   getAnonymousAccountId,
   isRadiant,
   getStartOfBlockMinutes,
+  redisCount,
 } from '../util/utility';
 
 async function updateHeroRankings(match: Match) {
@@ -191,6 +192,7 @@ async function updateHeroSearch(match: Match) {
     [match.match_id, teamA, teamB, teamAWin, match.start_time],
   );
 }
+
 async function updateHeroCounts(match: Match) {
   // If match has leagueid, update pro picks and wins
   // If turbo, update picks and wins
@@ -251,6 +253,12 @@ async function updateHeroCounts(match: Match) {
       }
     });
   }
+}
+
+async function updateMatchCounts(match: Match) {
+  await redisCount(`${match.game_mode}_game_mode` as MetricName);
+  await redisCount(`${match.lobby_type}_lobby_type` as MetricName);
+  await redisCount(`${match.cluster}_cluster` as MetricName);
 }
 
 async function updateBenchmarks(match: Match) {
@@ -325,6 +333,7 @@ async function processCounts(match: Match) {
   await updateLastPlayed(match);
   await updateHeroSearch(match);
   await updateHeroCounts(match);
+  await updateMatchCounts(match);
   await updateBenchmarks(match);
 }
 runQueue('countsQueue', 1, processCounts);

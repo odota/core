@@ -27,7 +27,6 @@ type QueryObj = {
 
 type AnyDict = Record<string, any>;
 type NumberDict = Record<string, number>;
-type BooleanDict = Record<string, boolean>;
 type ErrorCb = (
   err?: Error | null | undefined | string | unknown,
   result?: any,
