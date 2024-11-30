@@ -57,9 +57,12 @@ export class Archive {
       // if the bucket is public, we can read via http request rather than using the s3 client
       const url = `${config.ARCHIVE_PUBLIC_URL}/${this.bucket}/${key}`;
       try {
-        const resp = await axios.get<Buffer>(url, { timeout: 5000, responseType: 'arraybuffer'});
+        const resp = await axios.get<Buffer>(url, {
+          timeout: 5000,
+          responseType: 'arraybuffer',
+        });
         buffer = resp.data;
-      } catch(e) {
+      } catch (e) {
         if (axios.isAxiosError(e)) {
           if (e.response?.status === 404) {
             // expected if key not valid
@@ -74,10 +77,12 @@ export class Archive {
         return null;
       }
       try {
-        const data = await this.client.send(new GetObjectCommand({
-          Bucket: this.bucket,
-          Key: key,
-        }));
+        const data = await this.client.send(
+          new GetObjectCommand({
+            Bucket: this.bucket,
+            Key: key,
+          }),
+        );
         if (!data.Body) {
           return null;
         }

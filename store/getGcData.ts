@@ -40,12 +40,16 @@ export async function readGcData(
       { prepare: true, fetchSize: 1, autoPage: true },
     );
     const row = result.rows[0];
-    data = row?.gcdata ? (JSON.parse(row.gcdata) as GcMatch) : null
+    data = row?.gcdata ? (JSON.parse(row.gcdata) as GcMatch) : null;
     if (data) {
       redisCount('gcdata_cassandra_read');
     }
   }
-  if (data?.match_id == null || data?.cluster == null || data?.replay_salt == null) {
+  if (
+    data?.match_id == null ||
+    data?.cluster == null ||
+    data?.replay_salt == null
+  ) {
     return null;
   }
   return data;

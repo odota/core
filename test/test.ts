@@ -193,11 +193,12 @@ before(async function setup() {
     // Make a new test bucket with a new name
     // There's no good way to delete the test bucket automatically since we can't delete nonempty buckets
     console.log('create minio test bucket');
-    await client.send(new CreateBucketCommand({
-      ACL: 'public-read',
-      Bucket: config.BLOB_ARCHIVE_S3_BUCKET,
-    },
-    ));
+    await client.send(
+      new CreateBucketCommand({
+        ACL: 'public-read',
+        Bucket: config.BLOB_ARCHIVE_S3_BUCKET,
+      }),
+    );
   }
 
   async function startServices() {

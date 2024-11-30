@@ -23,9 +23,7 @@ export async function readParseData(
     if (archive) {
       redisCount('blob_archive_read');
     }
-    data = archive
-      ? (JSON.parse(archive.toString()) as ParserMatch)
-      : null
+    data = archive ? (JSON.parse(archive.toString()) as ParserMatch) : null;
   }
   if (!data) {
     const result = await cassandra.execute(
@@ -39,7 +37,7 @@ export async function readParseData(
       redisCount('parsed_cassandra_read');
     }
   }
-  return data
+  return data;
 }
 
 type ExtraData = {

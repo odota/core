@@ -430,7 +430,10 @@ export async function insertMatch(
       blob: { match_id: number; players: { player_slot: number }[] },
     ) {
       const matchId = blob.match_id;
-      await blobArchive?.archivePut(matchId + '_' + type, Buffer.from(JSON.stringify(blob)));
+      await blobArchive?.archivePut(
+        matchId + '_' + type,
+        Buffer.from(JSON.stringify(blob)),
+      );
       if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
         fs.writeFileSync(
           './json/' + matchId + '_' + type + '.json',

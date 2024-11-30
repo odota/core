@@ -81,8 +81,8 @@ async function processMatch(matchId: number) {
 
 /**
  * Consolidates separate match data blobs and stores as a single blob in archive
- * @param matchId 
- * @returns 
+ * @param matchId
+ * @returns
  */
 async function doArchiveMatchFromBlobs(matchId: number) {
   if (!matchArchive) {
@@ -119,8 +119,8 @@ async function doArchiveMatchFromBlobs(matchId: number) {
 
 /**
  * Moves individual match blobs from Cassandra to blob store
- * @param matchId 
- * @returns 
+ * @param matchId
+ * @returns
  */
 async function doMigrateMatchToBlobStore(matchId: number) {
   const api = await readApiData(matchId, true);
@@ -134,10 +134,16 @@ async function doMigrateMatchToBlobStore(matchId: number) {
     );
   }
   if (gcdata) {
-    await blobArchive?.archivePut(matchId.toString() + '_gcdata', Buffer.from(JSON.stringify(gcdata)));
+    await blobArchive?.archivePut(
+      matchId.toString() + '_gcdata',
+      Buffer.from(JSON.stringify(gcdata)),
+    );
   }
   if (parsed) {
-    await blobArchive?.archivePut(matchId.toString() + '_parsed', Buffer.from(JSON.stringify(parsed)));
+    await blobArchive?.archivePut(
+      matchId.toString() + '_parsed',
+      Buffer.from(JSON.stringify(parsed)),
+    );
   }
   await deleteMatch(matchId);
 }

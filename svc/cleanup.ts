@@ -28,7 +28,7 @@ async function cleanup() {
     'DELETE from hero_search where match_id < (select max(match_id) - 200000000 from hero_search)',
   );
   await db.raw(
-    `DELETE from player_temp where writetime < extract(epoch from now() - interval '3 day')::int`
+    `DELETE from player_temp where writetime < extract(epoch from now() - interval '3 day')::int`,
   );
   return;
 }

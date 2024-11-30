@@ -252,17 +252,20 @@ export async function getPlayerMatchesWithMetadata(
     projection.every((field) => cacheableCols.has(field as any));
   // Don't use temp table if dbLimit (recentMatches) or projectAll (archiving)
   // Check if every requested column can be satisified by temp
-  const localMatches = canUseTemp ? await readPlayerTemp(accountId, projection) : await readPlayerCaches(accountId, projection, queryObj.dbLimit);
+  const localMatches = canUseTemp
+    ? await readPlayerTemp(accountId, projection)
+    : await readPlayerCaches(accountId, projection, queryObj.dbLimit);
   // if dbLimit (recentMatches), don't use archive
-  const archivedMatches = config.ENABLE_PLAYER_ARCHIVE && !queryObj.dbLimit
-    ? await tryReadArchivedPlayerMatches(accountId)
-    : [];
+  const archivedMatches =
+    config.ENABLE_PLAYER_ARCHIVE && !queryObj.dbLimit
+      ? await tryReadArchivedPlayerMatches(accountId)
+      : [];
   const localLength = localMatches.length;
   const archivedLength = archivedMatches.length;
 
   const keys = queryObj.projectAll
-  ? (Object.keys(columns) as (keyof ParsedPlayerMatch)[])
-  : queryObj.project;
+    ? (Object.keys(columns) as (keyof ParsedPlayerMatch)[])
+    : queryObj.project;
   // Merge the two sets of matches
   let matches = mergeMatches(localMatches, archivedMatches, keys);
   const filtered = filterMatches(matches, queryObj.filter);
@@ -286,7 +289,11 @@ export async function getPlayerMatchesWithMetadata(
   ];
 }
 
-function mergeMatches(localMatches: ParsedPlayerMatch[], archivedMatches: ParsedPlayerMatch[], keys: (keyof ParsedPlayerMatch)[]): ParsedPlayerMatch[] {
+function mergeMatches(
+  localMatches: ParsedPlayerMatch[],
+  archivedMatches: ParsedPlayerMatch[],
+  keys: (keyof ParsedPlayerMatch)[],
+): ParsedPlayerMatch[] {
   if (archivedMatches.length) {
     const matches: ParsedPlayerMatch[] = [];
     // Merge together the results
@@ -380,10 +387,7 @@ export async function populateTemp(
   project: string[],
 ): Promise<ParsedPlayerMatch[]> {
   // Populate cache with all columns result
-  const all = await readPlayerCaches(
-    accountId,
-    Array.from(cacheableCols),
-  );
+  const all = await readPlayerCaches(accountId, Array.from(cacheableCols));
   if (all.length >= Number(config.PLAYER_CACHE_THRESHOLD)) {
     const zip = gzipSync(JSON.stringify(all));
     redisCount('player_temp_write');

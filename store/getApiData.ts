@@ -43,9 +43,7 @@ export async function readApiData(
  * @param matchId
  * @returns
  */
-export async function getOrFetchApiData(
-  matchId: number,
-): Promise<{
+export async function getOrFetchApiData(matchId: number): Promise<{
   data: ApiMatch | null;
   error: string | null;
   pgroup: PGroup | null;
