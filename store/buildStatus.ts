@@ -220,7 +220,7 @@ export async function buildStatus() {
       const keys = Object.keys(constants.game_mode);
       for (let i = 0; i < keys.length; i++) {
         const key = keys[i];
-        result[key] = Number(await redis.get(`${key}_game_mode`));
+        result[constants.game_mode[key]?.name] = Number(await countDay(`${key}_game_mode` as MetricName));
       }
       return result;
     },
@@ -229,7 +229,7 @@ export async function buildStatus() {
       const keys = Object.keys(constants.lobby_type);
       for (let i = 0; i < keys.length; i++) {
         const key = keys[i];
-        result[key] = Number(await redis.get(`${key}_lobby_type`));
+        result[constants.lobby_type[key]?.name] = Number(await countDay(`${key}_lobby_type` as MetricName));
       }
       return result;
     },
@@ -238,7 +238,7 @@ export async function buildStatus() {
       const keys = Object.keys(constants.cluster);
       for (let i = 0; i < keys.length; i++) {
         const key = keys[i];
-        result[key] = Number(await redis.get(`${key}_cluster`));
+        result[key] = Number(await countDay(`${key}_cluster` as MetricName));
       }
       return result;
     },
