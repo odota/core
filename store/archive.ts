@@ -92,16 +92,16 @@ export class Archive {
       }
     }
     redisCount('archive_hit');
-    const result = gunzipSync(buffer);
+    const zip = gunzipSync(buffer);
     if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
       console.log(
         '[ARCHIVE] %s: read %s bytes, decompressed %s bytes',
         key,
         buffer.length,
-        result.length,
+        zip.length,
       );
     }
-    return result;
+    return zip;
   };
   public archivePut = async (
     key: string,
@@ -116,11 +116,11 @@ export class Archive {
       );
     }
     try {
-      const data = gzipSync(blob);
+      const zip = gzipSync(blob);
       const options: PutObjectCommandInput = {
         Bucket: this.bucket,
         Key: key,
-        Body: data,
+        Body: zip,
       };
       // if (ifNotExists) {
       //   // May not be implemented by some s3 providers
@@ -128,12 +128,13 @@ export class Archive {
       // }
       const command = new PutObjectCommand(options);
       const result = await this.client.send(command);
+      redisCount('archive_write_bytes', zip.length);
       if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
         console.log(
           '[ARCHIVE] %s: original %s bytes, archived %s bytes',
           key,
           blob.length,
-          data.length,
+          zip.length,
         );
       }
       return result;

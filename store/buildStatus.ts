@@ -124,6 +124,7 @@ export async function buildStatus() {
     match_archive_read_last_day: async () => countDay('match_archive_read'),
     archive_hit_last_day: async () => countDay('archive_hit'),
     archive_miss_last_day: async () => countDay('archive_miss'),
+    archive_write_bytes_last_day: async () => countDay('archive_write_bytes'),
     // incomplete_archive_last_day: async () => countDay('incomplete_archive'),
 
     // user_players: async () => redis.zcard('visitors'),
@@ -146,6 +147,7 @@ export async function buildStatus() {
     player_temp_skip_last_day: async () => countDay('player_temp_skip'),
     player_temp_wait_last_day: async () => countDay('player_temp_wait'),
     player_temp_write_last_day: async () => countDay('player_temp_write'),
+    player_temp_write_bytes_last_day: async () => countDay('player_temp_write_bytes'),
     distinct_player_temp_read_last_day: async () =>
       countDayDistinct('distinct_player_temp'),
     auto_player_temp_last_day: async () => countDay('auto_player_temp'),

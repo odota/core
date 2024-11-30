@@ -835,12 +835,12 @@ export async function getApiHosts(): Promise<string[]> {
  * @param redis The Redis instance (null to dynamic import the default redis)
  * @param prefix The counter name
  */
-export async function redisCount(prefix: MetricName) {
+export async function redisCount(prefix: MetricName, incrBy = 1) {
   const redisToUse = config.REDIS_URL
     ? (await import('../store/redis.js')).redis
     : null;
   const key = `${prefix}:v2:${moment().startOf('hour').format('X')}`;
-  await redisToUse?.incr(key);
+  await redisToUse?.incrby(key, incrBy);
   await redisToUse?.expireat(
     key,
     moment().startOf('hour').add(1, 'day').format('X'),

@@ -387,6 +387,7 @@ export async function populateTemp(
   if (all.length >= Number(config.PLAYER_CACHE_THRESHOLD)) {
     const zip = gzipSync(JSON.stringify(all));
     redisCount('player_temp_write');
+    redisCount('player_temp_write_bytes', zip.length);
     await db.raw(
       `INSERT INTO player_temp(account_id, writetime, blob) VALUES(?, NOW(), ?) ON CONFLICT DO NOTHING`,
       [accountId, zip],
