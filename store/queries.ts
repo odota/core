@@ -30,7 +30,6 @@ import { readApiData } from './getApiData';
 import { type ApiMatch } from './pgroup';
 import { gzipSync, gunzipSync } from 'zlib';
 import { cacheableCols } from '../routes/playerFields';
-import moment from 'moment';
 import { readGcData } from './getGcData';
 import { readParseData } from './getParsedData';
 
@@ -362,10 +361,16 @@ async function readPlayerTemp(
       await new Promise((resolve) => setTimeout(resolve, 1000));
       return readPlayerTemp(accountId, project);
     }
-    redisCount('player_temp_miss');
     const result = await populateTemp(accountId, project);
     // Release the lock
     await redis.del('player_temp_lock:' + accountId.toString());
+    if (result.length >= Number(config.PLAYER_CACHE_THRESHOLD)) {
+      // Should have cached since large
+      redisCount('player_temp_miss');
+    } else {
+      // Small read anyway so don't need to use cache
+      redisCount('player_temp_skip');
+    }
     return result;
   }
 }
@@ -379,7 +384,7 @@ export async function populateTemp(
     accountId,
     Array.from(cacheableCols),
   );
-  if (all.length) {
+  if (all.length >= Number(config.PLAYER_CACHE_THRESHOLD)) {
     const zip = gzipSync(JSON.stringify(all));
     redisCount('player_temp_write');
     await db.raw(

@@ -122,7 +122,6 @@ export async function buildStatus() {
     parsed_cassandra_read_last_day: async () => countDay('parsed_cassandra_read'),
     blob_archive_read_last_day: async () => countDay('blob_archive_read'),
     match_archive_read_last_day: async () => countDay('match_archive_read'),
-    match_archive_write_last_day: async () => countDay('match_archive_write'),
     archive_hit_last_day: async () => countDay('archive_hit'),
     archive_miss_last_day: async () => countDay('archive_miss'),
     // incomplete_archive_last_day: async () => countDay('incomplete_archive'),
@@ -144,9 +143,10 @@ export async function buildStatus() {
     match_cache_hit_last_day: async () => countDay('match_cache_hit'),
     player_temp_hit_last_day: async () => countDay('player_temp_hit'),
     player_temp_miss_last_day: async () => countDay('player_temp_miss'),
+    player_temp_skip_last_day: async () => countDay('player_temp_skip'),
     player_temp_wait_last_day: async () => countDay('player_temp_wait'),
     player_temp_write_last_day: async () => countDay('player_temp_write'),
-    distinct_player_temp_last_day: async () =>
+    distinct_player_temp_read_last_day: async () =>
       countDayDistinct('distinct_player_temp'),
     auto_player_temp_last_day: async () => countDay('auto_player_temp'),
     distinct_auto_player_temp_last_day: async () =>

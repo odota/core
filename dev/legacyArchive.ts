@@ -89,7 +89,6 @@ async function doArchiveFromLegacy(matchId: number) {
     JSON.stringify({ ...match, players: match.players || playerMatches }),
   );
   const result = await matchArchive.archivePut(matchId.toString(), blob);
-  redisCount('match_archive_write');
   if (result) {
     // Mark the match archived
     await db.raw(

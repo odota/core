@@ -43,6 +43,7 @@ const defaults = {
   BENCHMARKS_SAMPLE_PERCENT: '100', // percent of parsed matches to sample for benchmarks
   ENABLE_MATCH_CACHE: '', // set to enable caching matches in Redis
   ENABLE_PLAYER_CACHE: '', // enable/disable player aggregation caching
+  PLAYER_CACHE_THRESHOLD: '1000', // minimum number of matches to use player aggregation cache for
   ENABLE_RANDOM_MMR_UPDATE: '', // set to request MMR updates after ranked matches
   MAXIMUM_AGE_SCENARIOS_ROWS: '4', // maximum allowed age of scenarios rows in weeks
   MATCH_CACHE_SECONDS: '60', // number of seconds to cache matches

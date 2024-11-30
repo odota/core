@@ -101,7 +101,6 @@ async function doArchiveMatchFromBlobs(matchId: number) {
       console.log('INCOMPLETE skipping match %s', matchId);
       return;
     }
-    redisCount('match_archive_write');
     // Archive the data since it's parsed. This might also contain api and gcdata
     const blob = Buffer.from(JSON.stringify(match));
     const result = await matchArchive?.archivePut(matchId.toString(), blob);

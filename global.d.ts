@@ -431,6 +431,7 @@ type MetricName =
   | 'match_cache_hit'
   | 'player_temp_hit'
   | 'player_temp_miss'
+  | 'player_temp_skip'
   | 'player_temp_wait'
   | 'player_temp_write'
   | 'distinct_player_temp'
