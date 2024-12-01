@@ -7,16 +7,17 @@ export async function search(query: string) {
         .from('players')
         .where({ account_id: Number(query) })
     : [];
+  // Set similarity threshold
+  await db.raw('SELECT set_limit(0.5)');
   const personaNameMatch = await db.raw(
     `
-    SELECT account_id, avatarfull, personaname, last_match_time, similarity(personaname, ?) as similarity
+    SELECT account_id, avatarfull, personaname, last_match_time
     FROM players
-    WHERE ? % personaname
-    ORDER BY similarity(personaname, ?) DESC, last_match_time DESC NULLS LAST
+    ORDER BY personaname <-> ?, last_match_time DESC NULLS LAST
     LIMIT 50;
-  `,
-    [query, query, query],
-  );
-  // Later versions of postgres have word_similarity which may be more accurate
+    `,
+    [query],
+    );
+  // Later versions of postgres have word_similarity (<<->) which may be more accurate
   return [...accountIdMatch, ...personaNameMatch.rows];
 }
