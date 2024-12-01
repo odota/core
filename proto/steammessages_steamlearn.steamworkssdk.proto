@@ -259,6 +259,29 @@ message CMsgSteamLearn_InferenceMetadata_Response {
 		repeated .CMsgSteamLearn_InferenceMetadata_Response.CompactTable.MapMappingsEntry map_mappings = 3;
 	}
 
+	message SequenceTable {
+		message Entry {
+			repeated uint32 values = 1;
+			optional uint32 crc = 2;
+			optional uint32 count = 3;
+		}
+
+		message MapValuesEntry {
+			optional uint32 key = 1;
+			optional .CMsgSteamLearn_InferenceMetadata_Response.SequenceTable.Entry value = 2;
+		}
+
+		message MapMappingsEntry {
+			optional string key = 1;
+			optional .CMsgSteamLearn_InferenceMetadata_Response.SequenceTable.Entry value = 2;
+		}
+
+		optional string name = 1;
+		repeated .CMsgSteamLearn_InferenceMetadata_Response.SequenceTable.MapValuesEntry map_values = 2;
+		repeated .CMsgSteamLearn_InferenceMetadata_Response.SequenceTable.MapMappingsEntry map_mappings = 3;
+		optional uint64 total_count = 4;
+	}
+
 	message KMeans {
 		message Cluster {
 			optional float x = 1;
@@ -280,16 +303,37 @@ message CMsgSteamLearn_InferenceMetadata_Response {
 		repeated uint32 bucket_counts = 4;
 	}
 
+	message AppInfo {
+		optional string country_allow = 1;
+		optional string country_deny = 2;
+		optional bool platform_win = 3;
+		optional bool platform_mac = 4;
+		optional bool platform_linux = 5;
+		optional bool adult_violence = 6;
+		optional bool adult_sex = 7;
+	}
+
+	message AppInfoEntry {
+		optional uint32 key = 1;
+		optional .CMsgSteamLearn_InferenceMetadata_Response.AppInfo value = 2;
+	}
+
 	optional .ESteamLearnInferenceMetadataResult inference_metadata_result = 1 [default = STEAMLEARN_INFERENCE_METADATA_ERROR];
 	optional .CMsgSteamLearn_InferenceMetadata_Response.RowRange row_range = 2;
 	repeated .CMsgSteamLearn_InferenceMetadata_Response.Range ranges = 3;
 	repeated .CMsgSteamLearn_InferenceMetadata_Response.StdDev std_devs = 4;
 	repeated .CMsgSteamLearn_InferenceMetadata_Response.CompactTable compact_tables = 5;
+	repeated .CMsgSteamLearn_InferenceMetadata_Response.SequenceTable sequence_tables = 9;
 	repeated .CMsgSteamLearn_InferenceMetadata_Response.KMeans kmeans = 6;
+	repeated .CMsgSteamLearn_InferenceMetadata_Response.AppInfoEntry app_info = 8;
 	optional .CMsgSteamLearn_InferenceMetadata_Response.SnapshotHistogram snapshot_histogram = 7;
 }
 
 message CMsgSteamLearn_InferenceBackend_Response {
+	message Sequence {
+		repeated float value = 1;
+	}
+
 	message RegressionOutput {
 		optional float value = 1;
 	}
@@ -301,11 +345,13 @@ message CMsgSteamLearn_InferenceBackend_Response {
 	message MutliBinaryCrossEntropyOutput {
 		repeated float weight = 1;
 		repeated float value = 2;
+		repeated .CMsgSteamLearn_InferenceBackend_Response.Sequence value_sequence = 3;
 	}
 
 	message CategoricalCrossEntropyOutput {
 		repeated float weight = 1;
 		repeated float value = 2;
+		repeated .CMsgSteamLearn_InferenceBackend_Response.Sequence value_sequence = 3;
 	}
 
 	message Output {

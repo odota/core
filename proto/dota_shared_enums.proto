@@ -706,6 +706,12 @@ enum ECandyShopUpgrade {
 	k_ECandyShopUpgrade_ExtraExchangeRecipe = 2;
 }
 
+enum EItemSuggestPreference {
+	k_EItemSuggestPreference_None = 0;
+	k_EItemSuggestPreference_Liked = 1;
+	k_EItemSuggestPreference_Disliked = 2;
+}
+
 message CDOTAClientHardwareSpecs {
 	optional uint32 logical_processors = 1;
 	optional fixed64 cpu_cycles_per_second = 2;

@@ -1,5 +1,6 @@
 import "steammessages.proto";
 import "gcsdk_gcmessages.proto";
+import "steammessages_steamlearn.steamworkssdk.proto";
 
 enum EGCBaseMsg {
 	k_EMsgGCInviteToParty = 4501;
@@ -24,6 +25,8 @@ enum EGCBaseMsg {
 	k_EMsgClientToGCIntegrityStatus = 4522;
 	k_EMsgClientToGCAggregateMetrics = 4523;
 	k_EMsgGCToClientAggregateMetricsBackoff = 4524;
+	k_EMsgGCToServerSteamLearnAccessTokensChanged = 4525;
+	k_EMsgGCToServerSteamLearnUseHTTP = 4526;
 }
 
 enum ECustomGameInstallStatus {
@@ -398,4 +401,12 @@ message CMsgClientToGCAggregateMetrics {
 
 message CMsgGCToClientAggregateMetricsBackoff {
 	optional float upload_rate_modifier = 1;
+}
+
+message CMsgGCToServerSteamLearnAccessTokensChanged {
+	optional .CMsgSteamLearnAccessTokens access_tokens = 1;
+}
+
+message CMsgGCToServerSteamLearnUseHTTP {
+	optional bool use_http = 1;
 }

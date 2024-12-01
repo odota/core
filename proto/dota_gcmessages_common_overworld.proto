@@ -1,12 +1,19 @@
 import "steammessages.proto";
 import "dota_shared_enums.proto";
 import "dota_gcmessages_common.proto";
+import "dota_gcmessages_common_survivors.proto";
 import "gcsdk_gcmessages.proto";
 
 enum EOverworldNodeState {
 	k_eOverworldNodeState_Invalid = 0;
 	k_eOverworldNodeState_Locked = 1;
 	k_eOverworldNodeState_Unlocked = 2;
+}
+
+enum EOverworldPathState {
+	k_eOverworldPathState_Invalid = 0;
+	k_eOverworldPathState_Incomplete = 1;
+	k_eOverworldPathState_Complete = 2;
 }
 
 enum EOverworldAuditAction {
@@ -27,6 +34,16 @@ enum EOverworldAuditAction {
 	k_eOverworldAuditAction_EncounterRewardTokenReward = 14;
 	k_eOverworldAuditAction_SupportGrantTokens = 16;
 	k_eOverworldAuditAction_TokenGiftSent = 17;
+}
+
+enum EOverworldMinigameAction {
+	k_eOverworldMinigameAction_Invalid = 0;
+	k_eOverworldMinigameAction_DevReset = 1;
+	k_eOverworldMinigameAction_DevGiveCurrency = 2;
+	k_eOverworldMinigameAction_Purchase = 3;
+	k_eOverworldMinigameAction_SetOption = 4;
+	k_eOverworldMinigameAction_ReportCurrencyGained = 5;
+	k_eOverworldMinigameAction_UnlockDifficulty = 6;
 }
 
 message CMsgOverworldTokenCount {
@@ -87,13 +104,32 @@ message CMsgOverworldNode {
 message CMsgOverworldPath {
 	optional uint32 path_id = 1;
 	optional .CMsgOverworldTokenQuantity path_cost = 2;
+	optional .EOverworldPathState path_state = 3 [default = k_eOverworldPathState_Invalid];
+}
+
+message CMsgOverworldMinigameCustomData {
+	oneof minigame_type {
+		.CMsgSurvivorsUserData survivors_data = 1;
+	}
+}
+
+message CMsgOverworldMinigameUserData {
+	optional uint32 node_id = 1;
+	optional uint32 currency_amount = 2;
+	optional .CMsgOverworldMinigameCustomData custom_data = 3;
 }
 
 message CMsgOverworldUserData {
+	message MinigameDataEntry {
+		optional uint32 key = 1;
+		optional .CMsgOverworldMinigameUserData value = 2;
+	}
+
 	optional .CMsgOverworldTokenQuantity token_inventory = 1;
 	repeated .CMsgOverworldNode overworld_nodes = 2;
 	repeated .CMsgOverworldPath overworld_paths = 3;
 	optional uint32 current_node_id = 4;
+	repeated .CMsgOverworldUserData.MinigameDataEntry minigame_data = 5;
 }
 
 message CMsgOverworldMatchRewards {
@@ -163,6 +199,8 @@ message CMsgClientToGCOverworldClaimEncounterReward {
 	optional uint32 reward_data = 3;
 	optional uint32 periodic_resource_id = 4;
 	optional .CMsgOverworldEncounterData extra_reward_data = 5;
+	optional uint32 leaderboard_data = 6;
+	optional uint32 leaderboard_index = 7;
 }
 
 message CMsgClientToGCOverworldClaimEncounterRewardResponse {
@@ -182,6 +220,7 @@ message CMsgClientToGCOverworldClaimEncounterRewardResponse {
 		k_eInvalidEncounterData = 12;
 		k_eNotEnoughTokensForReward = 13;
 		k_eNotEnoughResourceForReward = 14;
+		k_eInvalidRewardData = 15;
 	}
 
 	optional .CMsgClientToGCOverworldClaimEncounterRewardResponse.EResponse response = 1 [default = k_eInternalError];
@@ -284,6 +323,29 @@ message CMsgClientToGCOverworldGiftTokensResponse {
 	}
 
 	optional .CMsgClientToGCOverworldGiftTokensResponse.EResponse response = 1 [default = k_eInternalError];
+}
+
+message CMsgClientToGCOverworldRequestTokensNeededByFriend {
+	optional uint32 friend_account_id = 1;
+	optional uint32 overworld_id = 2;
+}
+
+message CMsgClientToGCOverworldRequestTokensNeededByFriendResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eNotAllowed = 5;
+		k_eNodeLocked = 6;
+		k_eInvalidOverworld = 7;
+		k_eInvalidFriend = 8;
+		k_eTooManyRequests = 9;
+	}
+
+	optional .CMsgClientToGCOverworldRequestTokensNeededByFriendResponse.EResponse response = 1 [default = k_eInternalError];
+	optional .CMsgOverworldTokenQuantity token_quantity = 2;
 }
 
 message CMsgClientToGCOverworldDevResetAll {
@@ -403,4 +465,32 @@ message CMsgClientToGCOverworldGetDynamicImageResponse {
 
 	optional uint32 image_id = 1;
 	repeated .CMsgClientToGCOverworldGetDynamicImageResponse.Image images = 2;
+}
+
+message CMsgClientToGCOverworldMinigameAction {
+	optional uint32 overworld_id = 1;
+	optional uint32 node_id = 2;
+	optional .EOverworldMinigameAction action = 3 [default = k_eOverworldMinigameAction_Invalid];
+	optional uint32 selection = 4;
+	optional uint32 option_value = 5;
+	optional uint32 currency_amount = 6;
+}
+
+message CMsgClientToGCOverworldMinigameActionResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eInvalidOverworld = 5;
+		k_eInvalidNode = 6;
+		k_eNodeLocked = 7;
+		k_eInvalidSelection = 8;
+		k_eNotEnoughTokens = 9;
+		k_eNotEnoughMinigameCurrency = 10;
+		k_eNotAllowed = 11;
+	}
+
+	optional .CMsgClientToGCOverworldMinigameActionResponse.EResponse response = 1 [default = k_eInternalError];
 }

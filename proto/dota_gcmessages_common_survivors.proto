@@ -1,0 +1,48 @@
+import "steammessages.proto";
+import "dota_shared_enums.proto";
+import "dota_gcmessages_common.proto";
+import "gcsdk_gcmessages.proto";
+
+message CMsgSurvivorsUserData {
+	message AttributeLevelsEntry {
+		optional int32 key = 1;
+		optional uint32 value = 2;
+	}
+
+	repeated .CMsgSurvivorsUserData.AttributeLevelsEntry attribute_levels = 1;
+	optional uint32 unlocked_difficulty = 2;
+}
+
+message CMsgClientToGCSurvivorsPowerUpTelemetryData {
+	optional uint32 powerup_id = 1;
+	optional uint32 level = 2;
+	optional uint32 time_received = 3;
+	optional uint32 time_held = 4;
+	optional uint64 total_damage = 5;
+	optional uint32 dps = 6;
+	optional uint32 has_scepter = 7;
+}
+
+message CMsgClientToGCSurvivorsGameTelemetryData {
+	optional uint32 time_survived = 1;
+	optional uint32 player_level = 2;
+	optional uint32 game_result = 3;
+	optional uint32 gold_earned = 4;
+	repeated .CMsgClientToGCSurvivorsPowerUpTelemetryData powerups = 5;
+	optional uint32 difficulty = 6;
+	optional uint32 metaprogression_level = 7;
+}
+
+message CMsgClientToGCSurvivorsGameTelemetryDataResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eNotAllowed = 5;
+		k_eInvalidItem = 6;
+	}
+
+	optional .CMsgClientToGCSurvivorsGameTelemetryDataResponse.EResponse response = 1 [default = k_eInternalError];
+}

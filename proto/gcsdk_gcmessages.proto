@@ -1,3 +1,4 @@
+import "valveextensions.proto";
 import "steammessages.proto";
 import "steammessages_steamlearn.steamworkssdk.proto";
 
@@ -24,7 +25,7 @@ enum GCConnectionStatus {
 
 message CExtraMsgBlock {
 	optional uint32 msg_type = 1;
-	optional bytes contents = 2;
+	optional bytes contents = 2 [(debugprint_visibility) = k_EProtoDebugVisibility_Never];
 	optional uint64 msg_key = 3;
 	optional bool is_compressed = 4;
 }

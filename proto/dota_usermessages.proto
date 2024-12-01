@@ -790,6 +790,7 @@ message CDOTAUserMsg_UnitEvent {
 		optional bool muteable = 5 [default = false];
 		optional .CDOTAUserMsg_UnitEvent.Interval predelay = 6;
 		optional uint32 flags = 7;
+		optional int32 response_type = 8;
 	}
 
 	message SpeechMute {

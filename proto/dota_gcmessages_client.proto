@@ -598,6 +598,7 @@ message CMsgDOTAClaimEventAction {
 	optional uint32 action_id = 2;
 	optional uint32 quantity = 3;
 	optional .CMsgDOTAClaimEventActionData data = 4;
+	optional .EEventActionScoreMode score_mode = 5 [default = k_eEventActionScoreMode_Add];
 }
 
 message CMsgClientToGCClaimEventActionUsingItem {

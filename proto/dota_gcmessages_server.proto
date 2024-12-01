@@ -3,6 +3,7 @@ import "valveextensions.proto";
 import "dota_shared_enums.proto";
 import "dota_gcmessages_common.proto";
 import "econ_gcmessages.proto";
+import "base_gcmessages.proto";
 import "network_connection.proto";
 import "dota_gcmessages_common_lobby.proto";
 import "dota_gcmessages_common_match_management.proto";
@@ -1302,14 +1303,6 @@ message CMsgServerToGCGetStickerHeroesResponse {
 	repeated .CMsgServerToGCGetStickerHeroesResponse.Player players = 1;
 }
 
-message CMsgGCToServerSteamLearnAccessTokensChanged {
-	optional .CMsgSteamLearnAccessTokens access_tokens = 1;
-}
-
-message CMsgGCToServerSteamLearnUseHTTP {
-	optional bool use_http = 1;
-}
-
 message CMsgSteamLearnMatchInfo {
 	optional uint32 average_mmr = 1;
 	optional bool radiant_won = 2;
@@ -1431,22 +1424,18 @@ message CMsgSteamLearnAbilitySkill {
 	optional bool is_using_dota_plus = 4;
 }
 
-message CMsgSteamLearnEarlyGameItemPurchases {
-	repeated int32 item_ids = 1 [(steamlearn_count) = 10];
-}
-
 message CMsgSteamLearnEarlyGameItemPurchasesV2 {
 	repeated int32 item_ids = 1 [(steamlearn_count) = 10];
 	repeated int32 other_item_ids = 2 [(steamlearn_count) = 30];
 }
 
-message CMsgSteamLearnLateGameItemPurchases {
-	repeated int32 item_ids = 1 [(steamlearn_count) = 10];
-}
-
 message CMsgSteamLearnLateGameItemPurchasesV2 {
 	repeated int32 item_ids = 1 [(steamlearn_count) = 10];
 	repeated int32 other_item_ids = 2 [(steamlearn_count) = 30];
+}
+
+message CMsgSteamLearnMainGameItemPurchases {
+	repeated int32 item_ids = 1 [(steamlearn_count) = 10];
 }
 
 message CMsgSteamLearnWardPlacement {

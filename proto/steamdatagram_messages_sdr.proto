@@ -63,7 +63,6 @@ message CMsgSteamDatagramRouterPingReply {
 	message AltAddress {
 		enum Protocol {
 			DefaultProtocol = 0;
-			NetworkNext = 1;
 		}
 
 		optional fixed32 ipv4 = 1;
@@ -89,11 +88,16 @@ message CMsgSteamDatagramRouterPingReply {
 	optional fixed64 challenge = 6;
 	optional uint32 seconds_until_shutdown = 7;
 	optional fixed32 client_cookie = 8;
+	optional uint32 recv_tos = 16;
+	optional uint32 echo_sent_tos = 17;
+	optional uint32 sent_tos = 18;
+	optional uint32 echo_request_reply_tos = 19;
 	optional uint32 scoring_penalty_relay_cluster = 9;
 	optional uint32 flags = 12;
 	repeated .CMsgSteamDatagramRouterPingReply.RouteException route_exceptions = 10;
 	repeated .CMsgSteamDatagramRouterPingReply.AltAddress alt_addresses = 13;
 	optional bytes dummy_pad = 99;
+	optional uint64 dummy_varint = 100;
 }
 
 message CMsgSteamDatagramGameserverPingRequestBody {
@@ -148,6 +152,12 @@ message CMsgSteamDatagramNoSessionRelayToPeer {
 	optional fixed64 kludge_pad = 99;
 }
 
+message CMsgTOSTreatment {
+	optional string l4s_detect = 1;
+	optional string up_ecn1 = 2;
+	optional string down_dscp45 = 3;
+}
+
 message CMsgSteamDatagramClientPingSampleRequest {
 	optional fixed32 connection_id = 1;
 }
@@ -186,6 +196,7 @@ message CMsgSteamDatagramClientPingSampleReply {
 
 	optional fixed32 connection_id = 1;
 	optional bool relay_override_active = 5;
+	optional .CMsgTOSTreatment tos = 6;
 	repeated .CMsgSteamDatagramClientPingSampleReply.POP pops = 2;
 	repeated .CMsgSteamDatagramClientPingSampleReply.LegacyDataCenter legacy_data_centers = 3;
 }

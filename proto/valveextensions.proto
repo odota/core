@@ -8,10 +8,19 @@ extend .google.protobuf.FieldOptions {
 	optional uint32 steamml_max_entries = 61004 [default = 0];
 	optional bool steamml_is_timestamp = 61005 [default = false];
 	optional uint32 steamlearn_count = 61006 [default = 0];
+	optional .EProtoDebugVisiblity debugprint_visibility = 61007 [default = k_EProtoDebugVisibility_Always];
 }
 
 extend .google.protobuf.EnumValueOptions {
 	optional string schema_friendly_name = 1000;
 	optional string schema_description = 1001;
 	optional bool schema_suppress_enumerator = 1002;
+}
+
+enum EProtoDebugVisiblity {
+	k_EProtoDebugVisibility_Always = 0;
+	k_EProtoDebugVisibility_Server = 70;
+	k_EProtoDebugVisibility_ValveServer = 80;
+	k_EProtoDebugVisibility_GC = 90;
+	k_EProtoDebugVisibility_Never = 100;
 }

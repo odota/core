@@ -111,6 +111,7 @@ enum EDotaClientMessages {
 	DOTA_CM_SelectOverworldID = 812;
 	DOTA_CM_RerollNeutralItem = 813;
 	DOTA_CM_RoshanTimer = 814;
+	DOTA_CM_SuggestItemPreference = 815;
 }
 
 message CDOTAClientMsg_MapPing {
@@ -419,6 +420,15 @@ message CDOTAClientMsg_FlipCoin {
 }
 
 message CDOTAClientMsg_RequestItemSuggestions {
+}
+
+message CDOTAClientMsg_SuggestItemPreference {
+	message ItemPreference {
+		optional int32 item_id = 1 [default = -1];
+		optional .EItemSuggestPreference preference = 2 [default = k_EItemSuggestPreference_None];
+	}
+
+	repeated .CDOTAClientMsg_SuggestItemPreference.ItemPreference item_preferences = 1;
 }
 
 message CDOTAClientMsg_MakeTeamCaptain {

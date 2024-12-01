@@ -427,7 +427,7 @@ message CSVCMsg_PacketEntities {
 	optional uint32 server_tick = 12;
 	optional bytes serialized_entities = 13;
 	repeated .CSVCMsg_PacketEntities.alternate_baseline_t alternate_baselines = 15;
-	optional uint32 has_pvs_vis_bits = 16;
+	optional uint32 has_pvs_vis_bits_deprecated = 16;
 	repeated sint32 cmd_recv_status = 22 [packed = true];
 	optional .CSVCMsg_PacketEntities.non_transmitted_entities_t non_transmitted_entities = 19;
 	optional uint32 cq_starved_command_ticks = 20;
