@@ -182,7 +182,7 @@ export async function buildStatus() {
       return parallelPromise<Record<string, number>>(counts);
     },
     api_paths: async (): Promise<Record<string, number>> => {
-      const results = await redis.zrangebyscore(
+      const results = await redis.zrevrangebyscore(
         'api_paths',
         '-inf',
         'inf',
@@ -197,7 +197,7 @@ export async function buildStatus() {
       return response;
     },
     api_status: async (): Promise<Record<string, number>> => {
-      const results = await redis.zrangebyscore(
+      const results = await redis.zrevrangebyscore(
         'api_status',
         '-inf',
         'inf',

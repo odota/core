@@ -341,12 +341,12 @@ export async function insertMatch(
       }
     }
   }
-  async function upsertPlayerCaches(match: InsertMatchInput) {
+  async function upsertPlayerCaches(match: InsertMatchInput, averageRank: number | undefined) {
     // Add the 10 player_match rows indexed by player
     // We currently do this on all types
     const copy = createMatchCopy<Match>(match);
-    if (average_rank) {
-      copy.average_rank = average_rank;
+    if (averageRank) {
+      copy.average_rank = averageRank;
     }
     const columns = await getCassandraColumns('player_caches');
     await Promise.all(
@@ -674,24 +674,21 @@ export async function insertMatch(
   }
 
   let average_rank: number | undefined = undefined;
-  let ranksBlob: any = undefined;
   // Only fetch the average_rank if this is a fresh match since otherwise it won't be accurate
   if (options.origin === 'scanner' && options.type === 'api') {
     const { avg, players } = await getMatchRankTier(match.players);
     if (avg) {
       average_rank = avg;
     }
-    ranksBlob = { match_id: match.match_id, average_rank, players };
+    // average_rank should be stored in a new blob column too since it's not part of API data
+    // We could also store the ranks of the players here rather than looking up their current rank on view
+    // That's probably better anyway since it's more accurate to show their rank at the time of the match
+    // let ranksBlob = { match_id: match.match_id, average_rank, players };
+    // await upsertBlob('ranks', ranksBlob);
   }
-  // average_rank should be stored in a new blob column too since it's not part of API data
-  // We could also store the ranks of the players here rather than looking up their current rank on view
-  // That's probably better anyway since it's more accurate to show their rank at the time of the match
-  // if (ranksBlob) {
-  //   await upsertBlob('ranks', ranksBlob);
-  // }
 
   await upsertMatchPostgres(match);
-  await upsertPlayerCaches(match);
+  await upsertPlayerCaches(match, average_rank);
   await upsertMatchBlobs(match);
   await resetMatchCache(match);
   await resetPlayerTemp(match);
