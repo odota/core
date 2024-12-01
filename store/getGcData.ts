@@ -148,17 +148,26 @@ async function saveGcData(
   );
   // Insert the players we found
   await Promise.all(
-    players.map((player) =>
-      upsertPlayer(
-        db,
-        {
-          account_id: player.account_id,
-          last_match_time: new Date(data.match.starttime * 1000),
-        },
-        false,
+    players.map((p) =>
+      // Avoid extraneous writes to player table by not using upsert function
+      db.raw(
+        'INSERT INTO players(account_id) VALUES(?) ON CONFLICT DO NOTHING',
+        [p.account_id],
       ),
     ),
   );
+  // await Promise.all(
+  //   players.map((player) =>
+  //     upsertPlayer(
+  //       db,
+  //       {
+  //         account_id: player.account_id,
+  //         last_match_time: new Date(data.match.starttime * 1000),
+  //       },
+  //       false,
+  //     ),
+  //   ),
+  // );
   // Put extra fields in matches/player_matches (do last since after this we won't fetch from GC again)
   await insertMatch(matchToInsert, {
     type: 'gcdata',
