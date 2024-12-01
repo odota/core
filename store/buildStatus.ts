@@ -184,8 +184,8 @@ export async function buildStatus() {
     api_paths: async (): Promise<Record<string, number>> => {
       const results = await redis.zrevrangebyscore(
         'api_paths',
-        '-inf',
         'inf',
+        '-inf',
         'WITHSCORES',
       );
       const response: Record<string, number> = {};
@@ -199,8 +199,8 @@ export async function buildStatus() {
     api_status: async (): Promise<Record<string, number>> => {
       const results = await redis.zrevrangebyscore(
         'api_status',
-        '-inf',
         'inf',
+        '-inf',
         'WITHSCORES',
       );
       const response: Record<string, number> = {};
