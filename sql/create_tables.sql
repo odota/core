@@ -440,15 +440,6 @@ CREATE TABLE IF NOT EXISTS last_seq_num (
   match_seq_num bigint
 );
 
-CREATE TABLE IF NOT EXISTS player_temp (
-  PRIMARY KEY (account_id),
-  account_id bigint,
-  writetime timestamp with time zone,
-  blob bytea
-);
-ALTER TABLE player_temp ALTER COLUMN blob SET STORAGE EXTERNAL;
-CREATE INDEX IF NOT EXISTS player_temp_writetime ON player_temp(writetime);
-
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'readonly') THEN

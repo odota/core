@@ -2,6 +2,7 @@
 import db from '../store/db';
 import config from '../config';
 import { epochWeek, invokeIntervalAsync } from '../util/utility';
+import { promises as fs } from 'fs';
 
 async function cleanup() {
   const currentWeek = epochWeek();
@@ -27,10 +28,18 @@ async function cleanup() {
   await db.raw(
     'DELETE from hero_search where match_id < (select max(match_id) - 200000000 from hero_search)',
   );
-  await db.raw(
-    `DELETE from player_temp where writetime <= (select writetime from player_temp order by writetime desc limit 1 offset 75000);`
-    // `DELETE from player_temp where writetime < extract(epoch from now() - interval '3 day')::int`,
-  );
+  let files: string[] = [];
+  try {
+    files = await fs.readdir('./cache');
+  } catch (e) {
+    // ignore if doesn't exist
+  }
+  for (let i = 0; i < files.length; i++) {
+    const stat = await fs.stat('./cache' + files[i]);
+    if (stat.birthtime < new Date(Date.now() - 48 * 60 * 60 * 1000)) {
+      await fs.unlink('./cache/' + files[i]);
+    }
+  }
   return;
 }
 invokeIntervalAsync(cleanup, 1000 * 60 * 60 * 6);

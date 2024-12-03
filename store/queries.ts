@@ -32,6 +32,7 @@ import { gzipSync, gunzipSync } from 'zlib';
 import { cacheableCols } from '../routes/playerFields';
 import { readGcData } from './getGcData';
 import { readParseData } from './getParsedData';
+import { promises as fs } from 'fs';
 
 /**
  * Adds benchmark data to the players in a match
@@ -337,11 +338,12 @@ async function readPlayerTemp(
   accountId: number,
   project: string[],
 ): Promise<ParsedPlayerMatch[]> {
-  const { rows } = await db.raw(
-    `SELECT blob from player_temp WHERE account_id = ?`,
-    [accountId],
-  );
-  const result = rows[0]?.blob;
+  let result = null;
+  try {
+    result = await fs.readFile('./cache/' + accountId);
+  } catch {
+    // Might not exist, so just ignore
+  }
   if (result) {
     redisCount('player_temp_hit');
     redisCountDistinct('distinct_player_temp', accountId.toString());
@@ -392,10 +394,8 @@ export async function populateTemp(
     const zip = gzipSync(JSON.stringify(all));
     redisCount('player_temp_write');
     redisCount('player_temp_write_bytes', zip.length);
-    await db.raw(
-      `INSERT INTO player_temp(account_id, writetime, blob) VALUES(?, NOW(), ?) ON CONFLICT DO NOTHING`,
-      [accountId, zip],
-    );
+    await fs.mkdir('./cache', { recursive: true });
+    await fs.writeFile('./cache/' + accountId, zip);
   }
   return all.map((m: any) => pick(m, project));
 }

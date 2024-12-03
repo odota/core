@@ -1,7 +1,7 @@
-import db from '../store/db';
+import { promises as fs } from 'fs';
 
 async function start() {
-  const result = await db.raw('DELETE from player_temp WHERE 1 = 0');
-  console.log(result);
+  await fs.writeFile('./cache/test', 'asdf');
+  // await fs.unlink('./cache/test');
 }
 start();

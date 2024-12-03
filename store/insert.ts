@@ -1,7 +1,7 @@
 import moment from 'moment';
 import constants from 'dotaconstants';
 import util from 'util';
-import fs from 'fs';
+import { promises as fs } from 'fs';
 import config from '../config';
 import { addJob, addReliableJob } from './queue';
 import { computeMatchData } from '../util/compute';
@@ -402,7 +402,7 @@ export async function insertMatch(
           (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') &&
           playerMatch.player_slot === 0
         ) {
-          fs.writeFileSync(
+          await fs.writeFile(
             './json/' +
               copy.match_id +
               `_playercache_${options.type}_${playerMatch.player_slot}.json`,
@@ -435,7 +435,7 @@ export async function insertMatch(
         Buffer.from(JSON.stringify(blob)),
       );
       if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
-        fs.writeFileSync(
+        await fs.writeFile(
           './json/' + matchId + '_' + type + '.json',
           JSON.stringify(blob, null, 2),
         );
@@ -496,17 +496,16 @@ export async function insertMatch(
         match.players.map(async (p) => {
           const account_id = pgroup[p.player_slot]?.account_id ?? p.account_id;
           if (account_id) {
-            const { rows } = await db.raw(
-              `DELETE FROM player_temp WHERE account_id = ? RETURNING account_id`,
-              [account_id],
-            );
-            // if we deleted a row, recompute it
-            if (rows.length) {
-              await addJob({
-                name: 'cacheQueue',
-                data: account_id.toString(),
-              });
+            try {
+              await fs.unlink('./cache/' + account_id);
+            } catch (e) {
+              // File didn't exist, so skip
+              return;
             }
+            await addJob({
+              name: 'cacheQueue',
+              data: account_id.toString(),
+            });
           }
         }),
       );
