@@ -1,5 +1,5 @@
 import moment from 'moment';
-import constants from 'dotaconstants';
+import { patch } from 'dotaconstants';
 import util from 'util';
 import { promises as fs } from 'fs';
 import config from '../config';
@@ -247,7 +247,7 @@ export async function insertMatch(
           'match_patch',
           {
             match_id: match.match_id,
-            patch: constants.patch[getPatchIndex(match.start_time)].name,
+            patch: patch[getPatchIndex(match.start_time)].name,
           },
           {
             match_id: match.match_id,

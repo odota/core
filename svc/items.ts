@@ -19,7 +19,7 @@ async function doItems() {
   await Promise.all(
     body.result.data.itemabilities.map((item: any) => {
       item.localized_name = item.name_english_loc;
-      item.cost = items?.[item.name.replace(/^item_/, '')]?.cost || 0;
+      item.cost = items?.[item.name.replace(/^item_/, '') as keyof typeof items]?.cost || 0;
       item.recipe = item.name.includes('recipe') ? 1 : 0;
       // NOTE: properties secret_shop and side_shop are no longer present
       upsert(db, 'items', item, {

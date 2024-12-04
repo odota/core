@@ -1,5 +1,4 @@
 declare module 'simple-vdf';
-declare module 'dotaconstants';
 
 declare namespace Express {
   interface Locals {

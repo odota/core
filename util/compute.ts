@@ -1,4 +1,4 @@
-import constants from 'dotaconstants';
+import { heroes, cluster, ancients } from 'dotaconstants';
 import {
   getLaneFromPosData,
   getPatchIndex,
@@ -7,7 +7,6 @@ import {
   min,
   tokenize,
 } from './utility';
-const { ancients } = constants;
 /**
  * Count the words that occur in a set of messages
  * - messages: the messages to create the counts over
@@ -48,13 +47,13 @@ export function countWords(
  * Computes additional properties from a match/player_match
  * */
 export function computeMatchData(pm: ParsedPlayerMatch) {
-  const selfHero = constants.heroes[pm.hero_id];
+  const selfHero = heroes[pm.hero_id as unknown as keyof typeof heroes];
   // Compute patch based on start_time
   if (pm.start_time) {
     pm.patch = getPatchIndex(pm.start_time);
   }
   if (pm.cluster) {
-    pm.region = constants.cluster[pm.cluster];
+    pm.region = cluster[pm.cluster as unknown as keyof typeof cluster];
   }
   if (pm.player_slot !== undefined && pm.radiant_win !== undefined) {
     pm.isRadiant = isRadiant(pm);

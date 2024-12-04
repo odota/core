@@ -56,7 +56,7 @@ async function processFullHistory(job: FullHistoryJob) {
   console.time('doFullHistory: ' + player.account_id.toString());
   // by default, fetch only 100 matches, unless long_history is specified then fetch 500
   // As of December 2021 filtering by hero ID doesn't work
-  // const heroArray = config.NODE_ENV === 'test' ? ['0'] : Object.keys(constants.heroes);
+  // const heroArray = config.NODE_ENV === 'test' ? ['0'] : Object.keys(heroes);
   const heroId = '0';
   // use steamapi via specific player history and specific hero id (up to 500 games per hero)
   const match_ids: Record<string, boolean> = {};

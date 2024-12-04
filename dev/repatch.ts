@@ -1,4 +1,4 @@
-import constants from 'dotaconstants';
+import { patch } from 'dotaconstants';
 import db from '../store/db';
 import { upsert } from '../store/insert';
 import { getPatchIndex } from '../util/utility';
@@ -14,7 +14,7 @@ async function start() {
       'match_patch',
       {
         match_id: match.match_id,
-        patch: constants.patch[getPatchIndex(match.start_time)].name,
+        patch: patch[getPatchIndex(match.start_time)].name,
       },
       {
         match_id: match.match_id,

@@ -1,7 +1,7 @@
 import moment from 'moment';
 import redis from '../store/redis';
 import { parallelPromise } from '../util/utility';
-import constants from 'dotaconstants';
+import { game_mode, lobby_type, region, cluster } from 'dotaconstants';
 
 function generatePercentiles(arr: string[]) {
   // sort the list
@@ -217,29 +217,29 @@ export async function buildStatus() {
     },
     game_mode: async (): Promise<Record<string, number>> => {
       const result: Record<string, number> = {};
-      const keys = Object.keys(constants.game_mode);
+      const keys = Object.keys(game_mode);
       for (let i = 0; i < keys.length; i++) {
-        const key = keys[i];
-        result[constants.game_mode[key]?.name] = Number(await countDay(`${key}_game_mode` as MetricName));
+        const key = keys[i] as keyof typeof game_mode;
+        result[game_mode[key]?.name] = Number(await countDay(`${key}_game_mode` as MetricName));
       }
       return result;
     },
     lobby_type: async (): Promise<Record<string, number>> => {
       const result: Record<string, number> = {};
-      const keys = Object.keys(constants.lobby_type);
+      const keys = Object.keys(lobby_type);
       for (let i = 0; i < keys.length; i++) {
-        const key = keys[i];
-        result[constants.lobby_type[key]?.name] = Number(await countDay(`${key}_lobby_type` as MetricName));
+        const key = keys[i] as keyof typeof lobby_type;
+        result[lobby_type[key]?.name] = Number(await countDay(`${key}_lobby_type` as MetricName));
       }
       return result;
     },
     region: async (): Promise<Record<string, number>> => {
       const result: Record<string, number> = {};
-      const clusters = Object.keys(constants.cluster);
+      const clusters = Object.keys(cluster);
       for (let i = 0; i < clusters.length; i++) {
-        const cluster = clusters[i];
-        const region = constants.regions[cluster] ?? cluster;
-        result[region] = (result[region] ?? 0) + Number(await countDay(`${cluster}_cluster` as MetricName)) ;
+        const cluster = clusters[i] as keyof typeof region;
+        const reg = region[cluster] ?? cluster;
+        result[reg] = (result[reg] ?? 0) + Number(await countDay(`${cluster}_cluster` as MetricName)) ;
       }
       return result;
     },

@@ -1,15 +1,14 @@
-import constants from 'dotaconstants';
+import { game_mode, lobby_type, patch } from 'dotaconstants';
 import urllib from 'url';
 import moment from 'moment';
 import crypto from 'crypto';
 import laneMappings from './laneMappings';
 import config from '../config';
 import contributors from '../CONTRIBUTORS';
-import type { Redis } from 'ioredis';
 import type { ApiMatch, ApiPlayer } from '../store/pgroup';
 import type QueryString from 'qs';
 import type { InsertMatchInput } from '../store/insert';
-import axios, { AxiosError, AxiosRequestConfig } from 'axios';
+import axios, { AxiosRequestConfig } from 'axios';
 
 /**
  * Tokenizes an input string.
@@ -305,13 +304,17 @@ export function modeWithCount(array: number[]) {
 export function mode(array: number[]) {
   return modeWithCount(array).mode;
 }
+
+type GameMode = keyof typeof game_mode;
+type LobbyType = keyof typeof lobby_type;
+
 /**
  * Determines if a match is significant for aggregation purposes
  * */
 export function isSignificant(match: Match | ApiMatch) {
   return Boolean(
-    constants.game_mode[match.game_mode]?.balanced &&
-      constants.lobby_type[match.lobby_type]?.balanced &&
+    game_mode[match.game_mode as unknown as GameMode]?.balanced &&
+    lobby_type[match.lobby_type as unknown as LobbyType]?.balanced &&
       match.radiant_win != null &&
       match.duration > 360 &&
       (match.players || []).every(
@@ -443,8 +446,8 @@ export function median(data: number[]) {
 export function getPatchIndex(startTime: number) {
   const date = new Date(startTime * 1000);
   let i;
-  for (i = 1; i < constants.patch.length; i += 1) {
-    const pd = new Date(constants.patch[i].date);
+  for (i = 1; i < patch.length; i += 1) {
+    const pd = new Date(patch[i].date);
     // stop when patch date is past the start time
     if (pd > date) {
       break;

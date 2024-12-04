@@ -1,5 +1,5 @@
 import { getPatchIndex, isRadiant, isSignificant } from './utility';
-import constants from 'dotaconstants';
+import { cluster } from 'dotaconstants';
 
 export type FilterType = keyof typeof filterDeps;
 /**
@@ -49,7 +49,7 @@ const filterFuncs: {
     return m.lobby_type === val;
   },
   region(m, val) {
-    return constants.cluster[m.cluster] === val;
+    return cluster[m.cluster as unknown as keyof typeof cluster] === val;
   },
   date(m, val, _arr, curtime) {
     return m.start_time > curtime - Number(val) * 86400;

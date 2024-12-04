@@ -1,4 +1,4 @@
-import constants from 'dotaconstants';
+import { items as itemsConstants } from 'dotaconstants';
 import util from 'util';
 import config from '../config';
 import { teamScenariosQueryParams, metadata } from '../util/scenariosUtil';
@@ -111,7 +111,7 @@ export async function getHeroRankings(heroId: string) {
   };
 }
 export async function getHeroItemPopularity(heroId: string) {
-  const purchaseLogs: { rows: any[] } = await db.raw(
+  const purchaseLogs: { rows: { purchase_log: {key: keyof typeof itemsConstants, time: string}[]}[] } = await db.raw(
     `
   SELECT purchase_log
   FROM player_matches
@@ -126,29 +126,29 @@ export async function getHeroItemPopularity(heroId: string) {
     .flatMap((purchaseLog) => purchaseLog.purchase_log)
     .filter(
       (item) =>
-        item && item.key && item.time != null && constants.items[item.key],
+        item && item.key && item.time != null && itemsConstants[item.key],
     )
     .map((item) => {
       const time = parseInt(item.time, 10);
-      const { cost, id } = constants.items[item.key];
+      const { cost, id } = itemsConstants[item.key];
       return { cost, id, time };
     });
   const startGameItems = countItemPopularity(
-    items.filter((item) => item.time <= 0 && item.cost <= 600),
+    items.filter((item) => item.time <= 0 && item.cost != null && item.cost <= 600),
   );
   const earlyGameItems = countItemPopularity(
     items.filter(
-      (item) => item.time > 0 && item.time < 60 * 10 && item.cost >= 500,
+      (item) => item.time > 0 && item.time < 60 * 10 && item.cost != null && item.cost >= 500,
     ),
   );
   const midGameItems = countItemPopularity(
     items.filter(
       (item) =>
-        item.time >= 60 * 10 && item.time < 60 * 25 && item.cost >= 1000,
+        item.time >= 60 * 10 && item.time < 60 * 25 && item.cost != null && item.cost >= 1000,
     ),
   );
   const lateGameItems = countItemPopularity(
-    items.filter((item) => item.time >= 60 * 25 && item.cost >= 2000),
+    items.filter((item) => item.time >= 60 * 25 && item.cost != null && item.cost >= 2000),
   );
   return {
     start_game_items: startGameItems,

@@ -1,4 +1,4 @@
-import constants from 'dotaconstants';
+import { heroes as heroesConstants, cluster } from 'dotaconstants';
 import moment from 'moment';
 import pg from 'pg';
 import config from '../config';
@@ -6,7 +6,6 @@ import { addJob, addReliableJob, getReliableJob } from '../store/queue';
 import { search } from '../store/search';
 import { searchES } from '../store/searchES';
 import buildMatch from '../store/buildMatch';
-import { buildStatus } from '../store/buildStatus';
 import {
   checkIfInExperiment,
   countPeers,
@@ -443,7 +442,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
         func: async (req, res, cb) => {
           const heroes: AnyDict = {};
           // prefill heroes with every hero
-          Object.keys(constants.heroes).forEach((heroId) => {
+          Object.keys(heroesConstants).forEach((heroId) => {
             const hero_id_int = parseInt(heroId);
             const hero = {
               hero_id: hero_id_int,
@@ -666,7 +665,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
             > = {
               is_radiant: isRadiant(m),
               patch: getPatchIndex(m.start_time),
-              region: constants.cluster[m.cluster],
+              region: cluster[m.cluster as unknown as keyof typeof cluster],
               leaver_status: m.leaver_status,
               game_mode: m.game_mode,
               lobby_type: m.lobby_type,
@@ -1675,7 +1674,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           }
           // Assemble the result for each hero
           const result = await Promise.all(
-            Object.values(constants.heroes).map((hero) => getHeroStat(hero)),
+            Object.values(heroesConstants).map((hero) => getHeroStat(hero)),
           );
           redis.setex('heroStats2', 60, JSON.stringify(result));
           return res.json(result);
@@ -2564,39 +2563,12 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
         route: () => '/constants/:resource?',
         func: async (req, res, cb) => {
           const { resource } = req.params;
-          if (resource in constants) {
+          // read from node_modules
+          const constants = require('dotaconstants');
+          if (constants[resource]) {
             return res.json(constants[resource]);
           }
           return cb();
-        },
-      },
-    },
-    '/constants': {
-      get: {
-        operationId: generateOperationId('get', '/constants'),
-        summary: 'GET /constants',
-        description: 'Gets an array of available resources.',
-        tags: ['constants'],
-        parameters: [],
-        responses: {
-          200: {
-            description: 'Success',
-            content: {
-              'application/json; charset=utf-8': {
-                schema: {
-                  type: 'array',
-                  items: {
-                    title: 'ConstantsResponse',
-                    type: 'string',
-                  },
-                },
-              },
-            },
-          },
-        },
-        route: () => '/constants',
-        func: async (req, res) => {
-          return res.json(Object.keys(constants));
         },
       },
     },

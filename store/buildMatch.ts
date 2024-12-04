@@ -1,4 +1,4 @@
-import constants from 'dotaconstants';
+import { heroes } from 'dotaconstants';
 import config from '../config';
 import { computeMatchData } from '../util/compute';
 import {
@@ -173,7 +173,7 @@ async function buildMatch(
   };
   if (cosmetics) {
     const playersWithCosmetics = matchResult.players.map((p) => {
-      const hero = constants.heroes[p.hero_id] || {};
+      const hero = heroes[p.hero_id as unknown as keyof typeof heroes] || {};
       const playerCosmetics = cosmetics
         .filter(Boolean)
         .filter(
