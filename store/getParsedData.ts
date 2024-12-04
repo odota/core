@@ -61,7 +61,7 @@ export async function saveParseData(
 ): Promise<{ error: string | null }> {
   try {
     // Make a HEAD request for the replay to see if it's available
-    await axios.head(replayUrl, { timeout: 5000 });
+    await axios.head(replayUrl, { timeout: 10000 });
   } catch (e) {
     if (axios.isAxiosError(e)) {
       console.log(e.message);
