@@ -5,7 +5,7 @@ import { invokeIntervalAsync } from '../util/utility';
 
 async function doAutoFullHistory() {
   const result = await db.raw(
-    "SELECT account_id from players TABLESAMPLE SYSTEM_ROWS(100) where last_match_time > (now() - interval '7 day')",
+    "SELECT account_id from players TABLESAMPLE SYSTEM_ROWS(100)",
   );
   console.log(result.rows);
   await Promise.all(
@@ -19,4 +19,4 @@ async function doAutoFullHistory() {
     ),
   );
 }
-invokeIntervalAsync(doAutoFullHistory, 10 * 1000);
+invokeIntervalAsync(doAutoFullHistory, 60 * 1000);

@@ -41,7 +41,7 @@ async function processMatch(matchId: string) {
   //   type: 'api',
   //   ifNotExists: true,
   // });
-  // await new Promise((resolve) => setTimeout(resolve, 200));
+  // await new Promise((resolve) => setTimeout(resolve, 1000));
 }
 
 async function processFullHistory(job: FullHistoryJob) {
@@ -159,5 +159,5 @@ runQueue(
   Number(config.FULLHISTORY_PARALLELISM) || 1,
   processFullHistory,
   // Currently not using proxy so don't need to throttle capacity
-  // async () => redis.zcard('registry:proxy'),
+  // async () => redis.zcard('registry:proxy') * 5,
 );
