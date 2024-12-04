@@ -40,13 +40,13 @@ const defaults = {
   SCANNER_PERCENT: '100', // percent of matches to insert from scanner
   PUBLIC_SAMPLE_PERCENT: '10', // percent of public matches to sample in DB
   SCENARIOS_SAMPLE_PERCENT: '100', // percent of parsed matches to sample for scenarios
-  BENCHMARKS_SAMPLE_PERCENT: '100', // percent of parsed matches to sample for benchmarks
+  BENCHMARKS_SAMPLE_PERCENT: '100', // percent of matches to sample for benchmarks
   ENABLE_MATCH_CACHE: '', // set to enable caching matches in Redis
-  ENABLE_PLAYER_CACHE: '', // enable/disable player aggregation caching
-  PLAYER_CACHE_THRESHOLD: '1000', // minimum number of matches to use player aggregation cache for
-  ENABLE_RANDOM_MMR_UPDATE: '', // set to request MMR updates after ranked matches
-  MAXIMUM_AGE_SCENARIOS_ROWS: '4', // maximum allowed age of scenarios rows in weeks
   MATCH_CACHE_SECONDS: '60', // number of seconds to cache matches
+  ENABLE_PLAYER_CACHE: '', // enable/disable player aggregation caching
+  PLAYER_CACHE_THRESHOLD: '100', // minimum number of matches to use player aggregation cache for
+  ENABLE_RANDOM_MMR_UPDATE: '', // set to request MMR/rank tier updates after ranked matches
+  MAXIMUM_AGE_SCENARIOS_ROWS: '4', // maximum allowed age of scenarios rows in weeks
   ENABLE_API_LIMIT: '', // if truthy, API calls after exceeding API_FREE_LIMIT are blocked
   API_FREE_LIMIT: '2000', // number of api requests per day before 429 is returned. If using an API key, calls over this are charged.
   API_BILLING_UNIT: '100', // how many calls is equivalent to a unit of calls e.g. 100 calls per $0.01.
