@@ -1,3 +1,4 @@
+import * as constants from 'dotaconstants';
 import { heroes as heroesConstants, cluster } from 'dotaconstants';
 import moment from 'moment';
 import pg from 'pg';
@@ -2563,10 +2564,9 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
         route: () => '/constants/:resource?',
         func: async (req, res, cb) => {
           const { resource } = req.params;
-          // read from node_modules
-          const constants = require('dotaconstants');
-          if (constants[resource]) {
-            return res.json(constants[resource]);
+          const resp = constants[resource as keyof typeof constants];
+          if (resp) {
+            return res.json(resp);
           }
           return cb();
         },
