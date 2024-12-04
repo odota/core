@@ -233,12 +233,13 @@ export async function buildStatus() {
       }
       return result;
     },
-    cluster: async (): Promise<Record<string, number>> => {
+    region: async (): Promise<Record<string, number>> => {
       const result: Record<string, number> = {};
-      const keys = Object.keys(constants.cluster);
-      for (let i = 0; i < keys.length; i++) {
-        const key = keys[i];
-        result[key] = Number(await countDay(`${key}_cluster` as MetricName));
+      const clusters = Object.keys(constants.cluster);
+      for (let i = 0; i < clusters.length; i++) {
+        const cluster = clusters[i];
+        const region = constants.regions[cluster] ?? cluster;
+        result[region] = (result[region] ?? 0) + Number(await countDay(`${cluster}_cluster` as MetricName)) ;
       }
       return result;
     },
