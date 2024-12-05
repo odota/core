@@ -235,11 +235,11 @@ export async function buildStatus() {
     },
     region: async (): Promise<Record<string, number>> => {
       const result: Record<string, number> = {};
-      const clusters = Object.keys(cluster);
+      const clusters = Object.entries(cluster);
       for (let i = 0; i < clusters.length; i++) {
-        const cluster = clusters[i] as keyof typeof region;
-        const reg = region[cluster] ?? cluster;
-        result[reg] = (result[reg] ?? 0) + Number(await countDay(`${cluster}_cluster` as MetricName)) ;
+        const [cluster, reg] = clusters[i];
+        const regName = region[reg as unknown as keyof typeof region] ?? cluster;
+        result[regName] = (result[regName] ?? 0) + Number(await countDay(`${cluster}_cluster` as MetricName)) ;
       }
       return result;
     },
