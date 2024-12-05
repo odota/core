@@ -5,15 +5,19 @@
  * Stream is run through a series of processors to count/aggregate it into a single object
  * This object is passed to insertMatch to persist the data into the database.
  * */
-import { getOrFetchGcDataWithRetry } from '../fetcher/getGcData';
 import config from '../config';
 import { runReliableQueue } from '../store/queue';
 import c from 'ansi-colors';
 import { buildReplayUrl, redisCount } from '../util/utility';
 import redis from '../store/redis';
-import { getOrFetchApiData } from '../fetcher/getApiData';
-import { checkIsParsed, getOrFetchParseData } from '../fetcher/getParsedData';
+import { ApiFetcher } from '../fetcher/getApiData';
+import { ParsedFetcher } from '../fetcher/getParsedData';
+import { GcdataFetcher } from '../fetcher/getGcData';
+import { getPGroup } from '../util/pgroup';
 
+const apiFetcher = new ApiFetcher();
+const gcFetcher = new GcdataFetcher();
+const parsedFetcher = new ParsedFetcher();
 const { PARSER_PARALLELISM } = config;
 
 async function parseProcessor(job: ParseJob) {
@@ -38,7 +42,7 @@ async function parseProcessor(job: ParseJob) {
 
     // Check if match is already parsed according to PG
     // Doing the check early means we don't verify API or gcdata
-    if (await checkIsParsed(matchId)) {
+    if (await parsedFetcher.checkAvailable(matchId)) {
       redisCount('reparse_early');
       if (config.DISABLE_REPARSE_EARLY) {
         // If high load, we can disable parsing already parsed matches
@@ -54,13 +58,21 @@ async function parseProcessor(job: ParseJob) {
     let {
       data: apiMatch,
       error: apiError,
-      pgroup,
-    } = await getOrFetchApiData(matchId);
-    apiTime = Date.now() - apiStart;
-    if (apiError || !apiMatch || !pgroup) {
-      log('fail', apiError || 'Missing API data or pgroup');
+    } = await apiFetcher.getOrFetchData(matchId);
+    if (apiError) {
+      log('fail', 'API error: ' + apiError);
       return false;
     }
+    if (!apiMatch) {
+      log('fail', 'Missing API data');
+      return false;
+    }
+    const pgroup = getPGroup(apiMatch);
+    if (!pgroup) {
+      log('fail', 'Missing pgroup');
+      return false;
+    }
+    apiTime = Date.now() - apiStart;
 
     const { leagueid, duration, start_time } = apiMatch;
     // if (!leagueid && Date.now() / 1000 - start_time > 30 * 24 * 60 * 60) {
@@ -75,7 +87,7 @@ async function parseProcessor(job: ParseJob) {
 
     // Fetch the gcdata and construct a replay URL
     const gcStart = Date.now();
-    const { data: gcMatch, error: gcError } = await getOrFetchGcDataWithRetry(
+    const { data: gcMatch, error: gcError } = await gcFetcher.getOrFetchDataWithRetry(
       matchId,
       {
         pgroup,
@@ -95,15 +107,15 @@ async function parseProcessor(job: ParseJob) {
     );
 
     const parseStart = Date.now();
-    const { error: parseError, skipped } = await getOrFetchParseData(
+    const { error: parseError, skipped } = await parsedFetcher.getOrFetchData(
       matchId,
-      url,
       {
         start_time,
         duration,
         leagueid,
         pgroup,
         origin: job.origin,
+        url,
       },
     );
     parseTime = Date.now() - parseStart;

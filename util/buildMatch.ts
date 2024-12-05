@@ -13,7 +13,9 @@ import {
   getMatchDataFromBlobWithMetadata,
   addPlayerBenchmarks,
 } from './queries';
-import { getMeta } from '../fetcher/getMeta';
+import { MetaFetcher } from '../fetcher/getMeta';
+
+const metaFetcher = new MetaFetcher();
 
 async function extendPlayerData(
   player: Player | ParsedPlayer,
@@ -157,7 +159,7 @@ async function buildMatch(
       : Promise.resolve(null);
   const prodataPromise = prodataInfo(matchId);
   const metadataPromise = Boolean(options.meta)
-    ? getMeta(Number(matchId))
+    ? metaFetcher.readData(Number(matchId))
     : Promise.resolve(null);
   const [players, prodata, cosmetics, metadata] = await Promise.all([
     playersPromise,

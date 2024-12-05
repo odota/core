@@ -8,11 +8,7 @@ import axios from 'axios';
 import retrieverMatch from '../test/data/retriever_match.json';
 import { insertMatch, upsertPlayer } from '../util/insert';
 import { Archive } from '../store/archive';
-
-type GcExtraData = {
-  origin?: DataOrigin;
-  pgroup: PGroup;
-};
+import { BaseFetcher } from './base';
 
 const blobArchive = config.ENABLE_BLOB_ARCHIVE ? new Archive('blob') : null;
 
@@ -21,9 +17,9 @@ const blobArchive = config.ENABLE_BLOB_ARCHIVE ? new Archive('blob') : null;
  * @param matchId
  * @returns
  */
-export async function readGcData(
+async function readGcData(
   matchId: number,
-  noBlobStore?: boolean,
+  noBlobStore: boolean | undefined,
 ): Promise<GcMatch | null> {
   let data = null;
   if (!noBlobStore) {
@@ -168,7 +164,7 @@ async function tryFetchGcData(
 ): Promise<GcMatch | null> {
   try {
     await saveGcData(matchId, { pgroup });
-    return readGcData(matchId);
+    return readGcData(matchId, false);
   } catch (e) {
     console.log(e);
     return null;
@@ -182,7 +178,7 @@ async function tryFetchGcData(
  * @param job
  * @returns
  */
-export async function getOrFetchGcData(
+async function getOrFetchGcData(
   matchId: number,
   extraData: GcExtraData,
 ): Promise<{
@@ -193,7 +189,7 @@ export async function getOrFetchGcData(
     throw new Error('invalid match_id');
   }
   // Check if we have gcdata cached
-  const saved = await readGcData(matchId);
+  const saved = await readGcData(matchId, false);
   if (saved) {
     redisCount('regcdata');
     if (config.DISABLE_REGCDATA) {
@@ -206,11 +202,11 @@ export async function getOrFetchGcData(
   if (error) {
     return { data: null, error };
   }
-  const result = await readGcData(matchId);
+  const result = await readGcData(matchId, false);
   return { data: result, error: null };
 }
 
-export async function getOrFetchGcDataWithRetry(
+async function getOrFetchGcDataWithRetry(
   matchId: number,
   extraData: GcExtraData,
 ): Promise<{
@@ -238,4 +234,13 @@ export async function getOrFetchGcDataWithRetry(
     }
   }
   return { data, error };
+}
+
+export class GcdataFetcher extends BaseFetcher<GcMatch> {
+  readData = readGcData;
+  getOrFetchData = getOrFetchGcData;
+  getOrFetchDataWithRetry = getOrFetchGcDataWithRetry;
+  checkAvailable = async (matchId: number) => {
+    throw new Error('not implemented');
+  }
 }

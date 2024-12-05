@@ -98,7 +98,6 @@ import TeamHeroesResponse from './responses/TeamHeroesResponse';
 import TeamMatchObjectResponse from './responses/TeamMatchObjectResponse';
 import TeamObjectResponse from './responses/TeamObjectResponse';
 import TeamPlayersResponse from './responses/TeamPlayersResponse';
-import { checkIsParsed } from '../fetcher/getParsedData';
 
 const parameters = {
   ...heroParams,

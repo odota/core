@@ -2,6 +2,7 @@ import config from '../config';
 import { redisCount } from '../util/utility';
 import { Archive } from '../store/archive';
 import db from '../store/db';
+import { BaseFetcher } from './base';
 
 const matchArchive = config.ENABLE_MATCH_ARCHIVE ? new Archive('match') : null;
 
@@ -10,7 +11,7 @@ const matchArchive = config.ENABLE_MATCH_ARCHIVE ? new Archive('match') : null;
  * @param matchId
  * @returns
  */
-export async function readArchivedMatch(
+async function readArchivedMatch(
   matchId: number,
 ): Promise<ParsedMatch | null> {
   try {
@@ -19,14 +20,7 @@ export async function readArchivedMatch(
     }
     // Check if the parsed data is archived
     // Most matches won't be in the archive so it's more efficient not to always try
-    const isArchived = Boolean(
-      (
-        await db.raw(
-          'select match_id from parsed_matches where match_id = ? and is_archived IS TRUE',
-          [matchId],
-        )
-      ).rows[0],
-    );
+    const isArchived = await checkIsArchived(matchId);
     if (!isArchived) {
       return null;
     }
@@ -44,7 +38,7 @@ export async function readArchivedMatch(
   return null;
 }
 
-export async function checkIsArchived(matchId: number): Promise<boolean> {
+async function checkIsArchived(matchId: number): Promise<boolean> {
   return Boolean(
     (
       await db.raw(
@@ -53,4 +47,10 @@ export async function checkIsArchived(matchId: number): Promise<boolean> {
       )
     ).rows[0],
   );
+}
+
+export class ArchivedFetcher extends BaseFetcher<ParsedMatch> {
+  readData = readArchivedMatch;
+  getOrFetchData = async (matchId: number) => ({ data: await readArchivedMatch(matchId), error: null });
+  checkAvailable = checkIsArchived;
 }

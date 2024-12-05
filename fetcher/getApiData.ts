@@ -2,7 +2,8 @@ import config from '../config';
 import { redisCount } from '../util/utility';
 import { Archive } from '../store/archive';
 import cassandra from '../store/cassandra';
-import { getPGroup, type ApiMatch } from '../util/pgroup';
+import { type ApiMatch } from '../util/pgroup';
+import { BaseFetcher } from './base';
 
 const blobArchive = config.ENABLE_BLOB_ARCHIVE ? new Archive('blob') : null;
 /**
@@ -10,9 +11,9 @@ const blobArchive = config.ENABLE_BLOB_ARCHIVE ? new Archive('blob') : null;
  * @param matchId
  * @returns
  */
-export async function readApiData(
+async function readApiData(
   matchId: number,
-  noBlobStore?: boolean,
+  noBlobStore: boolean | undefined,
 ): Promise<ApiMatch | null> {
   let data = null;
   if (!noBlobStore) {
@@ -43,23 +44,29 @@ export async function readApiData(
  * @param matchId
  * @returns
  */
-export async function getOrFetchApiData(matchId: number): Promise<{
+async function getOrFetchApiData(matchId: number): Promise<{
   data: ApiMatch | null;
   error: string | null;
-  pgroup: PGroup | null;
 }> {
   if (!matchId || !Number.isInteger(matchId) || matchId <= 0) {
-    throw new Error('invalid match_id');
+    return { data: null, error: '[APIDATA]: invalid match_id' };
   }
   // Check if we have apidata cached
-  const saved = await readApiData(matchId);
+  const saved = await readApiData(matchId, false);
   if (saved) {
     // We currently can't refetch because the Steam GetMatchDetails API is broken
-    return { data: saved, error: null, pgroup: getPGroup(saved) };
+    return { data: saved, error: null };
   }
   return {
     data: null,
     error: '[APIDATA]: Could not get API data for match ' + matchId,
-    pgroup: null,
   };
+}
+
+export class ApiFetcher extends BaseFetcher<ApiMatch> {
+  readData = readApiData;
+  getOrFetchData = getOrFetchApiData;
+  checkAvailable = () => {
+    throw new Error('not implemented');
+  }
 }

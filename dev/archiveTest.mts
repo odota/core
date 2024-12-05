@@ -1,5 +1,7 @@
+import { ArchivedFetcher } from '../fetcher/getArchivedData.js';
+
 const { Archive } = await import('../store/archive.js');
-const { readArchivedMatch } = await import('../fetcher/getArchivedData.js');
+const archivedFetcher = new ArchivedFetcher();
 
 // Read some match data
 // const match = await getMatchDataFromBlob(7465883253);
@@ -16,7 +18,7 @@ const archive = new Archive('match');
 // console.log(JSON.stringify(match).length, JSON.stringify(readBack).length);
 
 // Verify we get back null for invalid match id
-const nullMatch = await readArchivedMatch(123);
+const nullMatch = await archivedFetcher.readData(123);
 console.log(nullMatch);
 
 // Confirm API returns the same data whether we used the archive or not

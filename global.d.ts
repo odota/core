@@ -473,3 +473,18 @@ type PGroup = {
     hero_id: number;
   };
 };
+
+type GcExtraData = {
+  origin?: DataOrigin;
+  pgroup: PGroup;
+};
+
+
+type ParseExtraData = {
+  leagueid: number;
+  start_time: number;
+  duration: number;
+  origin?: DataOrigin;
+  pgroup: PGroup;
+  url: string;
+};

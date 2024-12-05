@@ -5,6 +5,7 @@ import cassandra from '../store/cassandra';
 import db from '../store/db';
 import { insertMatch } from '../util/insert';
 import axios from 'axios';
+import { BaseFetcher } from './base';
 
 const blobArchive = config.ENABLE_BLOB_ARCHIVE ? new Archive('blob') : null;
 
@@ -13,9 +14,9 @@ const blobArchive = config.ENABLE_BLOB_ARCHIVE ? new Archive('blob') : null;
  * @param matchId
  * @returns
  */
-export async function readParseData(
+async function readParsedData(
   matchId: number,
-  noBlobStore?: boolean,
+  noBlobStore: boolean | undefined,
 ): Promise<ParserMatch | null> {
   let data = null;
   if (!noBlobStore) {
@@ -40,14 +41,6 @@ export async function readParseData(
   return data;
 }
 
-type ExtraData = {
-  leagueid: number;
-  start_time: number;
-  duration: number;
-  origin?: DataOrigin;
-  pgroup: PGroup;
-};
-
 /**
  * Requests parse data and saves it locally
  * @param matchId
@@ -56,12 +49,11 @@ type ExtraData = {
  */
 async function fetchParseData(
   matchId: number,
-  replayUrl: string,
-  { leagueid, start_time, duration, origin, pgroup }: ExtraData,
+  { leagueid, start_time, duration, origin, pgroup, url }: ParseExtraData,
 ): Promise<{ error: string | null }> {
   try {
     // Make a HEAD request for the replay to see if it's available
-    await axios.head(replayUrl, { timeout: 10000 });
+    await axios.head(url, { timeout: 10000 });
   } catch (e) {
     if (axios.isAxiosError(e)) {
       console.log(e.message);
@@ -74,7 +66,7 @@ async function fetchParseData(
   // bunzip: 6716ms (bunzip2 7503212404_1277518156.dem.bz2)
   // parse: 9407ms (curl -X POST --data-binary "@7503212404_1277518156.dem" odota-parser:5600 > output.log)
   // process: 3278ms (node processors/createParsedDataBlob.mjs < output.log)
-  const parseUrl = await getRandomParserUrl(`/blob?replay_url=${replayUrl}`);
+  const parseUrl = await getRandomParserUrl(`/blob?replay_url=${url}`);
   console.log('[PARSER]', parseUrl);
   const resp = await axios.get<ParserMatch>(parseUrl, { timeout: 150000 });
   if (!resp.data) {
@@ -97,16 +89,15 @@ async function fetchParseData(
   return { error: null };
 }
 
-export async function getOrFetchParseData(
+async function getOrFetchParseData(
   matchId: number,
-  url: string,
-  extraData: ExtraData,
+  extraData: ParseExtraData,
 ): Promise<{
   data: ParserMatch | null;
   skipped: boolean;
   error: string | null;
 }> {
-  const saved = await readParseData(matchId);
+  const saved = await readParsedData(matchId, false);
   if (saved) {
     redisCount('reparse');
     if (config.DISABLE_REPARSE) {
@@ -114,7 +105,7 @@ export async function getOrFetchParseData(
       return { data: saved, skipped: true, error: null };
     }
   }
-  const { error } = await fetchParseData(matchId, url, extraData);
+  const { error } = await fetchParseData(matchId, extraData);
   if (error) {
     return { data: null, skipped: false, error };
   }
@@ -126,12 +117,16 @@ export async function getOrFetchParseData(
   return { data: null, skipped: false, error };
 }
 
-export async function checkIsParsed(matchId: number) {
-  return Boolean(
-    (
-      await db.raw('select match_id from parsed_matches where match_id = ?', [
-        matchId,
-      ])
-    ).rows[0],
-  );
+export class ParsedFetcher extends BaseFetcher<ParserMatch> {
+  readData = readParsedData;
+  getOrFetchData = getOrFetchParseData;
+  checkAvailable = async (matchId: number) => {
+    return Boolean(
+      (
+        await db.raw('select match_id from parsed_matches where match_id = ?', [
+          matchId,
+        ])
+      ).rows[0],
+    );
+  }
 }

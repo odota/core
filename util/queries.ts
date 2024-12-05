@@ -23,18 +23,21 @@ import {
   redisCountDistinct,
 } from './utility';
 import {
-  readArchivedMatch,
-} from '../fetcher/getArchivedData';
-import {
   readArchivedPlayerMatches
 } from '../fetcher/getPlayerArchive';
-import { readApiData } from '../fetcher/getApiData';
 import { type ApiMatch } from './pgroup';
 import { gzipSync, gunzipSync } from 'zlib';
 import { cacheableCols } from '../routes/playerFields';
-import { readGcData } from '../fetcher/getGcData';
-import { readParseData } from '../fetcher/getParsedData';
 import { promises as fs } from 'fs';
+import { ParsedFetcher } from '../fetcher/getParsedData';
+import { ApiFetcher } from '../fetcher/getApiData';
+import { GcdataFetcher } from '../fetcher/getGcData';
+import { ArchivedFetcher } from '../fetcher/getArchivedData';
+
+const apiFetcher = new ApiFetcher();
+const gcFetcher = new GcdataFetcher();
+const parsedFetcher = new ParsedFetcher();
+const archivedFetcher = new ArchivedFetcher();
 
 /**
  * Adds benchmark data to the players in a match
@@ -698,10 +701,10 @@ export async function getMatchDataFromBlobWithMetadata(
     ParserMatch | null,
     ParsedMatch | null,
   ] = await Promise.all([
-    readApiData(matchId, options?.noBlobStore),
-    readGcData(matchId, options?.noBlobStore),
-    readParseData(matchId, options?.noBlobStore),
-    !options?.noArchive ? readArchivedMatch(matchId) : Promise.resolve(null),
+    apiFetcher.readData(matchId, options?.noBlobStore),
+    gcFetcher.readData(matchId, options?.noBlobStore),
+    parsedFetcher.readData(matchId, options?.noBlobStore),
+    !options?.noArchive ? archivedFetcher.readData(matchId) : Promise.resolve(null),
   ]);
 
   let odData: GetMatchDataMetadata = {

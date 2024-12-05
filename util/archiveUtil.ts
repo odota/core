@@ -11,9 +11,13 @@ import QueryStream from 'pg-query-stream';
 import { Client } from 'pg';
 import crypto from 'crypto';
 import db from '../store/db';
-import { readApiData } from '../fetcher/getApiData';
-import { readGcData } from '../fetcher/getGcData';
-import { readParseData } from '../fetcher/getParsedData';
+import { ApiFetcher } from '../fetcher/getApiData';
+import { GcdataFetcher } from '../fetcher/getGcData';
+import { ParsedFetcher } from '../fetcher/getParsedData';
+
+const apiFetcher = new ApiFetcher();
+const gcFetcher = new GcdataFetcher();
+const parsedFetcher = new ParsedFetcher();
 
 const matchArchive = config.ENABLE_MATCH_ARCHIVE ? new Archive('match') : null;
 const playerArchive = config.ENABLE_PLAYER_ARCHIVE
@@ -122,9 +126,9 @@ async function doArchiveMatchFromBlobs(matchId: number) {
  * @returns
  */
 async function doMigrateMatchToBlobStore(matchId: number) {
-  const api = await readApiData(matchId, true);
-  const gcdata = await readGcData(matchId, true);
-  const parsed = await readParseData(matchId, true);
+  const api = await apiFetcher.readData(matchId, true);
+  const gcdata = await gcFetcher.readData(matchId, true);
+  const parsed = await parsedFetcher.readData(matchId, true);
   if (api) {
     // If the match is old we might not be able to get back ability builds, HD/TD/HH from Steam so we want to keep the API data
     await blobArchive?.archivePut(

@@ -2,7 +2,8 @@ import ProtoBuf from 'protobufjs';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { buildReplayUrl, redisCount } from '../util/utility';
-import { readGcData } from './getGcData';
+import { BaseFetcher } from './base';
+import { GcdataFetcher } from './getGcData';
 const execPromise = promisify(exec);
 
 // Get a sample meta file
@@ -13,9 +14,10 @@ const builder = root.loadSync('./proto/dota_match_metadata.proto', {
   keepCase: true,
 });
 const CDOTAMatchMetadataFile = builder.lookupType('CDOTAMatchMetadataFile');
+const gcFetcher = new GcdataFetcher();
 
-export async function getMeta(matchId: number) {
-  const gcdata = await readGcData(matchId);
+async function getMeta(matchId: number) {
+  const gcdata = await gcFetcher.readData(matchId, false);
   if (!gcdata) {
     return null;
   }
@@ -66,5 +68,13 @@ export async function getMetaFromUrl(url: string) {
   } catch (e) {
     console.error(e);
     return null;
+  }
+}
+
+export class MetaFetcher extends BaseFetcher<Record<string, any>> {
+  readData = getMeta;
+  getOrFetchData = getMeta;
+  checkAvailable = () => {
+    throw new Error('not implemented');
   }
 }
