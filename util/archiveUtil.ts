@@ -3,7 +3,7 @@ import { Archive } from '../store/archive';
 import {
   getFullPlayerMatchesWithMetadata,
   getMatchDataFromBlobWithMetadata,
-} from '../store/queries';
+} from './queries';
 import cassandra from '../store/cassandra';
 import type { PutObjectCommandOutput } from '@aws-sdk/client-s3';
 import { isDataComplete, redisCount } from '../util/utility';
@@ -11,10 +11,9 @@ import QueryStream from 'pg-query-stream';
 import { Client } from 'pg';
 import crypto from 'crypto';
 import db from '../store/db';
-import { readApiData } from '../store/getApiData';
-import { readGcData } from '../store/getGcData';
-import { checkIsParsed, readParseData } from '../store/getParsedData';
-import { checkIsArchived } from '../store/getArchivedData';
+import { readApiData } from '../fetcher/getApiData';
+import { readGcData } from '../fetcher/getGcData';
+import { readParseData } from '../fetcher/getParsedData';
 
 const matchArchive = config.ENABLE_MATCH_ARCHIVE ? new Archive('match') : null;
 const playerArchive = config.ENABLE_PLAYER_ARCHIVE

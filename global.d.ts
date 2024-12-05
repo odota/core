@@ -282,7 +282,7 @@ type GcDataJob = {
   match_id: number;
 };
 
-type CountsJob = import('./store/pgroup').ApiMatch;
+type CountsJob = import('./util/pgroup').ApiMatch;
 type ScenariosJob = string;
 type CacheJob = string;
 

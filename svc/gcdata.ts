@@ -1,9 +1,9 @@
 // Processes a queue of requests for gcdata (replay salts) without parsing
 // The parser will also request gcdata if needed
-import { getOrFetchGcData } from '../store/getGcData';
+import { getOrFetchGcData } from '../fetcher/getGcData';
 import { runQueue } from '../store/queue';
 import config from '../config';
-import { getOrFetchApiData } from '../store/getApiData';
+import { getOrFetchApiData } from '../fetcher/getApiData';
 
 async function processGcData(job: GcDataJob) {
   const matchId = job.match_id;

@@ -1,7 +1,7 @@
 // Updates game items in the database
 import { items } from 'dotaconstants';
 import db from '../store/db';
-import { upsert } from '../store/insert';
+import { upsert } from '../util/insert';
 import {
   generateJob,
   getSteamAPIData,

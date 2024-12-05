@@ -1,8 +1,8 @@
 import config from '../config';
 import { redisCount } from '../util/utility';
-import { Archive } from './archive';
-import cassandra from './cassandra';
-import { getPGroup, type ApiMatch } from './pgroup';
+import { Archive } from '../store/archive';
+import cassandra from '../store/cassandra';
+import { getPGroup, type ApiMatch } from '../util/pgroup';
 
 const blobArchive = config.ENABLE_BLOB_ARCHIVE ? new Archive('blob') : null;
 /**

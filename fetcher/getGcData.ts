@@ -1,13 +1,13 @@
 import moment from 'moment';
 import config from '../config';
-import db from './db';
-import redis from './redis';
-import cassandra from './cassandra';
+import db from '../store/db';
+import redis from '../store/redis';
+import cassandra from '../store/cassandra';
 import { getRandomRetrieverUrl, redisCount } from '../util/utility';
 import axios from 'axios';
 import retrieverMatch from '../test/data/retriever_match.json';
-import { insertMatch, upsertPlayer } from './insert';
-import { Archive } from './archive';
+import { insertMatch, upsertPlayer } from '../util/insert';
+import { Archive } from '../store/archive';
 
 type GcExtraData = {
   origin?: DataOrigin;
@@ -162,7 +162,7 @@ async function saveGcData(
  * @param pgroup
  * @returns The GC data, or nothing if we failed
  */
-export async function tryFetchGcData(
+async function tryFetchGcData(
   matchId: number,
   pgroup: PGroup,
 ): Promise<GcMatch | null> {

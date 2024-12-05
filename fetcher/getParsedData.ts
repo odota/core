@@ -1,9 +1,9 @@
 import config from '../config';
 import { getRandomParserUrl, redisCount } from '../util/utility';
-import { Archive } from './archive';
-import cassandra from './cassandra';
-import db from './db';
-import { insertMatch } from './insert';
+import { Archive } from '../store/archive';
+import cassandra from '../store/cassandra';
+import db from '../store/db';
+import { insertMatch } from '../util/insert';
 import axios from 'axios';
 
 const blobArchive = config.ENABLE_BLOB_ARCHIVE ? new Archive('blob') : null;
@@ -54,7 +54,7 @@ type ExtraData = {
  * @param replayUrl
  * @returns
  */
-export async function saveParseData(
+async function fetchParseData(
   matchId: number,
   replayUrl: string,
   { leagueid, start_time, duration, origin, pgroup }: ExtraData,
@@ -114,7 +114,7 @@ export async function getOrFetchParseData(
       return { data: saved, skipped: true, error: null };
     }
   }
-  const { error } = await saveParseData(matchId, url, extraData);
+  const { error } = await fetchParseData(matchId, url, extraData);
   if (error) {
     return { data: null, skipped: false, error };
   }

@@ -1,7 +1,7 @@
 // Processes a queue of requests to update MMR/rank medal for players
 import { runQueue } from '../store/queue';
 import db from '../store/db';
-import { insertPlayerRating } from '../store/insert';
+import { insertPlayerRating } from '../util/insert';
 import config from '../config';
 import {
   getRetrieverCount,

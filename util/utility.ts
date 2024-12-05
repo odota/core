@@ -5,9 +5,9 @@ import crypto from 'crypto';
 import laneMappings from './laneMappings';
 import config from '../config';
 import contributors from '../CONTRIBUTORS';
-import type { ApiMatch, ApiPlayer } from '../store/pgroup';
+import type { ApiMatch, ApiPlayer } from './pgroup';
 import type QueryString from 'qs';
-import type { InsertMatchInput } from '../store/insert';
+import type { InsertMatchInput } from './insert';
 import axios, { AxiosRequestConfig } from 'axios';
 
 /**

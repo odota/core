@@ -1,7 +1,7 @@
 // Updates game cosmetic items in the database
 import vdf from 'simple-vdf';
 import db from '../store/db';
-import { upsert } from '../store/insert';
+import { upsert } from '../util/insert';
 import { eachLimitPromise, invokeIntervalAsync } from '../util/utility';
 import axios from 'axios';
 

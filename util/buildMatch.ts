@@ -1,19 +1,19 @@
 import { heroes } from 'dotaconstants';
 import config from '../config';
-import { computeMatchData } from '../util/compute';
+import { computeMatchData } from './compute';
 import {
   buildReplayUrl,
   isContributor,
   redisCount,
   redisCountDistinct,
-} from '../util/utility';
-import redis from './redis';
-import db from './db';
+} from './utility';
+import redis from '../store/redis';
+import db from '../store/db';
 import {
   getMatchDataFromBlobWithMetadata,
   addPlayerBenchmarks,
 } from './queries';
-import { getMeta } from './getMeta';
+import { getMeta } from '../fetcher/getMeta';
 
 async function extendPlayerData(
   player: Player | ParsedPlayer,

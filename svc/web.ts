@@ -14,7 +14,7 @@ import { Redis } from 'ioredis';
 import { WebSocketServer, WebSocket } from 'ws';
 import keys from '../routes/keyManagement';
 import api from '../routes/api';
-import { upsertPlayer } from '../store/insert';
+import { upsertPlayer } from '../util/insert';
 import db from '../store/db';
 import redis from '../store/redis';
 import config from '../config';
@@ -26,7 +26,7 @@ import {
 } from '../util/utility';
 import stripe from '../store/stripe';
 import axios from 'axios';
-import { buildStatus } from '../store/buildStatus';
+import { buildStatus } from '../util/buildStatus';
 
 const admins = config.ADMIN_ACCOUNT_IDS.split(',').map((e) => Number(e));
 const SteamStrategy = passportSteam.Strategy;

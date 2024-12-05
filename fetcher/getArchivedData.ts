@@ -1,32 +1,16 @@
 import config from '../config';
 import { redisCount } from '../util/utility';
-import { Archive } from './archive';
-import db from './db';
+import { Archive } from '../store/archive';
+import db from '../store/db';
 
 const matchArchive = config.ENABLE_MATCH_ARCHIVE ? new Archive('match') : null;
-const playerArchive = config.ENABLE_PLAYER_ARCHIVE
-  ? new Archive('player')
-  : null;
-
-export async function tryReadArchivedPlayerMatches(
-  accountId: number,
-): Promise<ParsedPlayerMatch[]> {
-  if (!playerArchive) {
-    return [];
-  }
-  console.time('archive:' + accountId);
-  const blob = await playerArchive.archiveGet(accountId.toString());
-  const arr = blob ? JSON.parse(blob.toString()) : [];
-  console.timeEnd('archive:' + accountId);
-  return arr;
-}
 
 /**
  * Return parsed data by reading from the archive.
  * @param matchId
  * @returns
  */
-export async function tryReadArchivedMatch(
+export async function readArchivedMatch(
   matchId: number,
 ): Promise<ParsedMatch | null> {
   try {

@@ -3,12 +3,12 @@ import { patch } from 'dotaconstants';
 import util from 'util';
 import { promises as fs } from 'fs';
 import config from '../config';
-import { addJob, addReliableJob } from './queue';
-import { computeMatchData } from '../util/compute';
-import db, { getPostgresColumns } from './db';
-import redis from './redis';
-import { es, INDEX } from './elasticsearch';
-import cassandra, { getCassandraColumns } from './cassandra';
+import { addJob, addReliableJob } from '../store/queue';
+import { computeMatchData } from './compute';
+import db, { getPostgresColumns } from '../store/db';
+import redis from '../store/redis';
+import { es, INDEX } from '../store/elasticsearch';
+import cassandra, { getCassandraColumns } from '../store/cassandra';
 import type knex from 'knex';
 import {
   getAnonymousAccountId,
@@ -20,10 +20,10 @@ import {
   getPatchIndex,
   redisCount,
   transformMatch,
-} from '../util/utility';
+} from './utility';
 import { getMatchRankTier } from './queries';
 import { ApiMatch, ApiMatchPro, ApiPlayer, getPGroup } from './pgroup';
-import { Archive } from './archive';
+import { Archive } from '../store/archive';
 // import scylla from './scylla';
 
 moment.relativeTimeThreshold('ss', 0);

@@ -1,4 +1,4 @@
-const { insertMatch } = await import('../store/insert.js');
+const { insertMatch } = await import('../util/insert.js');
 const { db } = await import('../store/db.js');
 const { generateJob, getSteamAPIData, isProMatch } = await import(
   '../util/utility.js'

@@ -1,12 +1,12 @@
 import { items as itemsConstants } from 'dotaconstants';
 import util from 'util';
 import config from '../config';
-import { teamScenariosQueryParams, metadata } from '../util/scenariosUtil';
-import { filterMatches } from '../util/filter';
-import db from './db';
-import redis from './redis';
-import cassandra, { getCassandraColumns } from './cassandra';
-import { benchmarks } from '../util/benchmarksUtil';
+import { teamScenariosQueryParams, metadata } from './scenariosUtil';
+import { filterMatches } from './filter';
+import db from '../store/db';
+import redis from '../store/redis';
+import cassandra, { getCassandraColumns } from '../store/cassandra';
+import { benchmarks } from './benchmarksUtil';
 import type knex from 'knex';
 import type { Request } from 'express';
 import {
@@ -21,17 +21,19 @@ import {
   PeersCount,
   redisCount,
   redisCountDistinct,
-} from '../util/utility';
+} from './utility';
 import {
-  tryReadArchivedPlayerMatches,
-  tryReadArchivedMatch,
-} from './getArchivedData';
-import { readApiData } from './getApiData';
+  readArchivedMatch,
+} from '../fetcher/getArchivedData';
+import {
+  readArchivedPlayerMatches
+} from '../fetcher/getPlayerArchive';
+import { readApiData } from '../fetcher/getApiData';
 import { type ApiMatch } from './pgroup';
 import { gzipSync, gunzipSync } from 'zlib';
 import { cacheableCols } from '../routes/playerFields';
-import { readGcData } from './getGcData';
-import { readParseData } from './getParsedData';
+import { readGcData } from '../fetcher/getGcData';
+import { readParseData } from '../fetcher/getParsedData';
 import { promises as fs } from 'fs';
 
 /**
@@ -259,7 +261,7 @@ export async function getPlayerMatchesWithMetadata(
   // if dbLimit (recentMatches), don't use archive
   const archivedMatches =
     config.ENABLE_PLAYER_ARCHIVE && !queryObj.dbLimit
-      ? await tryReadArchivedPlayerMatches(accountId)
+      ? await readArchivedPlayerMatches(accountId)
       : [];
   const localLength = localMatches.length;
   const archivedLength = archivedMatches.length;
@@ -699,7 +701,7 @@ export async function getMatchDataFromBlobWithMetadata(
     readApiData(matchId, options?.noBlobStore),
     readGcData(matchId, options?.noBlobStore),
     readParseData(matchId, options?.noBlobStore),
-    !options?.noArchive ? tryReadArchivedMatch(matchId) : Promise.resolve(null),
+    !options?.noArchive ? readArchivedMatch(matchId) : Promise.resolve(null),
   ]);
 
   let odData: GetMatchDataMetadata = {

@@ -1,5 +1,5 @@
 // Processes a queue of auto player cache requests
-import { populateTemp } from '../store/queries';
+import { populateTemp } from '../util/queries';
 import { runQueue } from '../store/queue';
 import { redisCount, redisCountDistinct } from '../util/utility';
 

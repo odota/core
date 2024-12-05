@@ -9,8 +9,8 @@ import {
 } from '../util/utility';
 import db from '../store/db';
 import { runQueue } from '../store/queue';
-import { getPlayerMatches } from '../store/queries';
-import { insertMatch } from '../store/insert';
+import { getPlayerMatches } from '../util/queries';
+import { insertMatch } from '../util/insert';
 
 async function updatePlayer(player: FullHistoryJob) {
   // done with this player, update

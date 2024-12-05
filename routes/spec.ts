@@ -6,7 +6,7 @@ import config from '../config';
 import { addJob, addReliableJob, getReliableJob } from '../store/queue';
 import { search } from '../store/search';
 import { searchES } from '../store/searchES';
-import buildMatch from '../store/buildMatch';
+import buildMatch from '../util/buildMatch';
 import {
   checkIfInExperiment,
   countPeers,
@@ -51,7 +51,7 @@ import {
   getPlayerMatches,
   getItemTimings,
   isSubscriber,
-} from '../store/queries';
+} from '../util/queries';
 import { filterDeps } from '../util/filter';
 const { Client } = pg;
 import heroParams from './requests/heroParams';
@@ -98,7 +98,7 @@ import TeamHeroesResponse from './responses/TeamHeroesResponse';
 import TeamMatchObjectResponse from './responses/TeamMatchObjectResponse';
 import TeamObjectResponse from './responses/TeamObjectResponse';
 import TeamPlayersResponse from './responses/TeamPlayersResponse';
-import { checkIsParsed } from '../store/getParsedData';
+import { checkIsParsed } from '../fetcher/getParsedData';
 
 const parameters = {
   ...heroParams,

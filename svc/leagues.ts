@@ -1,7 +1,7 @@
 // Updates the list of leagues in the database
 import axios from 'axios';
 import db from '../store/db';
-import { upsert } from '../store/insert';
+import { upsert } from '../util/insert';
 import { invokeIntervalAsync } from '../util/utility';
 
 async function doLeagues() {

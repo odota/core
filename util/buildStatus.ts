@@ -1,6 +1,6 @@
 import moment from 'moment';
 import redis from '../store/redis';
-import { parallelPromise } from '../util/utility';
+import { parallelPromise } from './utility';
 import { game_mode, lobby_type, region, cluster } from 'dotaconstants';
 
 function generatePercentiles(arr: string[]) {

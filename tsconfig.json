@@ -17,6 +17,7 @@
     "store",
     "svc",
     "test",
-    "util"
+    "util",
+    "fetcher"
   ]
 }

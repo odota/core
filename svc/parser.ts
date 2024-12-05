@@ -5,14 +5,14 @@
  * Stream is run through a series of processors to count/aggregate it into a single object
  * This object is passed to insertMatch to persist the data into the database.
  * */
-import { getOrFetchGcDataWithRetry } from '../store/getGcData';
+import { getOrFetchGcDataWithRetry } from '../fetcher/getGcData';
 import config from '../config';
 import { runReliableQueue } from '../store/queue';
 import c from 'ansi-colors';
 import { buildReplayUrl, redisCount } from '../util/utility';
 import redis from '../store/redis';
-import { getOrFetchApiData } from '../store/getApiData';
-import { checkIsParsed, getOrFetchParseData } from '../store/getParsedData';
+import { getOrFetchApiData } from '../fetcher/getApiData';
+import { checkIsParsed, getOrFetchParseData } from '../fetcher/getParsedData';
 
 const { PARSER_PARALLELISM } = config;
 
