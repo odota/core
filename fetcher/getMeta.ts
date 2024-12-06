@@ -2,7 +2,7 @@ import ProtoBuf from 'protobufjs';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { buildReplayUrl, redisCount } from '../util/utility';
-import { BaseFetcher } from './base';
+import { MatchFetcher } from './base';
 import { GcdataFetcher } from './getGcData';
 const execPromise = promisify(exec);
 
@@ -61,7 +61,7 @@ export async function getMetaFromUrl(url: string) {
     //     });
     //   });
     // });
-    // This is encrypted in some way and it's not clear how to read it
+    // This is encrypted in some way, see https://github.com/thedanill/dota_crypto (may require Dota plus subscription to request key)
     delete message.private_metadata;
     console.timeEnd('[METAPARSE]: parse');
     return message;
@@ -71,8 +71,10 @@ export async function getMetaFromUrl(url: string) {
   }
 }
 
-export class MetaFetcher extends BaseFetcher<Record<string, any>> {
-  readData = getMeta;
+export class MetaFetcher extends MatchFetcher<Record<string, any>> {
+  readData = () => {
+    throw new Error('not implemented');
+  };
   getOrFetchData = getMeta;
   checkAvailable = () => {
     throw new Error('not implemented');

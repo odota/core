@@ -2,7 +2,7 @@ import config from '../config';
 import { redisCount } from '../util/utility';
 import { Archive } from '../store/archive';
 import db from '../store/db';
-import { BaseFetcher } from './base';
+import { MatchFetcher } from './base';
 
 const matchArchive = config.ENABLE_MATCH_ARCHIVE ? new Archive('match') : null;
 
@@ -49,8 +49,10 @@ async function checkIsArchived(matchId: number): Promise<boolean> {
   );
 }
 
-export class ArchivedFetcher extends BaseFetcher<ParsedMatch> {
+export class ArchivedFetcher extends MatchFetcher<ParsedMatch> {
   readData = readArchivedMatch;
-  getOrFetchData = async (matchId: number) => ({ data: await readArchivedMatch(matchId), error: null });
+  getOrFetchData = () => {
+    throw new Error('not implemented');
+  };
   checkAvailable = checkIsArchived;
 }

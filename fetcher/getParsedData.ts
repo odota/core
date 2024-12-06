@@ -5,7 +5,7 @@ import cassandra from '../store/cassandra';
 import db from '../store/db';
 import { insertMatch } from '../util/insert';
 import axios from 'axios';
-import { BaseFetcher } from './base';
+import { MatchFetcher } from './base';
 
 const blobArchive = config.ENABLE_BLOB_ARCHIVE ? new Archive('blob') : null;
 
@@ -117,7 +117,7 @@ async function getOrFetchParseData(
   return { data: null, skipped: false, error };
 }
 
-export class ParsedFetcher extends BaseFetcher<ParserMatch> {
+export class ParsedFetcher extends MatchFetcher<ParserMatch> {
   readData = readParsedData;
   getOrFetchData = getOrFetchParseData;
   checkAvailable = async (matchId: number) => {

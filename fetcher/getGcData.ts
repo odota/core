@@ -8,7 +8,7 @@ import axios from 'axios';
 import retrieverMatch from '../test/data/retriever_match.json';
 import { insertMatch, upsertPlayer } from '../util/insert';
 import { Archive } from '../store/archive';
-import { BaseFetcher } from './base';
+import { MatchFetcher } from './base';
 
 const blobArchive = config.ENABLE_BLOB_ARCHIVE ? new Archive('blob') : null;
 
@@ -236,7 +236,7 @@ async function getOrFetchGcDataWithRetry(
   return { data, error };
 }
 
-export class GcdataFetcher extends BaseFetcher<GcMatch> {
+export class GcdataFetcher extends MatchFetcher<GcMatch> {
   readData = readGcData;
   getOrFetchData = getOrFetchGcData;
   getOrFetchDataWithRetry = getOrFetchGcDataWithRetry;

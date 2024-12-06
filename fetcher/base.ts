@@ -1,5 +1,5 @@
 // We could make all the fetchers inherit a base class to give them a consistent structure
-export abstract class BaseFetcher<T> {
+export abstract class MatchFetcher<T> {
     // Read from the store without fetching
     public abstract readData(matchId: number, noBlobStore: boolean | undefined): Promise<T | null>
     // Read from the store, fetch it from remote and save if needed

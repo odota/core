@@ -3,7 +3,7 @@ import { redisCount } from '../util/utility';
 import { Archive } from '../store/archive';
 import cassandra from '../store/cassandra';
 import { type ApiMatch } from '../util/pgroup';
-import { BaseFetcher } from './base';
+import { MatchFetcher } from './base';
 
 const blobArchive = config.ENABLE_BLOB_ARCHIVE ? new Archive('blob') : null;
 /**
@@ -63,7 +63,7 @@ async function getOrFetchApiData(matchId: number): Promise<{
   };
 }
 
-export class ApiFetcher extends BaseFetcher<ApiMatch> {
+export class ApiFetcher extends MatchFetcher<ApiMatch> {
   readData = readApiData;
   getOrFetchData = getOrFetchApiData;
   checkAvailable = () => {
