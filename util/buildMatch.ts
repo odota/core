@@ -159,7 +159,7 @@ async function buildMatch(
       : Promise.resolve(null);
   const prodataPromise = prodataInfo(matchId);
   const metadataPromise = Boolean(options.meta)
-    ? metaFetcher.readData(Number(matchId))
+    ? metaFetcher.getOrFetchData(Number(matchId))
     : Promise.resolve(null);
   const [players, prodata, cosmetics, metadata] = await Promise.all([
     playersPromise,
