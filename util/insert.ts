@@ -28,7 +28,7 @@ import { Archive } from '../store/archive';
 
 moment.relativeTimeThreshold('ss', 0);
 
-const blobArchive = config.ENABLE_BLOB_ARCHIVE ? new Archive('blob') : null;
+const blobArchive = new Archive('blob');
 
 export async function upsert(
   db: knex.Knex,
@@ -430,7 +430,7 @@ export async function insertMatch(
       blob: { match_id: number; players: { player_slot: number }[] },
     ) {
       const matchId = blob.match_id;
-      await blobArchive?.archivePut(
+      await blobArchive.archivePut(
         matchId + '_' + type,
         Buffer.from(JSON.stringify(blob)),
       );

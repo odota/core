@@ -5,7 +5,7 @@ import cassandra from '../store/cassandra';
 import { type ApiMatch } from '../util/pgroup';
 import { MatchFetcher } from './base';
 
-const blobArchive = config.ENABLE_BLOB_ARCHIVE ? new Archive('blob') : null;
+const blobArchive = new Archive('blob');
 /**
  * Return API data by reading it without fetching.
  * @param matchId
@@ -17,7 +17,7 @@ async function readApiData(
 ): Promise<ApiMatch | null> {
   let data = null;
   if (!noBlobStore) {
-    const archive = await blobArchive?.archiveGet(`${matchId}_api`);
+    const archive = await blobArchive.archiveGet(`${matchId}_api`);
     if (archive) {
       redisCount('blob_archive_read');
     }

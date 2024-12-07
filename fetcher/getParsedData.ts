@@ -7,7 +7,7 @@ import { insertMatch } from '../util/insert';
 import axios from 'axios';
 import { MatchFetcher } from './base';
 
-const blobArchive = config.ENABLE_BLOB_ARCHIVE ? new Archive('blob') : null;
+const blobArchive = new Archive('blob');
 
 /**
  * Return parse data by reading it without fetching.
@@ -20,7 +20,7 @@ async function readParsedData(
 ): Promise<ParserMatch | null> {
   let data = null;
   if (!noBlobStore) {
-    const archive = await blobArchive?.archiveGet(`${matchId}_parsed`);
+    const archive = await blobArchive.archiveGet(`${matchId}_parsed`);
     if (archive) {
       redisCount('blob_archive_read');
     }

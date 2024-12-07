@@ -10,7 +10,7 @@ import { insertMatch, upsertPlayer } from '../util/insert';
 import { Archive } from '../store/archive';
 import { MatchFetcher } from './base';
 
-const blobArchive = config.ENABLE_BLOB_ARCHIVE ? new Archive('blob') : null;
+const blobArchive = new Archive('blob');
 
 /**
  * Return GC data by reading it without fetching.
@@ -23,7 +23,7 @@ async function readGcData(
 ): Promise<GcMatch | null> {
   let data = null;
   if (!noBlobStore) {
-    const archive = await blobArchive?.archiveGet(`${matchId}_gcdata`);
+    const archive = await blobArchive.archiveGet(`${matchId}_gcdata`);
     if (archive) {
       redisCount('blob_archive_read');
     }

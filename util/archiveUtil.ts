@@ -23,7 +23,7 @@ const matchArchive = config.ENABLE_MATCH_ARCHIVE ? new Archive('match') : null;
 const playerArchive = config.ENABLE_PLAYER_ARCHIVE
   ? new Archive('player')
   : null;
-const blobArchive = config.ENABLE_BLOB_ARCHIVE ? new Archive('blob') : null;
+const blobArchive = new Archive('blob');
 
 export async function processPlayerMatches(
   accountId: number,
@@ -131,19 +131,19 @@ async function doMigrateMatchToBlobStore(matchId: number) {
   const parsed = await parsedFetcher.readData(matchId, true);
   if (api) {
     // If the match is old we might not be able to get back ability builds, HD/TD/HH from Steam so we want to keep the API data
-    await blobArchive?.archivePut(
+    await blobArchive.archivePut(
       matchId.toString() + '_api',
       Buffer.from(JSON.stringify(api)),
     );
   }
   if (gcdata) {
-    await blobArchive?.archivePut(
+    await blobArchive.archivePut(
       matchId.toString() + '_gcdata',
       Buffer.from(JSON.stringify(gcdata)),
     );
   }
   if (parsed) {
-    await blobArchive?.archivePut(
+    await blobArchive.archivePut(
       matchId.toString() + '_parsed',
       Buffer.from(JSON.stringify(parsed)),
     );
