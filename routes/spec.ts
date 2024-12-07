@@ -6,7 +6,7 @@ import config from '../config';
 import { addJob, addReliableJob, getReliableJob } from '../store/queue';
 import { search } from '../store/search';
 import { searchES } from '../store/searchES';
-import buildMatch from '../util/buildMatch';
+import { buildMatch } from '../util/buildMatch';
 import {
   checkIfInExperiment,
   countPeers,

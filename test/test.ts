@@ -25,7 +25,7 @@ import retrieverMatch from './data/retriever_match.json';
 import spec from '../routes/spec';
 import { getPlayerMatches } from '../util/queries';
 import { insertMatch, upsertPlayer } from '../util/insert';
-import buildMatch from '../util/buildMatch';
+import { buildMatch } from '../util/buildMatch';
 import { es } from '../store/elasticsearch';
 import redis from '../store/redis';
 import db from '../store/db';

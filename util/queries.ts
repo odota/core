@@ -25,66 +25,10 @@ import {
 import {
   readArchivedPlayerMatches
 } from '../fetcher/getPlayerArchive';
-import { type ApiMatch } from './pgroup';
 import { gzipSync, gunzipSync } from 'zlib';
 import { cacheableCols } from '../routes/playerFields';
 import { promises as fs } from 'fs';
-import { ParsedFetcher } from '../fetcher/getParsedData';
-import { ApiFetcher } from '../fetcher/getApiData';
-import { GcdataFetcher } from '../fetcher/getGcData';
-import { ArchivedFetcher } from '../fetcher/getArchivedData';
 
-const apiFetcher = new ApiFetcher();
-const gcFetcher = new GcdataFetcher();
-const parsedFetcher = new ParsedFetcher();
-const archivedFetcher = new ArchivedFetcher();
-
-/**
- * Adds benchmark data to the players in a match
- * */
-export async function addPlayerBenchmarks(m: Match) {
-  return Promise.all(
-    m.players.map(async (p) => {
-      p.benchmarks = {};
-      for (let i = 0; i < Object.keys(benchmarks).length; i++) {
-        const metric = Object.keys(benchmarks)[i];
-        p.benchmarks[metric] = {};
-        // Use data from previous epoch
-        let key = [
-          'benchmarks',
-          getStartOfBlockMinutes(
-            Number(config.BENCHMARK_RETENTION_MINUTES),
-            -1,
-          ),
-          metric,
-          p.hero_id,
-        ].join(':');
-        const backupKey = [
-          'benchmarks',
-          getStartOfBlockMinutes(Number(config.BENCHMARK_RETENTION_MINUTES), 0),
-          metric,
-          p.hero_id,
-        ].join(':');
-        const raw = benchmarks[metric](m, p);
-        p.benchmarks[metric] = {
-          raw,
-        };
-        const exists = await redis.exists(key);
-        if (exists === 0) {
-          // No data, use backup key (current epoch)
-          key = backupKey;
-        }
-        const card = await redis.zcard(key);
-        if (raw !== undefined && raw !== null && !Number.isNaN(Number(raw))) {
-          const count = await redis.zcount(key, '0', raw);
-          const pct = count / card;
-          p.benchmarks[metric].pct = pct;
-        }
-      }
-      return p;
-    }),
-  );
-}
 export async function getDistributions() {
   const result: AnyDict = {};
   const keys = ['distribution:ranks'];
@@ -689,65 +633,4 @@ export async function isSubscriber(account_id: string) {
     [Number(account_id)],
   );
   return Boolean(result.rows?.[0]);
-}
-
-export async function getMatchDataFromBlobWithMetadata(
-  matchId: number,
-  options?: { noArchive: boolean; noBlobStore: boolean },
-): Promise<[Match | ParsedMatch | null, GetMatchDataMetadata | null]> {
-  let [api, gcdata, parsed, archived]: [
-    ApiMatch | null,
-    GcMatch | null,
-    ParserMatch | null,
-    ParsedMatch | null,
-  ] = await Promise.all([
-    apiFetcher.readData(matchId, options?.noBlobStore),
-    gcFetcher.readData(matchId, options?.noBlobStore),
-    parsedFetcher.readData(matchId, options?.noBlobStore),
-    !options?.noArchive ? archivedFetcher.readData(matchId) : Promise.resolve(null),
-  ]);
-
-  let odData: GetMatchDataMetadata = {
-    has_api: Boolean(api),
-    has_gcdata: Boolean(gcdata),
-    has_parsed: Boolean(parsed),
-    has_archive: Boolean(archived),
-  };
-
-  if (!archived && !api) {
-    // Use this event to count the number of failed requests
-    // Could be due to missing data or invalid ID--need to analyze
-    redisCount('steam_api_backfill');
-    return [null, null];
-  }
-
-  const basePlayers = api?.players || archived?.players;
-  // Merge the results together
-  const final: Match | ParsedMatch = {
-    ...archived,
-    ...parsed,
-    ...gcdata,
-    ...api,
-    players: basePlayers?.map((basePlayer) => {
-      const apiPlayer = api?.players.find(
-        (apiP) => apiP.player_slot === basePlayer.player_slot,
-      );
-      const archivedPlayer = archived?.players.find(
-        (archivedP) => archivedP.player_slot === basePlayer.player_slot,
-      );
-      const gcPlayer = gcdata?.players.find(
-        (gcp) => gcp.player_slot === basePlayer.player_slot,
-      );
-      const parsedPlayer = parsed?.players.find(
-        (pp) => pp.player_slot === basePlayer.player_slot,
-      );
-      return {
-        ...archivedPlayer,
-        ...parsedPlayer,
-        ...gcPlayer,
-        ...apiPlayer,
-      };
-    }) as ParsedPlayer[],
-  } as ParsedMatch;
-  return [final, odData];
 }

@@ -2,7 +2,6 @@ import config from '../config';
 import { Archive } from '../store/archive';
 import {
   getFullPlayerMatchesWithMetadata,
-  getMatchDataFromBlobWithMetadata,
 } from './queries';
 import cassandra from '../store/cassandra';
 import type { PutObjectCommandOutput } from '@aws-sdk/client-s3';
@@ -14,6 +13,7 @@ import db from '../store/db';
 import { ApiFetcher } from '../fetcher/getApiData';
 import { GcdataFetcher } from '../fetcher/getGcData';
 import { ParsedFetcher } from '../fetcher/getParsedData';
+import { getMatchDataFromBlobWithMetadata } from './buildMatch';
 
 const apiFetcher = new ApiFetcher();
 const gcFetcher = new GcdataFetcher();
