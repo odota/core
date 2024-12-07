@@ -19,7 +19,7 @@ const apiFetcher = new ApiFetcher();
 const gcFetcher = new GcdataFetcher();
 const parsedFetcher = new ParsedFetcher();
 
-const matchArchive = config.ENABLE_MATCH_ARCHIVE ? new Archive('match') : null;
+const matchArchive = new Archive('match');
 const playerArchive = config.ENABLE_PLAYER_ARCHIVE
   ? new Archive('player')
   : null;
@@ -88,9 +88,6 @@ async function processMatch(matchId: number) {
  * @returns
  */
 async function doArchiveMatchFromBlobs(matchId: number) {
-  if (!matchArchive) {
-    return;
-  }
   // Don't read from archive when determining whether to archive
   const [match, metadata] = await getMatchDataFromBlobWithMetadata(matchId, {
     noArchive: true,
@@ -106,7 +103,7 @@ async function doArchiveMatchFromBlobs(matchId: number) {
     }
     // Archive the data since it's parsed. This might also contain api and gcdata
     const blob = Buffer.from(JSON.stringify(match));
-    const result = await matchArchive?.archivePut(matchId.toString(), blob);
+    const result = await matchArchive.archivePut(matchId.toString(), blob);
     if (result) {
       // Mark the match archived
       await db.raw(

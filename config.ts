@@ -62,7 +62,6 @@ const defaults = {
   MATCH_ARCHIVE_S3_BUCKET: 'opendota', // name of the S3 bucket to archive parsed match blobs
   PLAYER_ARCHIVE_S3_BUCKET: 'opendota-players', // name of the S3 bucket to archive player match blobs
   BLOB_ARCHIVE_S3_BUCKET: 'opendota-blobs', // name of the S3 bucket to use for match data blobs
-  ENABLE_MATCH_ARCHIVE: '', // Allow reading/writing parsed match blobs to S3 storage
   ENABLE_PLAYER_ARCHIVE: '', // Allow reading/writing player match blobs to S3 storage
   DISABLE_REPARSE: '', // Disable reparsing matches that are already parsed
   DISABLE_REPARSE_EARLY: '', // Disable reparsing matches by checking parsed_matches table first

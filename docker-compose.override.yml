@@ -37,6 +37,8 @@ services:
     entrypoint: >
       /bin/sh -c "
       /usr/bin/mc mb opendota-blobs;
+      /usr/bin/mc mb opendota;
+      /usr/bin/mc mb opendota-players;
       exit 0;
       "
   core:

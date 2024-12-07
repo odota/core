@@ -37,9 +37,6 @@ async function getTokenRange(size: number) {
 }
 
 async function doArchiveFromLegacy(matchId: number) {
-  if (!config.ENABLE_MATCH_ARCHIVE) {
-    return;
-  }
   let match = await getMatchDataFromLegacy(matchId);
   if (!match) {
     // We couldn't find this match so just skip it
