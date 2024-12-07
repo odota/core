@@ -17,6 +17,7 @@ import { GcdataFetcher } from '../fetcher/getGcData';
 import { ArchivedFetcher } from '../fetcher/getArchivedData';
 import { MetaFetcher } from '../fetcher/getMeta';
 import { benchmarks } from './benchmarksUtil';
+import { promises as fs } from 'fs'; 
 
 const apiFetcher = new ApiFetcher();
 const gcFetcher = new GcdataFetcher();
@@ -24,11 +25,12 @@ const parsedFetcher = new ParsedFetcher();
 const archivedFetcher = new ArchivedFetcher();
 const metaFetcher = new MetaFetcher();
 
-async function extendPlayerData(
+function extendPlayerData(
   player: Player | ParsedPlayer,
   match: Match | ParsedMatch,
-): Promise<Player | ParsedPlayer> {
+): Player | ParsedPlayer {
   // NOTE: This adds match specific properties into the player object, which leads to some unnecessary duplication in the output
+  // We do this right now to allow computeMatchData to work properly
   const p: Partial<ParsedPlayerMatch> = {
     ...player,
     radiant_win: match.radiant_win,
@@ -42,20 +44,11 @@ async function extendPlayerData(
     ),
   };
   computeMatchData(p as ParsedPlayerMatch);
-  const row = await db
-    .first()
-    .from('rank_tier')
-    .where({ account_id: p.account_id ?? null });
-  p.rank_tier = row ? row.rating : null;
-  const subscriber = await db
-    .first()
-    .from('subscriber')
-    .where({ account_id: p.account_id ?? null });
-  p.is_subscriber = Boolean(subscriber?.status);
   // Note: Type is bad here, we're adding properties that shouldn't be there but changing will affect external API
   return p as Player | ParsedPlayer;
 }
-async function prodataInfo(matchId: number): Promise<AnyDict> {
+
+async function getProMatchInfo(matchId: number): Promise<{ radiant_team?: any, dire_team?: any, league?: any, series_id?: number, series_type?: number, cluster?: number, replay_salt?: number}> {
   const result = await db
     .first([
       'radiant_team_id',
@@ -87,19 +80,15 @@ async function prodataInfo(matchId: number): Promise<AnyDict> {
     radiantTeamPromise,
     direTeamPromise,
   ]);
-  const final: AnyDict = {
+  const final = {
     league,
     radiant_team: radiantTeam,
     dire_team: direTeam,
     series_id: result.series_id,
     series_type: result.series_type,
+    cluster: result.cluster ?? undefined,
+    replay_salt: result.replay_salt ?? undefined,
   };
-  if (result.cluster) {
-    final.cluster = result.cluster;
-  }
-  if (result.replay_salt) {
-    final.replay_salt = result.replay_salt;
-  }
   return final;
 }
 
@@ -243,28 +232,34 @@ export async function buildMatch(
   }
   match.od_data = odData;
   redisCount('build_match');
-  let playersMatchData: (Player | ParsedPlayer)[] = match.players;
-  // Get names, last login for players from DB
-  playersMatchData = await Promise.all(
-    playersMatchData.map((r) =>
-      db
-        .raw(
-          `
-        SELECT personaname, name, last_login 
-        FROM players
-        LEFT JOIN notable_players
-        ON players.account_id = notable_players.account_id
-        WHERE players.account_id = ?
-      `,
-          [r.account_id ?? null],
-        )
-        .then((names) => ({ ...r, ...names.rows[0] })),
+  const [players, prodata, cosmetics, metadata] = await Promise.all([
+    Promise.all(
+      // Get names, last login for players from DB
+      match.players.map(async (p) => {
+        const { rows } = await db
+          .raw(
+            `
+          SELECT personaname, name, last_login, rating, status
+          FROM players
+          LEFT JOIN notable_players USING(account_id)
+          LEFT JOIN rank_tier USING(account_id)
+          LEFT JOIN subscriber USING(account_id)
+          WHERE players.account_id = ?
+        `,
+            [p.account_id ?? null],
+        );
+        const row = rows[0];
+        return { 
+          ...p, 
+          personaname: row?.personaname,
+          name: row?.name,
+          last_login: row?.name,
+          rank_tier: row?.rating,
+          is_subscriber: Boolean(row?.status),
+        };
+      })
     ),
-  );
-  const playersPromise = Promise.all(
-    playersMatchData.map((p) => extendPlayerData(p, match!)),
-  );
-  const cosmeticsPromise =
+    getProMatchInfo(matchId),
     'cosmetics' in match && match.cosmetics
       ? Promise.all(
           Object.keys(match.cosmetics).map((itemId) =>
@@ -273,53 +268,43 @@ export async function buildMatch(
             }),
           ),
         )
-      : Promise.resolve(null);
-  const prodataPromise = prodataInfo(matchId);
-  const metadataPromise = Boolean(options.meta)
+      : Promise.resolve(null),
+    Boolean(options.meta)
     ? metaFetcher.getOrFetchData(Number(matchId))
-    : Promise.resolve(null);
-  const [players, prodata, cosmetics, metadata] = await Promise.all([
-    playersPromise,
-    prodataPromise,
-    cosmeticsPromise,
-    metadataPromise,
+    : Promise.resolve(null),
   ]);
   let matchResult: Match | ParsedMatch = {
     ...match,
     ...prodata,
     metadata,
-    players,
+    players: players
+      .map((p) => extendPlayerData(p, match!))
+      .map((p) => {
+        if (!cosmetics) {
+          return p;
+        }
+        const hero = heroes[p.hero_id as unknown as keyof typeof heroes] || {};
+        const playerCosmetics = cosmetics
+          .filter(Boolean)
+          .filter(
+            (c) =>
+              match &&
+              'cosmetics' in match &&
+              match.cosmetics?.[c.item_id] === p.player_slot &&
+              (!c.used_by_heroes || c.used_by_heroes === hero.name),
+          );
+        return {
+          ...p,
+          cosmetics: playerCosmetics,
+        };
+      }),
+    replay_url: match.replay_salt ? buildReplayUrl(
+      match.match_id,
+      match.cluster,
+      match.replay_salt,
+    ) : undefined,
   };
-  if (cosmetics) {
-    const playersWithCosmetics = matchResult.players.map((p) => {
-      const hero = heroes[p.hero_id as unknown as keyof typeof heroes] || {};
-      const playerCosmetics = cosmetics
-        .filter(Boolean)
-        .filter(
-          (c) =>
-            match &&
-            'cosmetics' in match &&
-            match.cosmetics?.[c.item_id] === p.player_slot &&
-            (!c.used_by_heroes || c.used_by_heroes === hero.name),
-        );
-      return {
-        ...p,
-        cosmetics: playerCosmetics,
-      };
-    });
-    matchResult = {
-      ...matchResult,
-      players: playersWithCosmetics,
-    };
-  }
   computeMatchData(matchResult as ParsedPlayerMatch);
-  if (matchResult.replay_salt) {
-    matchResult.replay_url = buildReplayUrl(
-      matchResult.match_id,
-      matchResult.cluster,
-      matchResult.replay_salt,
-    );
-  }
   await addPlayerBenchmarks(matchResult);
 
   // Save in cache
@@ -335,5 +320,11 @@ export async function buildMatch(
       JSON.stringify(matchResult),
     );
   }
+  // if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
+  //   await fs.writeFile(
+  //     './json/' + matchId + '_output.json',
+  //     JSON.stringify(matchResult, null, 2),
+  //   );
+  // }
   return matchResult;
 }

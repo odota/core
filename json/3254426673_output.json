@@ -44,6 +44,8 @@
       "personaname": null,
       "name": null,
       "last_login": null,
+      "rank_tier": null,
+      "is_subscriber": false,
       "radiant_win": false,
       "start_time": 1497678766,
       "duration": 1888,
@@ -61,8 +63,6 @@
       "kills_per_min": 0.09533898305084747,
       "kda": 1.14,
       "abandons": 0,
-      "rank_tier": null,
-      "is_subscriber": false,
       "benchmarks": {
         "gold_per_min": {
           "raw": 190,
@@ -142,6 +142,8 @@
       "personaname": null,
       "name": null,
       "last_login": null,
+      "rank_tier": null,
+      "is_subscriber": false,
       "radiant_win": false,
       "start_time": 1497678766,
       "duration": 1888,
@@ -159,8 +161,6 @@
       "kills_per_min": 0.15889830508474578,
       "kda": 1.13,
       "abandons": 0,
-      "rank_tier": null,
-      "is_subscriber": false,
       "benchmarks": {
         "gold_per_min": {
           "raw": 319,
@@ -241,6 +241,8 @@
       "personaname": null,
       "name": null,
       "last_login": null,
+      "rank_tier": null,
+      "is_subscriber": false,
       "radiant_win": false,
       "start_time": 1497678766,
       "duration": 1888,
@@ -258,8 +260,6 @@
       "kills_per_min": 0.03177966101694915,
       "kda": 1.25,
       "abandons": 0,
-      "rank_tier": null,
-      "is_subscriber": false,
       "benchmarks": {
         "gold_per_min": {
           "raw": 420,
@@ -340,6 +340,8 @@
       "personaname": null,
       "name": null,
       "last_login": null,
+      "rank_tier": null,
+      "is_subscriber": false,
       "radiant_win": false,
       "start_time": 1497678766,
       "duration": 1888,
@@ -357,8 +359,6 @@
       "kills_per_min": 0.19067796610169493,
       "kda": 2,
       "abandons": 0,
-      "rank_tier": null,
-      "is_subscriber": false,
       "benchmarks": {
         "gold_per_min": {
           "raw": 363,
@@ -437,6 +437,8 @@
       "personaname": null,
       "name": null,
       "last_login": null,
+      "rank_tier": null,
+      "is_subscriber": false,
       "radiant_win": false,
       "start_time": 1497678766,
       "duration": 1888,
@@ -453,8 +455,6 @@
       "total_xp": 11076,
       "kda": 1.4,
       "abandons": 0,
-      "rank_tier": null,
-      "is_subscriber": false,
       "benchmarks": {
         "gold_per_min": {
           "raw": 276,
@@ -533,6 +533,8 @@
       "personaname": null,
       "name": null,
       "last_login": null,
+      "rank_tier": null,
+      "is_subscriber": false,
       "radiant_win": false,
       "start_time": 1497678766,
       "duration": 1888,
@@ -550,8 +552,6 @@
       "kills_per_min": 0.03177966101694915,
       "kda": 1.86,
       "abandons": 0,
-      "rank_tier": null,
-      "is_subscriber": false,
       "benchmarks": {
         "gold_per_min": {
           "raw": 252,
@@ -633,6 +633,8 @@
       "personaname": null,
       "name": null,
       "last_login": null,
+      "rank_tier": null,
+      "is_subscriber": false,
       "radiant_win": false,
       "start_time": 1497678766,
       "duration": 1888,
@@ -650,8 +652,6 @@
       "kills_per_min": 0.15889830508474578,
       "kda": 3.33,
       "abandons": 0,
-      "rank_tier": null,
-      "is_subscriber": false,
       "benchmarks": {
         "gold_per_min": {
           "raw": 687,
@@ -733,6 +733,8 @@
       "personaname": null,
       "name": null,
       "last_login": null,
+      "rank_tier": null,
+      "is_subscriber": false,
       "radiant_win": false,
       "start_time": 1497678766,
       "duration": 1888,
@@ -750,8 +752,6 @@
       "kills_per_min": 0.2542372881355932,
       "kda": 9,
       "abandons": 0,
-      "rank_tier": null,
-      "is_subscriber": false,
       "benchmarks": {
         "gold_per_min": {
           "raw": 524,
@@ -832,6 +832,8 @@
       "personaname": null,
       "name": null,
       "last_login": null,
+      "rank_tier": null,
+      "is_subscriber": false,
       "radiant_win": false,
       "start_time": 1497678766,
       "duration": 1888,
@@ -849,8 +851,6 @@
       "kills_per_min": 0.22245762711864409,
       "kda": 8,
       "abandons": 0,
-      "rank_tier": null,
-      "is_subscriber": false,
       "benchmarks": {
         "gold_per_min": {
           "raw": 464,
@@ -928,6 +928,8 @@
       "personaname": null,
       "name": null,
       "last_login": null,
+      "rank_tier": null,
+      "is_subscriber": false,
       "radiant_win": false,
       "start_time": 1497678766,
       "duration": 1888,
@@ -945,8 +947,6 @@
       "kills_per_min": 0.0635593220338983,
       "kda": 1.67,
       "abandons": 0,
-      "rank_tier": null,
-      "is_subscriber": false,
       "benchmarks": {
         "gold_per_min": {
           "raw": 280,

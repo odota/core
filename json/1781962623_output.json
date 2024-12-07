@@ -3962,6 +3962,8 @@
       "personaname": "Cherno Billy",
       "name": null,
       "last_login": null,
+      "rank_tier": 80,
+      "is_subscriber": false,
       "radiant_win": true,
       "start_time": 1441835947,
       "duration": 2220,
@@ -4080,8 +4082,6 @@
       "purchase_tpscroll": 13,
       "actions_per_min": 210,
       "life_state_dead": 292,
-      "rank_tier": 80,
-      "is_subscriber": false,
       "cosmetics": [],
       "benchmarks": {
         "gold_per_min": {
@@ -5155,6 +5155,8 @@
       "personaname": null,
       "name": null,
       "last_login": null,
+      "rank_tier": null,
+      "is_subscriber": false,
       "radiant_win": true,
       "start_time": 1441835947,
       "duration": 2220,
@@ -5313,8 +5315,6 @@
       "purchase_tpscroll": 5,
       "actions_per_min": 234,
       "life_state_dead": 261,
-      "rank_tier": null,
-      "is_subscriber": false,
       "cosmetics": [],
       "benchmarks": {
         "gold_per_min": {
@@ -6754,6 +6754,8 @@
       "personaname": null,
       "name": null,
       "last_login": null,
+      "rank_tier": 80,
+      "is_subscriber": false,
       "radiant_win": true,
       "start_time": 1441835947,
       "duration": 2220,
@@ -6880,8 +6882,6 @@
       "purchase_tpscroll": 2,
       "actions_per_min": 181,
       "life_state_dead": 96,
-      "rank_tier": 80,
-      "is_subscriber": false,
       "cosmetics": [],
       "benchmarks": {
         "gold_per_min": {
@@ -8002,6 +8002,8 @@
       "personaname": null,
       "name": null,
       "last_login": null,
+      "rank_tier": 80,
+      "is_subscriber": false,
       "radiant_win": true,
       "start_time": 1441835947,
       "duration": 2220,
@@ -8136,8 +8138,6 @@
       "purchase_tpscroll": 7,
       "actions_per_min": 222,
       "life_state_dead": 176,
-      "rank_tier": 80,
-      "is_subscriber": false,
       "cosmetics": [],
       "benchmarks": {
         "gold_per_min": {
@@ -9177,6 +9177,8 @@
       "personaname": null,
       "name": null,
       "last_login": null,
+      "rank_tier": 80,
+      "is_subscriber": false,
       "radiant_win": true,
       "start_time": 1441835947,
       "duration": 2220,
@@ -9321,8 +9323,6 @@
       "purchase_tpscroll": 7,
       "actions_per_min": 262,
       "life_state_dead": 347,
-      "rank_tier": 80,
-      "is_subscriber": false,
       "cosmetics": [],
       "benchmarks": {
         "gold_per_min": {
@@ -10118,6 +10118,8 @@
       "personaname": null,
       "name": null,
       "last_login": null,
+      "rank_tier": 80,
+      "is_subscriber": false,
       "radiant_win": true,
       "start_time": 1441835947,
       "duration": 2220,
@@ -10254,8 +10256,6 @@
       "purchase_gem": 1,
       "actions_per_min": 0,
       "life_state_dead": 629,
-      "rank_tier": 80,
-      "is_subscriber": false,
       "cosmetics": [],
       "benchmarks": {
         "gold_per_min": {
@@ -11068,6 +11068,8 @@
       "personaname": null,
       "name": null,
       "last_login": null,
+      "rank_tier": 80,
+      "is_subscriber": false,
       "radiant_win": true,
       "start_time": 1441835947,
       "duration": 2220,
@@ -11158,8 +11160,6 @@
       "purchase_tpscroll": 8,
       "actions_per_min": 0,
       "life_state_dead": 276,
-      "rank_tier": 80,
-      "is_subscriber": false,
       "cosmetics": [],
       "benchmarks": {
         "gold_per_min": {
@@ -12197,6 +12197,8 @@
       "personaname": null,
       "name": null,
       "last_login": null,
+      "rank_tier": 80,
+      "is_subscriber": false,
       "radiant_win": true,
       "start_time": 1441835947,
       "duration": 2220,
@@ -12327,8 +12329,6 @@
       "purchase_tpscroll": 9,
       "actions_per_min": 0,
       "life_state_dead": 523,
-      "rank_tier": 80,
-      "is_subscriber": false,
       "cosmetics": [],
       "benchmarks": {
         "gold_per_min": {
@@ -13243,6 +13243,8 @@
       "personaname": null,
       "name": null,
       "last_login": null,
+      "rank_tier": null,
+      "is_subscriber": false,
       "radiant_win": true,
       "start_time": 1441835947,
       "duration": 2220,
@@ -13369,8 +13371,6 @@
       "purchase_tpscroll": 10,
       "actions_per_min": 0,
       "life_state_dead": 632,
-      "rank_tier": null,
-      "is_subscriber": false,
       "cosmetics": [],
       "benchmarks": {
         "gold_per_min": {
@@ -14354,6 +14354,8 @@
       "personaname": null,
       "name": null,
       "last_login": null,
+      "rank_tier": null,
+      "is_subscriber": false,
       "radiant_win": true,
       "start_time": 1441835947,
       "duration": 2220,
@@ -14480,8 +14482,6 @@
       "purchase_tpscroll": 6,
       "actions_per_min": 0,
       "life_state_dead": 298,
-      "rank_tier": null,
-      "is_subscriber": false,
       "cosmetics": [],
       "benchmarks": {
         "gold_per_min": {
@@ -14549,6 +14549,7 @@
     "name": null
   },
   "metadata": null,
+  "replay_url": "https://odota.github.io/testfiles/1781962623_1.dem",
   "patch": 14,
   "region": 3,
   "all_word_counts": {
@@ -14720,6 +14721,5 @@
   },
   "my_word_counts": {},
   "throw": 0,
-  "loss": 47817,
-  "replay_url": "https://odota.github.io/testfiles/1781962623_1.dem"
+  "loss": 47817
 }
