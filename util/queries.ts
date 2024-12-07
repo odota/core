@@ -47,7 +47,11 @@ export async function getHeroRankings(heroId: string) {
   };
 }
 export async function getHeroItemPopularity(heroId: string) {
-  const purchaseLogs: { rows: { purchase_log: {key: keyof typeof itemsConstants, time: string}[]}[] } = await db.raw(
+  const purchaseLogs: {
+    rows: {
+      purchase_log: { key: keyof typeof itemsConstants; time: string }[];
+    }[];
+  } = await db.raw(
     `
   SELECT purchase_log
   FROM player_matches
@@ -70,21 +74,32 @@ export async function getHeroItemPopularity(heroId: string) {
       return { cost, id, time };
     });
   const startGameItems = countItemPopularity(
-    items.filter((item) => item.time <= 0 && item.cost != null && item.cost <= 600),
+    items.filter(
+      (item) => item.time <= 0 && item.cost != null && item.cost <= 600,
+    ),
   );
   const earlyGameItems = countItemPopularity(
     items.filter(
-      (item) => item.time > 0 && item.time < 60 * 10 && item.cost != null && item.cost >= 500,
+      (item) =>
+        item.time > 0 &&
+        item.time < 60 * 10 &&
+        item.cost != null &&
+        item.cost >= 500,
     ),
   );
   const midGameItems = countItemPopularity(
     items.filter(
       (item) =>
-        item.time >= 60 * 10 && item.time < 60 * 25 && item.cost != null && item.cost >= 1000,
+        item.time >= 60 * 10 &&
+        item.time < 60 * 25 &&
+        item.cost != null &&
+        item.cost >= 1000,
     ),
   );
   const lateGameItems = countItemPopularity(
-    items.filter((item) => item.time >= 60 * 25 && item.cost != null && item.cost >= 2000),
+    items.filter(
+      (item) => item.time >= 60 * 25 && item.cost != null && item.cost >= 2000,
+    ),
   );
   return {
     start_game_items: startGameItems,

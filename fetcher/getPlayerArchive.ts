@@ -7,7 +7,7 @@ import { PlayerFetcher } from './base';
 const playerArchive = config.ENABLE_PLAYER_ARCHIVE
   ? new Archive('player')
   : null;
-  
+
 async function doArchivePlayerMatches(
   accountId: number,
 ): Promise<PutObjectCommandOutput | null> {

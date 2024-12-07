@@ -341,7 +341,10 @@ export async function insertMatch(
       }
     }
   }
-  async function upsertPlayerCaches(match: InsertMatchInput, averageRank: number | undefined) {
+  async function upsertPlayerCaches(
+    match: InsertMatchInput,
+    averageRank: number | undefined,
+  ) {
     // Add the 10 player_match rows indexed by player
     // We currently do this on all types
     const copy = createMatchCopy<Match>(match);

@@ -220,7 +220,9 @@ export async function buildStatus() {
       const keys = Object.keys(game_mode);
       for (let i = 0; i < keys.length; i++) {
         const key = keys[i] as keyof typeof game_mode;
-        result[game_mode[key]?.name] = Number(await countDay(`${key}_game_mode` as MetricName));
+        result[game_mode[key]?.name] = Number(
+          await countDay(`${key}_game_mode` as MetricName),
+        );
       }
       return result;
     },
@@ -229,7 +231,9 @@ export async function buildStatus() {
       const keys = Object.keys(lobby_type);
       for (let i = 0; i < keys.length; i++) {
         const key = keys[i] as keyof typeof lobby_type;
-        result[lobby_type[key]?.name] = Number(await countDay(`${key}_lobby_type` as MetricName));
+        result[lobby_type[key]?.name] = Number(
+          await countDay(`${key}_lobby_type` as MetricName),
+        );
       }
       return result;
     },
@@ -238,8 +242,11 @@ export async function buildStatus() {
       const clusters = Object.entries(cluster);
       for (let i = 0; i < clusters.length; i++) {
         const [cluster, reg] = clusters[i];
-        const regName = region[reg as unknown as keyof typeof region] ?? cluster;
-        result[regName] = (result[regName] ?? 0) + Number(await countDay(`${cluster}_cluster` as MetricName)) ;
+        const regName =
+          region[reg as unknown as keyof typeof region] ?? cluster;
+        result[regName] =
+          (result[regName] ?? 0) +
+          Number(await countDay(`${cluster}_cluster` as MetricName));
       }
       return result;
     },

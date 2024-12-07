@@ -242,5 +242,5 @@ export class GcdataFetcher extends MatchFetcher<GcMatch> {
   getOrFetchDataWithRetry = getOrFetchGcDataWithRetry;
   checkAvailable = async (matchId: number) => {
     throw new Error('not implemented');
-  }
+  };
 }

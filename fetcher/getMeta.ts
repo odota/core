@@ -78,5 +78,5 @@ export class MetaFetcher extends MatchFetcher<Record<string, any>> {
   getOrFetchData = getMeta;
   checkAvailable = () => {
     throw new Error('not implemented');
-  }
+  };
 }

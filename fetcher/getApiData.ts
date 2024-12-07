@@ -67,5 +67,5 @@ export class ApiFetcher extends MatchFetcher<ApiMatch> {
   getOrFetchData = getOrFetchApiData;
   checkAvailable = () => {
     throw new Error('not implemented');
-  }
+  };
 }

@@ -55,10 +55,8 @@ async function parseProcessor(job: ParseJob) {
     const apiStart = Date.now();
     // The pgroup is used to update player_caches on insert.
     // Since currently gcdata and parse data have no knowledge of anonymity, we pass it from API data
-    let {
-      data: apiMatch,
-      error: apiError,
-    } = await apiFetcher.getOrFetchData(matchId);
+    let { data: apiMatch, error: apiError } =
+      await apiFetcher.getOrFetchData(matchId);
     if (apiError) {
       log('fail', 'API error: ' + apiError);
       return false;
@@ -87,13 +85,11 @@ async function parseProcessor(job: ParseJob) {
 
     // Fetch the gcdata and construct a replay URL
     const gcStart = Date.now();
-    const { data: gcMatch, error: gcError } = await gcFetcher.getOrFetchDataWithRetry(
-      matchId,
-      {
+    const { data: gcMatch, error: gcError } =
+      await gcFetcher.getOrFetchDataWithRetry(matchId, {
         pgroup,
         origin: job.origin,
-      },
-    );
+      });
     if (!gcMatch) {
       // non-retryable error
       log('fail', gcError || 'Missing gcdata');

@@ -479,7 +479,6 @@ type GcExtraData = {
   pgroup: PGroup;
 };
 
-
 type ParseExtraData = {
   leagueid: number;
   start_time: number;

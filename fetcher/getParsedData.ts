@@ -128,5 +128,5 @@ export class ParsedFetcher extends MatchFetcher<ParserMatch> {
         ])
       ).rows[0],
     );
-  }
+  };
 }

@@ -43,9 +43,7 @@ async function doArchiveMatchFromBlobs(matchId: number) {
 }
 
 export class ArchivedFetcher extends MatchFetcher<ParsedMatch> {
-  readData = async (
-    matchId: number,
-  ): Promise<ParsedMatch | null> => {
+  readData = async (matchId: number): Promise<ParsedMatch | null> => {
     try {
       // Check if the parsed data is archived
       // Most matches won't be in the archive so it's more efficient not to always try

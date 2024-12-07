@@ -163,7 +163,9 @@ export async function getMatchDataFromBlobWithMetadata(
     apiFetcher.readData(matchId, options?.noBlobStore),
     gcFetcher.readData(matchId, options?.noBlobStore),
     parsedFetcher.readData(matchId, options?.noBlobStore),
-    !options?.noArchive ? archivedFetcher.readData(matchId) : Promise.resolve(null),
+    !options?.noArchive
+      ? archivedFetcher.readData(matchId)
+      : Promise.resolve(null),
   ]);
 
   let odData: GetMatchDataMetadata = {

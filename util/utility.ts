@@ -314,7 +314,7 @@ type LobbyType = keyof typeof lobby_type;
 export function isSignificant(match: Match | ApiMatch) {
   return Boolean(
     game_mode[match.game_mode as unknown as GameMode]?.balanced &&
-    lobby_type[match.lobby_type as unknown as LobbyType]?.balanced &&
+      lobby_type[match.lobby_type as unknown as LobbyType]?.balanced &&
       match.radiant_win != null &&
       match.duration > 360 &&
       (match.players || []).every(

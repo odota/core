@@ -17,7 +17,7 @@ export async function search(query: string) {
     LIMIT 50;
     `,
     [query],
-    );
+  );
   // Later versions of postgres have word_similarity (<<->) which may be more accurate
   return [...accountIdMatch, ...personaNameMatch.rows];
 }
