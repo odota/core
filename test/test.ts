@@ -23,7 +23,7 @@ import retrieverPlayer from './data/retriever_player.json';
 import detailsApiPro from './data/details_api_pro.json';
 import retrieverMatch from './data/retriever_match.json';
 import spec from '../routes/spec';
-import { getPlayerMatches } from '../util/queries';
+import { getPlayerMatches } from '../util/buildPlayer';
 import { insertMatch, upsertPlayer } from '../util/insert';
 import { buildMatch } from '../util/buildMatch';
 import { es } from '../store/elasticsearch';

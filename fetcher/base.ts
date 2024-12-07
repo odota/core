@@ -10,5 +10,6 @@ export abstract class MatchFetcher<T> {
 }
 
 export abstract class PlayerFetcher<T> {
-    public abstract readData(accountId: number): T
+    public abstract readData(accountId: number): Promise<T>
+    public abstract getOrFetchData(accountId: number): Promise<T>
 }

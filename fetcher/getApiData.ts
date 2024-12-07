@@ -1,4 +1,3 @@
-import config from '../config';
 import { redisCount } from '../util/utility';
 import { Archive } from '../store/archive';
 import cassandra from '../store/cassandra';

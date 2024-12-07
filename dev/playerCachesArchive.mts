@@ -1,9 +1,8 @@
 import fs from 'fs';
-import { processPlayerMatches } from '../util/archiveUtil.js';
-const { getPlayerMatchesWithMetadata } = await import('../util/queries.js');
+const { getPlayerMatchesWithMetadata } = await import('../util/buildPlayer.js');
 
 // Write player blob to archive
-await processPlayerMatches(88367253);
+// await processPlayerMatches(88367253);
 
 // Read it back
 // await getArchivedPlayerMatches('88367253');

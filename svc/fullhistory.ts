@@ -9,7 +9,7 @@ import {
 } from '../util/utility';
 import db from '../store/db';
 import { runQueue } from '../store/queue';
-import { getPlayerMatches } from '../util/queries';
+import { getPlayerMatches } from '../util/buildPlayer';
 import { insertMatch } from '../util/insert';
 
 async function updatePlayer(player: FullHistoryJob) {
