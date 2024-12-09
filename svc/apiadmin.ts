@@ -1,87 +1,61 @@
 // Runs background processes related to API keys and billing/usage
-import async from 'async';
 import moment from 'moment';
 import stripe from '../store/stripe';
 import redis from '../store/redis';
 import db from '../store/db';
 import config from '../config';
 import type { knex } from 'knex';
-import { invokeInterval } from '../util/utility';
+import { invokeInterval, invokeIntervalAsync } from '../util/utility';
 import type Stripe from 'stripe';
 
 // NOTE: cannot currently delete and rebuild redis data because API usage counts for the month will be lost
 // probably can alleviate by storing usage per day and then summing it here, or by writing usage to pg directly
-function storeUsageCounts(cursor: string | number, cb: ErrorCb) {
-  redis.hscan('usage_count', cursor, (err, results) => {
-    if (err) {
-      cb(err);
-    } else {
-      const cursor = results![0];
-      const values = results![1];
+async function storeUsageCounts() {
+  try {
+    let cursor = null;
+    while (cursor !== '0') {
+      let [nextCursor, values] = await redis.hscan('usage_count', cursor ?? '0');
+      cursor = nextCursor as string;
       const apiTimestamp = moment().startOf('day');
-      async.eachOfLimit(
-        values,
-        5,
-        (e, i, cb2) => {
-          if (Number(i) % 2) {
-            cb2();
-          } else if (e.includes(':')) {
-            cb2();
-          } else if (config.ENABLE_API_LIMIT) {
-            const split = e;
-            // console.log("Updating usage for", e, "usage", values[i + 1]);
-            let apiRecord;
-            db.from('api_keys')
-              .where({
-                api_key: split,
-              })
-              .then((rows) => {
-                if (rows.length > 0) {
-                  [apiRecord] = rows;
-                  return db.raw(
-                    `
-                  INSERT INTO api_key_usage
-                  (account_id, api_key, customer_id, timestamp, ip, usage_count) VALUES
-                  (?, ?, ?, ?, ?, ?)
-                  ON CONFLICT ON CONSTRAINT api_key_usage_pkey DO UPDATE SET usage_count = ?
-                `,
-                    [
-                      apiRecord.account_id,
-                      apiRecord.api_key,
-                      apiRecord.customer_id,
-                      apiTimestamp,
-                      '',
-                      values?.[Number(i) + 1],
-                      values?.[Number(i) + 1],
-                    ],
-                  );
-                }
-                throw Error('No record found.');
-              })
-              .then(() => cb2())
-              .catch((e) => {
-                if (e.message === 'No record found.') {
-                  cb2();
-                } else {
-                  cb2(e);
-                }
-              });
-          } else {
-            cb2();
+      for (let i = 0; i < values.length; i++) {
+        const e = values[i];
+        if (Number(i) % 2) {
+          continue;
+        } else if (e.includes(':')) {
+          continue;
+        } else if (config.ENABLE_API_LIMIT) {
+          const split = e;
+          // console.log("Updating usage for", e, "usage", values[i + 1]);
+          const rows = await db.from('api_keys')
+            .where({
+              api_key: split,
+            });
+          const apiRecord = rows[0];
+          if (apiRecord) {
+            await db.raw(`
+              INSERT INTO api_key_usage
+              (account_id, api_key, customer_id, timestamp, ip, usage_count) VALUES
+              (?, ?, ?, ?, ?, ?)
+              ON CONFLICT ON CONSTRAINT api_key_usage_pkey DO UPDATE SET usage_count = ?
+            `,
+              [
+                apiRecord.account_id,
+                apiRecord.api_key,
+                apiRecord.customer_id,
+                apiTimestamp,
+                '',
+                values?.[Number(i) + 1],
+                values?.[Number(i) + 1],
+              ],
+            );
           }
-        },
-        (err: any) => {
-          if (err) {
-            return cb(err);
-          }
-          if (cursor !== '0') {
-            return storeUsageCounts(cursor, cb);
-          }
-          return cb();
-        },
-      );
+        }
+      }
     }
-  });
+  } catch (e) {
+    // Log errors here but don't throw to avoid interfering with other jobs
+    console.error(e);
+  }
 }
 async function updateStripeUsage(cb: ErrorCb) {
   const options = {
@@ -198,11 +172,9 @@ invokeInterval(
     });
   },
   5 * 60 * 1000,
-); // Update every 5 min
-invokeInterval(
-  (cb: ErrorCb) => {
-    storeUsageCounts(0, cb);
-  },
+);
+invokeIntervalAsync(
+  storeUsageCounts,
   10 * 60 * 1000,
-); // Every 10 minutes
-invokeInterval(updateStripeUsage, 5 * 60 * 1000); // Every 5 minutes
+);
+invokeInterval(updateStripeUsage, 5 * 60 * 1000);
