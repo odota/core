@@ -463,7 +463,8 @@ type MetricName =
   | 'slow_api_hit'
   | 'api_cassandra_read'
   | 'gcdata_cassandra_read'
-  | 'parsed_cassandra_read';
+  | 'parsed_cassandra_read'
+  | 'request_api_fail';
 
 // Object to map player_slot to basic info
 type PGroup = {

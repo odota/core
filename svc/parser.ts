@@ -58,6 +58,7 @@ async function parseProcessor(job: ParseJob) {
     let { data: apiMatch, error: apiError } =
       await apiFetcher.getOrFetchData(matchId);
     if (apiError) {
+      redisCount('request_api_fail');
       log('fail', 'API error: ' + apiError);
       return false;
     }

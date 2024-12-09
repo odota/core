@@ -93,8 +93,9 @@ export async function buildStatus() {
         requests_last_day: async () => countDay('request'),
         distinct_requests_last_day: async () =>
           countDayDistinct('distinct_request'),
-        requests_ui_day: async () => countDay('request_ui'),
+        requests_ui_last_day: async () => countDay('request_ui'),
         requests_api_key_last_day: async () => countDay('request_api_key'),
+        request_api_fail_last_day: async () => countDay('request_api_fail'),
         fullhistory_last_day: async () => countDay('fullhistory'),
         fullhistory_short_last_day: async () => countDay('fullhistory_short'),
         fullhistory_ops_last_day: async () => countDay('fullhistory_op'),

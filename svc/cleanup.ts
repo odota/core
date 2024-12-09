@@ -35,9 +35,13 @@ async function cleanup() {
     // ignore if doesn't exist
   }
   for (let i = 0; i < files.length; i++) {
-    const stat = await fs.stat('./cache/' + files[i]);
-    if (stat.birthtime < new Date(Date.now() - 48 * 60 * 60 * 1000)) {
-      await fs.unlink('./cache/' + files[i]);
+    try {
+      const stat = await fs.stat('./cache/' + files[i]);
+      if (stat.birthtime < new Date(Date.now() - 48 * 60 * 60 * 1000)) {
+        await fs.unlink('./cache/' + files[i]);
+      }
+    } catch (e) {
+      console.log(e);
     }
   }
   return;
