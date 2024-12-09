@@ -197,11 +197,16 @@ export async function populateTemp(
   // Populate cache with all columns result
   const all = await readPlayerCaches(accountId, Array.from(cacheableCols));
   if (all.length >= Number(config.PLAYER_CACHE_THRESHOLD)) {
-    const zip = gzipSync(JSON.stringify(all));
-    redisCount('player_temp_write');
-    redisCount('player_temp_write_bytes', zip.length);
-    await fs.mkdir('./cache', { recursive: true });
-    await fs.writeFile('./cache/' + accountId, zip);
+    try {
+      const zip = gzipSync(JSON.stringify(all));
+      redisCount('player_temp_write');
+      redisCount('player_temp_write_bytes', zip.length);
+      await fs.mkdir('./cache', { recursive: true });
+      await fs.writeFile('./cache/' + accountId, zip);
+    } catch (e) {
+      console.log(e);
+      // We can ignore temp write exceptions
+    }
   }
   return all.map((m: any) => pick(m, project));
 }
