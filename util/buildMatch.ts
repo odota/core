@@ -253,7 +253,7 @@ export async function buildMatch(
           ...p, 
           personaname: row?.personaname,
           name: row?.name,
-          last_login: row?.name,
+          last_login: row?.last_login,
           rank_tier: row?.rating,
           is_subscriber: Boolean(row?.status),
         };
