@@ -61,9 +61,9 @@ passport.use(
       apiKey,
     },
     async (identifier: string, profile: any, cb: ErrorCb) => {
-      const player = profile._json;
-      player.last_login = new Date();
       try {
+        const player = profile._json;
+        player.last_login = new Date();
         await upsertPlayer(db, player, true);
         cb(null, player);
       } catch (e) {
@@ -128,13 +128,13 @@ const onResFinish = (
 
 // Dummy User ID for testing
 if (config.NODE_ENV === 'test') {
-  app.use((req, res, cb) => {
+  app.use((req, res, next) => {
     if (req.query.loggedin) {
       req.user = {
         account_id: '1',
       };
     }
-    cb();
+    next();
   });
 }
 
@@ -146,6 +146,9 @@ app.use(passport.session());
 
 // req.body available after this
 app.use(bodyParser.json());
+
+// This is for passing the IP through if behind load balancer https://expressjs.com/en/guide/behind-proxies.html
+app.set('trust proxy', true);
 
 // CORS headers
 // All endpoints accessed from UI should be after this
@@ -177,79 +180,91 @@ app.get('/healthz', (req, res) => {
   res.end('ok');
 });
 
-app.get('/ip', async (req, res) => {
+app.get('/ip', (req, res) => {
   // Echo back the client's ip
   res.end(req.ip);
 });
 
-app.get('/status', async (req, res) => {
-  const status = await buildStatus();
-  return res.json(status);
-});
-
-app.post('/register/:service/:host', async (req, res, cb) => {
-  // check secret matches
-  if (config.RETRIEVER_SECRET && config.RETRIEVER_SECRET !== req.query.key) {
-    return res.status(403).end();
-  }
-  // zadd the given host and current time
-  if (req.params.service && req.params.host) {
-    const size = Number(req.query.size);
-    const now = Date.now();
-    const keys = [];
-    if (size) {
-      for (let i = 0; i < size; i++) {
+app.post('/register/:service/:host', async (req, res, next) => {
+  try {
+    // check secret matches
+    if (config.RETRIEVER_SECRET && config.RETRIEVER_SECRET !== req.query.key) {
+      return res.status(403).end();
+    }
+    // zadd the given host and current time
+    if (req.params.service && req.params.host) {
+      const size = Number(req.query.size);
+      const now = Date.now();
+      const keys = [];
+      if (size) {
+        for (let i = 0; i < size; i++) {
+          keys.push(now);
+          keys.push(req.params.host + '?' + i);
+        }
+      } else {
         keys.push(now);
-        keys.push(req.params.host + '?' + i);
+        keys.push(req.params.host);
       }
-    } else {
-      keys.push(now);
-      keys.push(req.params.host);
+      const result = await redis.zadd(`registry:${req.params.service}`, ...keys);
+      return res.send(result.toString());
     }
-    const result = await redis.zadd(`registry:${req.params.service}`, ...keys);
-    return res.send(result.toString());
+    return res.end();
+  } catch (e) {
+    next(e);
   }
-  return res.end();
-});
-
-app.get('/retrieverData', async (req, res) => {
-  // check secret matches
-  if (config.RETRIEVER_SECRET && config.RETRIEVER_SECRET !== req.query.key) {
-    return res.status(403).end();
-  }
-  const accountCount = Number(req.query.count) || 5;
-  if ((await redis.scard('retrieverDataSet')) < accountCount) {
-    // Refill the set if running out of logins
-    const resp = await axios.get<string>(config.STEAM_ACCOUNT_DATA, {
-      responseType: 'text',
-    });
-    const accountData = resp.data.split(/\r\n|\r|\n/g);
-    // Store in redis set
-    for (let i = 0; i < accountData.length; i++) {
-      const accountName = accountData[i].split('\t')[0];
-      const reqs = Number(await redis.hget('retrieverSteamIDs', accountName));
-      const success = Number(
-        await redis.hget('retrieverSuccessSteamIDs', accountName),
-      );
-      const ratio = success / reqs;
-      // Don't add high usage logons or high fail logons
-      if (reqs < 190 && (reqs < 25 || ratio > 0)) {
-        await redis.sadd('retrieverDataSet', accountData[i]);
-      }
-    }
-  }
-  // Pop random elements
-  const pop = await redis.spop('retrieverDataSet', accountCount);
-  const logins = pop.map((login) => {
-    const accountName = login.split('\t')[0];
-    const password = login.split('\t')[1];
-    return { accountName, password };
-  });
-  return res.json(logins);
 });
 
 // Compress everything after this
 app.use(compression());
+
+app.get('/retrieverData', async (req, res, next) => {
+  try {
+    // check secret matches
+    if (config.RETRIEVER_SECRET && config.RETRIEVER_SECRET !== req.query.key) {
+      return res.status(403).end();
+    }
+    const accountCount = Number(req.query.count) || 5;
+    if ((await redis.scard('retrieverDataSet')) < accountCount) {
+      // Refill the set if running out of logins
+      const resp = await axios.get<string>(config.STEAM_ACCOUNT_DATA, {
+        responseType: 'text',
+      });
+      const accountData = resp.data.split(/\r\n|\r|\n/g);
+      // Store in redis set
+      for (let i = 0; i < accountData.length; i++) {
+        const accountName = accountData[i].split('\t')[0];
+        const reqs = Number(await redis.hget('retrieverSteamIDs', accountName));
+        const success = Number(
+          await redis.hget('retrieverSuccessSteamIDs', accountName),
+        );
+        const ratio = success / reqs;
+        // Don't add high usage logons or high fail logons
+        if (reqs < 190 && (reqs < 25 || ratio > 0)) {
+          await redis.sadd('retrieverDataSet', accountData[i]);
+        }
+      }
+    }
+    // Pop random elements
+    const pop = await redis.spop('retrieverDataSet', accountCount);
+    const logins = pop.map((login) => {
+      const accountName = login.split('\t')[0];
+      const password = login.split('\t')[1];
+      return { accountName, password };
+    });
+    return res.json(logins);
+  } catch (e) {
+    next(e);
+  }
+});
+
+app.get('/status', async (req, res, next) => {
+  try {
+    const status = await buildStatus();
+    return res.json(status);
+  } catch (e) {
+    next(e);
+  }
+});
 
 app.get(
   '/login',
@@ -257,6 +272,7 @@ app.get(
     failureRedirect: '/api',
   }),
 );
+
 app.get(
   '/return',
   passport.authenticate('steam', {
@@ -273,6 +289,7 @@ app.get(
     return res.redirect('/api');
   },
 );
+
 app.get('/logout', (req, res) => {
   req.logout(() => {});
   req.session = null;
@@ -282,7 +299,7 @@ app.get('/logout', (req, res) => {
   return res.redirect('/api');
 });
 
-app.get('/subscribeSuccess', async (req, res, cb) => {
+app.get('/subscribeSuccess', async (req, res, next) => {
   try {
     if (!req.query.session_id) {
       return res.status(400).json({ error: 'no session ID' });
@@ -306,10 +323,11 @@ app.get('/subscribeSuccess', async (req, res, cb) => {
     // Send the user back to the subscribe page
     return res.redirect(`${config.UI_HOST}/subscribe`);
   } catch (e) {
-    cb(e);
+    next(e);
   }
 });
-app.post('/manageSub', async (req, res, cb) => {
+
+app.post('/manageSub', async (req, res, next) => {
   try {
     if (!req.user?.account_id) {
       return res.status(400).json({ error: 'no account ID' });
@@ -328,7 +346,7 @@ app.post('/manageSub', async (req, res, cb) => {
     });
     return res.json(session);
   } catch (e) {
-    cb(e);
+    next(e);
   }
 });
 
@@ -338,15 +356,15 @@ app.options('/keys', cors());
 app.use('/keys', keys);
 
 // Admin endpoints middleware
-app.use('/admin*', (req, res, cb) => {
+app.use('/admin*', (req, res, next) => {
   if (req.user && admins.includes(Number(req.user.account_id))) {
-    return cb();
+    return next();
   }
   return res.status(403).json({
     error: 'Access Denied',
   });
 });
-app.get('/admin/retrieverMetrics', async (req, res, cb) => {
+app.get('/admin/retrieverMetrics', async (req, res, next) => {
   try {
     const idReqs = await redis.hgetall('retrieverSteamIDs');
     const ipReqs = await redis.hgetall('retrieverIPs');
@@ -402,10 +420,10 @@ app.get('/admin/retrieverMetrics', async (req, res, cb) => {
       steamids,
     });
   } catch (e) {
-    return cb(e);
+    return next(e);
   }
 });
-app.get('/admin/apiMetrics', async (req, res, cb) => {
+app.get('/admin/apiMetrics', async (req, res, next) => {
   try {
     const startTime = moment().startOf('month').format('YYYY-MM-DD');
     const endTime = moment().endOf('month').format('YYYY-MM-DD');
@@ -453,15 +471,13 @@ app.get('/admin/apiMetrics', async (req, res, cb) => {
       numUsersKey: numUsersKey.rows?.[0]?.count,
     });
   } catch (e) {
-    return cb(e);
+    return next(e);
   }
 });
 
-// This is for passing the IP through if behind load balancer https://expressjs.com/en/guide/behind-proxies.html
-app.set('trust proxy', true);
 // Rate limiter and API key middleware
 // Everything after this is rate limited
-app.use(async (req, res, cb) => {
+app.use(async (req, res, next) => {
   try {
     const timeStart = Number(new Date());
     res.once('finish', () => onResFinish(req, res, timeStart));
@@ -537,9 +553,9 @@ app.use(async (req, res, cb) => {
         });
       }
     }
-    return cb();
+    return next();
   } catch (e) {
-    cb(e);
+    next(e);
   }
 });
 
@@ -560,12 +576,12 @@ app.use((req, res) =>
 
 // 500 route
 app.use(
-  (err: Error, req: express.Request, res: express.Response, cb: ErrorCb) => {
+  (err: Error, req: express.Request, res: express.Response, next: ErrorCb) => {
     console.log('[ERR]', req.originalUrl, err);
     redisCount('500_error');
     if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
       // default express handler
-      return cb(err?.message || JSON.stringify(err));
+      return next(err?.message || JSON.stringify(err));
     }
     return res.status(500).json({
       error: 'Internal Server Error',
