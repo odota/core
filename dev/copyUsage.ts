@@ -16,11 +16,10 @@ async function start() {
         timestamp >= ?
         AND timestamp <= ?
         GROUP BY account_id, api_key, ip
-    )
     `,
         [startTime, endTime],
     );
     console.log(rows);
-    // Check if the usage count went down, if so, copy over the max
+    // Check if the usage count went down, if so, add the max to the current usage
 }
 start();
