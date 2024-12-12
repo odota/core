@@ -21,13 +21,13 @@ async function start() {
         [startTime, endTime],
     );
     // console.log(rows);
-    const apiTimestamp = moment().startOf('day');
+    const apiTimestamp = moment().startOf('month');
     for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
         const curr = await db.raw('select * from api_key_usage where api_key = ? and timestamp = ?', [row.api_key, apiTimestamp]);
         console.log(row.max_usage, curr.rows[0].usage_count);
-        // Check if the usage count went down, if so, add the max to the current usage
-        // await db.raw('update api_key_usage set usage_count = ? where api_key = ? and timestamp = ?', [Number(row.max_usage) + Number(curr.rows[0].usage_count), row.api_key, apiTimestamp]);
+        // Copy the usage to the first day of the month
+        // await db.raw('update api_key_usage set usage_count = ? where api_key = ? and timestamp = ?', [Number(row.max_usage), row.api_key, apiTimestamp]);
     }
 }
 start();

@@ -94,7 +94,7 @@ const onResFinish = async (
   ) {
     if (res.locals.isAPIRequest) {
       const apiKey = res.locals.usageIdentifier;
-      const apiTimestamp = moment().startOf('day');
+      const apiTimestamp = moment().startOf('month');
       const rows = await db.from('api_keys')
         .where({
           api_key: apiKey,
