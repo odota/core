@@ -25,9 +25,14 @@ async function start() {
     for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
         const curr = await db.raw('select * from api_key_usage where api_key = ? and timestamp = ?', [row.api_key, apiTimestamp]);
-        console.log(row.max_usage, curr.rows[0].usage_count);
+        console.log(row.max_usage, curr.rows[0]?.usage_count);
         // Copy the usage to the first day of the month
-        // await db.raw('update api_key_usage set usage_count = ? where api_key = ? and timestamp = ?', [Number(row.max_usage), row.api_key, apiTimestamp]);
+        // await db.raw(`
+        // INSERT INTO api_key_usage
+        // (account_id, api_key, customer_id, timestamp, ip, usage_count) VALUES
+        // (?, ?, ?, ?, ?, ?)
+        // ON CONFLICT ON CONSTRAINT api_key_usage_pkey DO UPDATE SET usage_count = ?
+        // `, [row.account_id, row.api_key, row.customer_id, apiTimestamp, '', row.max_usage, row.max_usage]);
     }
 }
 start();
