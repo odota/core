@@ -153,8 +153,6 @@ keys
         .update({
           is_canceled: true,
         });
-      // Force the key to be disabled
-      await redis.srem('api_keys', api_key);
       res.sendStatus(200);
     } catch(e) {
       // Handle errors
@@ -255,8 +253,6 @@ keys
           sub.id,
         ],
       );
-      // Add the key to Redis so that it works immediately
-      await redis.sadd('api_keys', apiKey);
       res.sendStatus(200);
     } catch (e) {
       next(e);

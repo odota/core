@@ -1496,12 +1496,6 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           if (req.query.api_key) {
             priority = 1;
             redisCount('request_api_key');
-            redis.zincrby(
-              'request_usage_count',
-              1,
-              req.query.api_key as string,
-            );
-            redis.expireat('request_usage_count', getEndOfMonth());
           }
           // if (await checkIsParsed(Number(matchId))) {
           //   // Deprioritize reparsing already parsed matches

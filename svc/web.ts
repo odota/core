@@ -74,7 +74,7 @@ passport.use(
 );
 
 // Do logging when requests finish
-const onResFinish = (
+const onResFinish = async (
   req: express.Request,
   res: express.Response,
   timeStart: number,
@@ -92,17 +92,32 @@ const onResFinish = (
     !unlimitedPaths.includes(req.originalUrl.split('?')[0]) &&
     elapsed < 10000
   ) {
-    const multi = redis.multi();
     if (res.locals.isAPIRequest) {
-      multi
-        .hincrby('usage_count', res.locals.usageIdentifier, 1)
-        .expireat('usage_count', getEndOfMonth());
-    }
-    multi.exec((err, res) => {
-      if (config.NODE_ENV === 'development') {
-        console.log('usage count increment', err, res);
+      const apiKey = res.locals.usageIdentifier;
+      const apiTimestamp = moment().startOf('day');
+      const rows = await db.from('api_keys')
+        .where({
+          api_key: apiKey,
+        });
+      const [apiRecord] = rows;
+      if (apiRecord) {
+        await db.raw(
+          `
+        INSERT INTO api_key_usage
+        (account_id, api_key, customer_id, timestamp, ip, usage_count) VALUES
+        (?, ?, ?, ?, ?, 1)
+        ON CONFLICT ON CONSTRAINT api_key_usage_pkey DO UPDATE SET usage_count = api_key_usage.usage_count + 1
+        `,
+          [
+            apiRecord.account_id,
+            apiRecord.api_key,
+            apiRecord.customer_id,
+            apiTimestamp,
+            '',
+          ],
+        );
       }
-    });
+    }
   }
   redisCount('api_hits');
   if (req.headers.origin === config.UI_HOST) {
@@ -427,8 +442,7 @@ app.get('/admin/apiMetrics', async (req, res, next) => {
   try {
     const startTime = moment().startOf('month').format('YYYY-MM-DD');
     const endTime = moment().endOf('month').format('YYYY-MM-DD');
-    const [topRequests, topUsersKey, numUsersKey] = await Promise.all([
-      redis.zrevrange('request_usage_count', 0, 19, 'WITHSCORES'),
+    const [topUsersKey, numUsersKey] = await Promise.all([
       db.raw(
         `
     SELECT
@@ -466,7 +480,6 @@ app.get('/admin/apiMetrics', async (req, res, next) => {
       ),
     ]);
     return res.json({
-      topRequests,
       topUsersKey: topUsersKey.rows,
       numUsersKey: numUsersKey.rows?.[0]?.count,
     });
@@ -486,8 +499,8 @@ app.use(async (req, res, next) => {
         req.headers.authorization.replace('Bearer ', '')) ||
       req.query.api_key;
     if (config.ENABLE_API_LIMIT && apiKey) {
-      const resp = await redis.sismember('api_keys', apiKey as string);
-      res.locals.isAPIRequest = resp === 1;
+      const { rows } = await db.raw('select api_key from api_keys where api_key = ? and is_canceled IS NOT TRUE', [apiKey]);
+      res.locals.isAPIRequest = Boolean(rows.length > 0);
     }
     const { ip } = req;
     let rateLimit: number | string = '';

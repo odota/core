@@ -507,9 +507,8 @@ describe(c.blue('[TEST] api management'), () => {
     assert.notEqual(res.body.customer.api_key, null);
     assert.equal(Array.isArray(res.body.openInvoices), true);
     assert.equal(Array.isArray(res.body.usage), true);
-
-    const resp = await redis.sismember('api_keys', res.body.customer.api_key);
-    assert.equal(resp, 1);
+    const { rows } = await db.raw('select api_key from api_keys where api_key = ? AND is_canceled IS NOT TRUE', [res.body.customer.api_key]);
+    assert.equal(rows.length, 1);
   });
 
   it('post should not change key', async function testPostDoesNotChangeKey() {
@@ -575,8 +574,6 @@ describe(c.blue('[TEST] api management'), () => {
     this.timeout(5000);
     assert.notEqual(this.previousKey, null);
     assert.equal(this.previousIsCanceled, undefined);
-    let resp = await redis.sismember('api_keys', this.previousKey);
-    assert.equal(resp, 1);
     const res = await supertest(app).delete('/keys?loggedin=1');
     assert.equal(res.statusCode, 200);
     const res2 = await db.from('api_keys').where({
@@ -589,8 +586,6 @@ describe(c.blue('[TEST] api management'), () => {
     assert.equal(res2[0].customer_id, this.previousCustomer);
     assert.equal(res2[0].subscription_id, this.previousSub);
     assert.equal(res2[0].is_canceled, true);
-    resp = await redis.sismember('api_keys', this.previousKey);
-    assert.equal(resp, 0);
   });
 
   it('should get new key with new sub but not change customer', async function testGettingNewKey() {
@@ -662,11 +657,14 @@ describe(c.blue('[TEST] api management'), () => {
     assert.equal(res2.length, 0);
   });
 });
+
+const testKey = '56bc4c35-586c-4f58-a55b-7a5247613872';
+
 describe(c.blue('[TEST] api limits'), () => {
   before(async () => {
     config.ENABLE_API_LIMIT = '1';
     config.API_FREE_LIMIT = '5';
-    await redis.multi().sadd('api_keys', 'KEY').exec();
+    await db.raw('insert into api_keys(account_id, subscription_id, customer_id, api_key) VALUES (?, ?, ?, ?)', [2, '1', '1', testKey]);
   });
 
   it('should be able to make API calls without key with whitelisted routes unaffected. One call should fail as rate limit is hit. Last ones should succeed as they are whitelisted', async function testNoApiLimit() {
@@ -678,25 +676,24 @@ describe(c.blue('[TEST] api limits'), () => {
     await makeWhitelistedRequests('');
   });
 
-  it('should be able to make more than 5 calls when using API KEY', async function testAPIKeyLimitsAndCounting() {
+  it('should be able to make more than 5 calls when using API key', async function testAPIKeyLimitsAndCounting() {
     // Try whitelisted routes. Should not increment usage.
-    await makeWhitelistedRequests('?api_key=KEY');
+    await makeWhitelistedRequests('?api_key=' + testKey);
 
     // Make calls that count toward limit
-    await makeRateCheckedRequests('?api_key=KEY', 10);
+    await makeRateCheckedRequests('?api_key=' + testKey, 10);
 
     // Try a 429. Should not increment usage.
-    const tooMany = await supertest(app).get('/gen429?api_key=KEY');
+    const tooMany = await supertest(app).get('/gen429?api_key=' + testKey);
     assert.equal(tooMany.statusCode, 429);
     // Try a 500. Should not increment usage.
-    const err = await supertest(app).get('/gen500?api_key=KEY');
+    const err = await supertest(app).get('/gen500?api_key=' + testKey);
     assert.equal(err.statusCode, 500);
 
-    const res = await redis.hgetall('usage_count');
-    assert.ok(res);
-    const keys = Object.keys(res);
-    assert.equal(keys.length, 1);
-    assert.equal(Number(res[keys[0]]), 10);
+    const { rows } = await db.raw('SELECT * from api_key_usage');
+    assert.ok(rows);
+    assert.equal(rows.length, 1);
+    assert.equal(Number(rows[0].usage_count), 10);
   });
 
   async function makeWhitelistedRequests(key: string) {
