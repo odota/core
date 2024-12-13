@@ -37,11 +37,14 @@ async function processMatch(matchId: string) {
   // });
   // const body = await getSteamAPIData({ url: container.url });
   // const match = body.result;
+  // Don't insert match blob to avoid overwriting with less data from API
+  // Only update player_caches to associate the match with players
   // await insertMatch(match, {
-  //   type: 'api',
-  //   ifNotExists: true,
-  // });
-  // await new Promise((resolve) => setTimeout(resolve, 1000));
+    //   type: 'api',
+    //   cacheOnly: true,
+    // });
+    // await new Promise((resolve) => setTimeout(resolve, 1000));
+    redisCount('fullhistory_op');
 }
 
 async function processFullHistory(job: FullHistoryJob) {
@@ -135,9 +138,6 @@ async function processFullHistory(job: FullHistoryJob) {
       docs.length,
       Object.keys(match_ids).length,
     );
-    if (Object.keys(match_ids).length) {
-      redisCount('fullhistory_op');
-    }
     // make api_details requests for matches
     const promiseFuncs = Object.keys(match_ids).map(
       (matchId) => () => processMatch(matchId),
