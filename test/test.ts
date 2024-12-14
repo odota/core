@@ -507,7 +507,10 @@ describe(c.blue('[TEST] api management'), () => {
     assert.notEqual(res.body.customer.api_key, null);
     assert.equal(Array.isArray(res.body.openInvoices), true);
     assert.equal(Array.isArray(res.body.usage), true);
-    const { rows } = await db.raw('select api_key from api_keys where api_key = ? AND is_canceled IS NOT TRUE', [res.body.customer.api_key]);
+    const { rows } = await db.raw(
+      'select api_key from api_keys where api_key = ? AND is_canceled IS NOT TRUE',
+      [res.body.customer.api_key],
+    );
     assert.equal(rows.length, 1);
   });
 
@@ -664,7 +667,10 @@ describe(c.blue('[TEST] api limits'), () => {
   before(async () => {
     config.ENABLE_API_LIMIT = '1';
     config.API_FREE_LIMIT = '5';
-    await db.raw('insert into api_keys(account_id, subscription_id, customer_id, api_key) VALUES (?, ?, ?, ?)', [2, '1', '1', testKey]);
+    await db.raw(
+      'insert into api_keys(account_id, subscription_id, customer_id, api_key) VALUES (?, ?, ?, ?)',
+      [2, '1', '1', testKey],
+    );
   });
 
   it('should be able to make API calls without key with whitelisted routes unaffected. One call should fail as rate limit is hit. Last ones should succeed as they are whitelisted', async function testNoApiLimit() {

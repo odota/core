@@ -19,7 +19,7 @@ const isSecondary = Boolean(Number(config.SCANNER_OFFSET));
 async function scanApi() {
   const offset = Number(config.SCANNER_OFFSET);
   while (true) {
-    const seqNum = await getCurrentSeqNum() - offset;
+    const seqNum = (await getCurrentSeqNum()) - offset;
     if (offset) {
       const current = await getCurrentSeqNum();
       if (seqNum > current - offset) {
@@ -103,14 +103,12 @@ async function scanApi() {
     }
     const end = Date.now();
     const elapsed = end - start;
-    const adjustedWait = Math.max((resp.length < PAGE_SIZE ? SCANNER_WAIT : scannerWaitCatchup) - elapsed, 0);
-    // If not a full page, delay the next iteration
-    await new Promise((resolve) =>
-      setTimeout(
-        resolve,
-        adjustedWait,
-      ),
+    const adjustedWait = Math.max(
+      (resp.length < PAGE_SIZE ? SCANNER_WAIT : scannerWaitCatchup) - elapsed,
+      0,
     );
+    // If not a full page, delay the next iteration
+    await new Promise((resolve) => setTimeout(resolve, adjustedWait));
   }
 }
 

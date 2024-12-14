@@ -95,10 +95,9 @@ const onResFinish = async (
     if (res.locals.isAPIRequest) {
       const apiKey = res.locals.usageIdentifier;
       const apiTimestamp = moment().startOf('month');
-      const rows = await db.from('api_keys')
-        .where({
-          api_key: apiKey,
-        });
+      const rows = await db.from('api_keys').where({
+        api_key: apiKey,
+      });
       const [apiRecord] = rows;
       if (apiRecord) {
         await db.raw(
@@ -220,7 +219,10 @@ app.post('/register/:service/:host', async (req, res, next) => {
         keys.push(now);
         keys.push(req.params.host);
       }
-      const result = await redis.zadd(`registry:${req.params.service}`, ...keys);
+      const result = await redis.zadd(
+        `registry:${req.params.service}`,
+        ...keys,
+      );
       return res.send(result.toString());
     }
     return res.end();
@@ -499,7 +501,10 @@ app.use(async (req, res, next) => {
         req.headers.authorization.replace('Bearer ', '')) ||
       req.query.api_key;
     if (config.ENABLE_API_LIMIT && apiKey) {
-      const { rows } = await db.raw('select api_key from api_keys where api_key = ? and is_canceled IS NOT TRUE', [apiKey]);
+      const { rows } = await db.raw(
+        'select api_key from api_keys where api_key = ? and is_canceled IS NOT TRUE',
+        [apiKey],
+      );
       res.locals.isAPIRequest = Boolean(rows.length > 0);
     }
     const { ip } = req;

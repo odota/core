@@ -17,7 +17,7 @@ import { GcdataFetcher } from '../fetcher/getGcData';
 import { ArchivedFetcher } from '../fetcher/getArchivedData';
 import { MetaFetcher } from '../fetcher/getMeta';
 import { benchmarks } from './benchmarksUtil';
-import { promises as fs } from 'fs'; 
+import { promises as fs } from 'fs';
 
 const apiFetcher = new ApiFetcher();
 const gcFetcher = new GcdataFetcher();
@@ -48,7 +48,17 @@ function extendPlayerData(
   return p as Player | ParsedPlayer;
 }
 
-async function getProMatchInfo(matchId: number): Promise<{ radiant_team?: any, dire_team?: any, league?: any, series_id?: number, series_type?: number, cluster?: number, replay_salt?: number}> {
+async function getProMatchInfo(
+  matchId: number,
+): Promise<{
+  radiant_team?: any;
+  dire_team?: any;
+  league?: any;
+  series_id?: number;
+  series_type?: number;
+  cluster?: number;
+  replay_salt?: number;
+}> {
   const result = await db
     .first([
       'radiant_team_id',
@@ -236,9 +246,8 @@ export async function buildMatch(
     Promise.all(
       // Get names, last login for players from DB
       match.players.map(async (p) => {
-        const { rows } = await db
-          .raw(
-            `
+        const { rows } = await db.raw(
+          `
           SELECT personaname, name, last_login, rating, status
           FROM players
           LEFT JOIN notable_players USING(account_id)
@@ -246,18 +255,18 @@ export async function buildMatch(
           LEFT JOIN subscriber USING(account_id)
           WHERE players.account_id = ?
         `,
-            [p.account_id ?? null],
+          [p.account_id ?? null],
         );
         const row = rows[0];
-        return { 
-          ...p, 
+        return {
+          ...p,
           personaname: row?.personaname,
           name: row?.name,
           last_login: row?.last_login,
           rank_tier: row?.rating,
           is_subscriber: Boolean(row?.status),
         };
-      })
+      }),
     ),
     getProMatchInfo(matchId),
     'cosmetics' in match && match.cosmetics
@@ -270,8 +279,8 @@ export async function buildMatch(
         )
       : Promise.resolve(null),
     Boolean(options.meta)
-    ? metaFetcher.getOrFetchData(Number(matchId))
-    : Promise.resolve(null),
+      ? metaFetcher.getOrFetchData(Number(matchId))
+      : Promise.resolve(null),
   ]);
   let matchResult: Match | ParsedMatch = {
     ...match,
@@ -298,11 +307,9 @@ export async function buildMatch(
           cosmetics: playerCosmetics,
         };
       }),
-    replay_url: match.replay_salt ? buildReplayUrl(
-      match.match_id,
-      match.cluster,
-      match.replay_salt,
-    ) : undefined,
+    replay_url: match.replay_salt
+      ? buildReplayUrl(match.match_id, match.cluster, match.replay_salt)
+      : undefined,
   };
   computeMatchData(matchResult as ParsedPlayerMatch);
   await addPlayerBenchmarks(matchResult);

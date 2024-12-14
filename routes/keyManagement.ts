@@ -79,7 +79,7 @@ keys
         const sub = await stripe.subscriptions.retrieve(subscription_id);
         toReturn.current_period_end = sub.current_period_end;
         return toReturn;
-      }
+      };
       const getInvoices = async () => {
         if (allKeyRecords.length === 0) {
           return;
@@ -126,10 +126,14 @@ keys
           ],
         );
         return rows;
-      }
-      const [customer, openInvoices, usage] = await Promise.all([getCustomer(), getInvoices(), getUsage()]);
+      };
+      const [customer, openInvoices, usage] = await Promise.all([
+        getCustomer(),
+        getInvoices(),
+        getUsage(),
+      ]);
       return res.json({ customer, openInvoices, usage });
-    } catch(e) {
+    } catch (e) {
       // Handle errors
       next(e);
     }
@@ -154,7 +158,7 @@ keys
           is_canceled: true,
         });
       res.sendStatus(200);
-    } catch(e) {
+    } catch (e) {
       // Handle errors
       next(e);
     }

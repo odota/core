@@ -40,11 +40,11 @@ async function processMatch(matchId: string) {
   // Don't insert match blob to avoid overwriting with less data from API
   // Only update player_caches to associate the match with players
   // await insertMatch(match, {
-    //   type: 'api',
-    //   cacheOnly: true,
-    // });
-    // await new Promise((resolve) => setTimeout(resolve, 1000));
-    redisCount('fullhistory_op');
+  //   type: 'api',
+  //   cacheOnly: true,
+  // });
+  // await new Promise((resolve) => setTimeout(resolve, 1000));
+  redisCount('fullhistory_op');
 }
 
 async function processFullHistory(job: FullHistoryJob) {
