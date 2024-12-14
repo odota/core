@@ -18,15 +18,15 @@ const blobArchive = new Archive('blob');
 
 // We can stop at approximately 6330000000 (Jan 3 2024)
 const stop = Number(process.env.BACKFILL_STOP) || 6330000000;
-async function scanApi(seqNum: number) {
-  let nextSeqNum = seqNum;
+async function scanApi() {
   while (true) {
-    if (nextSeqNum > stop) {
+    const seqNum = Number(fs.readFileSync('./match_seq_num.txt')) || 0;
+    if (seqNum > stop) {
       process.exit(0);
     }
     const begin = Date.now();
     const container = generateJob('api_sequence', {
-      start_at_match_seq_num: nextSeqNum,
+      start_at_match_seq_num: seqNum,
     });
     let data = null;
     try {
@@ -42,7 +42,7 @@ async function scanApi(seqNum: number) {
     }
     const resp =
       data && data.result && data.result.matches ? data.result.matches : [];
-    console.log('[API] match_seq_num:%s, matches:%s', nextSeqNum, resp.length);
+    console.log('[API] match_seq_num:%s, matches:%s', seqNum, resp.length);
     // write to blobstore, process the blob using same function as insertMatch
     try {
       const insertResult = await Promise.all(
@@ -58,7 +58,7 @@ async function scanApi(seqNum: number) {
         }),
       );
       if (resp.length) {
-        nextSeqNum = resp[resp.length - 1].match_seq_num + 1;
+        const nextSeqNum = resp[resp.length - 1].match_seq_num + 1;
         console.log('next_seq_num: %s', nextSeqNum);
         // Completed inserting matches on this page so update
         fs.writeFileSync('./match_seq_num.txt', nextSeqNum.toString());
@@ -76,7 +76,6 @@ async function scanApi(seqNum: number) {
 }
 
 async function start() {
-  let seqNum = Number(fs.readFileSync('./match_seq_num.txt')) || 0;
-  await scanApi(seqNum);
+  await scanApi();
 }
 start();

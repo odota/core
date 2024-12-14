@@ -177,7 +177,7 @@ export async function buildStatus() {
         web_crash_last_day: async () => countDay('web_crash'),
         secondary_scanner_last_day: async () => countDay('secondary_scanner'),
         steam_api_backfill_last_day: async () => countDay('steam_api_backfill'),
-        // skip_seq_num_last_day: async () => countDay('skip_seq_num'),
+        skip_seq_num_last_day: async () => countDay('skip_seq_num'),
         // gen_api_key_invalid_last_day: async () => getRedisCountDay('gen_api_key_invalid'),
       };
       return parallelPromise<Record<string, number>>(counts);
