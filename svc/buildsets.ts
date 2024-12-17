@@ -11,26 +11,25 @@ async function doBuildSets() {
     .select<{account_id: string}[]>(['account_id'])
     .from('subscriber')
     .where('status', '=', 'active');
-  const contribs = Object.keys(contributors).map((id) => ({
-    account_id: id,
-  }));
-  const autos = config.AUTO_PARSE_ACCOUNT_IDS.split(',').map(id => ({ account_id: id }));
+  const subIds = subs.map(sub => sub.account_id);
+  const contribs = Object.keys(contributors);
+  const autos = config.AUTO_PARSE_ACCOUNT_IDS.split(',');
   console.log(
     '[BUILDSETS] %s subscribers, %s contributors, %s auto',
-    subs.length,
+    subIds.length,
     contribs.length,
     autos.length,
     );
-  const tracked: { account_id: string }[] = [...subs, ...contribs, ...autos];
+  const tracked: string[] = [...subIds, ...contribs, ...autos];
   const command = redis.multi();
   command.del('tracked');
   // Refresh tracked players with expire date in the future
   await Promise.all(
-    tracked.map((player) =>
+    tracked.map((id) =>
       command.zadd(
         'tracked',
         moment().add(1, 'day').format('X'),
-        player.account_id,
+        id,
       ),
     ),
   );
