@@ -90,7 +90,7 @@ const onResFinish = async (
     res.statusCode !== 429 &&
     res.statusCode !== 404 &&
     !unlimitedPaths.includes(req.originalUrl.split('?')[0]) &&
-    elapsed < 10000
+    elapsed < 15000
   ) {
     if (res.locals.isAPIRequest) {
       const apiKey = res.locals.usageIdentifier;

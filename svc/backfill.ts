@@ -16,8 +16,8 @@ const apiHosts = config.STEAM_API_HOST.split(',');
 const SCANNER_WAIT = 2000 / apiHosts.length;
 const blobArchive = new Archive('blob');
 
-// We can stop at approximately 6330000000 (Jan 3 2024)
-const stop = Number(process.env.BACKFILL_STOP) || 6330000000;
+// current run started at 5000000000
+const stop = Number(process.env.BACKFILL_STOP) || 6200000000;
 async function scanApi() {
   while (true) {
     const seqNum = Number(fs.readFileSync('./match_seq_num.txt')) || 0;

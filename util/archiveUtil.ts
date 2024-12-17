@@ -25,14 +25,6 @@ async function processMatch(matchId: number) {
   //   }
   //   await doArchiveMatchFromBlobs(matchId);
   // }
-  // TODO remove this after backfill complete
-  // Avoid migrating matches in the "critical range" where we're backfilling
-  // We want to avoid overwriting ability upgrades data with less complete data from the API
-  // If past the high value, we won't be scanning that far
-  // If lower than low value, we won't have ability upgrades anyway
-  if (matchId > 7300000000 && matchId < 7600000000) {
-    return;
-  }
   await doMigrateMatchToBlobStore(matchId);
 }
 

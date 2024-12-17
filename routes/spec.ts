@@ -1195,7 +1195,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           }
           const client = new Client({
             connectionString: config.READONLY_POSTGRES_URL,
-            statement_timeout: 10000,
+            statement_timeout: 15000,
           });
           client.connect();
           let result = null;
