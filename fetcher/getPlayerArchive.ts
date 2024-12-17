@@ -55,7 +55,7 @@ async function readArchivedPlayerMatches(
   return arr;
 }
 
-export class PlayerMatchesFetcher extends PlayerFetcher<ParsedPlayerMatch[]> {
+export class PlayerArchiveFetcher extends PlayerFetcher<ParsedPlayerMatch[]> {
   readData = readArchivedPlayerMatches;
   getOrFetchData = async (accountId: number) => {
     await doArchivePlayerMatches(accountId);

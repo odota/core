@@ -50,7 +50,7 @@ export async function runQueue(
 export async function runReliableQueue(
   queueName: QueueName,
   parallelism: number,
-  processor: (job: any) => Promise<boolean>,
+  processor: (job: any, metadata: JobMetadata) => Promise<boolean>,
   getCapacity?: () => Promise<number>,
 ) {
   const executor = async (i: number) => {
@@ -82,7 +82,7 @@ export async function runReliableQueue(
       const job = result && result.rows && result.rows[0];
       if (job) {
         try {
-          const success = await processor(job.data);
+          const success = await processor(job.data, { priority: job.priority, attempts: job.attempts, timestamp: job.timestamp });
           // If the processor returns true, it's successful and we should delete the job and then commit
           if (success || job.attempts <= 0) {
             await consumer.query('DELETE FROM queue WHERE id = $1', [job.id]);
@@ -99,15 +99,6 @@ export async function runReliableQueue(
           } else if (job.attempts === 0) {
             result = 'attempted';
           }
-          const message = c.blue(
-            `[${new Date().toISOString()}] [queue: ${queueName}] [${result}] [priority: ${
-              job.priority
-            }] [attempts: ${job.attempts}] [queued: ${moment(
-              job.timestamp,
-            ).fromNow()}]`,
-          );
-          console.log(message);
-          redis.publish('queue', message);
         } catch (e) {
           // If the processor crashes unexpectedly, we should rollback the transaction to not consume an attempt
           await consumer.query('ROLLBACK');
@@ -162,9 +153,9 @@ export async function addReliableJob(
   const job = rows[0];
   if (job) {
     const message = c.magenta(
-      `[${new Date().toISOString()}] [queue] [add: ${name}] [priority: ${
+      `[${new Date().toISOString()}] [${options.caller}] [queue: ${name}] [pri: ${
         job.priority
-      }] [attempts: ${job.attempts}] ${name === 'parse' ? data.match_id : ''}`,
+      }] [att: ${job.attempts}] ${name === 'parse' ? data.match_id : ''}`,
     );
     redis.publish('queue', message);
   }

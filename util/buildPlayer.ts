@@ -7,9 +7,9 @@ import { deserialize, pick, redisCount, redisCountDistinct } from './utility';
 import { gzipSync, gunzipSync } from 'zlib';
 import { cacheableCols } from '../routes/playerFields';
 import { promises as fs } from 'fs';
-import { PlayerMatchesFetcher } from '../fetcher/getPlayerArchive';
+import { PlayerArchiveFetcher } from '../fetcher/getPlayerArchive';
 
-const playerMatchesFetcher = new PlayerMatchesFetcher();
+const playerArchiveFetcher = new PlayerArchiveFetcher();
 
 export async function getPlayerMatches(
   accountId: number,
@@ -65,7 +65,7 @@ export async function getPlayerMatchesWithMetadata(
   // if dbLimit (recentMatches), don't use archive
   const archivedMatches =
     config.ENABLE_PLAYER_ARCHIVE && !queryObj.dbLimit
-      ? await playerMatchesFetcher.readData(accountId)
+      ? await playerArchiveFetcher.readData(accountId)
       : [];
   const localLength = localMatches.length;
   const archivedLength = archivedMatches.length;

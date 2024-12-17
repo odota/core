@@ -14,13 +14,14 @@ import { ApiFetcher } from '../fetcher/getApiData';
 import { ParsedFetcher } from '../fetcher/getParsedData';
 import { GcdataFetcher } from '../fetcher/getGcData';
 import { getPGroup } from '../util/pgroup';
+import moment from 'moment';
 
 const apiFetcher = new ApiFetcher();
 const gcFetcher = new GcdataFetcher();
 const parsedFetcher = new ParsedFetcher();
 const { PARSER_PARALLELISM } = config;
 
-async function parseProcessor(job: ParseJob) {
+async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
   const start = Date.now();
   let apiTime = 0;
   let gcTime = 0;
@@ -149,9 +150,11 @@ async function parseProcessor(job: ParseJob) {
     const message = c[colors[type]](
       `[${new Date().toISOString()}] [parser] [${type}: ${
         end - start
-      }ms] [api: ${apiTime}ms] [gcdata: ${gcTime}ms] [parse: ${parseTime}ms] ${
+      }ms] [api: ${apiTime}ms] [gcdata: ${gcTime}ms] [parse: ${parseTime}ms] [queued: ${moment(
+        metadata.timestamp,
+      ).fromNow()}] [pri: ${metadata.priority}] [att: ${metadata.attempts}] ${
         job.match_id
-      }: ${error ?? ''}`,
+      } ${error ?? ''}`,
     );
     redis.publish('parsed', message);
     console.log(message);
