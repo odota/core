@@ -19,16 +19,8 @@ const isSecondary = Boolean(Number(config.SCANNER_OFFSET));
 async function scanApi() {
   const offset = Number(config.SCANNER_OFFSET);
   while (true) {
-    const seqNum = (await getCurrentSeqNum()) - offset;
-    if (offset) {
-      const current = await getCurrentSeqNum();
-      if (seqNum > current - offset) {
-        // Secondary scanner is catching up too much. Wait and try again
-        console.log('secondary scanner waiting', seqNum, current, offset);
-        await new Promise((resolve) => setTimeout(resolve, SCANNER_WAIT));
-        continue;
-      }
-    }
+    const current = await getCurrentSeqNum();
+    const seqNum = current - offset;
     const start = Date.now();
     const apiHosts = await getApiHosts();
     const parallelism = Math.min(apiHosts.length, API_KEYS.length);
@@ -90,8 +82,9 @@ async function scanApi() {
     );
     console.timeEnd('insert');
     // Completed inserting matches on this page so update redis
+    let nextSeqNum;
     if (resp.length) {
-      const nextSeqNum = resp[resp.length - 1].match_seq_num + 1;
+      nextSeqNum = resp[resp.length - 1].match_seq_num + 1;
       console.log('next_seq_num: %s', nextSeqNum);
       if (!isSecondary) {
         // Only set match seq num on primary
@@ -104,11 +97,19 @@ async function scanApi() {
     const end = Date.now();
     const elapsed = end - start;
     const adjustedWait = Math.max(
+      // If not a full page, delay the next iteration
       (resp.length < PAGE_SIZE ? SCANNER_WAIT : scannerWaitCatchup) - elapsed,
       0,
     );
-    // If not a full page, delay the next iteration
     await new Promise((resolve) => setTimeout(resolve, adjustedWait));
+    if (isSecondary && nextSeqNum) {
+      const current = await getCurrentSeqNum();
+      if (nextSeqNum > current - offset) {
+        // Secondary scanner is catching up too much. Wait and try again
+        console.log('secondary scanner waiting', seqNum, current, offset);
+        await new Promise((resolve) => setTimeout(resolve, SCANNER_WAIT));
+      }
+    }
   }
 }
 
