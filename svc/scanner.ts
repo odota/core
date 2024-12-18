@@ -18,9 +18,22 @@ const isSecondary = Boolean(Number(config.SCANNER_OFFSET));
 
 async function scanApi() {
   const offset = Number(config.SCANNER_OFFSET);
+  let nextSeqNum;
   while (true) {
+    // If primary (offset 0) or first secondary iteration, read value from storage
+    // If secondary, use the nextseqnum value from previous iteration
     const current = await getCurrentSeqNum();
-    const seqNum = current - offset;
+    let seqNum = current - offset;
+    if (isSecondary && nextSeqNum) {
+      if (nextSeqNum > seqNum) {
+        // Secondary scanner is catching up too much. Wait and try again
+        console.log('secondary scanner waiting', seqNum, current, offset);
+        await new Promise((resolve) => setTimeout(resolve, SCANNER_WAIT));
+        continue;
+      } else {
+        seqNum = nextSeqNum;
+      }
+    }
     const start = Date.now();
     const apiHosts = await getApiHosts();
     const parallelism = Math.min(apiHosts.length, API_KEYS.length);
@@ -82,7 +95,6 @@ async function scanApi() {
     );
     console.timeEnd('insert');
     // Completed inserting matches on this page so update redis
-    let nextSeqNum;
     if (resp.length) {
       nextSeqNum = resp[resp.length - 1].match_seq_num + 1;
       console.log('next_seq_num: %s', nextSeqNum);
@@ -102,14 +114,6 @@ async function scanApi() {
       0,
     );
     await new Promise((resolve) => setTimeout(resolve, adjustedWait));
-    if (isSecondary && nextSeqNum) {
-      const current = await getCurrentSeqNum();
-      if (nextSeqNum > current - offset) {
-        // Secondary scanner is catching up too much. Wait and try again
-        console.log('secondary scanner waiting', seqNum, current, offset);
-        await new Promise((resolve) => setTimeout(resolve, SCANNER_WAIT));
-      }
-    }
   }
 }
 
