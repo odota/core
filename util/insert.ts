@@ -433,13 +433,6 @@ export async function insertMatch(
       blob: { match_id: number; players: { player_slot: number }[] },
     ) {
       const matchId = blob.match_id;
-      await cassandra.execute(
-        `INSERT INTO match_blobs(match_id, ${type}) VALUES(?, ?)`,
-        [matchId, JSON.stringify(blob)],
-        {
-          prepare: true,
-        },
-      );
       try {
         await blobArchive.archivePut(
           matchId + '_' + type,
@@ -447,6 +440,14 @@ export async function insertMatch(
         );
       } catch (e) {
         console.error(e);
+        // Write to cassandra as backup storage
+        await cassandra.execute(
+          `INSERT INTO match_blobs(match_id, ${type}) VALUES(?, ?)`,
+          [matchId, JSON.stringify(blob)],
+          {
+            prepare: true,
+          },
+        );
       }
       if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
         await fs.writeFile(
