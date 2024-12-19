@@ -15,6 +15,7 @@ import {
   parallelPromise,
   PeersCount,
 } from './utility';
+import moment from 'moment';
 
 export async function getDistributions() {
   const result: AnyDict = {};
@@ -393,4 +394,9 @@ export async function isSubscriber(account_id: string) {
     [Number(account_id)],
   );
   return Boolean(result.rows?.[0]);
+}
+
+export async function isRecentVisitor(accountId: number): Promise<boolean> {
+  const visitTime = Number(await redis.zscore('visitors', accountId.toString()));
+  return Boolean(visitTime && visitTime >= Number(moment().subtract(30, 'day').format('X')));
 }

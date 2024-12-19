@@ -133,9 +133,9 @@ const onResFinish = async (
     'api_status',
     moment().startOf('hour').add(1, 'hour').format('X'),
   );
-  // if (req.user && req.user.account_id) {
-  //   redis.zadd('visitors', moment().format('X'), req.user.account_id);
-  // }
+  if (req.user && req.user.account_id) {
+    redis.zadd('visitors', moment().format('X'), req.user.account_id);
+  }
   redis.lpush('load_times', elapsed);
   redis.ltrim('load_times', 0, 9999);
 };

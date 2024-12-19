@@ -3,6 +3,7 @@ import db from '../store/db';
 import config from '../config';
 import { epochWeek, invokeIntervalAsync } from '../util/utility';
 import { promises as fs } from 'fs';
+import { isRecentVisitor } from '../util/queries';
 
 async function cleanup() {
   const currentWeek = epochWeek();
@@ -36,8 +37,13 @@ async function cleanup() {
   }
   for (let i = 0; i < files.length; i++) {
     try {
+      // Check if the ID is of a recent visitor, if so, don't delete
+      const isRecent = await isRecentVisitor(Number(files[i]));
+      if (isRecent) {
+        continue;
+      }
       const stat = await fs.stat('./cache/' + files[i]);
-      if (stat.birthtime < new Date(Date.now() - 48 * 60 * 60 * 1000)) {
+      if (stat.birthtime < new Date(Date.now() - 24 * 60 * 60 * 1000)) {
         await fs.unlink('./cache/' + files[i]);
       }
     } catch (e) {

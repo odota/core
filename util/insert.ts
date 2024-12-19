@@ -21,7 +21,7 @@ import {
   redisCount,
   transformMatch,
 } from './utility';
-import { getMatchRankTier } from './queries';
+import { getMatchRankTier, isRecentVisitor } from './queries';
 import { ApiMatch, ApiMatchPro, ApiPlayer, getPGroup } from './pgroup';
 import { Archive } from '../store/archive';
 // import scylla from './scylla';
@@ -511,16 +511,20 @@ export async function insertMatch(
         match.players.map(async (p) => {
           const account_id = pgroup[p.player_slot]?.account_id ?? p.account_id;
           if (account_id) {
+            let cacheExists = false;
             try {
               await fs.unlink('./cache/' + account_id);
+              cacheExists = true;
             } catch (e) {
-              // File didn't exist, so skip
-              return;
+              // File didn't exist before
             }
-            await addJob({
-              name: 'cacheQueue',
-              data: account_id.toString(),
-            });
+            const isRecent = await isRecentVisitor(account_id);
+            if (cacheExists || isRecent) {
+              await addJob({
+                name: 'cacheQueue',
+                data: account_id.toString(),
+              });
+            }
           }
         }),
       );

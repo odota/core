@@ -91,14 +91,6 @@ export async function runReliableQueue(
             // If the processor returns false, it's an expected failure and we should commit the transaction to consume an attempt
             await consumer.query('COMMIT');
           }
-          let result = '';
-          if (success) {
-            result = 'complete';
-          } else if (job.attempts > 0) {
-            result = 'retrying';
-          } else if (job.attempts === 0) {
-            result = 'attempted';
-          }
         } catch (e) {
           // If the processor crashes unexpectedly, we should rollback the transaction to not consume an attempt
           await consumer.query('ROLLBACK');
