@@ -89,7 +89,7 @@ async function scanApi() {
           });
           await redis.zadd('scanner_insert', match.match_id, match.match_id);
           // To avoid dups we should always keep more matches here than SCANNER_OFFSET
-          await redis.zremrangebyrank('scanner_insert', '0', '-100000');
+          await redis.zremrangebyrank('scanner_insert', '0', '-100001');
         }
       }),
     );

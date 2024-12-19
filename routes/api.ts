@@ -4,6 +4,8 @@ import spec from './spec';
 import db from '../store/db';
 import { alwaysCols } from './playerFields';
 import { queryParamToArray, redisCount } from '../util/utility';
+import moment from 'moment';
+import redis from '../store/redis';
 
 //@ts-ignore
 const api: Router = new Router();
@@ -64,6 +66,9 @@ api.use('/players/:account_id/:info?', async (req, res, cb) => {
       having: Number(req.query.having),
       isPrivate,
     };
+    // Keep track of recently visited account IDs for caching
+    await redis.zadd('visitedIds', moment().format('X'), req.params.account_id);
+    await redis.zremrangebyrank('visitedIds', '0', '-50001');
     return cb();
   } catch (e) {
     return cb(e);

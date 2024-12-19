@@ -123,21 +123,22 @@ const onResFinish = async (
     redisCount('api_hits_ui');
   }
   const normPath = req.route?.path;
-  redis.zincrby('api_paths', 1, req.method + ' ' + normPath);
-  redis.expireat(
+  await redis.zincrby('api_paths', 1, req.method + ' ' + normPath);
+  await redis.expireat(
     'api_paths',
     moment().startOf('hour').add(1, 'hour').format('X'),
   );
-  redis.zincrby('api_status', 1, res.statusCode);
-  redis.expireat(
+  await redis.zincrby('api_status', 1, res.statusCode);
+  await redis.expireat(
     'api_status',
     moment().startOf('hour').add(1, 'hour').format('X'),
   );
   if (req.user && req.user.account_id) {
-    redis.zadd('visitors', moment().format('X'), req.user.account_id);
+    await redis.zadd('visitors', moment().format('X'), req.user.account_id);
+    await redis.zremrangebyrank('visitors', '0', '-50001');
   }
-  redis.lpush('load_times', elapsed);
-  redis.ltrim('load_times', 0, 9999);
+  await redis.lpush('load_times', elapsed);
+  await redis.ltrim('load_times', 0, 9999);
 };
 
 // Dummy User ID for testing

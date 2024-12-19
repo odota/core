@@ -396,7 +396,14 @@ export async function isSubscriber(account_id: string) {
   return Boolean(result.rows?.[0]);
 }
 
+// For these functions we currently store a fixed number of most recent elements and check for membership
+// Since we store the timestamp could change to check if within X days
 export async function isRecentVisitor(accountId: number): Promise<boolean> {
   const visitTime = Number(await redis.zscore('visitors', accountId.toString()));
-  return Boolean(visitTime && visitTime >= Number(moment().subtract(30, 'day').format('X')));
+  return Boolean(visitTime);
+}
+
+export async function isRecentlyVisited(accountId: number): Promise<boolean> {
+  const visitTime = Number(await redis.zscore('visitedIds', accountId.toString()));
+  return Boolean(visitTime);
 }

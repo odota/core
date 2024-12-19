@@ -21,7 +21,7 @@ import {
   redisCount,
   transformMatch,
 } from './utility';
-import { getMatchRankTier, isRecentVisitor } from './queries';
+import { getMatchRankTier, isRecentVisitor, isRecentlyVisited } from './queries';
 import { ApiMatch, ApiMatchPro, ApiPlayer, getPGroup } from './pgroup';
 import { Archive } from '../store/archive';
 // import scylla from './scylla';
@@ -511,15 +511,16 @@ export async function insertMatch(
         match.players.map(async (p) => {
           const account_id = pgroup[p.player_slot]?.account_id ?? p.account_id;
           if (account_id) {
-            let cacheExists = false;
             try {
+              // Try deleting the tempfile ince it's now out of date
               await fs.unlink('./cache/' + account_id);
-              cacheExists = true;
             } catch (e) {
-              // File didn't exist before
+              // File didn't exist, ignore
             }
-            const isRecent = await isRecentVisitor(account_id);
-            if (cacheExists || isRecent) {
+            const isVisitor = await isRecentVisitor(account_id);
+            const isVisited = await isRecentlyVisited(account_id);
+            if (isVisitor || isVisited) {
+              // If OpenDota visitor or profile was recently visited by anyone, pre-compute the tempfile
               await addJob({
                 name: 'cacheQueue',
                 data: account_id.toString(),
