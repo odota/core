@@ -137,6 +137,83 @@ function createMatchCopy<T>(match: any): T {
   return copy;
 }
 
+export async function upsertPlayerCaches(
+  match: InsertMatchInput | ParsedMatch | Match,
+  averageRank: number | undefined,
+  pgroup: PGroup,
+  type: DataType,
+) {
+  // Add the 10 player_match rows indexed by player
+  // We currently do this on all types
+  const copy = createMatchCopy<Match>(match);
+  if (averageRank) {
+    copy.average_rank = averageRank;
+  }
+  const columns = await getCassandraColumns('player_caches');
+  await Promise.all(
+    copy.players.map(async (p) => {
+      // add account id to each player so we know what caches to update
+      const account_id = pgroup[p.player_slot]?.account_id;
+      // join player with match to form player_match
+      const playerMatch: Partial<ParsedPlayerMatch> = {
+        ...p,
+        ...copy,
+        account_id,
+        players: undefined,
+      };
+      if (
+        !playerMatch.account_id ||
+        playerMatch.account_id === getAnonymousAccountId()
+      ) {
+        return;
+      }
+      if (type === 'api' || type === 'reconcile') {
+        // We currently update this for the non-anonymous players in the match
+        // It'll reflect the current anonymity state of the players at insertion time
+        // This might lead to changes in peers counts after a fullhistory update or parse request
+        playerMatch.heroes = pgroup;
+      }
+      computeMatchData(playerMatch as ParsedPlayerMatch);
+      // Remove extra properties
+      Object.keys(playerMatch).forEach((key) => {
+        if (!columns[key]) {
+          delete playerMatch[key as keyof ParsedPlayerMatch];
+        }
+      });
+      const serializedMatch: any = serialize(playerMatch);
+      const query = util.format(
+        'INSERT INTO player_caches (%s) VALUES (%s)',
+        Object.keys(serializedMatch).join(','),
+        Object.keys(serializedMatch)
+          .map(() => '?')
+          .join(','),
+      );
+      const arr = Object.keys(serializedMatch).map((k) => serializedMatch[k]);
+      await cassandra.execute(query, arr, {
+        prepare: true,
+      });
+      // TODO (scylla) dual write here
+      // TODO (scylla) need to write a migrater with checkpointing (one player at a time and then do all players?) copy all data from cassandra to scylla
+      // Don't need to dual read if we don't delete the original data until fully migrated
+      // New tokens might be inserted behind the migrater or double migrate some rows but since we are dual writing we should have the same data in both
+      // await scylla.execute(query, arr, {
+      //   prepare: true
+      // });
+      if (
+        (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') &&
+        playerMatch.player_slot === 0
+      ) {
+        await fs.writeFile(
+          './json/' +
+            copy.match_id +
+            `_playercache_${type}_${playerMatch.player_slot}.json`,
+          JSON.stringify(playerMatch, null, 2),
+        );
+      }
+    }),
+  );
+}
+
 export type InsertMatchInput = ApiMatch | ApiMatchPro | ParserMatch | GcMatch;
 
 /**
@@ -344,80 +421,6 @@ export async function insertMatch(
         ]);
       }
     }
-  }
-  async function upsertPlayerCaches(
-    match: InsertMatchInput,
-    averageRank: number | undefined,
-  ) {
-    // Add the 10 player_match rows indexed by player
-    // We currently do this on all types
-    const copy = createMatchCopy<Match>(match);
-    if (averageRank) {
-      copy.average_rank = averageRank;
-    }
-    const columns = await getCassandraColumns('player_caches');
-    await Promise.all(
-      copy.players.map(async (p) => {
-        // add account id to each player so we know what caches to update
-        const account_id = pgroup[p.player_slot]?.account_id;
-        // join player with match to form player_match
-        const playerMatch: Partial<ParsedPlayerMatch> = {
-          ...p,
-          ...copy,
-          account_id,
-          players: undefined,
-        };
-        if (
-          !playerMatch.account_id ||
-          playerMatch.account_id === getAnonymousAccountId()
-        ) {
-          return;
-        }
-        if (options.type === 'api') {
-          // We currently update this for the non-anonymous players in the match
-          // It'll reflect the current anonymity state of the players at insertion time
-          // This might lead to changes in peers counts after a fullhistory update or parse request
-          playerMatch.heroes = pgroup;
-        }
-        computeMatchData(playerMatch as ParsedPlayerMatch);
-        // Remove extra properties
-        Object.keys(playerMatch).forEach((key) => {
-          if (!columns[key]) {
-            delete playerMatch[key as keyof ParsedPlayerMatch];
-          }
-        });
-        const serializedMatch: any = serialize(playerMatch);
-        const query = util.format(
-          'INSERT INTO player_caches (%s) VALUES (%s)',
-          Object.keys(serializedMatch).join(','),
-          Object.keys(serializedMatch)
-            .map(() => '?')
-            .join(','),
-        );
-        const arr = Object.keys(serializedMatch).map((k) => serializedMatch[k]);
-        await cassandra.execute(query, arr, {
-          prepare: true,
-        });
-        // TODO (scylla) dual write here
-        // TODO (scylla) need to write a migrater with checkpointing (one player at a time and then do all players?) copy all data from cassandra to scylla
-        // Don't need to dual read if we don't delete the original data until fully migrated
-        // New tokens might be inserted behind the migrater or double migrate some rows but since we are dual writing we should have the same data in both
-        // await scylla.execute(query, arr, {
-        //   prepare: true
-        // });
-        if (
-          (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') &&
-          playerMatch.player_slot === 0
-        ) {
-          await fs.writeFile(
-            './json/' +
-              copy.match_id +
-              `_playercache_${options.type}_${playerMatch.player_slot}.json`,
-            JSON.stringify(playerMatch, null, 2),
-          );
-        }
-      }),
-    );
   }
   async function upsertMatchBlobs(match: InsertMatchInput) {
     // The table holds data for each possible stage of ingestion, api/gcdata/replay/meta etc.
@@ -712,7 +715,7 @@ export async function insertMatch(
   }
 
   await upsertMatchPostgres(match);
-  await upsertPlayerCaches(match, average_rank);
+  await upsertPlayerCaches(match, average_rank, pgroup, options.type);
   await upsertMatchBlobs(match);
   await resetMatchCache(match);
   await resetPlayerTemp(match);
