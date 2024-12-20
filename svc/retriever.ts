@@ -75,14 +75,14 @@ setInterval(() => {
   }
 }, 5000);
 
-app.get('/healthz', (req, res, cb) => {
+app.get('/healthz', (req, res, next) => {
   return res.end('ok');
 });
 app.use(compression());
-app.get('/stats', async (req, res, cb) => {
+app.get('/stats', (req, res, next) => {
   return res.json(genStats());
 });
-app.use((req, res, cb) => {
+app.use((req, res, next) => {
   console.log(
     'numReady: %s, matches: %s/%s, profiles: %s/%s, uptime: %s, matchRequestDelay: %s, query: %s',
     Object.keys(steamObj).length,
@@ -96,14 +96,14 @@ app.use((req, res, cb) => {
   );
   if (config.RETRIEVER_SECRET && config.RETRIEVER_SECRET !== req.query.key) {
     // reject request if it doesn't have key
-    return cb('invalid key');
+    return next('invalid key');
   }
   if (noneReady()) {
-    return cb('not ready');
+    return next('not ready');
   }
-  return cb();
+  return next();
 });
-app.get('/profile/:account_id', async (req, res, cb) => {
+app.get('/profile/:account_id', (req, res, next) => {
   const keys = Object.keys(steamObj);
   const rKey = keys[Math.floor(Math.random() * keys.length)];
   const accountId = req.params.account_id;
@@ -126,7 +126,7 @@ app.get('/profile/:account_id', async (req, res, cb) => {
     },
   );
 });
-app.get('/match/:match_id', async (req, res, cb) => {
+app.get('/match/:match_id', (req, res, next) => {
   // Don't allow requests coming in too fast
   const curTime = Number(new Date());
   if (
@@ -186,14 +186,14 @@ app.get('/match/:match_id', async (req, res, cb) => {
     },
   );
 });
-app.get('/aliases/:steam_ids', async (req, res, cb) => {
+app.get('/aliases/:steam_ids', (req, res, next) => {
   // example: 76561198048632981
   const keys = Object.keys(steamObj);
   const rKey = keys[Math.floor(Math.random() * keys.length)];
   const client = steamObj[rKey];
   client.getAliases(req.params.steam_ids?.split(','), (err, aliases) => {
     if (err) {
-      return cb(err);
+      return next(err);
     }
     return res.json(aliases);
   });

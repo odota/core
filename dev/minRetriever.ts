@@ -32,7 +32,7 @@ const CMsgGCMatchDetailsResponse = builder.lookupType(
   'CMsgGCMatchDetailsResponse',
 );
 
-app.get('/profile/:account_id', async (req, res, cb) => {
+app.get('/profile/:account_id', async (req, res, next) => {
   const accountId = req.params.account_id;
   client.sendToGC(
     DOTA_APPID,
@@ -49,7 +49,7 @@ app.get('/profile/:account_id', async (req, res, cb) => {
     },
   );
 });
-app.get('/match/:match_id', async (req, res, cb) => {
+app.get('/match/:match_id', async (req, res, next) => {
   const matchId = req.params.match_id;
   client.sendToGC(
     DOTA_APPID,
@@ -64,10 +64,10 @@ app.get('/match/:match_id', async (req, res, cb) => {
     },
   );
 });
-app.get('/aliases/:steam_ids', async (req, res, cb) => {
+app.get('/aliases/:steam_ids', async (req, res, next) => {
   client.getAliases(req.params.steam_ids?.split(','), (err, aliases) => {
     if (err) {
-      return cb(err);
+      return next(err);
     }
     return res.json(aliases);
   });

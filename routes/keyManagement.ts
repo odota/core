@@ -50,12 +50,16 @@ async function getOpenInvoices(customerId: string) {
 keys
   .route('/')
   .all(async (req, res, next) => {
-    const rows = await db.from('api_keys').where({
-      account_id: req.user?.account_id,
-    });
-    res.locals.keyRecord = getActiveKey(rows);
-    res.locals.allKeyRecords = rows;
-    next();
+    try {
+      const rows = await db.from('api_keys').where({
+        account_id: req.user?.account_id,
+      });
+      res.locals.keyRecord = getActiveKey(rows);
+      res.locals.allKeyRecords = rows;
+      next();
+    } catch (e) {
+      next(e);
+    }
   })
   .get(async (req, res, next) => {
     try {

@@ -231,13 +231,13 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/matches/:match_id',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           const match = await buildMatch(Number(req.params.match_id), {
             meta: req.query.meta as string,
           });
           if (!match) {
             // 404 for match not found
-            return cb();
+            return next();
           }
           return res.json(match);
         },
@@ -263,12 +263,12 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/players/:account_id',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           const accountId = Number(req.params.account_id);
           const playerData = await getPlayer(db, accountId);
           if (!playerData) {
             // 404 error
-            return cb();
+            return next();
           }
           const [rt, lr] = await Promise.all([
             db.first().from('rank_tier').where({ account_id: accountId }),
@@ -306,7 +306,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/players/:account_id/wl',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           const result = {
             win: 0,
             lose: 0,
@@ -355,7 +355,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/players/:account_id/recentMatches',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           // Construct a new queryObj, because this endpoint doesn't support filtering, sorting, or projection
           const queryObj = {
             project: recentMatchesCols,
@@ -401,7 +401,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/players/:account_id/matches',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           let userFields = queryParamToArray(
             req.query.project,
           ) as (keyof ParsedPlayerMatch)[];
@@ -439,7 +439,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/players/:account_id/heroes',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           const heroes: AnyDict = {};
           // prefill heroes with every hero
           Object.keys(heroesConstants).forEach((heroId) => {
@@ -523,7 +523,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/players/:account_id/peers',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           res.locals.queryObj.project =
             res.locals.queryObj.project.concat(peersCols);
           const cache = await getPlayerMatches(
@@ -561,7 +561,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/players/:account_id/pros',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           res.locals.queryObj.project =
             res.locals.queryObj.project.concat(prosCols);
           const cache = await getPlayerMatches(
@@ -599,7 +599,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/players/:account_id/totals',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           const result: AnyDict = {};
           histogramCols.forEach((key) => {
             result[key] = {
@@ -646,7 +646,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/players/:account_id/counts',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           const result = {} as Record<(typeof countsCats)[number], any>;
           countsCats.forEach((key) => {
             result[key] = {};
@@ -719,7 +719,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/players/:account_id/histograms/:field',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           const field = histogramCols.find((key) => key === req.params.field);
           if (field) {
             res.locals.queryObj.project =
@@ -783,7 +783,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/players/:account_id/wardmap',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           const result = {} as Record<(typeof wardmapCols)[number], any>;
           wardmapCols.forEach((key) => {
             result[key] = {};
@@ -829,7 +829,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/players/:account_id/wordcloud',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           const result = {} as Record<(typeof wordcloudCols)[number], any>;
           wordcloudCols.forEach((key) => {
             result[key] = {};
@@ -878,7 +878,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/players/:account_id/ratings',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           if (res.locals.queryObj.isPrivate) {
             return res.json([]);
           }
@@ -913,7 +913,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/players/:account_id/rankings',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           if (res.locals.queryObj.isPrivate) {
             return res.json([]);
           }
@@ -942,7 +942,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/players/:account_id/refresh',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           const playerId = req.params.account_id;
           // If this player has already recently been queued, don't do it again
           if (
@@ -989,7 +989,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/proPlayers',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           const result = await db
             .select()
             .from('players')
@@ -1026,7 +1026,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/proMatches',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           const { rows } = await db.raw(
             `
           SELECT match_id, duration, start_time,
@@ -1081,7 +1081,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/publicMatches',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           const currMax =
             (await db('public_matches').max('match_id').first())?.max || 0;
           const lessThan = Number(req.query.less_than_match_id) || currMax;
@@ -1141,7 +1141,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/parsedMatches',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           const lessThan =
             req.query.less_than_match_id || Number.MAX_SAFE_INTEGER;
           const { rows } = await db.raw(
@@ -1231,7 +1231,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/metadata',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           return res.json(await getMetadata(req));
         },
       },
@@ -1256,7 +1256,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/distributions',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           const result = await getDistributions();
           return res.json(result);
         },
@@ -1295,7 +1295,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/search',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           if (!req.query.q) {
             return res.status(400).json([]);
           }
@@ -1342,7 +1342,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/rankings',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           if (typeof req.query.hero_id !== 'string') {
             return res.status(400).json({ error: 'input is not a string' });
           }
@@ -1380,7 +1380,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/benchmarks',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           if (typeof req.query.hero_id !== 'string') {
             return res.status(400).json({ error: 'input is not a string' });
           }
@@ -1409,7 +1409,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/health/:metric?',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           const result = await redis.get('health:v2');
           if (!result) {
             return res.json(result);
@@ -1455,7 +1455,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/request/:jobId',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           const job = await getReliableJob(req.params.jobId);
           if (job) {
             return res.json({ ...job, jobId: job.id });
@@ -1486,7 +1486,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/request/:match_id',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           // We validated the ID in middleware
           const matchId = req.params.match_id;
           // Count this request
@@ -1585,7 +1585,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/findMatches',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           // accept as input two arrays of up to 5
           const t0 = queryParamToArray(req.query.teamA).map(Number).slice(0, 5);
           const t1 = queryParamToArray(req.query.teamB).map(Number).slice(0, 5);
@@ -1633,7 +1633,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/heroes',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           const result = await db.select().from('heroes').orderBy('id', 'asc');
           return res.json(result);
         },
@@ -1662,7 +1662,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/heroStats',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           const cached = await redis.get('heroStats2');
           if (cached) {
             return res.json(JSON.parse(cached));
@@ -1755,7 +1755,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/heroes/:hero_id/matches',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           const heroId = req.params.hero_id;
           const { rows } = await db.raw(
             `SELECT
@@ -1807,7 +1807,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/heroes/:hero_id/matchups',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           const heroId = req.params.hero_id;
           const { rows } = await db.raw(
             `SELECT
@@ -1850,7 +1850,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/heroes/:hero_id/durations',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           const heroId = req.params.hero_id;
           const { rows } = await db.raw(
             `SELECT
@@ -1893,7 +1893,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/heroes/:hero_id/players',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           const heroId = req.params.hero_id;
           const { rows } = await db.raw(
             `SELECT
@@ -1935,7 +1935,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/heroes/:hero_id/itemPopularity',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           const heroId = req.params.hero_id;
           const result = await getHeroItemPopularity(heroId);
           return res.json(result);
@@ -1964,7 +1964,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/leagues',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           const result = await db.select().from('leagues');
           return res.json(result);
         },
@@ -1993,7 +1993,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/leagues/:league_id',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           const { rows } = await db.raw(
             `SELECT leagues.*
             FROM leagues
@@ -2024,7 +2024,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/leagues/:league_id/matches',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           const { rows } = await db.raw(
             `SELECT match_id, radiant_win, start_time, duration, leagueid, radiant_score, dire_score, radiant_team_id, radiant_team_name, dire_team_id, dire_team_name, series_id, series_type
             FROM matches
@@ -2055,7 +2055,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/leagues/:league_id/teams',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           const { rows } = await db.raw(
             `SELECT team_rating.*, teams.*
             FROM matches
@@ -2104,7 +2104,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/teams',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           const { rows } = await db.raw(
             `SELECT team_rating.*, teams.*
             FROM teams
@@ -2138,7 +2138,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/teams/:team_id',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           const { rows } = await db.raw(
             `SELECT team_rating.*, teams.*
             FROM teams
@@ -2170,7 +2170,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/teams/:team_id/matches',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           const { rows } = await db.raw(
             `
             SELECT team_match.match_id, radiant_win, radiant_score, dire_score, team_match.radiant, duration, start_time, leagueid, leagues.name as league_name, cluster, tm2.team_id opposing_team_id, teams2.name opposing_team_name, teams2.logo_url opposing_team_logo
@@ -2208,7 +2208,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/teams/:team_id/players',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           const { rows } = await db.raw(
             `SELECT account_id, notable_players.name, count(matches.match_id) games_played, sum(case when (player_matches.player_slot < 128) = matches.radiant_win then 1 else 0 end) wins, notable_players.team_id = teams.team_id is_current_team_member
             FROM matches
@@ -2245,7 +2245,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/teams/:team_id/heroes',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           const { rows } = await db.raw(
             `SELECT hero_id, localized_name, count(matches.match_id) games_played, sum(case when (player_matches.player_slot < 128) = matches.radiant_win then 1 else 0 end) wins
             FROM matches
@@ -2295,7 +2295,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/records/:field',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           const rows = await redis.zrevrange(
             `records:${req.params.field}`,
             0,
@@ -2345,7 +2345,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/live',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           const games = await redis.zrangebyscore('liveGames', '-inf', 'inf');
           if (!games?.length) {
             return res.json(games);
@@ -2391,7 +2391,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/scenarios/itemTimings',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           const result = await getItemTimings(req);
           return res.json(result);
         },
@@ -2431,7 +2431,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/scenarios/laneRoles',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           const result = await getLaneRoles(req);
           return res.json(result);
         },
@@ -2460,7 +2460,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/scenarios/misc',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           const result = await getTeamScenarios(req);
           return res.json(result);
         },
@@ -2489,7 +2489,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/schema',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           const result = await db
             .select(['table_name', 'column_name', 'data_type'])
             .from('information_schema.columns')
@@ -2556,13 +2556,13 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/constants/:resource?',
-        func: async (req, res, cb) => {
+        func: async (req, res, next) => {
           const { resource } = req.params;
           const resp = constants[resource as keyof typeof constants];
           if (resp) {
             return res.json(resp);
           }
-          return cb();
+          return next();
         },
       },
     },

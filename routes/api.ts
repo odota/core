@@ -10,7 +10,7 @@ import redis from '../store/redis';
 //@ts-ignore
 const api: Router = new Router();
 // Player endpoints middleware
-api.use('/players/:account_id/:info?', async (req, res, cb) => {
+api.use('/players/:account_id/:info?', async (req, res, next) => {
   try {
     if (!Number.isInteger(Number(req.params.account_id))) {
       return res.status(400).json({ error: 'invalid account id' });
@@ -69,23 +69,23 @@ api.use('/players/:account_id/:info?', async (req, res, cb) => {
     // Keep track of recently visited account IDs for caching
     await redis.zadd('visitedIds', moment().format('X'), req.params.account_id);
     await redis.zremrangebyrank('visitedIds', '0', '-50001');
-    return cb();
+    return next();
   } catch (e) {
-    return cb(e);
+    return next(e);
   }
 });
-api.use('/teams/:team_id/:info?', (req, res, cb) => {
+api.use('/teams/:team_id/:info?', (req, res, next) => {
   if (!Number.isInteger(Number(req.params.team_id))) {
     return res.status(400).json({ error: 'invalid team id' });
   }
-  return cb();
+  return next();
 });
-api.use('/request/:id', (req, res, cb) => {
+api.use('/request/:id', (req, res, next) => {
   // This can be a match ID (POST) or job ID (GET), but same validation
   if (!Number.isInteger(Number(req.params.id)) || Number(req.params.id) <= 0) {
     return res.status(400).json({ error: 'invalid id' });
   }
-  return cb();
+  return next();
 });
 // API spec
 api.get('/', (req, res) => {
@@ -101,12 +101,12 @@ Object.keys(spec.paths).forEach((path) => {
       : path.replace(/{/g, ':').replace(/}/g, '');
     // Check if the callback function is defined before adding the route..
     if (typeof func === 'function') {
-      api[verb as HttpVerb](routePath, async (req, res, cb) => {
+      api[verb as HttpVerb](routePath, async (req, res, next) => {
         // Wrap all the route handlers in try/catch so we don't have to do it individually
         try {
-          await func(req, res, cb);
+          await func(req, res, next);
         } catch (e) {
-          cb(e);
+          next(e);
         }
       });
     } else {
