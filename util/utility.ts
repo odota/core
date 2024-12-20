@@ -9,13 +9,10 @@ import type { ApiMatch, ApiPlayer } from './pgroup';
 import type QueryString from 'qs';
 import type { InsertMatchInput } from './insert';
 import axios, { AxiosRequestConfig } from 'axios';
+import redis from '../store/redis';
 
 /**
  * Tokenizes an input string.
- *
- * @param {String} Input
- *
- * @return {Array}
  */
 export function tokenize(input: string) {
   return input
@@ -26,18 +23,14 @@ export function tokenize(input: string) {
 }
 /*
  * Converts a steamid 64 to a steamid 32
- *
- * Takes and returns a string
  */
-export function convert64to32(id: string) {
+export function convert64to32(id: string): string {
   return (BigInt(id) - BigInt('76561197960265728')).toString();
 }
 /*
  * Converts a steamid 64 to a steamid 32
- *
- * Takes and returns a string
  */
-export function convert32to64(id: string) {
+export function convert32to64(id: string): string {
   return (BigInt(id) + BigInt('76561197960265728')).toString();
 }
 /**
@@ -798,7 +791,6 @@ export async function getRandomParserUrl(path: string): Promise<string> {
 }
 
 async function getRegistryUrl(service: string, path: string) {
-  const redis = (await import('../store/redis.js')).redis;
   // Purge values older than 10 seconds (stale heartbeat)
   await redis.zremrangebyscore(
     'registry:' + service,
@@ -818,7 +810,6 @@ async function getRegistryUrl(service: string, path: string) {
  */
 export async function getApiHosts(): Promise<string[]> {
   if (config.USE_SERVICE_REGISTRY) {
-    const redis = (await import('../store/redis.js')).redis;
     // Purge values older than 10 seconds (stale heartbeat)
     await redis.zremrangebyscore(
       'registry:' + 'proxy',
@@ -835,28 +826,27 @@ export async function getApiHosts(): Promise<string[]> {
 
 /**
  * Increments an hourly Redis counter for the metric
- * @param redis The Redis instance (null to dynamic import the default redis)
  * @param prefix The counter name
  */
 export async function redisCount(prefix: MetricName, incrBy = 1) {
-  const redisToUse = config.REDIS_URL
-    ? (await import('../store/redis.js')).redis
-    : null;
+  if (!redis) {
+    return;
+  }
   const key = `${prefix}:v2:${moment().startOf('hour').format('X')}`;
-  await redisToUse?.incrby(key, incrBy);
-  await redisToUse?.expireat(
+  await redis.incrby(key, incrBy);
+  await redis.expireat(
     key,
     moment().startOf('hour').add(1, 'day').format('X'),
   );
 }
 
 export async function redisCountDistinct(prefix: MetricName, value: string) {
-  const redisToUse = config.REDIS_URL
-    ? (await import('../store/redis.js')).redis
-    : null;
+  if (!redis) {
+    return;
+  }
   const key = `${prefix}:v2:${moment().startOf('hour').format('X')}`;
-  await redisToUse?.pfadd(key, value);
-  await redisToUse?.expireat(
+  await redis.pfadd(key, value);
+  await redis.expireat(
     key,
     moment().startOf('hour').add(1, 'day').format('X'),
   );
