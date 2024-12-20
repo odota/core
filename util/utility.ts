@@ -853,26 +853,6 @@ export async function redisCountDistinct(prefix: MetricName, value: string) {
 }
 
 /**
- * invokes a function immediately, waits for callback, waits the delay, and then calls it again
- * Ignores exceptions, but logs them
- * @param func
- * @param delay
- */
-export function invokeInterval(func: (cb: ErrorCb) => void, delay: number) {
-  (function invoker() {
-    console.log('running %s', func.name);
-    console.time(func.name);
-    return func((err) => {
-      if (err) {
-        // log the error, but wait until next interval to retry
-        console.error(err);
-      }
-      console.timeEnd(func.name);
-      setTimeout(invoker, delay);
-    });
-  })();
-}
-/**
  * Same as invokeInterval but for async functions
  * Throws on exceptions
  * @param func
