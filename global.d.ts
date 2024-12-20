@@ -470,7 +470,8 @@ type MetricName =
   | 'request_api_fail'
   | 'pmh_fullhistory'
   | 'pmh_gcdata'
-  | 'pmh_parsed';
+  | 'pmh_parsed'
+  | 'reconcile';
 
 // Object to map player_slot to basic info
 type PGroup = {

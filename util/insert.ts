@@ -194,9 +194,8 @@ export async function upsertPlayerCaches(
         );
       }
       if (type === 'reconcile') {
-        // TODO remove when we actually want to start reconciling
-        console.log(serializedMatch);
-        return false;
+        console.log(playerMatch.account_id, copy.match_id, playerMatch.player_slot);
+        redisCount('reconcile');
       }
       const query = util.format(
         'INSERT INTO player_caches (%s) VALUES (%s)',
