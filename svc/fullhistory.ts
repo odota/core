@@ -11,6 +11,7 @@ import db from '../store/db';
 import { runQueue } from '../store/queue';
 import { getPlayerMatches } from '../util/buildPlayer';
 import { insertMatch } from '../util/insert';
+import { ApiMatch } from '../util/pgroup';
 
 async function updatePlayer(player: FullHistoryJob) {
   // done with this player, update
@@ -28,25 +29,6 @@ async function updatePlayer(player: FullHistoryJob) {
   }
 }
 
-async function processMatch(matchId: string) {
-  // Disabled due to Steam GetMatchDetails being broken
-  // This would update the match blob with the visibility and update player caches to make them show up under a player
-  // Could possibly queue these matches for GC data fetch and then trigger a reconciliation from our own DB (similar to proposed change after parsing a match)
-  // const container = generateJob('api_details', {
-  //   match_id: Number(matchId),
-  // });
-  // const body = await getSteamAPIData({ url: container.url });
-  // const match = body.result;
-  // Don't insert match blob to avoid overwriting with less data from API
-  // Only update player_caches to associate the match with players
-  // await insertMatch(match, {
-  //   type: 'api',
-  //   cacheOnly: true,
-  // });
-  // await new Promise((resolve) => setTimeout(resolve, 1000));
-  redisCount('fullhistory_op');
-}
-
 async function processFullHistory(job: FullHistoryJob) {
   const player = job;
   if (
@@ -62,7 +44,7 @@ async function processFullHistory(job: FullHistoryJob) {
   // const heroArray = config.NODE_ENV === 'test' ? ['0'] : Object.keys(heroes);
   const heroId = '0';
   // use steamapi via specific player history and specific hero id (up to 500 games per hero)
-  const match_ids: Record<string, boolean> = {};
+  const matchesToProcess: Record<string, ApiMatch> = {};
   let isMatchDataDisabled = null;
   // make a request for every possible hero
   const container = generateJob('api_history', {
@@ -97,7 +79,7 @@ async function processFullHistory(job: FullHistoryJob) {
     resp.forEach((match: any) => {
       // add match ids on each page to match_ids
       const matchId = match.match_id;
-      match_ids[matchId] = true;
+      matchesToProcess[matchId] = match;
       startId = match.match_id;
     });
     const rem = body.result.results_remaining;
@@ -115,7 +97,7 @@ async function processFullHistory(job: FullHistoryJob) {
   };
   // Fetches 1-5 pages of matches for the players and updates the match_ids object
   await getApiMatchPage(player, container.url);
-  if (Object.keys(match_ids).length > 0) {
+  if (Object.keys(matchesToProcess).length > 0) {
     isMatchDataDisabled = false;
     // check what matches the player is already associated with
     const docs =
@@ -124,23 +106,46 @@ async function processFullHistory(job: FullHistoryJob) {
         // Only need to check against recent matches since we get back the most recent 500 or 100 matches from Steam API
         dbLimit: 1000,
       })) ?? [];
-    const origCount = Object.keys(match_ids).length;
+    const origCount = Object.keys(matchesToProcess).length;
     // iterate through db results, delete match_id key if this player has this match already
     // will re-request and update matches where this player was previously anonymous
     for (let i = 0; i < docs.length; i += 1) {
       const matchId = docs[i].match_id;
-      delete match_ids[matchId];
+      delete matchesToProcess[matchId];
     }
     console.log(
       '%s: %s matches found, diffing %s from db, %s to add',
       player.account_id,
       origCount,
       docs.length,
-      Object.keys(match_ids).length,
+      Object.keys(matchesToProcess).length,
     );
-    // make api_details requests for matches
-    const promiseFuncs = Object.keys(match_ids).map(
-      (matchId) => () => processMatch(matchId),
+    const promiseFuncs = Object.values(matchesToProcess).map(
+      (match) => async () => {
+        // Disabled due to Steam GetMatchDetails being broken
+        // This would update the match blob with the visibility and update player caches to make them show up under a player
+        // Could possibly queue these matches for GC data fetch and then trigger a reconciliation from our own DB (similar to proposed change after parsing a match)
+        // const container = generateJob('api_details', {
+        //   match_id: Number(matchId),
+        // });
+        // const body = await getSteamAPIData({ url: container.url });
+        // const match = body.result;
+        // Don't insert match blob to avoid overwriting with less data from API
+        // Only update player_caches to associate the match with players
+        // await insertMatch(match, {
+        //   type: 'api',
+        //   cacheOnly: true,
+        // });
+        // await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        // Note: If an account ID shows up here that player is not anonymous anymore (could update fh_unavailable for other players)
+        // Log the match IDs we should reconcile, we can query our own DB for data
+        const playerSlot = match.players.find(p => p.account_id === player.account_id)?.player_slot;
+        if (playerSlot != null) {
+          await db.raw('INSERT INTO player_match_history(account_id, match_id, player_slot) VALUES (?, ?, ?) ON CONFLICT DO NOTHING', [player.account_id, match.match_id, playerSlot]);
+        }
+        redisCount('fullhistory_op');
+      },
     );
     // Control number of match details requests to send at once--note this is per worker
     await eachLimitPromise(promiseFuncs, 1);
