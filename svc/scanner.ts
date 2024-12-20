@@ -61,38 +61,44 @@ async function scanApi() {
       data && data.result && data.result.matches ? data.result.matches : [];
     console.log('[API] match_seq_num:%s, matches:%s', seqNum, resp.length);
     console.time('insert');
-    await Promise.all(
-      resp.map(async (match: ApiMatch) => {
-        // Optionally throttle inserts to prevent overload
-        if (match.match_id % 100 >= Number(config.SCANNER_PERCENT)) {
-          return;
-        }
-        // check if match was previously processed
-        const result = await redis.zscore('scanner_insert', match.match_id);
-        // console.log(match.match_id, result);
-        // don't insert this match if we already processed it recently
-        if (!result) {
-          if (isSecondary) {
-            // On secondary, don't insert if no min value or too far behind
-            const minInRange = Number(
-              (await redis.zrange('scanner_insert', 0, 0))[0],
-            );
-            if (!minInRange || match.match_id < minInRange) {
-              return;
-            }
-            // secondary scanner picked up a missing match
-            redisCount('secondary_scanner');
+    try {
+      await Promise.all(
+        resp.map(async (match: ApiMatch) => {
+          // Optionally throttle inserts to prevent overload
+          if (match.match_id % 100 >= Number(config.SCANNER_PERCENT)) {
+            return;
           }
-          await insertMatch(match, {
-            type: 'api',
-            origin: 'scanner',
-          });
-          await redis.zadd('scanner_insert', match.match_id, match.match_id);
-          // To avoid dups we should always keep more matches here than SCANNER_OFFSET
-          await redis.zremrangebyrank('scanner_insert', '0', '-100001');
-        }
-      }),
-    );
+          // check if match was previously processed
+          const result = await redis.zscore('scanner_insert', match.match_id);
+          // console.log(match.match_id, result);
+          // don't insert this match if we already processed it recently
+          if (!result) {
+            if (isSecondary) {
+              // On secondary, don't insert if no min value or too far behind
+              const minInRange = Number(
+                (await redis.zrange('scanner_insert', 0, 0))[0],
+              );
+              if (!minInRange || match.match_id < minInRange) {
+                return;
+              }
+              // secondary scanner picked up a missing match
+              redisCount('secondary_scanner');
+            }
+            await insertMatch(match, {
+              type: 'api',
+              origin: 'scanner',
+            });
+            await redis.zadd('scanner_insert', match.match_id, match.match_id);
+            // To avoid dups we should always keep more matches here than SCANNER_OFFSET
+            await redis.zremrangebyrank('scanner_insert', '0', '-100001');
+          }
+        }),
+      );
+    } catch (e) {
+      await new Promise((resolve) => setTimeout(resolve, SCANNER_WAIT));
+      // Wait before throwing to avoid excessive retries
+      throw e;
+    }
     console.timeEnd('insert');
     // Completed inserting matches on this page so update redis
     if (resp.length) {

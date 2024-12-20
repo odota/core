@@ -853,8 +853,7 @@ export async function redisCountDistinct(prefix: MetricName, value: string) {
 }
 
 /**
- * Same as invokeInterval but for async functions
- * Throws on exceptions
+ * Calls an async function at a specific interval.
  * @param func
  * @param delay
  */
@@ -865,9 +864,19 @@ export async function invokeIntervalAsync(
   while (true) {
     console.log('running %s', func.name);
     console.time(func.name);
-    await func();
+    let exception;
+    try {
+      await func();
+    } catch (e) {
+      console.error(e);
+      exception = e;
+    }
     console.timeEnd(func.name);
     await new Promise((resolve) => setTimeout(resolve, delay));
+    // Wait the interval before throwing to prevent excessive retry loops
+    if (exception) {
+      throw exception;
+    }
   }
 }
 
