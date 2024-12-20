@@ -101,6 +101,7 @@ export async function buildStatus() {
         fullhistory_skips_last_day: async () => countDay('fullhistory_skip'),
         pmh_fullhistory_last_day: async () => countDay('pmh_fullhistory'),
         pmh_gcdata_last_day: async () => countDay('pmh_gcdata'),
+        pmh_parsed_last_day: async () => countDay('pmh_parsed'),
         meta_parsed_last_day: async () => countDay('meta_parse'),
 
         steam_api_calls_last_day: async () => countDay('steam_api_call'),

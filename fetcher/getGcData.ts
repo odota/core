@@ -106,9 +106,6 @@ async function saveGcData(
   const players = data.match.players.map(
     (p: any, i: number): GcPlayer => ({
       // NOTE: account ids are not anonymous in this call
-      // Also, we probably want to queue a reconciliation job post-parse
-      // to read back the match data and update all player_caches now that we have identity and parsed data
-      // Maybe also want to do it after GC, and call it from fullhistory to update on request?
       account_id: p.account_id,
       player_slot: p.player_slot,
       party_id: Number(p.party_id),
@@ -117,9 +114,6 @@ async function saveGcData(
         (matchPlayer: any) =>
           Number(matchPlayer.party_id) === Number(p.party_id),
       ).length,
-      // If we want to start adding basic data for anonymous players in player_caches we can put k/d/a/hd/td etc here too
-      // There are some discrepancies in field names, e.g. starttime instead of start_time and item_7 instead of backpack_0
-      // We'll also want to remove the extra data from being stored in gcdata column to save space
     }),
   );
   const matchToInsert: GcMatch = {

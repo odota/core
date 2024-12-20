@@ -213,8 +213,6 @@ interface GcPlayer {
   party_id: number;
   party_size: number;
   permanent_buffs: any[];
-
-  // Currently not passed
   account_id?: number;
 }
 
@@ -471,7 +469,8 @@ type MetricName =
   | 'parsed_cassandra_read'
   | 'request_api_fail'
   | 'pmh_fullhistory'
-  | 'pmh_gcdata';
+  | 'pmh_gcdata'
+  | 'pmh_parsed';
 
 // Object to map player_slot to basic info
 type PGroup = {
