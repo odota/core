@@ -834,10 +834,7 @@ export async function redisCount(prefix: MetricName, incrBy = 1) {
   }
   const key = `${prefix}:v2:${moment().startOf('hour').format('X')}`;
   await redis.incrby(key, incrBy);
-  await redis.expireat(
-    key,
-    moment().startOf('hour').add(1, 'day').format('X'),
-  );
+  await redis.expireat(key, moment().startOf('hour').add(1, 'day').format('X'));
 }
 
 export async function redisCountDistinct(prefix: MetricName, value: string) {
@@ -846,10 +843,7 @@ export async function redisCountDistinct(prefix: MetricName, value: string) {
   }
   const key = `${prefix}:v2:${moment().startOf('hour').format('X')}`;
   await redis.pfadd(key, value);
-  await redis.expireat(
-    key,
-    moment().startOf('hour').add(1, 'day').format('X'),
-  );
+  await redis.expireat(key, moment().startOf('hour').add(1, 'day').format('X'));
 }
 
 /**

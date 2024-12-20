@@ -48,9 +48,7 @@ function extendPlayerData(
   return p as Player | ParsedPlayer;
 }
 
-async function getProMatchInfo(
-  matchId: number,
-): Promise<{
+async function getProMatchInfo(matchId: number): Promise<{
   radiant_team?: any;
   dire_team?: any;
   league?: any;

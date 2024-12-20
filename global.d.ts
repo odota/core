@@ -333,9 +333,13 @@ type ReliableQueueRow = {
   priority: number;
 };
 
-type JobMetadata = { attempts: number, timestamp: Date, priority: number };
+type JobMetadata = { attempts: number; timestamp: Date; priority: number };
 
-type ReliableQueueOptions = { attempts?: number; priority?: number, caller?: string };
+type ReliableQueueOptions = {
+  attempts?: number;
+  priority?: number;
+  caller?: string;
+};
 
 type ProPlayer = {
   name: string;

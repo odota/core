@@ -31,9 +31,7 @@ async function updateStripeUsage() {
       );
       continue;
     }
-    const startTime = moment
-      .unix(sub.current_period_end - 1)
-      .startOf('month');
+    const startTime = moment.unix(sub.current_period_end - 1).startOf('month');
     const endTime = moment.unix(sub.current_period_end - 1).endOf('month');
     const res = await db.raw(
       `

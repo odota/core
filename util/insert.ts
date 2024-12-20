@@ -21,7 +21,11 @@ import {
   redisCount,
   transformMatch,
 } from './utility';
-import { getMatchRankTier, isRecentVisitor, isRecentlyVisited } from './queries';
+import {
+  getMatchRankTier,
+  isRecentVisitor,
+  isRecentlyVisited,
+} from './queries';
 import { ApiMatch, ApiMatchPro, ApiPlayer, getPGroup } from './pgroup';
 import { Archive } from '../store/archive';
 // import scylla from './scylla';
