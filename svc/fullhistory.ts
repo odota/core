@@ -143,8 +143,8 @@ async function processFullHistory(job: FullHistoryJob) {
         const playerSlot = match.players.find(p => p.account_id === player.account_id)?.player_slot;
         if (playerSlot != null) {
           await db.raw('INSERT INTO player_match_history(account_id, match_id, player_slot) VALUES (?, ?, ?) ON CONFLICT DO NOTHING', [player.account_id, match.match_id, playerSlot]);
+          await redisCount('pmh_fullhistory');
         }
-        redisCount('fullhistory_op');
       },
     );
     // Control number of match details requests to send at once--note this is per worker

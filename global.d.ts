@@ -416,7 +416,6 @@ type MetricName =
   | 'retriever_player'
   | 'fullhistory'
   | 'fullhistory_skip'
-  | 'fullhistory_op'
   | 'fullhistory_short'
   | 'match_archive_read'
   | 'match_archive_write'
@@ -470,7 +469,9 @@ type MetricName =
   | 'api_cassandra_read'
   | 'gcdata_cassandra_read'
   | 'parsed_cassandra_read'
-  | 'request_api_fail';
+  | 'request_api_fail'
+  | 'pmh_fullhistory'
+  | 'pmh_gcdata';
 
 // Object to map player_slot to basic info
 type PGroup = {

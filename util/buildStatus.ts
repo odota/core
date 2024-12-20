@@ -98,8 +98,9 @@ export async function buildStatus() {
         request_api_fail_last_day: async () => countDay('request_api_fail'),
         fullhistory_last_day: async () => countDay('fullhistory'),
         fullhistory_short_last_day: async () => countDay('fullhistory_short'),
-        fullhistory_ops_last_day: async () => countDay('fullhistory_op'),
         fullhistory_skips_last_day: async () => countDay('fullhistory_skip'),
+        pmh_fullhistory_last_day: async () => countDay('pmh_fullhistory'),
+        pmh_gcdata_last_day: async () => countDay('pmh_gcdata'),
         meta_parsed_last_day: async () => countDay('meta_parse'),
 
         steam_api_calls_last_day: async () => countDay('steam_api_call'),
