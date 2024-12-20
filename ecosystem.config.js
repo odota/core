@@ -147,10 +147,10 @@ let arr = [
     group: 'backend',
     instances: 4,
   },
-  // {
-  //   name: 'reconcile',
-  //   group: 'backend',
-  // },
+  {
+    name: 'reconcile',
+    group: 'backend',
+  },
   // Requires the gcloud CLI to be installed
   // We could write this in JS to use the REST API, authenticating using metadata server credentials
   // {
