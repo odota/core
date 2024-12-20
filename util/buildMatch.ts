@@ -221,6 +221,7 @@ export async function buildMatch(
   // track distribution of matches requested
   const bucket = Math.floor(matchId / 1000000000);
   redisCount((bucket + '_match_req') as MetricName);
+  redisCount('build_match');
 
   // Check for cache
   const key = `match:${matchId}`;
@@ -239,7 +240,6 @@ export async function buildMatch(
     return null;
   }
   match.od_data = odData;
-  redisCount('build_match');
   const [players, prodata, cosmetics, metadata] = await Promise.all([
     Promise.all(
       // Get names, last login for players from DB

@@ -171,6 +171,7 @@ export async function upsertPlayerCaches(
         // We currently update this for the non-anonymous players in the match
         // It'll reflect the current anonymity state of the players at insertion time
         // This might lead to changes in peers counts after a fullhistory update or parse request
+        // When reconciling after gcdata we will update this with non-anonymized data (but we won't reconcile for players with open match history so their peers may be incomplete)
         playerMatch.heroes = pgroup;
       }
       computeMatchData(playerMatch as ParsedPlayerMatch);

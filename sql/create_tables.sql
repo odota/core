@@ -443,7 +443,7 @@ CREATE TABLE IF NOT EXISTS last_seq_num (
 --Stores matches that the user has played in but might be previously anonymous in API data
 --We might want to fetch the data from our own DB and fill player_caches
 CREATE TABLE IF NOT EXISTS player_match_history(
-  PRIMARY KEY (account_id, match_id),
+  PRIMARY KEY (match_id, account_id),
   account_id bigint,
   match_id bigint,
   player_slot integer
