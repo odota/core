@@ -29,10 +29,11 @@ async function doReconcile() {
     }
     // Call upsertPlayerCaches with a single player match
     // If we pass pgroup, this will populate account_id automatically
-    // TODO Log what we are about to insert
-    await upsertPlayerCaches(match, undefined, pgroup, 'reconcile');
-    // Delete the row since we successfully updated
-    await db.raw('DELETE FROM player_match_history WHERE account_id = ? AND match_id = ?', [row.account_id, row.match_id]);
+    const result = await upsertPlayerCaches(match, undefined, pgroup, 'reconcile');
+    if (result.every(Boolean)) {
+      // Delete the row since we successfully updated (enable when we actually start reconciling)
+      await db.raw('DELETE FROM player_match_history WHERE account_id = ? AND match_id = ?', [row.account_id, row.match_id]);
+    }
   }));
 }
 

@@ -150,7 +150,7 @@ export async function upsertPlayerCaches(
     copy.average_rank = averageRank;
   }
   const columns = await getCassandraColumns('player_caches');
-  await Promise.all(
+  return Promise.all(
     copy.players.map(async (p) => {
       // add account id to each player so we know what caches to update
       const account_id = pgroup[p.player_slot]?.account_id;
@@ -165,7 +165,7 @@ export async function upsertPlayerCaches(
         !playerMatch.account_id ||
         playerMatch.account_id === getAnonymousAccountId()
       ) {
-        return;
+        return false;
       }
       if (type === 'api' || type === 'reconcile') {
         // We currently update this for the non-anonymous players in the match
@@ -181,6 +181,22 @@ export async function upsertPlayerCaches(
         }
       });
       const serializedMatch: any = serialize(playerMatch);
+      if (
+        (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') &&
+        (playerMatch.player_slot === 0 || type === 'reconcile')
+      ) {
+        await fs.writeFile(
+          './json/' +
+            copy.match_id +
+            `_playercache_${type}_${playerMatch.player_slot}.json`,
+          JSON.stringify(serializedMatch, null, 2),
+        );
+      }
+      if (type === 'reconcile') {
+        // TODO remove when we actually want to start reconciling
+        console.log(serializedMatch);
+        return false;
+      }
       const query = util.format(
         'INSERT INTO player_caches (%s) VALUES (%s)',
         Object.keys(serializedMatch).join(','),
@@ -199,17 +215,7 @@ export async function upsertPlayerCaches(
       // await scylla.execute(query, arr, {
       //   prepare: true
       // });
-      if (
-        (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') &&
-        playerMatch.player_slot === 0
-      ) {
-        await fs.writeFile(
-          './json/' +
-            copy.match_id +
-            `_playercache_${type}_${playerMatch.player_slot}.json`,
-          JSON.stringify(playerMatch, null, 2),
-        );
-      }
+      return true;
     }),
   );
 }
