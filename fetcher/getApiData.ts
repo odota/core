@@ -1,4 +1,4 @@
-import { generateJob, getSteamAPIData, redisCount } from '../util/utility';
+import { SteamAPIUrls, getSteamAPIData, redisCount } from '../util/utility';
 import { Archive } from '../store/archive';
 import cassandra from '../store/cassandra';
 import { type ApiMatch } from '../util/pgroup';
@@ -56,10 +56,9 @@ async function getOrFetchApiData(matchId: number): Promise<{
   if (saved) {
     return { data: saved, error: null };
   }
-  const job = generateJob('api_details', {
+  const url = SteamAPIUrls.api_details({
     match_id: matchId,
   });
-  const { url } = job;
   let match;
   try {
     // We currently can't fetch because the Steam GetMatchDetails API is broken

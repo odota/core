@@ -1,6 +1,6 @@
 const { insertMatch } = await import('../util/insert.js');
 const { db } = await import('../store/db.js');
-const { generateJob, getSteamAPIData, isProMatch } = await import(
+const { SteamAPIUrls, getSteamAPIData, isProMatch } = await import(
   '../util/utility.js'
 );
 
@@ -11,10 +11,9 @@ const { rows } = await db.raw(
 for (let i = 0; i < rows.length; i++) {
   const match = rows[i];
   console.log(match.match_id);
-  const job = generateJob('api_details', {
+  const url = SteamAPIUrls.api_details({
     match_id: match.match_id,
   });
-  const { url } = job;
   const body: any = await getSteamAPIData({
     url,
   });

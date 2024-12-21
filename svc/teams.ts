@@ -3,7 +3,7 @@ import axios from 'axios';
 import db from '../store/db';
 import { upsert } from '../util/insert';
 import {
-  generateJob,
+  SteamAPIUrls,
   getSteamAPIData,
   invokeIntervalAsync,
 } from '../util/utility';
@@ -20,18 +20,18 @@ async function doTeams() {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     // GetTeamInfo disabled as of october 2017
     /*
-    const container = utility.generateJob('api_teams', {
+    const url = SteamAPIUrls.api_teams({
       // 2 is the smallest team id, use as default
       team_id: m.team_id || 2,
     });
     */
-    const container = generateJob('api_team_info_by_team_id', {
+    const url = SteamAPIUrls.api_team_info_by_team_id({
       start_at_team_id: m.team_id,
     });
     let body;
     try {
       body = await getSteamAPIData({
-        url: container.url,
+        url,
         raw: true,
       });
     } catch (err) {
@@ -51,7 +51,7 @@ async function doTeams() {
     const logoRegex = /^"logo":(.*),$/m;
     const match = logoRegex.exec(raw);
     const logoUgc = match?.[1];
-    const ugcJob = generateJob('api_get_ugc_file_details', {
+    const ugcUrl = SteamAPIUrls.api_get_ugc_file_details({
       ugcid: logoUgc,
     });
     // Steam's CDN sometimes has better versions of team logos available
@@ -71,7 +71,7 @@ async function doTeams() {
       // Try getting image from ugc
       try {
         const ugcBody = await getSteamAPIData({
-          url: ugcJob.url,
+          url: ugcUrl,
         });
         t.team_id = m.team_id;
         if (ugcBody && ugcBody.data) {

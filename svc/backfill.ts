@@ -2,7 +2,7 @@
 import config from '../config';
 import { Archive } from '../store/archive';
 import type { ApiMatch } from '../util/pgroup';
-import { generateJob, getSteamAPIData, transformMatch } from '../util/utility';
+import { SteamAPIUrls, getSteamAPIData, transformMatch } from '../util/utility';
 import fs from 'fs';
 
 // following need to be set
@@ -25,13 +25,13 @@ async function scanApi() {
       process.exit(0);
     }
     const begin = Date.now();
-    const container = generateJob('api_sequence', {
+    const url = SteamAPIUrls.api_sequence({
       start_at_match_seq_num: seqNum,
     });
     let data = null;
     try {
       data = await getSteamAPIData({
-        url: container.url,
+        url,
         // We could rotate through proxies here to ensure consistent load
         // proxy: apiHosts,
       });

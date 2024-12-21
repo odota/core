@@ -33,98 +33,53 @@ export function convert64to32(id: string): string {
 export function convert32to64(id: string): string {
   return (BigInt(id) + BigInt('76561197960265728')).toString();
 }
-/**
- * Helper to generate Steam API URLs
- * */
-export function generateJob(type: SteamEndpointType, payload: any) {
-  return jobs[type](type, payload);
-}
-type SteamEndpointType = keyof typeof jobs;
+
 const apiUrl = 'http://api.steampowered.com';
 let apiKey = config.STEAM_API_KEY.split(',')[0];
-const jobs = {
-  api_details(type: string, payload: { match_id: string | number }) {
-    return {
-      url: `${apiUrl}/IDOTA2Match_570/GetMatchDetails/V001/?key=${apiKey}&match_id=${payload.match_id}`,
-    };
-  },
-  api_history(type: string, payload: any) {
-    return {
-      url: `${apiUrl}/IDOTA2Match_570/GetMatchHistory/V001/?key=${apiKey}${
-        payload.account_id ? `&account_id=${payload.account_id}` : ''
-      }${
-        payload.matches_requested
-          ? `&matches_requested=${payload.matches_requested}`
-          : ''
-      }${payload.hero_id ? `&hero_id=${payload.hero_id}` : ''}${
-        payload.leagueid ? `&league_id=${payload.leagueid}` : ''
-      }${
-        payload.start_at_match_id
-          ? `&start_at_match_id=${payload.start_at_match_id}`
-          : ''
-      }`,
-    };
-  },
-  api_summaries(type: string, payload: any) {
-    return {
-      url: `${apiUrl}/ISteamUser/GetPlayerSummaries/v0002/?key=${apiKey}&steamids=${payload.players
-        .map((p: Player) => convert32to64(String(p.account_id)))
-        .join()}`,
-    };
-  },
-  api_sequence(type: string, payload: any) {
-    return {
-      url: `${apiUrl}/IDOTA2Match_570/GetMatchHistoryBySequenceNum/V001/?key=${apiKey}&start_at_match_seq_num=${payload.start_at_match_seq_num}`,
-    };
-  },
-  api_heroes(type: string, payload: any) {
-    return {
-      url: `${apiUrl}/IEconDOTA2_570/GetHeroes/v0001/?key=${apiKey}&language=${payload.language}`,
-    };
-  },
-  api_items(type: string, payload: any) {
-    return {
-      url: `https://www.dota2.com/datafeed/itemlist?language=${payload.language}`,
-    };
-  },
-  api_live(type: string, payload: any) {
-    return {
-      url: `${apiUrl}/IDOTA2Match_570/GetLiveLeagueGames/v0001/?key=${apiKey}`,
-    };
-  },
-  api_teams(type: string, payload: any) {
-    return {
-      url: `${apiUrl}/IDOTA2Teams_570/GetTeamInfo/v1/?key=${apiKey}&team_id=${payload.team_id}`,
-    };
-  },
-  api_item_schema(type: string, payload: any) {
-    return {
-      url: `${apiUrl}/IEconItems_570/GetSchemaURL/v1?key=${apiKey}`,
-    };
-  },
-  api_top_live_game(type: string, payload: any) {
-    return {
-      url: `${apiUrl}/IDOTA2Match_570/GetTopLiveGame/v1/?key=${apiKey}&partner=${
+export const SteamAPIUrls = {
+  api_details: (payload: { match_id: string | number }) =>
+    `${apiUrl}/IDOTA2Match_570/GetMatchDetails/V001/?key=${apiKey}&match_id=${payload.match_id}`,
+  api_history: (payload: { account_id?: number, matches_requested?: number, hero_id?: number, leagueid?: number, start_at_match_id?: number }) =>
+    `${apiUrl}/IDOTA2Match_570/GetMatchHistory/V001/?key=${apiKey}${
+      payload.account_id ? `&account_id=${payload.account_id}` : ''
+    }${
+      payload.matches_requested
+        ? `&matches_requested=${payload.matches_requested}`
+        : ''
+    }${payload.hero_id ? `&hero_id=${payload.hero_id}` : ''}${
+      payload.leagueid ? `&league_id=${payload.leagueid}` : ''
+    }${
+      payload.start_at_match_id
+        ? `&start_at_match_id=${payload.start_at_match_id}`
+        : ''
+    }`,
+  api_summaries: (payload: { players: Player[] }) => 
+    `${apiUrl}/ISteamUser/GetPlayerSummaries/v0002/?key=${apiKey}&steamids=${payload.players
+    .map((p: Player) => convert32to64(String(p.account_id)))
+    .join()}`,
+  api_sequence: (payload: { start_at_match_seq_num: number }) =>
+    `${apiUrl}/IDOTA2Match_570/GetMatchHistoryBySequenceNum/V001/?key=${apiKey}&start_at_match_seq_num=${payload.start_at_match_seq_num}`,
+  api_heroes: (payload: { language: string }) => 
+    `${apiUrl}/IEconDOTA2_570/GetHeroes/v0001/?key=${apiKey}&language=${payload.language}`,
+  api_items: (payload: { language: string}) =>
+    `https://www.dota2.com/datafeed/itemlist?language=${payload.language}`,
+  api_live: () =>
+    `${apiUrl}/IDOTA2Match_570/GetLiveLeagueGames/v0001/?key=${apiKey}`,
+  api_teams: (payload: { team_id: number }) =>
+    `${apiUrl}/IDOTA2Teams_570/GetTeamInfo/v1/?key=${apiKey}&team_id=${payload.team_id}`,
+  api_item_schema: () => `${apiUrl}/IEconItems_570/GetSchemaURL/v1?key=${apiKey}`,
+  api_top_live_game: () =>
+    `${apiUrl}/IDOTA2Match_570/GetTopLiveGame/v1/?key=${apiKey}&partner=${
         Math.random() < 0.5 ? '1' : '2'
-      }`,
-    };
-  },
-  api_realtime_stats(type: string, payload: any) {
-    return {
-      url: `${apiUrl}/IDOTA2MatchStats_570/GetRealtimeStats/v1?key=${apiKey}&server_steam_id=${payload.server_steam_id}`,
-    };
-  },
-  api_team_info_by_team_id(type: string, payload: any) {
-    return {
-      url: `${apiUrl}/IDOTA2Match_570/GetTeamInfoByTeamID/v1?key=${apiKey}&start_at_team_id=${payload.start_at_team_id}&teams_requested=1`,
-    };
-  },
-  api_get_ugc_file_details(type: string, payload: any) {
-    return {
-      url: `${apiUrl}/ISteamRemoteStorage/GetUGCFileDetails/v1/?key=${apiKey}&appid=570&ugcid=${payload.ugcid}`,
-    };
-  },
-};
+    }`,
+  api_realtime_stats: (payload: { server_steam_id: string }) => 
+  `${apiUrl}/IDOTA2MatchStats_570/GetRealtimeStats/v1?key=${apiKey}&server_steam_id=${payload.server_steam_id}`,
+  api_team_info_by_team_id: (payload: { start_at_team_id: number }) =>
+    `${apiUrl}/IDOTA2Match_570/GetTeamInfoByTeamID/v1?key=${apiKey}&start_at_team_id=${payload.start_at_team_id}&teams_requested=1`,
+  api_get_ugc_file_details: (payload: { ugcid: string | undefined }) => 
+    `${apiUrl}/ISteamRemoteStorage/GetUGCFileDetails/v1/?key=${apiKey}&appid=570&ugcid=${payload.ugcid}`,
+}
+
 /**
  * A wrapper around HTTP requests that handles:
  * proxying

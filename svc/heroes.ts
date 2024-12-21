@@ -3,16 +3,16 @@ import axios from 'axios';
 import db from '../store/db';
 import { upsert } from '../util/insert';
 import {
-  generateJob,
+  SteamAPIUrls,
   getSteamAPIData,
   invokeIntervalAsync,
 } from '../util/utility';
 
 async function doHeroes() {
-  const container = generateJob('api_heroes', {
+  const url = SteamAPIUrls.api_heroes({
     language: 'english',
   });
-  const body = await getSteamAPIData({ url: container.url });
+  const body = await getSteamAPIData({ url });
   if (!body || !body.result || !body.result.heroes) {
     return;
   }

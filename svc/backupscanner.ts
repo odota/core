@@ -17,10 +17,9 @@ async function processMatch(matchId: number) {
   // Check if exists
   const res = await redis.get(`scanner_insert:${matchId}`);
   if (!res) {
-    const job = generateJob('api_details', {
+    const url = SteamAPIUrls.api_details({
       match_id: matchId,
     });
-    const { url } = job;
     const body = await getSteamAPIData({
       url,
       delay,
@@ -39,11 +38,11 @@ async function processMatch(matchId: number) {
   }
 }
 async function processPlayer(accountId: string) {
-  const ajob = generateJob('api_history', {
+  const url = SteamAPIUrls.api_history({
     account_id: accountId,
   });
   const body = await getSteamAPIData({
-    url: ajob.url,
+    url,
     delay,
   });
   if (!body || !body.result || !body.result.matches) {

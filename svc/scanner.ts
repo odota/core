@@ -4,7 +4,7 @@ import redis from '../store/redis';
 import { insertMatch } from '../util/insert';
 import type { ApiMatch } from '../util/pgroup';
 import {
-  generateJob,
+  SteamAPIUrls,
   getApiHosts,
   getSteamAPIData,
   redisCount,
@@ -38,13 +38,13 @@ async function scanApi() {
     const apiHosts = await getApiHosts();
     const parallelism = Math.min(apiHosts.length, API_KEYS.length);
     const scannerWaitCatchup = SCANNER_WAIT / parallelism;
-    const container = generateJob('api_sequence', {
+    const url = SteamAPIUrls.api_sequence({
       start_at_match_seq_num: seqNum,
     });
     let data = null;
     try {
       data = await getSteamAPIData({
-        url: container.url,
+        url,
         proxy: apiHosts,
       });
     } catch (err: any) {
@@ -133,9 +133,9 @@ async function start() {
     let numResult = await getCurrentSeqNum();
     if (!numResult) {
       // Never do this in production to avoid skipping sequence number if we didn't pull .env properly
-      const container = generateJob('api_history', {});
+      const url = SteamAPIUrls.api_history({});
       // Just get the approximate current seq num
-      const data = await getSteamAPIData({ url: container.url });
+      const data = await getSteamAPIData({ url });
       numResult = data.result.matches[0].match_seq_num;
       await db.raw(
         'INSERT INTO last_seq_num(match_seq_num) VALUES (?) ON CONFLICT DO NOTHING',

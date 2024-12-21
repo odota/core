@@ -4,7 +4,7 @@ import config from '../config';
 import {
   redisCount,
   getSteamAPIData,
-  generateJob,
+  SteamAPIUrls,
   eachLimitPromise,
 } from '../util/utility';
 import db from '../store/db';
@@ -42,14 +42,13 @@ async function processFullHistory(job: FullHistoryJob) {
   // by default, fetch only 100 matches, unless long_history is specified then fetch 500
   // As of December 2021 filtering by hero ID doesn't work
   // const heroArray = config.NODE_ENV === 'test' ? ['0'] : Object.keys(heroes);
-  const heroId = '0';
+  // const heroId = '0';
   // use steamapi via specific player history and specific hero id (up to 500 games per hero)
   const matchesToProcess: Record<string, ApiMatch> = {};
   let isMatchDataDisabled = null;
   // make a request for every possible hero
-  const container = generateJob('api_history', {
+  const url = SteamAPIUrls.api_history({
     account_id: player.account_id,
-    hero_id: heroId,
     matches_requested: 100,
   });
   const getApiMatchPage = async (
@@ -96,7 +95,7 @@ async function processFullHistory(job: FullHistoryJob) {
     return getApiMatchPage(player, url);
   };
   // Fetches 1-5 pages of matches for the players and updates the match_ids object
-  await getApiMatchPage(player, container.url);
+  await getApiMatchPage(player, url);
   if (Object.keys(matchesToProcess).length > 0) {
     isMatchDataDisabled = false;
     // check what matches the player is already associated with
@@ -125,10 +124,10 @@ async function processFullHistory(job: FullHistoryJob) {
         // Disabled due to Steam GetMatchDetails being broken
         // This would update the match blob with the visibility and update player caches to make them show up under a player
         // Could possibly queue these matches for GC data fetch and then trigger a reconciliation from our own DB (similar to proposed change after parsing a match)
-        // const container = generateJob('api_details', {
+        // const url = SteamAPIUrls.api_details({
         //   match_id: Number(matchId),
         // });
-        // const body = await getSteamAPIData({ url: container.url });
+        // const body = await getSteamAPIData({ url });
         // const match = body.result;
         // Don't insert match blob to avoid overwriting with less data from API
         // Only update player_caches to associate the match with players

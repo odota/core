@@ -3,7 +3,7 @@ import { upsertPlayer, bulkIndexPlayer } from '../util/insert';
 import db from '../store/db';
 import {
   getSteamAPIData,
-  generateJob,
+  SteamAPIUrls,
   convert64to32,
   invokeIntervalAsync,
 } from '../util/utility';
@@ -15,11 +15,11 @@ async function doProfiler() {
   const result = await db.raw(
     'SELECT account_id from players TABLESAMPLE SYSTEM_ROWS(100)',
   );
-  const container = generateJob('api_summaries', {
+  const url = SteamAPIUrls.api_summaries({
     players: result.rows,
   });
   // We can also queue a rank tier/MMR request for these players
-  const body = await getSteamAPIData({ url: container.url });
+  const body = await getSteamAPIData({ url });
   const results = body.response.players.filter(
     (player: User) => player.steamid,
   );

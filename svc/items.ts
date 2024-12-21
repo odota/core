@@ -3,16 +3,16 @@ import { items } from 'dotaconstants';
 import db from '../store/db';
 import { upsert } from '../util/insert';
 import {
-  generateJob,
+  SteamAPIUrls,
   getSteamAPIData,
   invokeIntervalAsync,
 } from '../util/utility';
 
 async function doItems() {
-  const container = generateJob('api_items', {
+  const url = SteamAPIUrls.api_items({
     language: 'english',
   });
-  const body = await getSteamAPIData({ url: container.url });
+  const body = await getSteamAPIData({ url });
   if (!body || !body.result || !body.result.data) {
     throw new Error('invalid body');
   }
