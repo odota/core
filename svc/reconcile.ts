@@ -44,4 +44,4 @@ async function doReconcile() {
   }
 }
 
-invokeIntervalAsync(doReconcile, 1000);
+invokeIntervalAsync(doReconcile, 500);

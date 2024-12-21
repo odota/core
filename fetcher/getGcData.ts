@@ -137,13 +137,13 @@ async function saveGcData(
     ],
   );
   // Log the players who were previously anomymous for reconciliation
-  await Promise.all(matchToInsert.players
-    .filter(p => !Boolean(extraData.pgroup[p.player_slot]?.account_id))
-    .map(async (p) => {
-      await db.raw('INSERT INTO player_match_history(account_id, match_id, player_slot) VALUES (?, ?, ?) ON CONFLICT DO NOTHING', [p.account_id, matchToInsert.match_id, p.player_slot]);
-      await redisCount('pmh_gcdata');
-    })
-  );
+  // await Promise.all(matchToInsert.players
+  //   .filter(p => !Boolean(extraData.pgroup[p.player_slot]?.account_id))
+  //   .map(async (p) => {
+  //     await db.raw('INSERT INTO player_match_history(account_id, match_id, player_slot) VALUES (?, ?, ?) ON CONFLICT DO NOTHING', [p.account_id, matchToInsert.match_id, p.player_slot]);
+  //     await redisCount('pmh_gcdata');
+  //   })
+  // );
   // Put extra fields in matches/player_matches (do last since after this we won't fetch from GC again)
   await insertMatch(matchToInsert, {
     type: 'gcdata',
