@@ -1,8 +1,9 @@
-import { redisCount } from '../util/utility';
+import { generateJob, getSteamAPIData, redisCount } from '../util/utility';
 import { Archive } from '../store/archive';
 import cassandra from '../store/cassandra';
 import { type ApiMatch } from '../util/pgroup';
 import { MatchFetcher } from './base';
+import { insertMatch } from '../util/insert';
 
 const blobArchive = new Archive('blob');
 /**
@@ -51,10 +52,37 @@ async function getOrFetchApiData(matchId: number): Promise<{
     return { data: null, error: '[APIDATA]: invalid match_id' };
   }
   // Check if we have apidata cached
-  const saved = await readApiData(matchId, false);
+  let saved = await readApiData(matchId, false);
   if (saved) {
-    // We currently can't refetch because the Steam GetMatchDetails API is broken
     return { data: saved, error: null };
+  }
+  const job = generateJob('api_details', {
+    match_id: matchId,
+  });
+  const { url } = job;
+  let match;
+  try {
+    // We currently can't fetch because the Steam GetMatchDetails API is broken
+    // const body = await getSteamAPIData({
+    //   url,
+    // });
+    // match = body.result;
+  } catch (e: any) {
+    if (e?.result?.error === 'Match ID not found') {
+      // Steam API reported this ID doesn't exist
+      redisCount('steam_api_notfound');
+    } else {
+      console.log(e);
+    }
+  }
+  if (match) {
+    await insertMatch(match, {
+      type: 'api',
+    });
+    saved = await readApiData(matchId, false);
+    if (saved) {
+      return { data: saved, error: null };
+    }
   }
   return {
     data: null,
