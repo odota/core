@@ -70,6 +70,7 @@ export class Archive {
             return null;
           }
         }
+        redisCount('archive_get_error');
         throw e;
       }
     } else {
@@ -93,6 +94,7 @@ export class Archive {
           redisCount('archive_miss');
           return null;
         }
+        redisCount('archive_get_error');
         throw e;
       }
     }
@@ -149,6 +151,7 @@ export class Archive {
       //   // Expected error if ifNotExists was passed
       //   return { message: 'already exists' };
       // }
+      redisCount('archive_put_error');
       throw e;
     }
   };

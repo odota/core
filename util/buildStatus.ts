@@ -109,6 +109,7 @@ export async function buildStatus() {
         steam_proxy_calls_last_day: async () => countDay('steam_proxy_call'),
         steam_429_last_day: async () => countDay('steam_429'),
         steam_403_last_day: async () => countDay('steam_403'),
+        steam_api_backfill_last_day: async () => countDay('steam_api_backfill'),
         // steam_api_notfound_last_day: async () => countDay('steam_api_notfound'),
         // steam_gc_backfill_last_day: async () => countDay('steam_gc_backfill'),
 
@@ -140,6 +141,8 @@ export async function buildStatus() {
         archive_miss_last_day: async () => countDay('archive_miss'),
         archive_write_bytes_last_day: async () =>
           countDay('archive_write_bytes'),
+        archive_get_error_last_day: async () => countDay('archive_get_error'),
+        archive_put_error_last_day: async () => countDay('archive_put_error'),
         // incomplete_archive_last_day: async () => countDay('incomplete_archive'),
 
         // user_players: async () => redis.zcard('visitors'),
@@ -179,7 +182,6 @@ export async function buildStatus() {
         error_last_day: async () => countDay('500_error'),
         web_crash_last_day: async () => countDay('web_crash'),
         secondary_scanner_last_day: async () => countDay('secondary_scanner'),
-        steam_api_backfill_last_day: async () => countDay('steam_api_backfill'),
         skip_seq_num_last_day: async () => countDay('skip_seq_num'),
         // gen_api_key_invalid_last_day: async () => getRedisCountDay('gen_api_key_invalid'),
       };

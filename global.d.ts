@@ -463,6 +463,8 @@ type MetricName =
   | 'archive_hit'
   | 'archive_miss'
   | 'archive_write_bytes'
+  | 'archive_get_error'
+  | 'archive_put_error'
   | 'slow_api_hit'
   | 'api_cassandra_read'
   | 'gcdata_cassandra_read'
