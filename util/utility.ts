@@ -337,7 +337,7 @@ export function deserialize(row: AnyDict): any {
 export function getStartOfBlockMinutes(size: number, offset: number) {
   offset = offset || 0;
   const blockS = size * 60;
-  const curTime = Math.floor(Number(new Date()) / 1000);
+  const curTime = Math.floor(Date.now() / 1000);
   const blockStart = curTime - (curTime % blockS);
   return (blockStart + offset * blockS).toFixed(0);
 }
@@ -871,7 +871,7 @@ export async function parallelPromise<T>(
  * Returns the current UNIX Epoch time in weeks
  * */
 export function epochWeek() {
-  return Math.floor(Number(new Date()) / (1000 * 60 * 60 * 24 * 7));
+  return Math.floor(Date.now() / (1000 * 60 * 60 * 24 * 7));
 }
 export function checkIfInExperiment(ip: string, mod: number) {
   return (

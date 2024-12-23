@@ -128,7 +128,7 @@ app.get('/profile/:account_id', (req, res, next) => {
 });
 app.get('/match/:match_id', (req, res, next) => {
   // Don't allow requests coming in too fast
-  const curTime = Number(new Date());
+  const curTime = Date.now();
   if (
     lastMatchRequestTime &&
     curTime - lastMatchRequestTime < getMatchRequestInterval()

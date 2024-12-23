@@ -79,7 +79,7 @@ const onResFinish = async (
   res: express.Response,
   timeStart: number,
 ) => {
-  const timeEnd = Number(new Date());
+  const timeEnd = Date.now();
   const elapsed = timeEnd - timeStart;
   if (elapsed > 2000 || config.NODE_ENV === 'development') {
     console.log('[SLOWLOG] %s, %s', req.originalUrl, elapsed);
@@ -495,7 +495,7 @@ app.get('/admin/apiMetrics', async (req, res, next) => {
 // Everything after this is rate limited
 app.use(async (req, res, next) => {
   try {
-    const timeStart = Number(new Date());
+    const timeStart = Date.now();
     res.once('finish', () => onResFinish(req, res, timeStart));
     const apiKey =
       (req.headers.authorization &&
