@@ -57,7 +57,7 @@
     "simple-vdf": "^1.1.1",
     "steam-user": "^5.0.4",
     "stripe": "^9.12.0",
-    "ws": "^8.16.0"
+    "ws": "^8.18.0"
   },
   "devDependencies": {
     "@apidevtools/swagger-parser": "^10.1.0",
