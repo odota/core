@@ -1,10 +1,8 @@
 import express from 'express';
-import { v4 as uuidv4 } from 'uuid';
 import bodyParser from 'body-parser';
 import moment from 'moment';
 import stripe from '../store/stripe';
 import db from '../store/db';
-import redis from '../store/redis';
 import config from '../config';
 import { redisCount } from '../util/utility';
 
@@ -235,7 +233,7 @@ keys
           return res.status(402).json(err);
         }
       }
-      const apiKey = uuidv4();
+      const apiKey = crypto.randomUUID();
       const sub = await stripe.subscriptions.create({
         customer: customer_id,
         items: [{ plan: stripeAPIPlan }],
