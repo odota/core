@@ -55,7 +55,7 @@
     "pm2": "^5.4.3",
     "protobufjs": "^7.2.5",
     "simple-vdf": "^1.1.1",
-    "steam-user": "^5.0.4",
+    "steam-user": "^5.0.9",
     "stripe": "^9.12.0",
     "ws": "^8.16.0"
   },
@@ -75,7 +75,7 @@
     "@types/pg": "^8.10.9",
     "@types/qs": "^6.9.11",
     "@types/request": "^2.48.12",
-    "@types/steam-user": "^4.26.8",
+    "@types/steam-user": "^5.0.0",
     "@types/supertest": "^6.0.2",
     "@types/ws": "^8.5.10",
     "@typescript-eslint/eslint-plugin": "^6.18.1",
