@@ -28,6 +28,7 @@ import {
 } from './queries';
 import { ApiMatch, ApiMatchPro, ApiPlayer, getPGroup } from './pgroup';
 import { Archive } from '../store/archive';
+import { getMatchDataFromBlobWithMetadata } from './buildMatch';
 // import scylla from './scylla';
 
 moment.relativeTimeThreshold('ss', 0);
@@ -218,6 +219,41 @@ export async function upsertPlayerCaches(
       return true;
     }),
   );
+}
+
+export type HistoryType = {account_id: number, match_id: number, player_slot: number};
+
+export async function reconcileMatch(rows: HistoryType[]) {
+  // optional: Verify each player/match combination doesn't exist in player_caches (or we have parsed data to update)
+  const [match] = await getMatchDataFromBlobWithMetadata(rows[0].match_id);
+  if (!match) {
+    // Note: unless we backfill, we have limited API data for old matches
+    // For more recent matches we're more likely to have data
+    // Maybe we can mark the more recent matches with a flag
+    // Or queue up recent matches from fullhistory and process them in order so fh requests show updates quicker
+    return;
+  }
+  const pgroup = getPGroup(match);
+  // If reconciling after fullhistory, the pgroup won't contain account_id info. Add it.
+  rows.forEach(r => {
+    if (!pgroup[r.player_slot]?.account_id) {
+      pgroup[r.player_slot].account_id = r.account_id;
+    }
+  });
+  const targetSlots = new Set(rows.map(r => r.player_slot));
+  // Filter to only players that we want to fill in
+  match.players = match.players.filter(p => targetSlots.has(p.player_slot));
+  if (!match.players.length) {
+    return;
+  }
+  // Call upsertPlayerCaches: pgroup will be used to populate account_id and heroes fields (for peers search)
+  const result = await upsertPlayerCaches(match, undefined, pgroup, 'reconcile');
+  if (result.every(Boolean)) {
+    // Delete the rows since we successfully updated
+    await Promise.all(rows.map(async (row) => {
+      return db.raw('DELETE FROM player_match_history WHERE account_id = ? AND match_id = ?', [row.account_id, row.match_id]);
+    }));
+  }
 }
 
 export type InsertMatchInput = ApiMatch | ApiMatchPro | ParserMatch | GcMatch;

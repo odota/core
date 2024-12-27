@@ -10,7 +10,7 @@ import {
 import db from '../store/db';
 import { runQueue } from '../store/queue';
 import { getPlayerMatches } from '../util/buildPlayer';
-import { insertMatch } from '../util/insert';
+import { insertMatch, reconcileMatch } from '../util/insert';
 import { ApiMatch } from '../util/pgroup';
 
 async function updatePlayer(player: FullHistoryJob) {
@@ -141,12 +141,18 @@ async function processFullHistory(job: FullHistoryJob) {
         // Log the match IDs we should reconcile, we can query our own DB for data
         const playerSlot = match.players.find(p => p.account_id === player.account_id)?.player_slot;
         if (playerSlot != null) {
-          await db.raw('INSERT INTO player_match_history(account_id, match_id, player_slot) VALUES (?, ?, ?) ON CONFLICT DO NOTHING', [player.account_id, match.match_id, playerSlot]);
+          // Record it
+          const row = { account_id: player.account_id, match_id: match.match_id, player_slot: playerSlot };
+          await db.raw('INSERT INTO player_match_history(account_id, match_id, player_slot) VALUES (?, ?, ?) ON CONFLICT DO NOTHING', [row.account_id, row.match_id, row.player_slot]);
           await redisCount('pmh_fullhistory');
+          // Recent match so we probably have data, process it in real time
+          if (row.match_id > 7500000000) {
+            await reconcileMatch([row]);
+          }
         }
       },
     );
-    // Control number of match details requests to send at once--note this is per worker
+    // Control number of match details requests in parallel--note this is per worker
     await eachLimitPromise(promiseFuncs, 1);
   }
   if (isMatchDataDisabled != null) {
