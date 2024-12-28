@@ -14,11 +14,47 @@ let arr = [
     name: 'proxy',
     group: 'proxy',
   },
-  {
-    // Load old matches into storage
-    name: 'backfill',
-    group: 'backfill',
-  },
+  // Load old matches into storage
+  // {
+  //   name: 'backfill0',
+  //   group: 'backend',
+  //   env: {
+  //     BACKFILL_START: 0,
+  //     BACKFILL_STOP: 1000000000
+  //   },
+  // },
+  // {
+  //   name: 'backfill1',
+  //   group: 'backend',
+  //   env: {
+  //     BACKFILL_START: 1000000000,
+  //     BACKFILL_STOP: 2000000000
+  //   },
+  // },
+  // {
+  //   name: 'backfill2',
+  //   group: 'backend',
+  //   env: {
+  //     BACKFILL_START: 2000000000,
+  //     BACKFILL_STOP: 3000000000
+  //   },
+  // },
+  // {
+  //   name: 'backfill3',
+  //   group: 'backend',
+  //   env: {
+  //     BACKFILL_START: 3000000000,
+  //     BACKFILL_STOP: 4000000000
+  //   },
+  // },
+  // {
+  //   name: 'backfill4',
+  //   group: 'backend',
+  //   env: {
+  //     BACKFILL_START: 4000000000,
+  //     BACKFILL_STOP: 5000000000
+  //   },
+  // },
   {
     // Alternative way of getting matches if GetMatchHistoryBySequenceNum is broken
     name: 'backupscanner',
@@ -151,6 +187,7 @@ let arr = [
     name: 'reconcile',
     group: 'backend',
   },
+  
   // Requires the gcloud CLI to be installed
   // We could write this in JS to use the REST API, authenticating using metadata server credentials
   // {

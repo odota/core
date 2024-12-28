@@ -2,8 +2,9 @@
 import config from '../config';
 import { Archive } from '../store/archive';
 import type { ApiMatch } from '../util/pgroup';
-import { SteamAPIUrls, getSteamAPIData, transformMatch } from '../util/utility';
+import { SteamAPIUrls, getSteamAPIData, transformMatch, getApiHosts } from '../util/utility';
 import fs from 'fs';
+import redis from '../store/redis';
 
 // following need to be set
 // STEAM_API_KEY
@@ -11,16 +12,22 @@ import fs from 'fs';
 // ARCHIVE_S3_KEY_SECRET: 'minioadmin',
 // ARCHIVE_S3_ENDPOINT: 'http://localhost:9000',
 
-// This endpoint is limited to something like 1 request every 5 seconds
-const apiHosts = config.STEAM_API_HOST.split(',');
-const SCANNER_WAIT = 2000 / apiHosts.length;
 const blobArchive = new Archive('blob');
 
 // current run started at 5000000000
 const stop = Number(process.env.BACKFILL_STOP) || 6200000000;
 async function scanApi() {
   while (true) {
-    const seqNum = Number(fs.readFileSync('./match_seq_num.txt')) || 0;
+    // This endpoint is limited to something like 1 request every 5 seconds
+    const apiHosts = await getApiHosts();
+    const SCANNER_WAIT = 2000 / apiHosts.length;
+    // get progress from redis if available, if not, fallback to file
+    let seqNum;
+    if (redis) {
+      seqNum = Number(await redis.get('backfill:' + process.env.BACKFILL_START)) || Number(process.env.BACKFILL_START);
+    } else {
+      seqNum = Number(fs.readFileSync('./match_seq_num.txt')) || 0;
+    }
     if (seqNum > stop) {
       process.exit(0);
     }
@@ -33,7 +40,7 @@ async function scanApi() {
       data = await getSteamAPIData({
         url,
         // We could rotate through proxies here to ensure consistent load
-        // proxy: apiHosts,
+        proxy: apiHosts,
       });
     } catch (err: any) {
       console.log(err);
@@ -61,7 +68,11 @@ async function scanApi() {
         const nextSeqNum = resp[resp.length - 1].match_seq_num + 1;
         console.log('next_seq_num: %s', nextSeqNum);
         // Completed inserting matches on this page so update
-        fs.writeFileSync('./match_seq_num.txt', nextSeqNum.toString());
+        if (redis) {
+          await redis.set('backfill:' + process.env.BACKFILL_START, nextSeqNum.toString());
+        } else {
+          fs.writeFileSync('./match_seq_num.txt', nextSeqNum.toString());
+        }
       }
     } catch (e) {
       // If any fail, log the error and try the same number again
