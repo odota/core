@@ -840,8 +840,9 @@ export async function eachLimitPromise<T>(
   let cursor = items.entries();
   let numWorkers = limit;
   const results = Array(items.length);
+  let count = 0;
   return new Promise(resolve => {
-    Array(numWorkers).fill('').forEach(async (_, workerIndex) => {
+    Array(numWorkers).fill('').forEach(async () => {
       for (let [i, item] of cursor) {
         try {
           results[i] = await func(item);
@@ -849,9 +850,11 @@ export async function eachLimitPromise<T>(
           // Log exceptions but keep iterating
           console.log(e);
         }
+        count += 1;
       }
       // We'll hit this once per worker, after iteration is complete
-      if (workerIndex === 0) {
+      // Only the last one should report results
+      if (count === items.length) {
         resolve(results);
       }
     });
