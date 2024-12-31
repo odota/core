@@ -829,24 +829,33 @@ export async function invokeIntervalAsync(
   }
 }
 
-/*
- * Promise replacement for async.eachLimit
- * Takes an array of functions that return promises
- * Note this doesn't work on an array of promises as that will start all of them
+/**
+ * Runs a function on each element of an array with the specified concurrency
  */
-export async function eachLimitPromise(
-  funcs: Array<() => Promise<any>>,
+export async function eachLimitPromise<T>(
+  items: T[],
+  func: (item: T) => Promise<any>,
   limit: number,
 ) {
-  let rest = funcs.slice(limit);
-  await Promise.all(
-    funcs.slice(0, limit).map(async (func) => {
-      await func();
-      while (rest.length) {
-        await rest.shift()?.();
+  let cursor = items.entries();
+  let numWorkers = limit;
+  const results = Array(items.length);
+  return new Promise(resolve => {
+    Array(numWorkers).fill('').forEach(async (_, workerIndex) => {
+      for (let [i, item] of cursor) {
+        try {
+          results[i] = await func(item);
+        } catch (e) {
+          // Log exceptions but keep iterating
+          console.log(e);
+        }
       }
-    }),
-  );
+      // We'll hit this once per worker, after iteration is complete
+      if (workerIndex === 0) {
+        resolve(results);
+      }
+    });
+  });
 }
 
 /**

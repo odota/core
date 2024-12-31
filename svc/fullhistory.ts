@@ -5,7 +5,6 @@ import {
   redisCount,
   getSteamAPIData,
   SteamAPIUrls,
-  eachLimitPromise,
 } from '../util/utility';
 import db from '../store/db';
 import { runQueue } from '../store/queue';
@@ -119,41 +118,42 @@ async function processFullHistory(job: FullHistoryJob) {
       docs.length,
       Object.keys(matchesToProcess).length,
     );
-    const promiseFuncs = Object.values(matchesToProcess).map(
-      (match) => async () => {
-        // Disabled due to Steam GetMatchDetails being broken
-        // This would update the match blob with the visibility and update player caches to make them show up under a player
-        // Could possibly queue these matches for GC data fetch and then trigger a reconciliation from our own DB (similar to proposed change after parsing a match)
-        // const url = SteamAPIUrls.api_details({
-        //   match_id: Number(matchId),
-        // });
-        // const body = await getSteamAPIData({ url });
-        // const match = body.result;
-        // Don't insert match blob to avoid overwriting with less data from API
-        // Only update player_caches to associate the match with players
-        // await insertMatch(match, {
-        //   type: 'api',
-        //   cacheOnly: true,
-        // });
-        // await new Promise((resolve) => setTimeout(resolve, 1000));
+    const processMatch = async (match: ApiMatch) => {
+      // Disabled due to Steam GetMatchDetails being broken
+      // This would update the match blob with the visibility and update player caches to make them show up under a player
+      // Could possibly queue these matches for GC data fetch and then trigger a reconciliation from our own DB (similar to proposed change after parsing a match)
+      // const url = SteamAPIUrls.api_details({
+      //   match_id: Number(matchId),
+      // });
+      // const body = await getSteamAPIData({ url });
+      // const match = body.result;
+      // Don't insert match blob to avoid overwriting with less data from API
+      // Only update player_caches to associate the match with players
+      // await insertMatch(match, {
+      //   type: 'api',
+      //   cacheOnly: true,
+      // });
+      // await new Promise((resolve) => setTimeout(resolve, 1000));
 
-        // Note: If an account ID shows up here that player is not anonymous anymore (could update fh_unavailable for other players)
-        // Log the match IDs we should reconcile, we can query our own DB for data
-        const playerSlot = match.players.find(p => p.account_id === player.account_id)?.player_slot;
-        if (playerSlot != null) {
-          // Record it
-          const row = { account_id: player.account_id, match_id: match.match_id, player_slot: playerSlot };
-          await db.raw('INSERT INTO player_match_history(account_id, match_id, player_slot) VALUES (?, ?, ?) ON CONFLICT DO NOTHING', [row.account_id, row.match_id, row.player_slot]);
-          await redisCount('pmh_fullhistory');
-          // Recent match so we probably have data, process it in real time
-          if (row.match_id > 7500000000) {
-            await reconcileMatch([row]);
-          }
+      // Note: If an account ID shows up here that player is not anonymous anymore (could update fh_unavailable for other players)
+      // Log the match IDs we should reconcile, we can query our own DB for data
+      const playerSlot = match.players.find(p => p.account_id === player.account_id)?.player_slot;
+      if (playerSlot != null) {
+        // Record it
+        const row = { account_id: player.account_id, match_id: match.match_id, player_slot: playerSlot };
+        await db.raw('INSERT INTO player_match_history(account_id, match_id, player_slot) VALUES (?, ?, ?) ON CONFLICT DO NOTHING', [row.account_id, row.match_id, row.player_slot]);
+        await redisCount('pmh_fullhistory');
+        // Recent match so we probably have data, process it in real time
+        if (row.match_id > 7500000000) {
+          await reconcileMatch([row]);
         }
-      },
-    );
-    // Control number of match details requests in parallel--note this is per worker
-    await eachLimitPromise(promiseFuncs, 1);
+      }
+    }
+    const keys = Object.keys(matchesToProcess);
+    for (let i = 0; i < keys.length; i++) {
+      // Processes one at a time
+      await processMatch(matchesToProcess[keys[i]]);
+    }
   }
   if (isMatchDataDisabled != null) {
     player.fh_unavailable = isMatchDataDisabled;

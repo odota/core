@@ -2,7 +2,7 @@
 import vdf from 'simple-vdf';
 import db from '../store/db';
 import { upsert } from '../util/insert';
-import { eachLimitPromise, invokeIntervalAsync } from '../util/utility';
+import { invokeIntervalAsync } from '../util/utility';
 import axios from 'axios';
 
 async function doCosmetics() {
@@ -42,9 +42,10 @@ async function doCosmetics() {
     });
   }
 
-  const promiseFuncs = Object.keys(itemData.items_game.items).map(
-    (i) => () => processItem(i),
-  );
-  await eachLimitPromise(promiseFuncs, 10);
+  const ids = Object.keys(itemData.items_game.items);
+  console.log('%s cosmetics to process', ids.length);
+  for (let i = 0; i < ids.length; i++) {
+    await processItem(ids[i]);
+  }
 }
 invokeIntervalAsync(doCosmetics, 12 * 60 * 60 * 1000);
