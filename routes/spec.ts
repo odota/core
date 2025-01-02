@@ -9,7 +9,6 @@ import { searchES } from '../store/searchES';
 import { buildMatch } from '../util/buildMatch';
 import { getPlayerMatches } from '../util/buildPlayer';
 import {
-  checkIfInExperiment,
   countPeers,
   getEndOfMonth,
   getPatchIndex,

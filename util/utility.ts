@@ -885,11 +885,7 @@ export async function parallelPromise<T>(
 export function epochWeek() {
   return Math.floor(Date.now() / (1000 * 60 * 60 * 24 * 7));
 }
-export function checkIfInExperiment(ip: string, mod: number) {
-  return (
-    crypto.createHash('md5').update(ip).digest().readInt32BE(0) % 100 < mod
-  );
-}
+
 export function isDataComplete(match: Partial<ParsedMatch>) {
   // Check for fields from API, gcdata, parse
   return Boolean(
