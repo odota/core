@@ -118,7 +118,8 @@ async function processFullHistory(job: FullHistoryJob) {
       docs.length,
       Object.keys(matchesToProcess).length,
     );
-    const processMatch = async (match: ApiMatch) => {
+    const keys = Object.keys(matchesToProcess);
+    for (let i = 0; i < keys.length; i++) {
       // Disabled due to Steam GetMatchDetails being broken
       // This would update the match blob with the visibility and update player caches to make them show up under a player
       // Could possibly queue these matches for GC data fetch and then trigger a reconciliation from our own DB (similar to proposed change after parsing a match)
@@ -134,25 +135,16 @@ async function processFullHistory(job: FullHistoryJob) {
       //   cacheOnly: true,
       // });
       // await new Promise((resolve) => setTimeout(resolve, 1000));
-
+      const match = matchesToProcess[keys[i]];
+      const playerSlot = match.players.find(p => p.account_id === player.account_id)?.player_slot;
+      if (playerSlot == null) {
+        continue;
+      }
+      const row = { account_id: player.account_id, match_id: match.match_id, player_slot: playerSlot };
       // Note: If an account ID shows up here that player is not anonymous anymore (could update fh_unavailable for other players)
       // Log the match IDs we should reconcile, we can query our own DB for data
-      const playerSlot = match.players.find(p => p.account_id === player.account_id)?.player_slot;
-      if (playerSlot != null) {
-        // Record it
-        const row = { account_id: player.account_id, match_id: match.match_id, player_slot: playerSlot };
-        await db.raw('INSERT INTO player_match_history(account_id, match_id, player_slot) VALUES (?, ?, ?) ON CONFLICT DO NOTHING', [row.account_id, row.match_id, row.player_slot]);
-        await redisCount('pmh_fullhistory');
-        // Recent match so we probably have data, process it in real time
-        if (row.match_id > 7500000000) {
-          await reconcileMatch([row]);
-        }
-      }
-    }
-    const keys = Object.keys(matchesToProcess);
-    for (let i = 0; i < keys.length; i++) {
-      // Processes one at a time
-      await processMatch(matchesToProcess[keys[i]]);
+      await db.raw('INSERT INTO player_match_history(account_id, match_id, player_slot) VALUES (?, ?, ?) ON CONFLICT DO NOTHING', [row.account_id, row.match_id, row.player_slot]);
+      await redisCount('pmh_fullhistory');
     }
   }
   if (isMatchDataDisabled != null) {

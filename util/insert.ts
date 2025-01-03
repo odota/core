@@ -224,6 +224,11 @@ export async function upsertPlayerCaches(
 export type HistoryType = {account_id: number, match_id: number, player_slot: number};
 
 export async function reconcileMatch(rows: HistoryType[]) {
+  // validate that all rows have the same match ID
+  const set = new Set(rows.map(r => r.match_id));
+  if (set.size > 1) {
+    throw new Error('multiple match IDs found in input to reconcileMatch');
+  }
   // optional: Verify each player/match combination doesn't exist in player_caches (or we have parsed data to update)
   const [match] = await getMatchDataFromBlobWithMetadata(rows[0].match_id);
   if (!match) {
