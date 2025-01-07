@@ -1,7 +1,7 @@
 import { SteamAPIUrls, getSteamAPIData, redisCount } from '../util/utility';
 import { Archive } from '../store/archive';
 import cassandra from '../store/cassandra';
-import { type ApiMatch } from '../util/pgroup';
+import type { ApiMatch } from '../util/types';
 import { MatchFetcher } from './base';
 import { insertMatch } from '../util/insert';
 

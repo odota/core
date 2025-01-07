@@ -5,7 +5,8 @@
  * It checks our own database and updates player_caches so these matches get associated with the player.
  */
 import db from "../store/db";
-import { HistoryType, reconcileMatch } from "../util/insert";
+import { reconcileMatch } from "../util/reconcileMatch";
+import type { HistoryType } from "../util/types";
 
 async function doReconcile() {
   while (true) {

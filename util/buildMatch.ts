@@ -10,14 +10,13 @@ import {
 } from './utility';
 import redis from '../store/redis';
 import db from '../store/db';
-import { ApiMatch } from './pgroup';
+import { ApiMatch } from './types';
 import { ParsedFetcher } from '../fetcher/getParsedData';
 import { ApiFetcher } from '../fetcher/getApiData';
 import { GcdataFetcher } from '../fetcher/getGcData';
 import { ArchivedFetcher } from '../fetcher/getArchivedData';
 import { MetaFetcher } from '../fetcher/getMeta';
 import { benchmarks } from './benchmarksUtil';
-import { promises as fs } from 'fs';
 
 const apiFetcher = new ApiFetcher();
 const gcFetcher = new GcdataFetcher();

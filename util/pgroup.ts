@@ -1,11 +1,4 @@
-import apiMatch from '../test/data/details_api.json';
-import apiMatchPro from '../test/data/details_api_pro.json';
-
-export type ApiMatch = (typeof apiMatch)['result'];
-export type ApiMatchPro = (typeof apiMatchPro)['result'];
-export type ApiPlayer = ApiMatch['players'][number] & {
-  ability_upgrades_arr?: number[];
-};
+import type { ApiMatch } from "./types";
 
 export function getPGroup(match: ApiMatch | Match | ParsedMatch): PGroup {
   // This only works if we are an API insert or reconciling (match/parsedmatch)

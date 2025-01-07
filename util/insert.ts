@@ -1,14 +1,13 @@
 import moment from 'moment';
 import { patch } from 'dotaconstants';
-import util from 'util';
+import util from 'node:util';
 import { promises as fs } from 'fs';
 import config from '../config';
 import { addJob, addReliableJob } from '../store/queue';
-import { computeMatchData } from './compute';
 import db, { getPostgresColumns } from '../store/db';
 import redis from '../store/redis';
 import { es, INDEX } from '../store/elasticsearch';
-import cassandra, { getCassandraColumns } from '../store/cassandra';
+import cassandra from '../store/cassandra';
 import type knex from 'knex';
 import {
   getAnonymousAccountId,
@@ -20,16 +19,17 @@ import {
   getPatchIndex,
   redisCount,
   transformMatch,
+  createMatchCopy,
 } from './utility';
 import {
   getMatchRankTier,
   isRecentVisitor,
   isRecentlyVisited,
 } from './queries';
-import { ApiMatch, ApiMatchPro, ApiPlayer, getPGroup } from './pgroup';
+import { getPGroup } from './pgroup';
 import { Archive } from '../store/archive';
-import { getMatchDataFromBlobWithMetadata } from './buildMatch';
-// import scylla from './scylla';
+import type { ApiMatch, ApiPlayer, InsertMatchInput } from './types';
+import { upsertPlayerCaches } from './playerCaches';
 
 moment.relativeTimeThreshold('ss', 0);
 
@@ -132,136 +132,6 @@ export async function insertPlayerRating(row: PlayerRating) {
   }
 }
 
-function createMatchCopy<T>(match: any): T {
-  // Makes a deep copy of the original match
-  const copy = JSON.parse(JSON.stringify(match));
-  return copy;
-}
-
-export async function upsertPlayerCaches(
-  match: InsertMatchInput | ParsedMatch | Match,
-  averageRank: number | undefined,
-  pgroup: PGroup,
-  type: DataType,
-) {
-  // Add the 10 player_match rows indexed by player
-  // We currently do this on all types
-  const copy = createMatchCopy<Match>(match);
-  if (averageRank) {
-    copy.average_rank = averageRank;
-  }
-  const columns = await getCassandraColumns('player_caches');
-  return Promise.all(
-    copy.players.map(async (p) => {
-      // add account id to each player so we know what caches to update
-      const account_id = pgroup[p.player_slot]?.account_id;
-      // join player with match to form player_match
-      const playerMatch: Partial<ParsedPlayerMatch> = {
-        ...p,
-        ...copy,
-        account_id,
-        players: undefined,
-      };
-      if (
-        !playerMatch.account_id ||
-        playerMatch.account_id === getAnonymousAccountId()
-      ) {
-        return false;
-      }
-      if (type === 'api' || type === 'reconcile') {
-        // We currently update this for the non-anonymous players in the match
-        // It'll reflect the current anonymity state of the players at insertion time
-        // This might lead to changes in peers counts after a fullhistory update or parse request
-        // When reconciling after gcdata we will update this with non-anonymized data (but we won't reconcile for players with open match history so their peers may be incomplete)
-        playerMatch.heroes = pgroup;
-      }
-      computeMatchData(playerMatch as ParsedPlayerMatch);
-      // Remove extra properties
-      Object.keys(playerMatch).forEach((key) => {
-        if (!columns[key]) {
-          delete playerMatch[key as keyof ParsedPlayerMatch];
-        }
-      });
-      const serializedMatch: any = serialize(playerMatch);
-      if (
-        (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') &&
-        (playerMatch.player_slot === 0 || type === 'reconcile')
-      ) {
-        await fs.writeFile(
-          './json/' +
-            copy.match_id +
-            `_playercache_${type}_${playerMatch.player_slot}.json`,
-          JSON.stringify(serializedMatch, null, 2),
-        );
-      }
-      if (type === 'reconcile') {
-        console.log(playerMatch.account_id, copy.match_id, playerMatch.player_slot);
-        redisCount('reconcile');
-      }
-      const query = util.format(
-        'INSERT INTO player_caches (%s) VALUES (%s)',
-        Object.keys(serializedMatch).join(','),
-        Object.keys(serializedMatch)
-          .map(() => '?')
-          .join(','),
-      );
-      const arr = Object.keys(serializedMatch).map((k) => serializedMatch[k]);
-      await cassandra.execute(query, arr, {
-        prepare: true,
-      });
-      // TODO (scylla) dual write here
-      // TODO (scylla) need to write a migrater with checkpointing (one player at a time and then do all players?) copy all data from cassandra to scylla
-      // Don't need to dual read if we don't delete the original data until fully migrated
-      // New tokens might be inserted behind the migrater or double migrate some rows but since we are dual writing we should have the same data in both
-      // await scylla.execute(query, arr, {
-      //   prepare: true
-      // });
-      return true;
-    }),
-  );
-}
-
-export type HistoryType = {account_id: number, match_id: number, player_slot: number};
-
-export async function reconcileMatch(rows: HistoryType[]) {
-  // validate that all rows have the same match ID
-  const set = new Set(rows.map(r => r.match_id));
-  if (set.size > 1) {
-    throw new Error('multiple match IDs found in input to reconcileMatch');
-  }
-  // optional: Verify each player/match combination doesn't exist in player_caches (or we have parsed data to update)
-  const [match] = await getMatchDataFromBlobWithMetadata(rows[0].match_id);
-  if (!match) {
-    // Note: unless we backfill, we have limited API data for old matches
-    // For more recent matches we're more likely to have data
-    // Maybe we can mark the more recent matches with a flag
-    // Or queue up recent matches from fullhistory and process them in order so fh requests show updates quicker
-    return;
-  }
-  const pgroup = getPGroup(match);
-  // If reconciling after fullhistory, the pgroup won't contain account_id info. Add it.
-  rows.forEach(r => {
-    if (!pgroup[r.player_slot]?.account_id) {
-      pgroup[r.player_slot].account_id = r.account_id;
-    }
-  });
-  const targetSlots = new Set(rows.map(r => r.player_slot));
-  // Filter to only players that we want to fill in
-  match.players = match.players.filter(p => targetSlots.has(p.player_slot));
-  if (!match.players.length) {
-    return;
-  }
-  // Call upsertPlayerCaches: pgroup will be used to populate account_id and heroes fields (for peers search)
-  const result = await upsertPlayerCaches(match, undefined, pgroup, 'reconcile');
-  if (result.every(Boolean)) {
-    // Delete the rows since we successfully updated
-    await Promise.all(rows.map(async (row) => {
-      return db.raw('DELETE FROM player_match_history WHERE account_id = ? AND match_id = ?', [row.account_id, row.match_id]);
-    }));
-  }
-}
-
-export type InsertMatchInput = ApiMatch | ApiMatchPro | ParserMatch | GcMatch;
 
 /**
  * Inserts a piece of match data into storage

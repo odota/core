@@ -2,7 +2,7 @@
 import config from '../config';
 import redis from '../store/redis';
 import { insertMatch } from '../util/insert';
-import type { ApiMatch } from '../util/pgroup';
+import type { ApiMatch } from '../util/types';
 import {
   SteamAPIUrls,
   getApiHosts,

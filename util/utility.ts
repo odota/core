@@ -1,13 +1,11 @@
 import { game_mode, lobby_type, patch } from 'dotaconstants';
 import urllib from 'url';
 import moment from 'moment';
-import crypto from 'crypto';
 import laneMappings from './laneMappings';
 import config from '../config';
 import contributors from '../CONTRIBUTORS';
-import type { ApiMatch, ApiPlayer } from './pgroup';
+import type { ApiMatch, ApiPlayer, InsertMatchInput } from './types';
 import type QueryString from 'qs';
-import type { InsertMatchInput } from './insert';
 import axios, { AxiosRequestConfig } from 'axios';
 import redis from '../store/redis';
 
@@ -961,4 +959,10 @@ export function transformMatch(
       return newP as any;
     }),
   };
+}
+
+export function createMatchCopy<T>(match: any): T {
+  // Makes a deep copy of the original match
+  const copy = JSON.parse(JSON.stringify(match));
+  return copy;
 }
