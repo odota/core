@@ -1,13 +1,11 @@
-import { ArchivedFetcher } from '../fetcher/getArchivedData.js';
+import { archivedFetcher } from '../fetcher/getArchivedData.js';
 
-const { Archive } = await import('../store/archive.js');
-const archivedFetcher = new ArchivedFetcher();
+const { matchArchive } = await import('../store/archive.js');
 
 // Read some match data
 // const match = await getMatchDataFromBlob(7465883253);
 // const blob = Buffer.from(JSON.stringify(match));
 
-const archive = new Archive('match');
 // Archive it
 // const putRes = await archive.archivePut(match.match_id?.toString() ?? '', blob);
 // console.log(putRes);

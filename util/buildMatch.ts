@@ -11,18 +11,12 @@ import {
 import redis from '../store/redis';
 import db from '../store/db';
 import { ApiMatch } from './types';
-import { ParsedFetcher } from '../fetcher/getParsedData';
-import { ApiFetcher } from '../fetcher/getApiData';
-import { GcdataFetcher } from '../fetcher/getGcData';
-import { ArchivedFetcher } from '../fetcher/getArchivedData';
-import { MetaFetcher } from '../fetcher/getMeta';
+import { parsedFetcher } from '../fetcher/getParsedData';
+import { apiFetcher } from '../fetcher/getApiData';
+import { gcFetcher } from '../fetcher/getGcData';
+import { archivedFetcher } from '../fetcher/getArchivedData';
+import { metaFetcher } from '../fetcher/getMeta';
 import { benchmarks } from './benchmarksUtil';
-
-const apiFetcher = new ApiFetcher();
-const gcFetcher = new GcdataFetcher();
-const parsedFetcher = new ParsedFetcher();
-const archivedFetcher = new ArchivedFetcher();
-const metaFetcher = new MetaFetcher();
 
 function extendPlayerData(
   player: Player | ParsedPlayer,

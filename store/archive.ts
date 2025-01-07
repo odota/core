@@ -19,7 +19,7 @@ async function stream2buffer(stream: any): Promise<Buffer> {
   });
 }
 
-export class Archive {
+class Archive {
   private endpoint: string = '';
   private accessKeyId: string = '';
   private secretAccessKey: string = '';
@@ -156,3 +156,9 @@ export class Archive {
     }
   };
 }
+
+export const blobArchive = new Archive('blob');
+export const playerArchive = config.ENABLE_PLAYER_ARCHIVE
+  ? new Archive('player')
+  : null;
+export const matchArchive = new Archive('match');

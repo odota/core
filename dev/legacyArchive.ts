@@ -3,9 +3,7 @@ import cassandra from '../store/cassandra';
 import config from '../config';
 import db from '../store/db';
 import { deserialize, redisCount } from '../util/utility';
-import { Archive } from '../store/archive';
-
-const matchArchive = new Archive('match');
+import { matchArchive } from '../store/archive';
 
 function randomBigInt(byteCount: number) {
   return BigInt(`0x${crypto.randomBytes(byteCount).toString('hex')}`);

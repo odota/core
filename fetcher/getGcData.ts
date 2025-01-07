@@ -7,10 +7,8 @@ import { getRandomRetrieverUrl, redisCount } from '../util/utility';
 import axios from 'axios';
 import retrieverMatch from '../test/data/retriever_match.json';
 import { insertMatch, upsertPlayer } from '../util/insert';
-import { Archive } from '../store/archive';
+import { blobArchive } from '../store/archive';
 import { MatchFetcher } from './base';
-
-const blobArchive = new Archive('blob');
 
 /**
  * Return GC data by reading it without fetching.
@@ -238,7 +236,7 @@ async function getOrFetchGcDataWithRetry(
   return { data, error };
 }
 
-export class GcdataFetcher extends MatchFetcher<GcMatch> {
+class GcdataFetcher extends MatchFetcher<GcMatch> {
   readData = readGcData;
   getOrFetchData = getOrFetchGcData;
   getOrFetchDataWithRetry = getOrFetchGcDataWithRetry;
@@ -246,3 +244,6 @@ export class GcdataFetcher extends MatchFetcher<GcMatch> {
     throw new Error('not implemented');
   };
 }
+
+export const gcFetcher = new GcdataFetcher();
+

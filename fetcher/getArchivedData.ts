@@ -1,10 +1,8 @@
 import { isDataComplete, redisCount } from '../util/utility';
-import { Archive } from '../store/archive';
+import { matchArchive } from '../store/archive';
 import db from '../store/db';
 import { MatchFetcher } from './base';
 import { getMatchDataFromBlobWithMetadata } from '../util/buildMatch';
-
-const matchArchive = new Archive('match');
 
 /**
  * Consolidates separate match data blobs and stores as a single blob in archive
@@ -42,7 +40,7 @@ async function doArchiveMatchFromBlobs(matchId: number) {
   }
 }
 
-export class ArchivedFetcher extends MatchFetcher<ParsedMatch> {
+class ArchivedFetcher extends MatchFetcher<ParsedMatch> {
   readData = async (matchId: number): Promise<ParsedMatch | null> => {
     try {
       // Check if the parsed data is archived
@@ -79,3 +77,5 @@ export class ArchivedFetcher extends MatchFetcher<ParsedMatch> {
     );
   };
 }
+
+export const archivedFetcher = new ArchivedFetcher();

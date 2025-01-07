@@ -1,13 +1,11 @@
 import config from '../config';
 import { getRandomParserUrl, redisCount } from '../util/utility';
-import { Archive } from '../store/archive';
+import { blobArchive } from '../store/archive';
 import cassandra from '../store/cassandra';
 import db from '../store/db';
 import { insertMatch } from '../util/insert';
 import axios from 'axios';
 import { MatchFetcher } from './base';
-
-const blobArchive = new Archive('blob');
 
 /**
  * Return parse data by reading it without fetching.
@@ -117,7 +115,7 @@ async function getOrFetchParseData(
   return { data: null, skipped: false, error };
 }
 
-export class ParsedFetcher extends MatchFetcher<ParserMatch> {
+class ParsedFetcher extends MatchFetcher<ParserMatch> {
   readData = readParsedData;
   getOrFetchData = getOrFetchParseData;
   checkAvailable = async (matchId: number) => {
@@ -130,3 +128,5 @@ export class ParsedFetcher extends MatchFetcher<ParserMatch> {
     );
   };
 }
+
+export const parsedFetcher = new ParsedFetcher();

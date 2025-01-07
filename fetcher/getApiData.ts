@@ -1,11 +1,10 @@
 import { SteamAPIUrls, getSteamAPIData, redisCount } from '../util/utility';
-import { Archive } from '../store/archive';
+import { blobArchive } from '../store/archive';
 import cassandra from '../store/cassandra';
 import type { ApiMatch } from '../util/types';
 import { MatchFetcher } from './base';
 import { insertMatch } from '../util/insert';
 
-const blobArchive = new Archive('blob');
 /**
  * Return API data by reading it without fetching.
  * @param matchId
@@ -89,10 +88,13 @@ async function getOrFetchApiData(matchId: number): Promise<{
   };
 }
 
-export class ApiFetcher extends MatchFetcher<ApiMatch> {
+class ApiFetcher extends MatchFetcher<ApiMatch> {
   readData = readApiData;
   getOrFetchData = getOrFetchApiData;
   checkAvailable = () => {
     throw new Error('not implemented');
   };
 }
+
+export const apiFetcher = new ApiFetcher();
+

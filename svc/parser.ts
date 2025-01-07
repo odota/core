@@ -10,16 +10,12 @@ import { runReliableQueue } from '../store/queue';
 import c from 'ansi-colors';
 import { buildReplayUrl, redisCount } from '../util/utility';
 import redis from '../store/redis';
-import { ApiFetcher } from '../fetcher/getApiData';
-import { ParsedFetcher } from '../fetcher/getParsedData';
-import { GcdataFetcher } from '../fetcher/getGcData';
+import { apiFetcher } from '../fetcher/getApiData';
+import { parsedFetcher } from '../fetcher/getParsedData';
+import { gcFetcher } from '../fetcher/getGcData';
 import { getPGroup } from '../util/pgroup';
 import moment from 'moment';
-import db from '../store/db';
 
-const apiFetcher = new ApiFetcher();
-const gcFetcher = new GcdataFetcher();
-const parsedFetcher = new ParsedFetcher();
 const { PARSER_PARALLELISM } = config;
 
 async function parseProcessor(job: ParseJob, metadata: JobMetadata) {

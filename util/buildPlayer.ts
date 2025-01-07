@@ -7,9 +7,7 @@ import { deserialize, pick, redisCount, redisCountDistinct } from './utility';
 import { gzipSync, gunzipSync } from 'zlib';
 import { cacheableCols } from '../routes/playerFields';
 import { promises as fs } from 'fs';
-import { PlayerArchiveFetcher } from '../fetcher/getPlayerArchive';
-
-const playerArchiveFetcher = new PlayerArchiveFetcher();
+import { playerArchiveFetcher } from '../fetcher/getPlayerArchive';
 
 export async function getPlayerMatches(
   accountId: number,

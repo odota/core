@@ -1,6 +1,6 @@
 // Fetches old matches from Steam API and writes to blob storage
 import config from '../config';
-import { Archive } from '../store/archive';
+import { blobArchive } from '../store/archive';
 import type { ApiMatch } from '../util/types';
 import { SteamAPIUrls, getSteamAPIData, transformMatch, getApiHosts } from '../util/utility';
 import fs from 'fs';
@@ -11,8 +11,6 @@ import redis from '../store/redis';
 // ARCHIVE_S3_KEY_ID: 'minioadmin',
 // ARCHIVE_S3_KEY_SECRET: 'minioadmin',
 // ARCHIVE_S3_ENDPOINT: 'http://localhost:9000',
-
-const blobArchive = new Archive('blob');
 
 // current run started at 5000000000
 const stop = Number(process.env.BACKFILL_STOP) || 6200000000;

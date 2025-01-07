@@ -1,12 +1,7 @@
 import { PutObjectCommandOutput } from '@aws-sdk/client-s3';
-import config from '../config';
-import { Archive } from '../store/archive';
+import { playerArchive } from '../store/archive';
 import { getFullPlayerMatchesWithMetadata } from '../util/buildPlayer';
 import { PlayerFetcher } from './base';
-
-const playerArchive = config.ENABLE_PLAYER_ARCHIVE
-  ? new Archive('player')
-  : null;
 
 async function doArchivePlayerMatches(
   accountId: number,
@@ -55,10 +50,12 @@ async function readArchivedPlayerMatches(
   return arr;
 }
 
-export class PlayerArchiveFetcher extends PlayerFetcher<ParsedPlayerMatch[]> {
+class PlayerArchiveFetcher extends PlayerFetcher<ParsedPlayerMatch[]> {
   readData = readArchivedPlayerMatches;
   getOrFetchData = async (accountId: number) => {
     await doArchivePlayerMatches(accountId);
     return this.readData(accountId);
   };
 }
+
+export const playerArchiveFetcher = new PlayerArchiveFetcher();

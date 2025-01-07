@@ -1,17 +1,13 @@
 import config from '../config';
-import { Archive } from '../store/archive';
+import { blobArchive } from '../store/archive';
 import cassandra from '../store/cassandra';
 import QueryStream from 'pg-query-stream';
 import { Client } from 'pg';
 import crypto from 'crypto';
 import db from '../store/db';
-import { ApiFetcher } from '../fetcher/getApiData';
-import { GcdataFetcher } from '../fetcher/getGcData';
-import { ParsedFetcher } from '../fetcher/getParsedData';
-const apiFetcher = new ApiFetcher();
-const gcFetcher = new GcdataFetcher();
-const parsedFetcher = new ParsedFetcher();
-const blobArchive = new Archive('blob');
+import { apiFetcher } from '../fetcher/getApiData';
+import { gcFetcher } from '../fetcher/getGcData';
+import { parsedFetcher } from '../fetcher/getParsedData';
 
 async function processMatch(matchId: number) {
   // Check if we should archive the blobs (should be parsed and not archived)

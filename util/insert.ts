@@ -27,13 +27,11 @@ import {
   isRecentlyVisited,
 } from './queries';
 import { getPGroup } from './pgroup';
-import { Archive } from '../store/archive';
+import { blobArchive } from '../store/archive';
 import type { ApiMatch, ApiPlayer, InsertMatchInput } from './types';
 import { upsertPlayerCaches } from './playerCaches';
 
 moment.relativeTimeThreshold('ss', 0);
-
-const blobArchive = new Archive('blob');
 
 export async function upsert(
   db: knex.Knex,

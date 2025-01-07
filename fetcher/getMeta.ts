@@ -3,7 +3,7 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import { buildReplayUrl, redisCount } from '../util/utility';
 import { MatchFetcher } from './base';
-import { GcdataFetcher } from './getGcData';
+import { gcFetcher } from './getGcData';
 const execPromise = promisify(exec);
 
 // Get a sample meta file
@@ -14,7 +14,6 @@ const builder = root.loadSync('./proto/dota_match_metadata.proto', {
   keepCase: true,
 });
 const CDOTAMatchMetadataFile = builder.lookupType('CDOTAMatchMetadataFile');
-const gcFetcher = new GcdataFetcher();
 
 async function getMeta(matchId: number) {
   const gcdata = await gcFetcher.readData(matchId, false);
@@ -71,7 +70,7 @@ export async function getMetaFromUrl(url: string) {
   }
 }
 
-export class MetaFetcher extends MatchFetcher<Record<string, any>> {
+class MetaFetcher extends MatchFetcher<Record<string, any>> {
   readData = () => {
     throw new Error('not implemented');
   };
@@ -80,3 +79,5 @@ export class MetaFetcher extends MatchFetcher<Record<string, any>> {
     throw new Error('not implemented');
   };
 }
+
+export const metaFetcher = new MetaFetcher();

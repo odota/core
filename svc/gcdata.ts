@@ -2,12 +2,10 @@
 // The parser will also request gcdata if needed
 import { runQueue } from '../store/queue';
 import config from '../config';
-import { ApiFetcher } from '../fetcher/getApiData';
-import { GcdataFetcher } from '../fetcher/getGcData';
+import { apiFetcher } from '../fetcher/getApiData';
+import { gcFetcher } from '../fetcher/getGcData';
 import { getPGroup } from '../util/pgroup';
 
-const apiFetcher = new ApiFetcher();
-const gcFetcher = new GcdataFetcher();
 
 async function processGcData(job: GcDataJob) {
   const matchId = job.match_id;
