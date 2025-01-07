@@ -135,6 +135,7 @@ export async function buildStatus() {
           countDay('gcdata_cassandra_read'),
         parsed_cassandra_read_last_day: async () =>
           countDay('parsed_cassandra_read'),
+        cassandra_write_last_day: async () => countDay('cassandra_write'),
         blob_archive_read_last_day: async () => countDay('blob_archive_read'),
         match_archive_read_last_day: async () => countDay('match_archive_read'),
         archive_hit_last_day: async () => countDay('archive_hit'),

@@ -363,6 +363,7 @@ export async function insertMatch(
           Buffer.from(JSON.stringify(blob)),
         );
       } catch (e) {
+        redisCount('cassandra_write');
         console.error(e);
         // Write to cassandra as backup storage
         await cassandra.execute(

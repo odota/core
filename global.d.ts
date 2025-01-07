@@ -469,6 +469,7 @@ type MetricName =
   | 'api_cassandra_read'
   | 'gcdata_cassandra_read'
   | 'parsed_cassandra_read'
+  | 'cassandra_write'
   | 'request_api_fail'
   | 'pmh_fullhistory'
   | 'pmh_gcdata'
