@@ -14,8 +14,3 @@ export abstract class MatchFetcher<T> {
   public abstract checkAvailable(matchId: number): Promise<boolean>;
   // Each might also have an internal save function that's not in the interface
 }
-
-export abstract class PlayerFetcher<T> {
-  public abstract readData(accountId: number): Promise<T>;
-  public abstract getOrFetchData(accountId: number): Promise<T>;
-}

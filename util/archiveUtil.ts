@@ -1,5 +1,5 @@
 import config from '../config';
-import { blobArchive } from '../store/archive';
+import { blobArchive, matchArchive, playerArchive } from '../store/archive';
 import cassandra from '../store/cassandra';
 import QueryStream from 'pg-query-stream';
 import { Client } from 'pg';
@@ -8,6 +8,10 @@ import db from '../store/db';
 import { apiFetcher } from '../fetcher/getApiData';
 import { gcFetcher } from '../fetcher/getGcData';
 import { parsedFetcher } from '../fetcher/getParsedData';
+import type { PutObjectCommandOutput } from '@aws-sdk/client-s3';
+import { getFullPlayerMatchesWithMetadata } from './buildPlayer';
+import { getMatchDataFromBlobWithMetadata } from './buildMatch';
+import { isDataComplete, redisCount } from './utility';
 
 async function processMatch(matchId: number) {
   // Check if we should archive the blobs (should be parsed and not archived)
@@ -158,4 +162,74 @@ async function getTokenRange(size: number) {
     },
   );
   return result.rows.map((row) => Number(row.match_id));
+}
+
+async function doArchivePlayerMatches(
+  accountId: number,
+): Promise<PutObjectCommandOutput | null> {
+  if (!playerArchive) {
+    return null;
+  }
+  // Fetch our combined list of archive and current, selecting all fields
+  const full = await getFullPlayerMatchesWithMetadata(accountId);
+  const toArchive = full[0];
+  console.log(full[1]);
+  toArchive.forEach((m, i) => {
+    Object.keys(m).forEach((key) => {
+      if (m[key as keyof ParsedPlayerMatch] === null) {
+        // Remove any null values from the matches for storage
+        delete m[key as keyof ParsedPlayerMatch];
+      }
+    });
+  });
+  // TODO (howard) Make sure the new list is longer than the old list
+  // Make sure we're archiving at least 1 match
+  if (!toArchive.length) {
+    return null;
+  }
+  // Put the blob
+  return playerArchive.archivePut(
+    accountId.toString(),
+    Buffer.from(JSON.stringify(toArchive)),
+  );
+  // TODO (howard) delete the archived values from player_caches
+  // TODO (howard) keep the 20 highest match IDs for recentMatches
+  // TODO (howard) mark the user archived so we don't need to query archive on every request
+  // TODO (howard) add redis counts
+}
+
+/**
+ * Consolidates separate match data blobs and stores as a single blob in archive
+ * @param matchId
+ * @returns
+ */
+export async function doArchiveMatchFromBlobs(matchId: number) {
+  // Don't read from archive when determining whether to archive
+  const [match, metadata] = await getMatchDataFromBlobWithMetadata(matchId, {
+    noArchive: true,
+    // TODO Remove noBlobStore once migrated
+    noBlobStore: true,
+  });
+  if (match && metadata?.has_parsed) {
+    // check data completeness with isDataComplete
+    if (!isDataComplete(match as ParsedMatch)) {
+      redisCount('incomplete_archive');
+      console.log('INCOMPLETE skipping match %s', matchId);
+      return;
+    }
+    // Archive the data since it's parsed. This might also contain api and gcdata
+    const blob = Buffer.from(JSON.stringify(match));
+    const result = await matchArchive.archivePut(matchId.toString(), blob);
+    if (result) {
+      // Mark the match archived
+      await db.raw(
+        `UPDATE parsed_matches SET is_archived = TRUE WHERE match_id = ?`,
+        [matchId],
+      );
+      // TODO delete blobs
+      // await deleteMatch(matchId);
+      console.log('ARCHIVE match %s, parsed', matchId);
+    }
+    return result;
+  }
 }
