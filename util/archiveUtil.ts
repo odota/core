@@ -125,7 +125,7 @@ async function archiveRandom(max: number) {
 
 export async function archiveToken(max?: number) {
   // Archive random matches from Cassandra using token range (not all may be parsed)
-  let page = await getTokenRange(100);
+  let page = await getTokenRange(10);
   if (max) {
     page = page.filter((id) => id < max);
   }
