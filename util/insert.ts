@@ -355,23 +355,10 @@ export async function insertMatch(
       blob: { match_id: number; players: { player_slot: number }[] },
     ) {
       const matchId = blob.match_id;
-      try {
-        await blobArchive.archivePut(
-          matchId + '_' + type,
-          Buffer.from(JSON.stringify(blob)),
-        );
-      } catch (e) {
-        redisCount('cassandra_write');
-        console.error(e);
-        // Write to cassandra as backup storage
-        await cassandra.execute(
-          `INSERT INTO match_blobs(match_id, ${type}) VALUES(?, ?)`,
-          [matchId, JSON.stringify(blob)],
-          {
-            prepare: true,
-          },
-        );
-      }
+      await blobArchive.archivePut(
+        matchId + '_' + type,
+        Buffer.from(JSON.stringify(blob)),
+      );
       if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
         await fs.writeFile(
           './json/' + matchId + '_' + type + '.json',
