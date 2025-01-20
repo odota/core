@@ -181,7 +181,6 @@ let arr = [
   {
     name: 'archiver',
     group: 'backend',
-    instances: 4,
   },
   {
     name: 'reconcile',
