@@ -4,8 +4,9 @@ import redis from '../store/redis';
 import scyllaDriver from 'cassandra-driver';
 import url from 'url';
 
+const SCYLLA_URL = '';
 const scylla = new scyllaDriver.Client({
-  contactPoints: [url.parse(config.SCYLLA_URL, false).host ?? ''],
+  contactPoints: [url.parse(SCYLLA_URL, false).host ?? ''],
   localDataCenter: 'datacenter1',
   keyspace: 'yasp',
 });
