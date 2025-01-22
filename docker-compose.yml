@@ -5,11 +5,11 @@ services:
     container_name: odota-postgres
     environment:
       POSTGRES_PASSWORD: postgres
-  scylla:
-    image: scylladb/scylla:6.2
-    container_name: odota-scylla
-    command:
-      - --skip-wait-for-gossip-to-settle 0
+  cassandra:
+    image: cassandra:5.0
+    container_name: odota-cassandra
+    environment:
+      JVM_EXTRA_OPTS: -Dcassandra.skip_wait_for_gossip_to_settle=0
   minio:
     image: minio/minio:RELEASE.2024-11-07T00-52-20Z
     container_name: odota-minio
@@ -46,7 +46,7 @@ services:
       POSTGRES_URL: postgresql://postgres:postgres@odota-postgres/yasp
       READONLY_POSTGRES_URL: postgresql://readonly:readonly@odota-postgres/yasp
       REDIS_URL: redis://odota-redis:6379/0
-      CASSANDRA_URL: cassandra://odota-scylla/yasp
+      CASSANDRA_URL: cassandra://odota-cassandra/yasp
       ELASTICSEARCH_URL: odota-elasticsearch:9200
       ARCHIVE_S3_ENDPOINT: http://odota-minio:9000
     links:
@@ -55,5 +55,5 @@ services:
       - elasticsearch
       - parser
       - minio
-      - scylla
+      - cassandra
     container_name: odota-core
