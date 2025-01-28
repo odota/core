@@ -133,10 +133,6 @@ export async function archiveToken(max?: number) {
   await Promise.allSettled(page.map((i) => processMatch(i)));
 }
 
-function randomBigInt(byteCount: number) {
-  return BigInt(`0x${crypto.randomBytes(byteCount).toString('hex')}`);
-}
-
 function randomInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min) + min);
 }
@@ -149,12 +145,9 @@ export async function getCurrentMaxArchiveID() {
 }
 
 async function getTokenRange(size: number) {
-  // Convert to signed 64-bit integer
-  const signedBigInt = BigInt.asIntN(64, randomBigInt(8));
-  // Get a page of matches (effectively random, but guaranteed sequential read on one node)
   const result = await cassandra.execute(
-    'select match_id, token(match_id) from match_blobs where token(match_id) >= ? limit ? ALLOW FILTERING;',
-    [signedBigInt.toString(), size],
+    'select match_id, token(match_id) from match_blobs limit ? ALLOW FILTERING;',
+    [size],
     {
       prepare: true,
       fetchSize: size,
