@@ -12,28 +12,13 @@ import { insertMatch } from '../util/insert';
  */
 async function readApiData(
   matchId: number,
-  noBlobStore: boolean | undefined,
 ): Promise<ApiMatch | null> {
   let data = null;
-  if (!noBlobStore) {
-    const archive = await blobArchive.archiveGet(`${matchId}_api`);
-    if (archive) {
-      redisCount('blob_archive_read');
-    }
-    data = archive ? (JSON.parse(archive.toString()) as ApiMatch) : null;
+  const archive = await blobArchive.archiveGet(`${matchId}_api`);
+  if (archive) {
+    redisCount('blob_archive_read');
   }
-  if (!data) {
-    const result = await cassandra.execute(
-      'SELECT api FROM match_blobs WHERE match_id = ?',
-      [matchId],
-      { prepare: true, fetchSize: 1, autoPage: true },
-    );
-    const row = result.rows[0];
-    data = row?.api ? (JSON.parse(row.api) as ApiMatch) : null;
-    if (data) {
-      redisCount('api_cassandra_read');
-    }
-  }
+  data = archive ? (JSON.parse(archive.toString()) as ApiMatch) : null;
   return data;
 }
 
@@ -51,7 +36,7 @@ async function getOrFetchApiData(matchId: number): Promise<{
     return { data: null, error: '[APIDATA]: invalid match_id' };
   }
   // Check if we have apidata cached
-  let saved = await readApiData(matchId, false);
+  let saved = await readApiData(matchId);
   if (saved) {
     return { data: saved, error: null };
   }
@@ -77,7 +62,7 @@ async function getOrFetchApiData(matchId: number): Promise<{
     await insertMatch(match, {
       type: 'api',
     });
-    saved = await readApiData(matchId, false);
+    saved = await readApiData(matchId);
     if (saved) {
       return { data: saved, error: null };
     }

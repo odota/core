@@ -68,13 +68,3 @@ CREATE TABLE IF NOT EXISTS player_caches (
   hero_variant text,
 ) WITH CLUSTERING ORDER BY (match_id DESC);
 ALTER TABLE player_caches WITH compaction = { 'class' :  'UnifiedCompactionStrategy' };
-
-CREATE TABLE IF NOT EXISTS match_blobs (
-  PRIMARY KEY (match_id),
-  match_id bigint,
-  api text,
-  gcdata text,
-  parsed text,
-  identity text,
-  ranks text,
-);

@@ -142,7 +142,7 @@ export async function addPlayerBenchmarks(m: Match) {
 
 export async function getMatchDataFromBlobWithMetadata(
   matchId: number,
-  options?: { noArchive: boolean; noBlobStore: boolean },
+  options?: { noArchive: boolean },
 ): Promise<[Match | ParsedMatch | null, GetMatchDataMetadata | null]> {
   let [api, gcdata, parsed, archived]: [
     ApiMatch | null,
@@ -150,9 +150,9 @@ export async function getMatchDataFromBlobWithMetadata(
     ParserMatch | null,
     ParsedMatch | null,
   ] = await Promise.all([
-    apiFetcher.readData(matchId, options?.noBlobStore),
-    gcFetcher.readData(matchId, options?.noBlobStore),
-    parsedFetcher.readData(matchId, options?.noBlobStore),
+    apiFetcher.readData(matchId),
+    gcFetcher.readData(matchId),
+    parsedFetcher.readData(matchId),
     !options?.noArchive
       ? archivedFetcher.readData(matchId)
       : Promise.resolve(null),

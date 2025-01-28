@@ -3,7 +3,6 @@ export abstract class MatchFetcher<T> {
   // Read from the store without fetching
   public abstract readData(
     matchId: number,
-    noBlobStore: boolean | undefined,
   ): Promise<T | null>;
   // Read from the store, fetch it from remote and save if needed
   public abstract getOrFetchData(

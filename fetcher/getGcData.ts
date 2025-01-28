@@ -2,7 +2,6 @@ import moment from 'moment';
 import config from '../config';
 import db from '../store/db';
 import redis from '../store/redis';
-import cassandra from '../store/cassandra';
 import { getRandomRetrieverUrl, redisCount } from '../util/utility';
 import axios from 'axios';
 import retrieverMatch from '../test/data/retriever_match.json';
@@ -17,28 +16,13 @@ import { MatchFetcher } from './base';
  */
 async function readGcData(
   matchId: number,
-  noBlobStore: boolean | undefined,
 ): Promise<GcMatch | null> {
   let data = null;
-  if (!noBlobStore) {
-    const archive = await blobArchive.archiveGet(`${matchId}_gcdata`);
-    if (archive) {
-      redisCount('blob_archive_read');
-    }
-    data = archive ? (JSON.parse(archive.toString()) as GcMatch) : null;
+  const archive = await blobArchive.archiveGet(`${matchId}_gcdata`);
+  if (archive) {
+    redisCount('blob_archive_read');
   }
-  if (!data) {
-    const result = await cassandra.execute(
-      'SELECT gcdata FROM match_blobs WHERE match_id = ?',
-      [matchId],
-      { prepare: true, fetchSize: 1, autoPage: true },
-    );
-    const row = result.rows[0];
-    data = row?.gcdata ? (JSON.parse(row.gcdata) as GcMatch) : null;
-    if (data) {
-      redisCount('gcdata_cassandra_read');
-    }
-  }
+  data = archive ? (JSON.parse(archive.toString()) as GcMatch) : null;
   if (
     data?.match_id == null ||
     data?.cluster == null ||
@@ -164,7 +148,7 @@ async function tryFetchGcData(
 ): Promise<GcMatch | null> {
   try {
     await saveGcData(matchId, { pgroup });
-    return readGcData(matchId, false);
+    return readGcData(matchId);
   } catch (e) {
     console.log(e);
     return null;
@@ -189,7 +173,7 @@ async function getOrFetchGcData(
     throw new Error('invalid match_id');
   }
   // Check if we have gcdata cached
-  const saved = await readGcData(matchId, false);
+  const saved = await readGcData(matchId);
   if (saved) {
     redisCount('regcdata');
     if (config.DISABLE_REGCDATA) {
@@ -202,7 +186,7 @@ async function getOrFetchGcData(
   if (error) {
     return { data: null, error };
   }
-  const result = await readGcData(matchId, false);
+  const result = await readGcData(matchId);
   return { data: result, error: null };
 }
 

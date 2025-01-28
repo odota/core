@@ -1,13 +1,8 @@
 import config from '../config';
-import { blobArchive, matchArchive, playerArchive } from '../store/archive';
-import cassandra from '../store/cassandra';
+import { matchArchive, playerArchive } from '../store/archive';
 import QueryStream from 'pg-query-stream';
 import { Client } from 'pg';
-import crypto from 'crypto';
 import db from '../store/db';
-import { apiFetcher } from '../fetcher/getApiData';
-import { gcFetcher } from '../fetcher/getGcData';
-import { parsedFetcher } from '../fetcher/getParsedData';
 import type { PutObjectCommandOutput } from '@aws-sdk/client-s3';
 import { getFullPlayerMatchesWithMetadata } from './buildPlayer';
 import { getMatchDataFromBlobWithMetadata } from './buildMatch';
@@ -25,48 +20,6 @@ async function processMatch(matchId: number) {
   //   }
   //   await doArchiveMatchFromBlobs(matchId);
   // }
-  await doMigrateMatchToBlobStore(matchId);
-}
-
-/**
- * Moves individual match blobs from Cassandra to blob store
- * @param matchId
- * @returns
- */
-async function doMigrateMatchToBlobStore(matchId: number) {
-  const api = await apiFetcher.readData(matchId, true);
-  const gcdata = await gcFetcher.readData(matchId, true);
-  const parsed = await parsedFetcher.readData(matchId, true);
-  if (api) {
-    // If the match is old we might not be able to get back ability builds, HD/TD/HH from Steam so we want to keep the API data
-    await blobArchive.archivePut(
-      matchId.toString() + '_api',
-      Buffer.from(JSON.stringify(api)),
-    );
-  }
-  if (gcdata) {
-    await blobArchive.archivePut(
-      matchId.toString() + '_gcdata',
-      Buffer.from(JSON.stringify(gcdata)),
-    );
-  }
-  if (parsed) {
-    await blobArchive.archivePut(
-      matchId.toString() + '_parsed',
-      Buffer.from(JSON.stringify(parsed)),
-    );
-  }
-  await deleteMatch(matchId);
-}
-
-async function deleteMatch(matchId: number) {
-  await cassandra.execute(
-    'DELETE from match_blobs WHERE match_id = ?',
-    [matchId],
-    {
-      prepare: true,
-    },
-  );
 }
 
 export async function archivePostgresStream() {
@@ -123,16 +76,6 @@ async function archiveRandom(max: number) {
   await Promise.allSettled(page.map((i) => processMatch(i)));
 }
 
-export async function archiveToken(max?: number) {
-  // Archive random matches from Cassandra using token range (not all may be parsed)
-  let page = await getTokenRange(10);
-  if (max) {
-    page = page.filter((id) => id < max);
-  }
-  console.log(page[0]);
-  await Promise.allSettled(page.map((i) => processMatch(i)));
-}
-
 function randomInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min) + min);
 }
@@ -142,19 +85,6 @@ export async function getCurrentMaxArchiveID() {
     ?.rows?.[0]?.max;
   const limit = max - 100000000;
   return limit;
-}
-
-async function getTokenRange(size: number) {
-  const result = await cassandra.execute(
-    'select match_id, token(match_id) from match_blobs limit ? ALLOW FILTERING;',
-    [size],
-    {
-      prepare: true,
-      fetchSize: size,
-      autoPage: true,
-    },
-  );
-  return result.rows.map((row) => Number(row.match_id));
 }
 
 async function doArchivePlayerMatches(
@@ -200,8 +130,6 @@ export async function doArchiveMatchFromBlobs(matchId: number) {
   // Don't read from archive when determining whether to archive
   const [match, metadata] = await getMatchDataFromBlobWithMetadata(matchId, {
     noArchive: true,
-    // TODO Remove noBlobStore once migrated
-    noBlobStore: true,
   });
   if (match && metadata?.has_parsed) {
     // check data completeness with isDataComplete

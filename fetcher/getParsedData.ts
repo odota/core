@@ -1,7 +1,6 @@
 import config from '../config';
 import { getRandomParserUrl, redisCount } from '../util/utility';
 import { blobArchive } from '../store/archive';
-import cassandra from '../store/cassandra';
 import db from '../store/db';
 import { insertMatch } from '../util/insert';
 import axios from 'axios';
@@ -14,28 +13,13 @@ import { MatchFetcher } from './base';
  */
 async function readParsedData(
   matchId: number,
-  noBlobStore: boolean | undefined,
 ): Promise<ParserMatch | null> {
   let data = null;
-  if (!noBlobStore) {
-    const archive = await blobArchive.archiveGet(`${matchId}_parsed`);
-    if (archive) {
-      redisCount('blob_archive_read');
-    }
-    data = archive ? (JSON.parse(archive.toString()) as ParserMatch) : null;
+  const archive = await blobArchive.archiveGet(`${matchId}_parsed`);
+  if (archive) {
+    redisCount('blob_archive_read');
   }
-  if (!data) {
-    const result = await cassandra.execute(
-      'SELECT parsed FROM match_blobs WHERE match_id = ?',
-      [matchId],
-      { prepare: true, fetchSize: 1, autoPage: true },
-    );
-    const row = result.rows[0];
-    data = row?.parsed ? (JSON.parse(row.parsed) as ParserMatch) : null;
-    if (data) {
-      redisCount('parsed_cassandra_read');
-    }
-  }
+  data = archive ? (JSON.parse(archive.toString()) as ParserMatch) : null;
   return data;
 }
 
@@ -95,7 +79,7 @@ async function getOrFetchParseData(
   skipped: boolean;
   error: string | null;
 }> {
-  const saved = await readParsedData(matchId, false);
+  const saved = await readParsedData(matchId);
   if (saved) {
     redisCount('reparse');
     if (config.DISABLE_REPARSE) {
