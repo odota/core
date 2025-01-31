@@ -142,8 +142,10 @@ async function processFullHistory(job: FullHistoryJob) {
       const row = { account_id: player.account_id, match_id: match.match_id, player_slot: playerSlot };
       // Note: If an account ID shows up here that player is not anonymous anymore (could update fh_unavailable for other players)
       // Log the match IDs we should reconcile, we can query our own DB for data
-      await db.raw('INSERT INTO player_match_history(account_id, match_id, player_slot) VALUES (?, ?, ?) ON CONFLICT DO NOTHING', [row.account_id, row.match_id, row.player_slot]);
-      await redisCount('pmh_fullhistory');
+      const { rows } = await db.raw('INSERT INTO player_match_history(account_id, match_id, player_slot) VALUES (?, ?, ?) ON CONFLICT DO NOTHING RETURNING *', [row.account_id, row.match_id, row.player_slot]);
+      if (rows?.length) {
+        await redisCount('pmh_fullhistory');
+      }
     }
   }
   if (isMatchDataDisabled != null) {
