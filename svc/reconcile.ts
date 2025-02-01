@@ -52,7 +52,7 @@ async function doReconcile() {
   while (true) {
     // Fetch rows for a single match (could be multiple players to fill)
     const { rows }: { rows: HistoryType[] } = await db.raw('SELECT * from player_match_history WHERE match_id = (SELECT match_id FROM player_match_history TABLESAMPLE SYSTEM_ROWS(1))');
-    if (rows[0].match_id < 7500000000) {
+    if (rows[0].match_id < 6000000000) {
       // Old match so we probably don't have data (until backfilled)
       // We still might have data, so process it with some probability
       // If not processed, retry with short interval
