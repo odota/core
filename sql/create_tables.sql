@@ -138,7 +138,8 @@ CREATE TABLE IF NOT EXISTS player_matches (
   observers_placed int,
   party_size int,
   net_worth int,
-  neutral_tokens_log json[]
+  neutral_tokens_log json[],
+  neutral_item_history json[]
 );
 CREATE INDEX IF NOT EXISTS player_matches_account_id_idx on player_matches(account_id) WHERE account_id IS NOT NULL;
 CREATE INDEX IF NOT EXISTS player_matches_hero_id_idx on player_matches(hero_id);
