@@ -933,6 +933,27 @@ export default {
                 },
               },
             },
+            neutral_item_history: {
+              description: 'Object containing information on neutral item history',
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  time: {
+                    description: 'Time in seconds at which the item was crafted',
+                    type: 'integer'
+                  },
+                  item_neutral: {
+                    description: 'Neutral item name',
+                    type: 'string'
+                  },
+                  item_neutral_enhancement: {
+                    description: 'Neutral enhancement name',
+                    type: 'string'
+                  }
+                }
+              }
+            }
           },
         },
       },

@@ -153,6 +153,7 @@ interface ParsedPlayer extends Player {
   sen: any;
   lane_role: number | null;
   neutral_tokens_log: any[];
+  neutral_item_history: NeutralItemHistory[];
 
   party_size?: number;
 
@@ -196,6 +197,12 @@ interface ParsedPlayer extends Player {
 
   // Added temporarily
   rank_tier?: number;
+}
+
+interface NeutralItemHistory {
+  time: number;
+  item_neutral: string;
+  item_neutral_enhancement: string;
 }
 
 // Data to pass to insertMatch from GC
