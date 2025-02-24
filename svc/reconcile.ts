@@ -51,13 +51,13 @@ export async function reconcileMatch(rows: HistoryType[]) {
 async function doReconcile() {
   while (true) {
     // Fetch rows for a single match (could be multiple players to fill)
-    const { rows }: { rows: HistoryType[] } = await db.raw('SELECT * from player_match_history WHERE match_id = (SELECT match_id FROM player_match_history TABLESAMPLE SYSTEM_ROWS(1))');
+    const { rows }: { rows: HistoryType[] } = await db.raw('UPDATE player_match_history SET retries = coalesce(retries, 0) + 1 WHERE match_id = (SELECT match_id FROM player_match_history ORDER BY retries ASC NULLS FIRST LIMIT 1) RETURNING *');
+    console.log(rows[0].match_id);
     if (rows[0].match_id < 6000000000) {
       // Old match so we probably don't have data (until backfilled)
       // We still might have data, so process it with some probability
       // If not processed, retry with short interval
       if (Math.random() < 0.9) {
-        console.log('skip', rows[0].match_id);
         await new Promise(resolve => setTimeout(resolve, 50));
         continue;
       }
