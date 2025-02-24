@@ -450,7 +450,7 @@ CREATE TABLE IF NOT EXISTS player_match_history(
   player_slot integer,
   retries integer
 );
-CREATE INDEX IF NOT EXISTS player_match_history_retries_idx ON player_match_history(retries) NULLS FIRST;
+CREATE INDEX IF NOT EXISTS player_match_history_retries_idx ON player_match_history(retries ASC NULLS FIRST);
 
 DO $$
 BEGIN
