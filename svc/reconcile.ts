@@ -58,12 +58,12 @@ async function doReconcile() {
       // We still might have data, so process it with some probability
       // If not processed, retry with short interval
       if (Math.random() < 0.9) {
-        await new Promise(resolve => setTimeout(resolve, 50));
+        await new Promise(resolve => setTimeout(resolve, 10));
         continue;
       }
     }
     await reconcileMatch(rows);
-    await new Promise(resolve => setTimeout(resolve, 250));
+    await new Promise(resolve => setTimeout(resolve, 100));
   }
 }
 doReconcile();
