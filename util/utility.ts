@@ -265,7 +265,7 @@ export function isSignificant(match: Match | ApiMatch) {
       match.duration > 360 &&
       (match.players || []).every(
         (player) =>
-          (player.gold_per_min || 0) < 2500 && Boolean(player.hero_id),
+          (player.gold_per_min || 0) <= 9999 && Boolean(player.hero_id),
       ),
   );
 }
