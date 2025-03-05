@@ -57,7 +57,7 @@
     "steam-user": "^5.2.0",
     "stripe": "^9.16.0",
     "vdf-parser": "^1.2.1",
-    "ws": "^8.18.0"
+    "ws": "^8.18.1"
   },
   "devDependencies": {
     "@apidevtools/swagger-parser": "^10.1.1",
@@ -78,7 +78,7 @@
     "@types/request": "^2.48.12",
     "@types/steam-user": "^5.0.4",
     "@types/supertest": "^6.0.2",
-    "@types/ws": "^8.5.13",
+    "@types/ws": "^8.18.0",
     "@typescript-eslint/eslint-plugin": "^8.22.0",
     "@typescript-eslint/parser": "^8.23.0",
     "eslint": "^9.19.0",
