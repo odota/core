@@ -156,7 +156,7 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
     const message = c[colors[type]](
       `[${new Date().toISOString()}] [parser] [${type}: ${
         end - start
-      }ms] [api: ${apiTime}ms] [gcdata: ${gcTime}ms] [parse: ${parseTime}ms] [queued: ${moment(
+      }ms] [api: ${apiTime}ms] [gcdata: ${gcTime}ms] [parse: ${parseTime}ms] [queued: ${moment.utc(
         metadata.timestamp,
       ).fromNow()}] [pri: ${metadata.priority}] [att: ${metadata.attempts}] ${
         job.match_id

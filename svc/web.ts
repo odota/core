@@ -94,7 +94,7 @@ const onResFinish = async (
   ) {
     if (res.locals.isAPIRequest) {
       const apiKey = res.locals.usageIdentifier;
-      const apiTimestamp = moment().startOf('month');
+      const apiTimestamp = moment.utc().startOf('month');
       const rows = await db.from('api_keys').where({
         api_key: apiKey,
       });
@@ -126,15 +126,15 @@ const onResFinish = async (
   await redis.zincrby('api_paths', 1, req.method + ' ' + normPath);
   await redis.expireat(
     'api_paths',
-    moment().startOf('hour').add(1, 'hour').format('X'),
+    moment.utc().startOf('hour').add(1, 'hour').format('X'),
   );
   await redis.zincrby('api_status', 1, res.statusCode);
   await redis.expireat(
     'api_status',
-    moment().startOf('hour').add(1, 'hour').format('X'),
+    moment.utc().startOf('hour').add(1, 'hour').format('X'),
   );
   if (req.user && req.user.account_id) {
-    await redis.zadd('visitors', moment().format('X'), req.user.account_id);
+    await redis.zadd('visitors', moment.utc().format('X'), req.user.account_id);
     await redis.zremrangebyrank('visitors', '0', '-50001');
   }
   await redis.lpush('load_times', elapsed);
@@ -443,8 +443,8 @@ app.get('/admin/retrieverMetrics', async (req, res, next) => {
 });
 app.get('/admin/apiMetrics', async (req, res, next) => {
   try {
-    const startTime = moment().startOf('month').format('YYYY-MM-DD');
-    const endTime = moment().endOf('month').format('YYYY-MM-DD');
+    const startTime = moment.utc().startOf('month').format('YYYY-MM-DD');
+    const endTime = moment.utc().endOf('month').format('YYYY-MM-DD');
     const [topUsersKey, numUsersKey] = await Promise.all([
       db.raw(
         `
