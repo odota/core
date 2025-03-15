@@ -399,7 +399,7 @@ export async function insertMatch(
       //     'distinct_match_player_user',
       //     p.account_id.toString(),
       //   );
-      //   if (visitTime > Number(moment().subtract(30, 'day').format('X'))) {
+      //   if (visitTime > Number(moment.utc().subtract(30, 'day').format('X'))) {
       //     redisCountDistinct(
       //       'distinct_match_player_recent_user',
       //       p.account_id.toString(),

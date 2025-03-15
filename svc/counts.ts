@@ -100,7 +100,7 @@ async function updateRecord(
   );
   // Keep only 100 top scores
   redis.zremrangebyrank(`records:${field}`, '0', '-101');
-  const expire = moment().add(1, 'month').startOf('month').format('X');
+  const expire = moment.utc().add(1, 'month').startOf('month').format('X');
   redis.expireat(`records:${field}`, expire);
 }
 async function updateRecords(match: Match) {
@@ -215,8 +215,8 @@ async function updateHeroCounts(match: Match) {
   if (!tier) {
     return;
   }
-  const timestamp = moment().startOf('day').unix();
-  const expire = moment().startOf('day').add(8, 'day').unix();
+  const timestamp = moment.utc().startOf('day').unix();
+  const expire = moment.utc().startOf('day').add(8, 'day').unix();
   for (let i = 0; i < match.players.length; i += 1) {
     const player = match.players[i];
     const heroId = player.hero_id;

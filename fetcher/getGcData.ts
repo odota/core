@@ -52,12 +52,12 @@ async function saveGcData(
   redis.hincrby('retrieverSteamIDs', steamid, 1);
   redis.expireat(
     'retrieverSteamIDs',
-    moment().startOf('day').add(1, 'day').format('X'),
+    moment.utc().startOf('day').add(1, 'day').format('X'),
   );
   redis.hincrby('retrieverIPs', ip, 1);
   redis.expireat(
     'retrieverIPs',
-    moment().startOf('day').add(1, 'day').format('X'),
+    moment.utc().startOf('day').add(1, 'day').format('X'),
   );
   if (headers['x-match-noretry']) {
     // Steam is blocking this match for community prediction, so return error to prevent retry
@@ -78,12 +78,12 @@ async function saveGcData(
   redis.hincrby('retrieverSuccessSteamIDs', steamid, 1);
   redis.expireat(
     'retrieverSuccessSteamIDs',
-    moment().startOf('day').add(1, 'day').format('X'),
+    moment.utc().startOf('day').add(1, 'day').format('X'),
   );
   redis.hincrby('retrieverSuccessIPs', ip, 1);
   redis.expireat(
     'retrieverSuccessIPs',
-    moment().startOf('day').add(1, 'day').format('X'),
+    moment.utc().startOf('day').add(1, 'day').format('X'),
   );
   const players = data.match.players.map(
     (p: any, i: number): GcPlayer => ({

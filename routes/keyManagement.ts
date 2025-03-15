@@ -122,8 +122,8 @@ keys
               ORDER BY month DESC
             `,
           [
-            moment().subtract(5, 'month').startOf('month'),
-            moment().endOf('month'),
+            moment.utc().subtract(5, 'month').startOf('month'),
+            moment.utc().endOf('month'),
             req.user?.account_id,
           ],
         );
@@ -237,7 +237,7 @@ keys
       const sub = await stripe.subscriptions.create({
         customer: customer_id,
         items: [{ plan: stripeAPIPlan }],
-        billing_cycle_anchor: moment().add(1, 'month').startOf('month').unix(),
+        billing_cycle_anchor: moment.utc().add(1, 'month').startOf('month').unix(),
         metadata: {
           apiKey,
         },

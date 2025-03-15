@@ -26,7 +26,7 @@ async function doBuildSets() {
   // Refresh tracked players with expire date in the future
   await Promise.all(
     tracked.map((id) =>
-      command.zadd('tracked', moment().add(1, 'day').format('X'), id),
+      command.zadd('tracked', moment.utc().add(1, 'day').format('X'), id),
     ),
   );
   await command.exec();

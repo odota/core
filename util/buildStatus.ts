@@ -24,7 +24,7 @@ async function countDay(prefix: MetricName) {
   const keyArr = [];
   for (let i = 0; i < 24; i += 1) {
     keyArr.push(
-      `${prefix}:v2:${moment()
+      `${prefix}:v2:${moment.utc()
         .startOf('hour')
         .subtract(i, 'hour')
         .format('X')}`,
@@ -36,7 +36,7 @@ async function countDay(prefix: MetricName) {
 
 async function countHour(prefix: MetricName) {
   const result = await redis.get(
-    `${prefix}:v2:${moment().startOf('hour').format('X')}`,
+    `${prefix}:v2:${moment.utc().startOf('hour').format('X')}`,
   );
   return Number(result);
 }
@@ -44,7 +44,7 @@ async function countHour(prefix: MetricName) {
 async function countLastHour(prefix: MetricName) {
   // Get counts for previous full hour (not current)
   const result = await redis.get(
-    `${prefix}:v2:${moment().startOf('hour').subtract(1, 'hour').format('X')}`,
+    `${prefix}:v2:${moment.utc().startOf('hour').subtract(1, 'hour').format('X')}`,
   );
   return Number(result);
 }
@@ -54,7 +54,7 @@ async function countDayDistinct(prefix: MetricName) {
   const keyArr = [];
   for (let i = 0; i < 24; i += 1) {
     keyArr.push(
-      `${prefix}:v2:${moment()
+      `${prefix}:v2:${moment.utc()
         .startOf('hour')
         .subtract(i, 'hour')
         .format('X')}`,
@@ -150,7 +150,7 @@ export async function buildStatus() {
         // user_players_recent: async () =>
         //   redis.zcount(
         //     'visitors',
-        //     moment().subtract(30, 'day').format('X'),
+        //     moment.utc().subtract(30, 'day').format('X'),
         //     '+inf',
         //   ),
         // distinct_match_players_last_day: async () =>

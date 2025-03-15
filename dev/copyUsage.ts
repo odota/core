@@ -2,8 +2,8 @@ import db from '../store/db';
 import moment from 'moment';
 
 async function start() {
-  const startTime = moment().startOf('month').format('YYYY-MM-DD');
-  const endTime = moment().endOf('month').format('YYYY-MM-DD');
+  const startTime = moment.utc().startOf('month').format('YYYY-MM-DD');
+  const endTime = moment.utc().endOf('month').format('YYYY-MM-DD');
   const { rows } = await db.raw(
     `
         SELECT
@@ -21,7 +21,7 @@ async function start() {
     [startTime, endTime],
   );
   // console.log(rows);
-  const apiTimestamp = moment().startOf('month');
+  const apiTimestamp = moment.utc().startOf('month');
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
     const curr = await db.raw(

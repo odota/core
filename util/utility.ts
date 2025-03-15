@@ -340,10 +340,10 @@ export function getStartOfBlockMinutes(size: number, offset: number) {
   return (blockStart + offset * blockS).toFixed(0);
 }
 export function getEndOfMonth() {
-  return moment().endOf('month').unix();
+  return moment.utc().endOf('month').unix();
 }
 export function getEndOfDay() {
-  return moment().endOf('day').unix();
+  return moment.utc().endOf('day').unix();
 }
 /**
  * Finds the arithmetic mean of the input array
@@ -785,18 +785,18 @@ export async function redisCount(prefix: MetricName, incrBy = 1) {
   if (!redis) {
     return;
   }
-  const key = `${prefix}:v2:${moment().startOf('hour').format('X')}`;
+  const key = `${prefix}:v2:${moment.utc().startOf('hour').format('X')}`;
   await redis.incrby(key, incrBy);
-  await redis.expireat(key, moment().startOf('hour').add(1, 'day').format('X'));
+  await redis.expireat(key, moment.utc().startOf('hour').add(1, 'day').format('X'));
 }
 
 export async function redisCountDistinct(prefix: MetricName, value: string) {
   if (!redis) {
     return;
   }
-  const key = `${prefix}:v2:${moment().startOf('hour').format('X')}`;
+  const key = `${prefix}:v2:${moment.utc().startOf('hour').format('X')}`;
   await redis.pfadd(key, value);
-  await redis.expireat(key, moment().startOf('hour').add(1, 'day').format('X'));
+  await redis.expireat(key, moment.utc().startOf('hour').add(1, 'day').format('X'));
 }
 
 /**
