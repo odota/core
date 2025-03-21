@@ -81,7 +81,8 @@ async function processFullHistory(job: FullHistoryJob) {
     });
     const rem = body.result.results_remaining;
 
-    if (rem === 0 || !player.long_history) {
+    if (rem === 0 || !player.long_history || resp.length === 0) {
+      // As of March 2025 high level matches are removed from results but still counted in results_remaining
       // no more pages
       return;
     }
