@@ -280,7 +280,6 @@ type FullHistoryJob = {
 
 type MmrJob = {
   account_id: number;
-  match_id: number;
 };
 
 type GcDataJob = {

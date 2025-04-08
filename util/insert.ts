@@ -468,7 +468,6 @@ export async function insertMatch(
         addJob({
           name: 'mmrQueue',
           data: {
-            match_id: match.match_id,
             account_id: p.account_id,
           },
         }),

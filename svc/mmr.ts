@@ -31,8 +31,6 @@ async function processMmr(job: MmrJob) {
 
   if (data.rank_tier || data.leaderboard_rank) {
     data.account_id = job.account_id ?? null;
-    data.match_id = job.match_id ?? null;
-    data.time = new Date();
     await insertPlayerRating(data);
   }
   await new Promise((resolve) => setTimeout(resolve, 1));

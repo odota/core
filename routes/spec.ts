@@ -959,6 +959,13 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
             },
           });
           await redis.setex('fh_queue:' + playerId, 30 * 60, '1');
+          // Also queue a refresh of the user's rank/medal
+          await addJob({
+            name: 'mmrQueue',
+            data: {
+              account_id: Number(req.params.account_id),
+            },
+          });
           return res.json({
             length,
           });
