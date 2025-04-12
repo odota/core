@@ -5,7 +5,7 @@ import { invokeIntervalAsync } from '../util/utility';
 
 async function doAutoFullHistory() {
   const result = await db.raw(
-    'SELECT account_id from players ORDER BY full_history_time ASC LIMIT 1',
+    'SELECT account_id from players ORDER BY full_history_time ASC NULLS FIRST LIMIT 1',
   );
   console.log(result.rows);
   await Promise.all(
