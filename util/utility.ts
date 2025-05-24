@@ -356,10 +356,10 @@ export function average(data: number[]) {
  * */
 export function averageMedal(values: number[]) {
   const numStars = values.map(
-    (value) => Number(String(value)[0]) * 5 + (value % 10),
+    (value) => Number(String(value)[0]) * 5 + (value % 10) - 1,
   );
-  const avgStars = numStars.reduce((a, b) => a + b, 0) / numStars.length;
-  return Math.floor(avgStars / 5) * 10 + Math.max(1, Math.round(avgStars % 5));
+  const avgStars = Math.round(numStars.reduce((a, b) => a + b, 0) / numStars.length);
+  return Math.floor(avgStars / 5) * 10 + avgStars % 5 + 1;
 }
 /**
  * Finds the standard deviation of the input array
