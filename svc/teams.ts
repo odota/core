@@ -13,7 +13,7 @@ async function doTeams() {
     'select distinct team_id from team_match TABLESAMPLE SYSTEM_ROWS(1000)',
   );
   const result2 = await db.raw('select team_id from (select distinct team_id from team_match) ids where team_id not in (select team_id from teams)');
-  const combined = [...result.rows, ...result2.rows];
+  const combined = [...result2.rows, ...result.rows];
   for (let i = 0; i < combined.length; i++) {
     const m = combined[i];
     if (!m.team_id) {
