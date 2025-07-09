@@ -46,6 +46,7 @@ async function doTeams() {
       continue;
     }
     let t = body.result.teams[0];
+    t.team_id = m.team_id;
     // The logo value is a 64 bit integer which is too large to represent in JSON
     // so need to read the raw response value
     // JSON.parse will return an incorrect value in the logo field
@@ -53,32 +54,33 @@ async function doTeams() {
     const logoRegex = /^"logo":(.*),$/m;
     const match = logoRegex.exec(raw);
     const logoUgc = match?.[1];
-    const ugcUrl = SteamAPIUrls.api_get_ugc_file_details({
-      ugcid: logoUgc,
-    });
     // Steam's CDN sometimes has better versions of team logos available
     try {
       const cdnUrl = `https://steamcdn-a.akamaihd.net/apps/dota2/images/team_logos/${m.team_id}.png`;
       // Check if it exists
       await axios.head(cdnUrl);
-      t.team_id = m.team_id;
       t.logo_url = cdnUrl;
       // console.log('[TEAMS] cdn: ', t);
     } catch {
       // This is fine, we failed to get CDN image info
+      console.log('failed to get image from cdn');
+    }
+    if (!t.logo_url) {
       // Try getting image from ugc
       try {
+        const ugcUrl = SteamAPIUrls.api_get_ugc_file_details({
+          ugcid: logoUgc,
+        });
         const ugcBody = await getSteamAPIData({
           url: ugcUrl,
         });
-        t.team_id = m.team_id;
         if (ugcBody && ugcBody.data) {
           t.logo_url = ugcBody.data.url;
         }
         // console.log('[TEAMS] ugc: ', t);
       } catch (e) {
         // Continue even if we can't get a logo
-        console.log(e);
+        console.log('failed to get image from ugc');
       }
     }
     await upsert(db, 'teams', t, {
