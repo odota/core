@@ -64,10 +64,6 @@ async function doTeams() {
       t.team_id = m.team_id;
       t.logo_url = cdnUrl;
       // console.log('[TEAMS] cdn: ', t);
-      await upsert(db, 'teams', t, {
-        team_id: m.team_id,
-      });
-      continue;
     } catch {
       // This is fine, we failed to get CDN image info
       // Try getting image from ugc
@@ -80,14 +76,14 @@ async function doTeams() {
           t.logo_url = ugcBody.data.url;
         }
         // console.log('[TEAMS] ugc: ', t);
-        await upsert(db, 'teams', t, {
-          team_id: m.team_id,
-        });
       } catch (e) {
         // Continue even if we can't get a logo
         console.log(e);
       }
     }
+    await upsert(db, 'teams', t, {
+      team_id: m.team_id,
+    });
   }
 }
 invokeIntervalAsync(doTeams, 60 * 60 * 1000);
