@@ -2,10 +2,10 @@ import config from "../config";
 import axios from 'axios';
 import { shuffle } from "../util/utility";
 
+const { PARSER_PARALLELISM } = config;
 const projectId = config.GOOGLE_CLOUD_PROJECT_ID;
 const lifetime = 600;
 const template = 'retriever-20250324';
-const count = 3;
 
 async function getToken() {
   const tokenResponse = await axios.get("http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token", {headers: {"Metadata-Flavor": "Google"}});
@@ -13,11 +13,19 @@ async function getToken() {
   return token;
 }
 
+async function getCapacity() {
+  if (config.USE_SERVICE_REGISTRY) {
+    return redis.zcard('registry:parser');
+  }
+  return Number(PARSER_PARALLELISM);
+}
+
 async function cycle() {
   const zonesResponse = await axios.get(`https://compute.googleapis.com/compute/v1/projects/${projectId}/zones`, { headers: { "Authorization": "Bearer " + await getToken() }});
   const zones = zonesResponse.data.items.map((zone: any) => zone.name);
   console.log(zones, zones.length);
   while (true) {
+    const count = Math.ceil(getCapacity() / 16);
     shuffle(zones);
     const zone = zones[0];
     const config = {
@@ -35,7 +43,7 @@ async function cycle() {
     };
     const resp = await axios.post(`https://compute.googleapis.com/compute/v1/projects/${projectId}/zones/${zone}/instances?sourceInstanceTemplate=global/instanceTemplates/${template}`, config, { headers: { "Authorization": "Bearer " + await getToken() } });
     console.log(resp.data);
-    await new Promise(resolve => setTimeout(resolve, lifetime * 1000 / count));
+    await new Promise(resolve => setTimeout(resolve, lifetime * 0.95 * 1000 / count));
   }
 }
 
