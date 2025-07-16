@@ -1,4 +1,5 @@
 import config from "../config";
+import redis from "../store/redis";
 import axios from 'axios';
 import { shuffle } from "../util/utility";
 
