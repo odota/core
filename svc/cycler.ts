@@ -26,7 +26,7 @@ async function cycle() {
   const zones = zonesResponse.data.items.map((zone: any) => zone.name);
   console.log(zones, zones.length);
   while (true) {
-    const count = Math.ceil(await getCapacity() / 16);
+    const count = Math.ceil(await getCapacity() / 12);
     shuffle(zones);
     const zone = zones[0];
     const config = {
