@@ -112,7 +112,6 @@ let arr = [
   {
     name: 'autocache',
     group: 'backend',
-    instances: 2,
   },
   {
     name: 'autofullhistory',
@@ -190,14 +189,6 @@ let arr = [
     name: 'cycler',
     group: 'backend',
   },
-  // Requires the gcloud CLI to be installed
-  // We could write this in JS to use the REST API, authenticating using metadata server credentials
-  // {
-  //   name: 'cycler',
-  //   group: 'backend',
-  //   script: 'scripts/cycler.py',
-  //   interpreter: 'python3',
-  // },
 ];
 
 // If GROUP is set filter to only the matching group
