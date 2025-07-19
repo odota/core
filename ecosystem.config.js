@@ -16,7 +16,8 @@ let arr = [
   },
   // Load old matches into storage
   // {
-  //   name_override: 'backfill0',
+  //   name: 'backfill',
+  //   name_override: 'backfill',
   //   group: 'backend',
   //   env: {
   //     BACKFILL_START: 0,
@@ -24,7 +25,8 @@ let arr = [
   //   },
   // },
   // {
-  //   name_override: 'backfill1',
+  //   name: 'backfill1',
+  //   name_override: 'backfill',
   //   group: 'backend',
   //   env: {
   //     BACKFILL_START: 1000000000,
@@ -32,7 +34,8 @@ let arr = [
   //   },
   // },
   // {
-  //   name_override: 'backfill2',
+  //   name: 'backfill2',
+  //   name_override: 'backfill',
   //   group: 'backend',
   //   env: {
   //     BACKFILL_START: 2000000000,
@@ -40,7 +43,8 @@ let arr = [
   //   },
   // },
   // {
-  //   name_override: 'backfill3',
+  //   name: 'backfill3',
+  //   name_override: 'backfill',
   //   group: 'backend',
   //   env: {
   //     BACKFILL_START: 3000000000,
@@ -48,7 +52,8 @@ let arr = [
   //   },
   // },
   {
-    name_override: 'backfill4',
+    name: 'backfill4',
+    name_override: 'backfill',
     group: 'backend',
     env: {
       BACKFILL_START: 4000000000,
