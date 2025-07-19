@@ -47,14 +47,14 @@ let arr = [
   //     BACKFILL_STOP: 4000000000
   //   },
   // },
-  // {
-  //   name: 'backfill4',
-  //   group: 'backend',
-  //   env: {
-  //     BACKFILL_START: 4000000000,
-  //     BACKFILL_STOP: 5000000000
-  //   },
-  // },
+  {
+    name: 'backfill4',
+    group: 'backend',
+    env: {
+      BACKFILL_START: 4000000000,
+      BACKFILL_STOP: 5000000000
+    },
+  },
   {
     // Alternative way of getting matches if GetMatchHistoryBySequenceNum is broken
     name: 'backupscanner',
