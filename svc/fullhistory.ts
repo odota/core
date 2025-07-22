@@ -10,6 +10,7 @@ import db from '../store/db';
 import { runQueue } from '../store/queue';
 import { getPlayerMatches } from '../util/buildPlayer';
 import type { ApiMatch } from '../util/types';
+import redis from '../store/redis';
 
 async function updatePlayer(player: FullHistoryJob) {
   // done with this player, update
@@ -35,6 +36,16 @@ async function processFullHistory(job: FullHistoryJob) {
   ) {
     return;
   }
+
+  // If this player has already recently been processed, don't do it again
+  if (
+    config.NODE_ENV !== 'development' &&
+    (await redis.get('fh_queue:' + player.account_id))
+  ) {
+    redisCount('fullhistory_skip');
+    return;
+  }
+  await redis.setex('fh_queue:' + player.account_id, 30 * 60, '1');
 
   console.time('doFullHistory: ' + player.account_id.toString());
   // by default, fetch only 100 matches, unless long_history is specified then fetch 500

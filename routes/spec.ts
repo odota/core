@@ -943,14 +943,6 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
         route: () => '/players/:account_id/refresh',
         func: async (req, res, next) => {
           const playerId = req.params.account_id;
-          // If this player has already recently been queued, don't do it again
-          if (
-            config.NODE_ENV !== 'development' &&
-            (await redis.get('fh_queue:' + playerId))
-          ) {
-            redisCount('fullhistory_skip');
-            return res.json({ length: 0 });
-          }
           const length = await addJob({
             name: 'fhQueue',
             data: {
@@ -958,7 +950,6 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
               long_history: req.headers.origin === config.UI_HOST,
             },
           });
-          await redis.setex('fh_queue:' + playerId, 30 * 60, '1');
           // Also queue a refresh of the user's rank/medal
           await addJob({
             name: 'mmrQueue',
@@ -966,6 +957,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
               account_id: Number(req.params.account_id),
             },
           });
+          // TODO we can't currently queue update of name/avatar here since it runs on random rows in batches of 100
           return res.json({
             length,
           });
