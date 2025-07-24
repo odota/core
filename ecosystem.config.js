@@ -114,10 +114,10 @@ let arr = [
       SCANNER_OFFSET: '50000',
     },
   },
-  {
-    name: 'autocache',
-    group: 'backend',
-  },
+  // {
+  //   name: 'autocache',
+  //   group: 'backend',
+  // },
   {
     name: 'autofullhistory',
     group: 'backend',
@@ -126,10 +126,10 @@ let arr = [
     name: 'monitor',
     group: 'backend',
   },
-  {
-    name: 'gcdata',
-    group: 'backend',
-  },
+  // {
+  //   name: 'gcdata',
+  //   group: 'backend',
+  // },
   {
     name: 'buildsets',
     group: 'backend',
@@ -182,10 +182,10 @@ let arr = [
     name: 'syncSubs',
     group: 'backend',
   },
-  {
-    name: 'archiver',
-    group: 'backend',
-  },
+  // {
+  //   name: 'archiver',
+  //   group: 'backend',
+  // },
   {
     name: 'reconcile',
     group: 'backend',
