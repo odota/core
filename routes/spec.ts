@@ -360,6 +360,8 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           // Endpoint doesn't support projection and always returns the same set of columns
           queryObj.project = recentMatchesCols;
           queryObj.dbLimit = 20;
+          // Disable significance filter since we want to show turbo matches by default
+          queryObj.filter?.delete('significant');
           const cache = await getPlayerMatches(
             Number(req.params.account_id),
             queryObj,
