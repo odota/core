@@ -332,7 +332,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           '/players/{account_id}/recentMatches',
         ),
         summary: 'GET /players/{account_id}/recentMatches',
-        description: 'Recent matches played',
+        description: 'Recent matches played (limited number of results)',
         tags: ['players'],
         parameters: [{ $ref: '#/components/parameters/accountIdParam' }],
         responses: {
@@ -355,12 +355,11 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
         },
         route: () => '/players/:account_id/recentMatches',
         func: async (req, res, next) => {
-          // Construct a new queryObj, because this endpoint doesn't support filtering, sorting, or projection
-          const queryObj = {
-            project: recentMatchesCols,
-            dbLimit: 20,
-            isPrivate: res.locals.queryObj.isPrivate,
-          };
+          const queryObj = res.locals.queryObj;
+          // Endpoint is limited to last 20 server results only
+          // Endpoint doesn't support projection and always returns the same set of columns
+          queryObj.project = recentMatchesCols;
+          queryObj.dbLimit = 20;
           const cache = await getPlayerMatches(
             Number(req.params.account_id),
             queryObj,
@@ -376,7 +375,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           '/players/{account_id}/matches',
         ),
         summary: 'GET /players/{account_id}/matches',
-        description: 'Matches played',
+        description: 'Matches played (full history, and supports column selection)',
         tags: ['players'],
         parameters: [
           ...playerParamsList,
@@ -924,7 +923,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
       post: {
         operationId: generateOperationId('post', '/refresh'),
         summary: 'POST /players/{account_id}/refresh',
-        description: 'Refresh player match history',
+        description: 'Refresh player match history (up to 500) and medal',
         tags: ['players'],
         parameters: [{ $ref: '#/components/parameters/accountIdParam' }],
         responses: {
@@ -942,7 +941,6 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
         },
         route: () => '/players/:account_id/refresh',
         func: async (req, res, next) => {
-          const playerId = req.params.account_id;
           const length = await addJob({
             name: 'fhQueue',
             data: {
