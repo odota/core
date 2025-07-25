@@ -1491,6 +1491,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           redisCount('request');
           redisCountDistinct('distinct_request', matchId);
           let priority = 1;
+          let numAttempts = 2;
           if (req.query.api_key) {
             priority = 1;
             redisCount('request_api_key');
@@ -1502,6 +1503,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           if (req.headers.origin === config.UI_HOST) {
             // Give UI requests priority
             priority = 0;
+            numAttempts = 1;
             redisCount('request_ui');
           }
           if (
@@ -1517,7 +1519,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
               data: { match_id: Number(matchId) },
             },
             {
-              attempts: 2,
+              attempts: numAttempts,
               priority,
               caller: 'web',
             },
