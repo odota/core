@@ -272,8 +272,6 @@ type PlayerRating = {
 
 type FullHistoryJob = {
   account_id: number;
-  long_history?: boolean;
-
   // These fields don't exist on the job but we add them during processing
   fh_unavailable?: boolean;
 };
@@ -420,7 +418,6 @@ type MetricName =
   | 'retriever_player'
   | 'fullhistory'
   | 'fullhistory_skip'
-  | 'fullhistory_short'
   | 'match_archive_read'
   | 'match_archive_write'
   | 'blob_archive_read'

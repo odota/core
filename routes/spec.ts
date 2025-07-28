@@ -947,7 +947,6 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
             name: 'fhQueue',
             data: {
               account_id: Number(req.params.account_id),
-              long_history: req.headers.origin === config.UI_HOST,
             },
           });
           // Also queue a refresh of the user's rank/medal

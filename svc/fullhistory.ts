@@ -23,9 +23,6 @@ async function updatePlayer(player: FullHistoryJob) {
       account_id: player.account_id,
     });
   redisCount('fullhistory');
-  if (!player.long_history) {
-    redisCount('fullhistory_short');
-  }
 }
 
 async function processFullHistory(job: FullHistoryJob) {
@@ -48,7 +45,6 @@ async function processFullHistory(job: FullHistoryJob) {
   await redis.setex('fh_queue:' + player.account_id, 30 * 60, '1');
 
   console.time('doFullHistory: ' + player.account_id.toString());
-  // by default, fetch only 100 matches, unless long_history is specified then fetch 500
   // As of December 2021 filtering by hero ID doesn't work
   // const heroArray = config.NODE_ENV === 'test' ? ['0'] : Object.keys(heroes);
   // const heroId = '0';
@@ -92,7 +88,8 @@ async function processFullHistory(job: FullHistoryJob) {
     });
     const rem = body.result.results_remaining;
 
-    if (rem === 0 || !player.long_history || resp.length === 0) {
+    if (rem === 0 || resp.length === 0) {
+      // Stop here if we only want one page/100 matches (short history)
       // As of March 2025 high level matches are removed from results but still counted in results_remaining
       // no more pages
       return;

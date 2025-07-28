@@ -97,7 +97,6 @@ export async function buildStatus() {
         requests_api_key_last_day: async () => countDay('request_api_key'),
         request_api_fail_last_day: async () => countDay('request_api_fail'),
         fullhistory_last_day: async () => countDay('fullhistory'),
-        fullhistory_short_last_day: async () => countDay('fullhistory_short'),
         fullhistory_skips_last_day: async () => countDay('fullhistory_skip'),
         pmh_fullhistory_last_day: async () => countDay('pmh_fullhistory'),
         pmh_gcdata_last_day: async () => countDay('pmh_gcdata'),
