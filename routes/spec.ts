@@ -2007,7 +2007,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
       get: {
         operationId: generateOperationId('get', '/leagues/{league_id}/matches'),
         summary: 'GET /leagues/{league_id}/matches',
-        description: 'Get matches for a team',
+        description: 'Get matches for a league',
         tags: ['leagues'],
         parameters: [{ $ref: '#/components/parameters/leagueIdPathParam' }],
         responses: {
