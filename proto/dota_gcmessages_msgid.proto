@@ -166,6 +166,8 @@ enum EDOTAGCMsg {
 	k_EMsgServerToGCRequestBatchPlayerResources = 7450;
 	k_EMsgServerToGCRequestBatchPlayerResourcesResponse = 7451;
 	k_EMsgGCCompendiumSetSelectionResponse = 7453;
+	k_EMsgGCRankedPlayerInfoSubmit = 7454;
+	k_EMsgGCRankedPlayerInfoSubmitResponse = 7455;
 	k_EMsgGCPlayerInfoSubmit = 7456;
 	k_EMsgGCPlayerInfoSubmitResponse = 7457;
 	k_EMsgGCToGCGetAccountLevel = 7458;
@@ -674,7 +676,6 @@ enum EDOTAGCMsg {
 	k_EMsgClientToGCRequestAccountGuildPersonaInfoBatch = 8729;
 	k_EMsgClientToGCRequestAccountGuildPersonaInfoBatchResponse = 8730;
 	k_EMsgGCToClientUnderDraftGoldUpdated = 8731;
-	k_EMsgGCToServerRecordTrainingData = 8732;
 	k_EMsgSignOutBounties = 8733;
 	k_EMsgLobbyFeaturedGamemodeProgress = 8734;
 	k_EMsgLobbyGauntletProgress = 8735;
@@ -948,4 +949,12 @@ enum EDOTAGCMsg {
 	k_EMsgClientToGCSurvivorsTelemetryResponse = 9012;
 	k_EMsgClientToGCOverworldRequestTokensNeededByFriend = 9013;
 	k_EMsgClientToGCOverworldRequestTokensNeededByFriendResponse = 9014;
+	k_EMsgClientToGCCraftworksGetUserData = 9015;
+	k_EMsgClientToGCCraftworksGetUserDataResponse = 9016;
+	k_EMsgGCToClientCraftworksUserDataUpdated = 9017;
+	k_EMsgClientToGCCraftworksCraftRecipe = 9018;
+	k_EMsgClientToGCCraftworksCraftRecipeResponse = 9019;
+	k_EMsgClientToGCCraftworksDevModifyComponents = 9020;
+	k_EMsgClientToGCCraftworksDevModifyComponentsResponse = 9021;
+	k_EMsgSignOutCraftworks = 9022;
 }

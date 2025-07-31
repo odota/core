@@ -2,9 +2,15 @@ import "base_gcmessages.proto";
 import "dota_gcmessages_common_match_management.proto";
 import "dota_gcmessages_common_lobby.proto";
 import "dota_gcmessages_common_overworld.proto";
+import "dota_gcmessages_common_craftworks.proto";
 import "dota_gcmessages_common.proto";
 import "dota_shared_enums.proto";
 import "gcsdk_gcmessages.proto";
+
+enum EPlayerInventorySnapshotFlags {
+	EPlayerInventorySnapshotFlags_HasScepter = 1;
+	EPlayerInventorySnapshotFlags_HasShard = 2;
+}
 
 message CDOTAMatchMetadataFile {
 	required int32 version = 1;
@@ -42,6 +48,10 @@ message CDOTAMatchMetadata {
 			optional uint32 level = 6;
 			repeated int32 backpack_item_id = 7;
 			optional int32 neutral_item_id = 8 [default = -1];
+			optional int32 neutral_enhancement_id = 9 [default = -1];
+			optional uint32 last_hits = 10;
+			optional uint32 denies = 11;
+			optional uint32 flags = 12;
 		}
 
 		message AutoStyleCriteria {
@@ -131,6 +141,22 @@ message CDOTAMatchMetadata {
 			optional uint32 max_value = 3;
 		}
 
+		message KillInfo {
+			enum KillType {
+				KILL_TYPE_PLAYER = 0;
+				KILL_TYPE_TOWER = 1;
+				KILL_TYPE_BARRACKS = 2;
+				KILL_TYPE_ROSHAN = 3;
+				KILL_TYPE_MINIBOSS = 4;
+			}
+
+			optional .CDOTAMatchMetadata.Team.KillInfo.KillType kill_type = 1 [default = KILL_TYPE_PLAYER];
+			optional uint32 victim_player_slot = 2;
+			repeated uint32 killer_player_slot = 3;
+			optional int32 time = 4;
+			optional int32 bounty = 5;
+		}
+
 		message Player {
 			message ContractProgress {
 				optional uint32 guild_id = 1;
@@ -201,6 +227,8 @@ message CDOTAMatchMetadata {
 			optional int32 game_player_id = 57 [default = -1];
 			repeated .CMsgTrackedStat player_tracked_stats = 58;
 			optional .CDOTAMatchMetadata.Team.Player.OverworldRewards overworld_rewards = 59;
+			repeated .CMsgCraftworksQuestReward craftworks_quest_rewards = 60;
+			optional int32 ad_facet_hero_id = 61;
 		}
 
 		optional uint32 dota_team = 1;
@@ -212,6 +240,7 @@ message CDOTAMatchMetadata {
 		optional int32 cm_captain_player_id = 7 [default = -1];
 		optional uint32 cm_penalty = 10;
 		repeated .CMsgTrackedStat team_tracked_stats = 11;
+		repeated .CDOTAMatchMetadata.Team.KillInfo kills = 12;
 	}
 
 	message GuildChallengeProgress {

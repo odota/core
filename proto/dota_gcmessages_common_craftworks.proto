@@ -1,0 +1,25 @@
+import "steammessages.proto";
+import "dota_shared_enums.proto";
+import "gcsdk_gcmessages.proto";
+
+enum ECraftworksAuditAction {
+	k_eInvalid = 0;
+	k_eRecipeCrafted = 1;
+	k_eMatchRewards = 2;
+	k_eMatchRewardsTurbo = 3;
+}
+
+message CMsgCraftworksComponents {
+	message ComponentQuantitiesEntry {
+		optional uint32 key = 1;
+		optional uint32 value = 2;
+	}
+
+	repeated .CMsgCraftworksComponents.ComponentQuantitiesEntry component_quantities = 1;
+}
+
+message CMsgCraftworksQuestReward {
+	optional uint32 quest_id = 1;
+	optional .CMsgCraftworksComponents reward_components = 2;
+	optional uint32 stat_value = 3;
+}

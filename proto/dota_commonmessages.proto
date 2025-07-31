@@ -59,12 +59,19 @@ enum dotaunitorder_t {
 	DOTA_UNIT_ORDER_MOVE_RELATIVE = 39;
 	DOTA_UNIT_ORDER_CAST_TOGGLE_ALT = 40;
 	DOTA_UNIT_ORDER_CONSUME_ITEM = 41;
+	DOTA_UNIT_ORDER_SET_ITEM_MARK_FOR_SELL = 42;
 }
 
 enum EDOTAVersusScenePlayerBehavior {
 	VS_PLAYER_BEHAVIOR_PLAY_ACTIVITY = 1;
 	VS_PLAYER_BEHAVIOR_CHAT_WHEEL = 2;
 	VS_PLAYER_BEHAVIOR_PLAYBACK_RATE = 3;
+}
+
+message CDOTAMsg_PingWaypointPath {
+	optional int32 x = 1;
+	optional int32 y = 2;
+	optional bytes grid_nav_directions = 3;
 }
 
 message CDOTAMsg_LocationPing {
@@ -74,6 +81,7 @@ message CDOTAMsg_LocationPing {
 	optional bool direct_ping = 4;
 	optional uint32 type = 5 [default = 4294967295];
 	optional .EPingSource ping_source = 6 [default = k_ePingSource_Default];
+	optional .CDOTAMsg_PingWaypointPath waypoint_path = 7;
 }
 
 message CDOTAMsg_ItemAlert {

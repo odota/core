@@ -123,7 +123,6 @@ enum EDotaUserMessages {
 	DOTA_UM_HighFiveLeftHanging = 583;
 	DOTA_UM_HighFiveCompleted = 584;
 	DOTA_UM_ShovelUnearth = 585;
-	DOTA_EM_InvokerSpellCast = 586;
 	DOTA_UM_RadarAlert = 587;
 	DOTA_UM_AllStarEvent = 588;
 	DOTA_UM_TalentTreeAlert = 589;
@@ -163,6 +162,10 @@ enum EDotaUserMessages {
 	DOTA_UM_FacetPing = 624;
 	DOTA_UM_InnatePing = 625;
 	DOTA_UM_RoshanTimer = 626;
+	DOTA_UM_NeutralCraftAvailable = 627;
+	DOTA_UM_TimerAlert = 628;
+	DOTA_UM_MadstoneAlert = 629;
+	DOTA_UM_CourierLeftFountainAlert = 630;
 }
 
 enum DOTA_CHAT_MESSAGE {
@@ -277,6 +280,10 @@ enum DOTA_CHAT_MESSAGE {
 	CHAT_MESSAGE_MINIBOSS_KILL = 117;
 	CHAT_MESSAGE_PLAYER_IN_GAME_BAN_TEXT = 118;
 	CHAT_MESSAGE_BANNER_PLANTED = 119;
+	CHAT_MESSAGE_ALCHEMIST_GRANTED_SCEPTER = 120;
+	CHAT_MESSAGE_PROTECTOR_SPAWNED = 121;
+	CHAT_MESSAGE_CRAFTING_XP = 122;
+	CHAT_MESSAGE_ROSHAN_ROAR = 123;
 }
 
 enum DOTA_NO_BATTLE_POINTS_REASONS {
@@ -346,9 +353,6 @@ enum DOTA_OVERHEAD_ALERT {
 	OVERHEAD_ALERT_HEAL = 10;
 	OVERHEAD_ALERT_MANA_ADD = 11;
 	OVERHEAD_ALERT_MANA_LOSS = 12;
-	OVERHEAD_ALERT_LAST_HIT_EARLY = 13;
-	OVERHEAD_ALERT_LAST_HIT_CLOSE = 14;
-	OVERHEAD_ALERT_LAST_HIT_MISS = 15;
 	OVERHEAD_ALERT_MAGICAL_BLOCK = 16;
 	OVERHEAD_ALERT_INCOMING_DAMAGE = 17;
 	OVERHEAD_ALERT_OUTGOING_DAMAGE = 18;
@@ -472,6 +476,7 @@ message CDOTAUserMsg_ChatEvent {
 	optional sint32 playerid_6 = 8 [default = -1];
 	optional uint32 value2 = 9;
 	optional uint32 value3 = 10;
+	optional float time = 11;
 }
 
 message CDOTAUserMsg_BotChat {
@@ -620,11 +625,6 @@ message CDOTAUserMsg_MarsArenaOfBloodAttack {
 	optional int32 warrior_index = 3;
 }
 
-message CDOTAEntityMsg_InvokerSpellCast {
-	optional .CEntityMsg entity_msg = 1;
-	optional int32 cast_activity = 2;
-}
-
 message CDOTAUserMsg_BuyBackStateAlert {
 	optional int32 player_id = 1 [default = -1];
 }
@@ -714,6 +714,8 @@ message CDOTAUserMsg_SpectatorPlayerUnitOrders {
 	optional bool queue = 7;
 	optional int32 sequence_number = 8;
 	optional uint32 flags = 9;
+	optional uint32 last_order_latency = 10;
+	optional uint32 ping = 11;
 }
 
 message CDOTAUserMsg_NevermoreRequiem {
@@ -748,6 +750,10 @@ message CDOTAUserMsg_HalloweenDrops {
 	repeated uint32 item_defs = 1;
 	repeated int32 player_ids = 2;
 	optional uint32 prize_list = 3;
+}
+
+message CDOTAUserMsg_CourierLeftFountainAlert {
+	optional int32 owning_player_id = 1 [default = -1];
 }
 
 message CDOTAResponseQuerySerialized {
@@ -833,6 +839,7 @@ message CDOTAUserMsg_UnitEvent {
 
 message CDOTAUserMsg_ItemPurchased {
 	optional int32 item_ability_id = 1 [default = -1];
+	optional bool from_combine = 2;
 }
 
 message CDOTAUserMsg_ItemSold {
@@ -1362,6 +1369,8 @@ message CDOTAUserMsg_AbilityDraftRequestAbility {
 	optional int32 player_id = 1 [default = -1];
 	optional int32 requested_ability_id = 2 [default = -1];
 	optional bool ctrl_is_down = 3;
+	optional int32 requested_hero_id = 4;
+	optional uint64 requested_facet_key = 5;
 }
 
 message CDOTAUserMsg_DamageReport {
@@ -1467,6 +1476,9 @@ message CDOTAUserMsg_FoundNeutralItem {
 	optional int32 item_ability_id = 2 [default = -1];
 	optional uint32 item_tier = 3;
 	optional uint32 tier_item_count = 4;
+	optional int32 enhancement_ability_id = 5 [default = -1];
+	optional int32 enhancement_level = 6;
+	optional int32 trinket_level = 7;
 }
 
 message CDOTAUserMsg_OutpostCaptured {
@@ -1666,4 +1678,26 @@ message CDOTAUserMsg_InnatePing {
 	optional int32 player_id = 1 [default = -1];
 	optional uint32 entity_id = 2;
 	optional bool all_chat = 3;
+}
+
+message CDOTAUserMsg_NeutralCraftAvailable {
+}
+
+message CDOTAUserMsg_TimerAlert {
+	optional int32 player_id = 1 [default = -1];
+	optional .ETimerAlertType timer_alert_type = 2 [default = k_TimerAlertType_PowerRune];
+}
+
+message CDOTAUserMsg_MadstoneAlert {
+	enum EMadstoneAlertType {
+		CraftAvailable = 0;
+		NeedMadstone = 1;
+		WaitingForNextTier = 2;
+	}
+
+	optional int32 player_id = 1 [default = -1];
+	optional int32 target_entindex = 2 [default = -1];
+	optional int32 tier = 3;
+	optional .CDOTAUserMsg_MadstoneAlert.EMadstoneAlertType madstone_alert_type = 4 [default = CraftAvailable];
+	optional int32 value = 5;
 }

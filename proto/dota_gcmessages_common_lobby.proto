@@ -321,11 +321,13 @@ message CSODOTALobby {
 	optional uint32 lobby_creation_time = 128;
 	optional string event_game_definition = 129;
 	optional .CDOTALobbyMatchQualityData match_quality_data = 131;
+	repeated int32 requested_hero_teams = 132;
 }
 
 message CSODOTAServerLobby {
 	repeated .CSODOTAServerLobbyMember all_members = 1;
 	repeated .CSODOTALobby.CExtraMsg extra_startup_messages = 2;
+	optional bool broadcast_active = 3;
 }
 
 message CSODOTAStaticLobby {
@@ -338,6 +340,7 @@ message CSODOTAServerStaticLobby {
 	repeated .CSODOTAServerStaticLobbyMember all_members = 1;
 	optional float post_patch_strategy_time_buffer = 2;
 	repeated .CMsgLobbyEventPoints lobby_event_points = 3;
+	optional string broadcast_url = 4;
 }
 
 message CMsgAdditionalLobbyStartupAccountData {

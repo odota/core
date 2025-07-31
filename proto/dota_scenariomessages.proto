@@ -93,6 +93,19 @@ message CMsgDotaScenario {
 		optional int32 level = 2;
 	}
 
+	message HeroNeutralChoice {
+		optional int32 choice_index = 1;
+		optional string artifact_name = 2;
+		optional string enchantment_name = 3;
+	}
+
+	message HeroNeutralTier {
+		optional uint32 tier = 1;
+		repeated .CMsgDotaScenario.HeroNeutralChoice choices = 2;
+		optional int32 selected_artifact = 3;
+		optional int32 selected_enchantment = 4;
+	}
+
 	message Hero {
 		optional fixed64 steam_id = 1;
 		optional int32 player_id = 2 [default = -1];
@@ -158,6 +171,9 @@ message CMsgDotaScenario {
 		repeated .CMsgDotaScenario.DamageStatsByType damage_stats = 151;
 		repeated .CMsgDotaScenario.HeroAbility abilities = 152;
 		optional uint32 hero_facet = 153;
+		optional uint32 total_madstone = 154;
+		optional uint32 current_madstone = 155;
+		repeated .CMsgDotaScenario.HeroNeutralTier neutral_tiers = 156;
 	}
 
 	message Stock {
@@ -194,6 +210,7 @@ message CMsgDotaScenario {
 		optional int32 secondary_charges = 7;
 		optional float lifetime = 8 [default = -1];
 		optional int32 stored_rune_type = 9 [default = -1];
+		optional int32 level = 10 [default = 1];
 	}
 
 	message Modifier {

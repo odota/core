@@ -187,15 +187,12 @@ message CMsgTEBloodStream {
 
 message CMsgTEExplosion {
 	optional .CMsgVector origin = 1;
-	optional uint32 framerate = 2;
 	optional uint32 flags = 3;
 	optional .CMsgVector normal = 4;
-	optional uint32 materialtype = 5;
 	optional uint32 radius = 6;
 	optional uint32 magnitude = 7;
-	optional float scale = 8;
 	optional bool affect_ragdolls = 9;
-	optional string effect_name = 10;
+	optional string sound_name = 10;
 	optional uint32 explosion_type = 11;
 	optional bool create_debris = 12;
 	optional .CMsgVector debris_origin = 13;

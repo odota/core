@@ -67,10 +67,11 @@ message CMsgDOTALeagueNodeGroup {
 		optional uint32 losses = 8;
 		optional int64 score = 9;
 		optional string team_abbreviation = 10;
-		optional int64 score_tiebreak_group = 11;
-		optional int64 score_tiebreak_below = 12;
-		optional int64 score_tiebreak_random = 13;
 		optional bool is_pro = 14;
+		optional uint32 tiebreak_game_win_pct = 15;
+		optional uint32 tiebreak_opponent_match_wins = 16;
+		optional uint32 tiebreak_opponent_game_win_pct = 17;
+		optional uint32 tiebreak_coinflip = 18;
 	}
 
 	optional string name = 1;
@@ -84,6 +85,7 @@ message CMsgDOTALeagueNodeGroup {
 	optional .ELeagueNodeType default_node_type = 9 [default = INVALID_NODE_TYPE];
 	optional uint32 round = 10;
 	optional uint32 max_rounds = 11;
+	optional uint32 win_loss_limit = 27;
 	optional bool is_tiebreaker = 12;
 	optional bool is_final_group = 13;
 	optional bool is_completed = 14;

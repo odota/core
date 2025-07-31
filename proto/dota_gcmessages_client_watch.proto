@@ -39,6 +39,8 @@ message CSourceTVGameSmall {
 	optional uint32 weekend_tourney_skill_level = 28;
 	optional uint32 weekend_tourney_bracket_round = 29;
 	optional uint32 custom_game_difficulty = 32;
+	optional bool is_player_draft = 33;
+	optional bool is_watch_eligible = 34;
 }
 
 message CMsgClientToGCFindTopSourceTVGames {
@@ -161,6 +163,7 @@ message CMsgWatchGameResponse {
 	optional fixed64 game_server_steamid = 5;
 	optional fixed64 watch_server_steamid = 6;
 	optional fixed64 watch_tv_unique_secret_code = 7;
+	optional string broadcast_url = 8;
 }
 
 message CMsgPartyLeaderWatchGamePrompt {

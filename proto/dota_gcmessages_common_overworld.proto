@@ -201,6 +201,7 @@ message CMsgClientToGCOverworldClaimEncounterReward {
 	optional .CMsgOverworldEncounterData extra_reward_data = 5;
 	optional uint32 leaderboard_data = 6;
 	optional uint32 leaderboard_index = 7;
+	optional bool should_claim_reward = 8;
 }
 
 message CMsgClientToGCOverworldClaimEncounterRewardResponse {

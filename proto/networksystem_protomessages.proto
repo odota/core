@@ -4,10 +4,12 @@ message NetMessageSplitscreenUserChanged {
 
 message NetMessageConnectionClosed {
 	optional uint32 reason = 1;
+	optional string message = 2;
 }
 
 message NetMessageConnectionCrashed {
 	optional uint32 reason = 1;
+	optional string message = 2;
 }
 
 message NetMessagePacketStart {

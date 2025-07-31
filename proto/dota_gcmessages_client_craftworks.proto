@@ -1,0 +1,87 @@
+import "steammessages.proto";
+import "dota_shared_enums.proto";
+import "dota_gcmessages_common.proto";
+import "dota_gcmessages_webapi.proto";
+import "gcsdk_gcmessages.proto";
+import "base_gcmessages.proto";
+import "econ_gcmessages.proto";
+import "dota_gcmessages_client.proto";
+import "valveextensions.proto";
+import "dota_gcmessages_common_craftworks.proto";
+
+message CMsgCraftworksUserData {
+	optional .CMsgCraftworksComponents component_inventory = 1;
+}
+
+message CMsgClientToGCCraftworksGetUserData {
+	optional uint32 craftworks_id = 1;
+}
+
+message CMsgClientToGCCraftworksGetUserDataResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eInvalidCraftworks = 5;
+		k_eExpiredCraftworks = 6;
+	}
+
+	optional .CMsgClientToGCCraftworksGetUserDataResponse.EResponse response = 1 [default = k_eInternalError];
+	optional .CMsgCraftworksUserData user_data = 2;
+}
+
+message CMsgGCToClientCraftworksUserDataUpdated {
+	optional uint32 craftworks_id = 1;
+	optional .CMsgCraftworksUserData user_data = 2;
+}
+
+message CMsgClientToGCCraftworksCraftRecipe {
+	optional uint32 craftworks_id = 1;
+	optional uint64 recipe_id = 2;
+}
+
+message CMsgClientToGCCraftworksCraftRecipeResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eInvalidCraftworks = 5;
+		k_eExpiredCraftworks = 6;
+		k_eNotEnoughComponents = 7;
+		k_eInvalidRecipe = 8;
+		k_eRecipeTierLocked = 9;
+		k_eAlreadyCraftedMaxAmount = 10;
+	}
+
+	optional .CMsgClientToGCCraftworksCraftRecipeResponse.EResponse response = 1 [default = k_eInternalError];
+	optional .CMsgDOTAClaimEventActionResponse claim_response = 2;
+}
+
+message CMsgClientToGCCraftworksDevModifyComponents {
+	enum EOperation {
+		k_eAddComponents = 1;
+		k_eSubtractComponents = 2;
+	}
+
+	optional uint32 craftworks_id = 1;
+	optional .CMsgCraftworksComponents components = 2;
+	optional .CMsgClientToGCCraftworksDevModifyComponents.EOperation operation = 3 [default = k_eAddComponents];
+}
+
+message CMsgClientToGCCraftworksDevModifyComponentsResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eInvalidCraftworks = 5;
+		k_eNotAllowed = 6;
+	}
+
+	optional .CMsgClientToGCCraftworksDevModifyComponentsResponse.EResponse response = 1 [default = k_eInternalError];
+}

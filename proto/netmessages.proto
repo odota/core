@@ -95,6 +95,7 @@ enum Bidirectional_Messages {
 	bi_RebroadcastGameEvent = 16;
 	bi_RebroadcastSource = 17;
 	bi_GameEvent = 18;
+	bi_PredictionEvent = 19;
 }
 
 enum Bidirectional_Messages_LowFrequency {
@@ -212,6 +213,7 @@ message CMsgSource2SystemSpecs {
 message CMsgSource2VProfLiteReportItem {
 	optional string name = 1;
 	optional uint32 active_samples = 2;
+	optional uint32 active_samples_1secmax = 4;
 	optional uint32 usec_max = 3;
 	optional uint32 usec_avg_active = 11;
 	optional uint32 usec_p50_active = 12;
@@ -219,12 +221,52 @@ message CMsgSource2VProfLiteReportItem {
 	optional uint32 usec_avg_all = 21;
 	optional uint32 usec_p50_all = 22;
 	optional uint32 usec_p99_all = 23;
+	optional uint32 usec_1secmax_avg_active = 31;
+	optional uint32 usec_1secmax_p50_active = 32;
+	optional uint32 usec_1secmax_p95_active = 33;
+	optional uint32 usec_1secmax_p99_active = 34;
+	optional uint32 usec_1secmax_avg_all = 41;
+	optional uint32 usec_1secmax_p50_all = 42;
+	optional uint32 usec_1secmax_p95_all = 43;
+	optional uint32 usec_1secmax_p99_all = 44;
 }
 
 message CMsgSource2VProfLiteReport {
 	optional .CMsgSource2VProfLiteReportItem total = 1;
 	repeated .CMsgSource2VProfLiteReportItem items = 2;
 	optional uint32 discarded_frames = 3;
+}
+
+message CMsgSource2NetworkFlowQuality {
+	optional uint32 duration = 1;
+	optional uint64 bytes_total = 5;
+	optional uint64 bytes_total_reliable = 6;
+	optional uint64 bytes_total_voice = 7;
+	optional uint32 bytes_sec_p95 = 10;
+	optional uint32 bytes_sec_p99 = 11;
+	optional uint32 enginemsgs_total = 20;
+	optional uint32 enginemsgs_sec_p95 = 21;
+	optional uint32 enginemsgs_sec_p99 = 22;
+	optional uint32 ticks_total = 40;
+	optional uint32 ticks_good = 41;
+	optional uint32 ticks_good_almost_late = 42;
+	optional uint32 ticks_fixed_dropped = 43;
+	optional uint32 ticks_fixed_late = 44;
+	optional uint32 ticks_bad_dropped = 45;
+	optional uint32 ticks_bad_late = 46;
+	optional uint32 ticks_bad_other = 47;
+	optional uint32 tick_missrate_samples_total = 50;
+	optional uint32 tick_missrate_samples_perfect = 51;
+	optional uint32 tick_missrate_samples_perfectnet = 52;
+	optional uint32 tick_missratenet_p75_x10 = 53;
+	optional uint32 tick_missratenet_p95_x10 = 54;
+	optional uint32 tick_missratenet_p99_x10 = 55;
+	optional sint32 recvmargin_p1 = 61;
+	optional sint32 recvmargin_p5 = 62;
+	optional sint32 recvmargin_p25 = 63;
+	optional sint32 recvmargin_p50 = 64;
+	optional sint32 recvmargin_p75 = 65;
+	optional sint32 recvmargin_p95 = 66;
 }
 
 message CCLCMsg_Diagnostic {
@@ -571,6 +613,18 @@ message CBidirMsg_RebroadcastGameEvent {
 
 message CBidirMsg_RebroadcastSource {
 	optional int32 eventsource = 1;
+}
+
+message CBidirMsg_PredictionEvent {
+	enum ESyncType {
+		ST_Tick = 0;
+		ST_UserCmdNum = 1;
+	}
+
+	required uint32 event_id = 1;
+	required bytes event_data = 2;
+	optional uint32 sync_type = 3;
+	optional uint32 sync_val_uint32 = 4;
 }
 
 message CMsgServerNetworkStats {

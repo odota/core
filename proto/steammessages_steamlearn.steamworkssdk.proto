@@ -66,6 +66,11 @@ enum ESteamLearnInferenceResult {
 	STEAMLEARN_INFERENCE_ERROR_INVALID_PUBLISHED_VERSION = 7;
 	STEAMLEARN_INFERENCE_ERROR_NO_FETCH_ID_FOUND = 8;
 	STEAMLEARN_INFERENCE_ERROR_TOO_BUSY = 9;
+	STEAMLEARN_INFERENCE_ERROR_UNSUPPLIED_DATA_FAIL = 10;
+	STEAMLEARN_INFERENCE_ERROR_UNSUPPLIED_DATA_NO_KEYS = 11;
+	STEAMLEARN_INFERENCE_DISABLED = 12;
+	STEAMLEARN_INFERENCE_ERROR_NO_OUTPUT = 13;
+	STEAMLEARN_INFERENCE_ERROR_INVALID_NAMED_INFERENCE = 14;
 }
 
 enum ESteamLearnInferenceMetadataResult {
@@ -198,6 +203,22 @@ message CMsgSteamLearn_GetAccessTokens_Response {
 	optional .CMsgSteamLearnAccessTokens access_tokens = 2;
 }
 
+message CMsgInferenceIterateBeamSearch {
+	message CustomItemScalar {
+		optional uint32 item = 1;
+		optional float scale = 2;
+	}
+
+	optional uint32 beam_length = 1;
+	optional uint32 beam_width = 2;
+	optional float item_decay = 3;
+	optional uint32 next_item_count = 4;
+	repeated .CMsgInferenceIterateBeamSearch.CustomItemScalar item_scalars = 5;
+	optional uint32 item_sequence_end = 7;
+	optional float item_sequence_end_threshold = 8;
+	optional float repeat_multiplier = 9;
+}
+
 message CMsgSteamLearn_Inference_Request {
 	optional string access_token = 1;
 	optional uint32 project_id = 3;
@@ -205,6 +226,10 @@ message CMsgSteamLearn_Inference_Request {
 	optional uint32 override_train_id = 5;
 	optional .CMsgSteamLearnDataList data = 6;
 	repeated float additional_data = 7;
+	repeated uint64 keys = 8;
+	optional string named_inference = 9;
+	optional .CMsgInferenceIterateBeamSearch iterate_beam_search = 13;
+	optional uint32 debug_spew = 14;
 }
 
 message CMsgSteamLearn_InferenceMetadata_Request {
@@ -335,7 +360,11 @@ message CMsgSteamLearn_InferenceBackend_Response {
 	}
 
 	message RegressionOutput {
-		optional float value = 1;
+		optional float value = 2;
+	}
+
+	message NamedInferenceOutput {
+		repeated float value = 3;
 	}
 
 	message BinaryCrossEntropyOutput {
@@ -360,6 +389,7 @@ message CMsgSteamLearn_InferenceBackend_Response {
 			.CMsgSteamLearn_InferenceBackend_Response.CategoricalCrossEntropyOutput categorical_crossentropy = 2;
 			.CMsgSteamLearn_InferenceBackend_Response.MutliBinaryCrossEntropyOutput multi_binary_crossentropy = 3;
 			.CMsgSteamLearn_InferenceBackend_Response.RegressionOutput regression = 4;
+			.CMsgSteamLearn_InferenceBackend_Response.NamedInferenceOutput named_inference = 5;
 		}
 	}
 

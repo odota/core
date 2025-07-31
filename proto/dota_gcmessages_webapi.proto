@@ -32,6 +32,8 @@ enum ETalentContentStatus {
 	TALENT_CONTENT_STATUS_INVALID = 0;
 	TALENT_CONTENT_STATUS_PENDING = 1;
 	TALENT_CONTENT_STATUS_EVALUATED = 2;
+	TALENT_CONTENT_STATUS_REJECTED = 3;
+	TALENT_CONTENT_STATUS_APPROVED = 4;
 }
 
 enum ETalentContentAssetType {
@@ -223,6 +225,7 @@ message CMsgTalentContentStatus {
 		optional .ETalentContentStatus status = 6 [default = TALENT_CONTENT_STATUS_INVALID];
 		repeated .CMsgTalentContentAssetStatus asset_status = 7;
 		optional uint32 broadcast_language = 8;
+		optional uint32 submission_timestamp = 9;
 	}
 
 	repeated .CMsgTalentContentStatus.TalentDetails talent_status = 1;
@@ -232,6 +235,7 @@ message CMsgSetTalentContentResponse {
 	enum EResult {
 		k_eSuccess = 0;
 		k_eInternalError = 1;
+		k_eOutOfDate = 2;
 	}
 
 	optional .CMsgSetTalentContentResponse.EResult result = 1 [default = k_eSuccess];
@@ -274,6 +278,7 @@ message CMsgDPCEvent {
 		SUMMER_2023_MAJOR = 20;
 		INTERNATIONAL_2023 = 21;
 		INTERNATIONAL_2024 = 23;
+		INTERNATIONAL_2025 = 24;
 	}
 
 	enum ELeagueEventPhase {

@@ -12,11 +12,14 @@ message CSubtickMoveStep {
 	optional float when = 3;
 	optional float analog_forward_delta = 4;
 	optional float analog_left_delta = 5;
+	optional float analog_pitch_delta = 6;
+	optional float analog_yaw_delta = 7;
 }
 
 message CBaseUserCmdPB {
 	optional int32 legacy_command_number = 1;
 	optional int32 client_tick = 2;
+	optional uint32 prediction_offset_ticks_x256 = 17;
 	optional .CInButtonStatePB buttons_pb = 3;
 	optional .CMsgQAngle viewangles = 4;
 	optional float forwardmove = 5;

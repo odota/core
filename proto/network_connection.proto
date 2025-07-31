@@ -126,4 +126,5 @@ enum ENetworkDisconnectionReason {
 	NETWORK_DISCONNECT_KICKED_NOSTEAMTICKET = 161 [(network_connection_token) = "#Player_DisconnectReason_NoSteamTicket"];
 	NETWORK_DISCONNECT_KICKED_INPUTAUTOMATION = 162 [(network_connection_token) = "#Player_DisconnectReason_InputAutomation", (network_connection_detail_token) = "#Player_DisconnectReason_InputAutomation_Detail"];
 	NETWORK_DISCONNECT_KICKED_VACNETABNORMALBEHAVIOR = 163 [(network_connection_token) = "#Player_DisconnectReason_VacNetAbnormalBehavior"];
+	NETWORK_DISCONNECT_KICKED_INSECURECLIENT = 164 [(network_connection_token) = "#Player_DisconnectReason_InsecureClient"];
 }

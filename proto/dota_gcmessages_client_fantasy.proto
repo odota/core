@@ -115,6 +115,11 @@ message CMsgDOTAPlayerInfo {
 		optional string team_url_logo = 6;
 	}
 
+	message ProRegistration {
+		optional uint32 registration_period = 1;
+		optional uint32 timestamp = 2;
+	}
+
 	optional uint32 account_id = 1;
 	optional string name = 2;
 	optional string country_code = 3;
@@ -123,14 +128,14 @@ message CMsgDOTAPlayerInfo {
 	optional string team_name = 6;
 	optional string team_tag = 7;
 	optional string sponsor = 8;
-	optional bool is_locked = 9;
-	optional bool is_pro = 10;
 	optional string real_name = 11;
 	optional uint32 total_earnings = 13;
 	repeated .CMsgDOTAPlayerInfo.Results results = 14;
 	optional string team_url_logo = 15;
 	repeated .CMsgDOTAPlayerInfo.AuditEntry audit_entries = 16;
 	optional string team_abbreviation = 17;
+	repeated .CMsgDOTAPlayerInfo.ProRegistration pro_registration = 18;
+	optional bool has_played_in_international = 19;
 }
 
 message CMsgDOTAPlayerInfoList {

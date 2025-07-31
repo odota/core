@@ -484,6 +484,8 @@ message CMvpData {
 				kKillEaterEventType_Kez_RavensVeilKills = 283;
 				kKillEaterEventType_Kez_RaptorDanceHealing = 284;
 				kKillEaterEventType_Kez_KillsDuringFalconRush = 285;
+				kKillEaterEventType_Seasonal_PartyHatsStolen = 286;
+				kKillEaterEventType_Seasonal_TallestHat = 287;
 			}
 
 			optional .CMvpData.MvpDatum.MvpAccolade.MvpAccoladeType type = 1 [default = kills];
@@ -495,4 +497,5 @@ message CMvpData {
 	}
 
 	repeated .CMvpData.MvpDatum mvps = 1;
+	repeated .CMvpData.MvpDatum event_mvps = 2;
 }

@@ -112,6 +112,7 @@ enum EEvent {
 	EVENT_ID_CROWNFALL = 47;
 	EVENT_ID_FROSTIVUS_2023 = 48;
 	EVENT_ID_INTERNATIONAL_2024 = 49;
+	EVENT_ID_FROSTIVUS_2024 = 50;
 }
 
 enum ERankType {
@@ -173,7 +174,7 @@ enum Fantasy_Scoring {
 	FANTASY_SCORING_FIRST_BLOOD = 10;
 	FANTASY_SCORING_STUNS = 11;
 	FANTASY_SCORING_SMOKES_USED = 12;
-	FANTASY_SCORING_NEUTRAL_TOKENS_FOUND = 13;
+	FANTASY_SCORING_MADSTONE = 13;
 	FANTASY_SCORING_WATCHERS_TAKEN = 14;
 	FANTASY_SCORING_LOTUSES_GAINED = 15;
 	FANTASY_SCORING_TORMENTOR_KILLS = 16;
@@ -653,6 +654,7 @@ enum DOTA_COMBATLOG_TYPES {
 	DOTA_COMBATLOG_UNIT_TELEPORTED = 41;
 	DOTA_COMBATLOG_KILL_EATER_EVENT = 42;
 	DOTA_COMBATLOG_NEUTRAL_ITEM_EARNED = 43;
+	DOTA_COMBATLOG_STAT_TRACKER_PLAYER = 44;
 }
 
 enum EDPCFavoriteType {
@@ -710,6 +712,14 @@ enum EItemSuggestPreference {
 	k_EItemSuggestPreference_None = 0;
 	k_EItemSuggestPreference_Liked = 1;
 	k_EItemSuggestPreference_Disliked = 2;
+}
+
+enum ETimerAlertType {
+	k_TimerAlertType_PowerRune = 1;
+	k_TimerAlertType_BountyRune = 2;
+	k_TimerAlertType_WisdomShrine = 3;
+	k_TimerAlertType_JungleCamps = 4;
+	k_TimerAlertType_LotusPool = 5;
 }
 
 message CDOTAClientHardwareSpecs {
@@ -829,6 +839,7 @@ message CMsgDOTACombatLogEntry {
 	optional float regenerated_health = 77;
 	optional bool will_reincarnate = 78;
 	optional bool uses_charges = 79;
+	optional uint32 tracked_stat_id = 80;
 }
 
 message CMsgPendingEventAward {

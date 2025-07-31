@@ -763,11 +763,14 @@ message CMsgGCNotificationsMarkReadRequest {
 }
 
 message CMsgGCPlayerInfoSubmit {
-	optional string name = 1;
+	optional string player_name = 1;
 	optional string country_code = 2;
 	optional uint32 fantasy_role = 3;
 	optional uint32 team_id = 4;
 	optional string sponsor = 5;
+	optional bool accepted_pro_agreement = 6;
+	optional uint32 registration_period = 7;
+	optional string real_name = 8;
 }
 
 message CMsgGCPlayerInfoSubmitResponse {
@@ -1075,8 +1078,16 @@ message CMsgGCGetHeroStatsHistory {
 }
 
 message CMsgGCGetHeroStatsHistoryResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+	}
+
 	optional int32 hero_id = 1;
 	repeated .CMsgDOTASDOHeroStatsHistory records = 2;
+	optional .CMsgGCGetHeroStatsHistoryResponse.EResponse result = 3 [default = k_eInternalError];
 }
 
 message CMsgPlayerConductScorecardRequest {
@@ -3332,4 +3343,17 @@ message CMsgClientToGCUpdateComicBookStats {
 	optional uint32 comic_id = 1;
 	repeated .CMsgClientToGCUpdateComicBookStats.SingleStat stats = 2;
 	optional .CMsgClientToGCUpdateComicBookStats.LanguageStats language_stats = 3;
+}
+
+message CMsgGCRankedPlayerInfoSubmit {
+	optional string name = 1;
+}
+
+message CMsgGCRankedPlayerInfoSubmitResponse {
+	enum EResult {
+		SUCCESS = 0;
+		ERROR_UNSPECIFIED = 1;
+	}
+
+	optional .CMsgGCRankedPlayerInfoSubmitResponse.EResult result = 1 [default = SUCCESS];
 }

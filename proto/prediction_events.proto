@@ -1,0 +1,24 @@
+import "networkbasetypes.proto";
+
+enum EBasePredictionEvents {
+	BPE_StringCommand = 128;
+	BPE_Teleport = 130;
+	BPE_Diagnostic = 16384;
+}
+
+message CPredictionEvent_Teleport {
+	optional .CMsgVector origin = 1;
+	optional .CMsgQAngle angles = 2;
+	optional float drop_to_ground_range = 3;
+}
+
+message CPredictionEvent_StringCommand {
+	optional string command = 1;
+}
+
+message CPredictionEvent_Diagnostic {
+	optional uint32 id = 1;
+	optional uint32 requested_sync = 2;
+	optional uint32 requested_player_index = 3;
+	repeated uint32 execution_sync = 4;
+}
