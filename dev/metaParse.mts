@@ -1,5 +1,5 @@
 import fs from 'fs';
-const { getMetaFromUrl } = await import('../fetcher/getMeta.js');
+const { getMetaFromUrl } = await import('../svc/fetcher/getMeta.js');
 
 const message = await getMetaFromUrl(
   'http://replay117.valve.net/570/7468445438_1951738768.meta.bz2',

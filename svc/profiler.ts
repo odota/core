@@ -1,12 +1,12 @@
 // Updates Steam profile data for players periodically
-import { upsertPlayer, bulkIndexPlayer } from '../util/insert';
-import db from '../store/db';
+import { upsertPlayer, bulkIndexPlayer } from './util/insert';
+import db from './store/db';
 import {
   getSteamAPIData,
   SteamAPIUrls,
   convert64to32,
   invokeIntervalAsync,
-} from '../util/utility';
+} from './util/utility';
 
 async function doProfiler() {
   // To optimize the api call we need to do 100 players at a time

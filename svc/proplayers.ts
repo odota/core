@@ -1,8 +1,8 @@
 // Updates the list of pro players in the database
 import axios from 'axios';
-import db from '../store/db';
-import { upsert } from '../util/insert';
-import { invokeIntervalAsync } from '../util/utility';
+import db from './store/db';
+import { upsert } from './util/insert';
+import { invokeIntervalAsync } from './util/utility';
 
 async function doProPlayers() {
   const url = 'http://www.dota2.com/webapi/IDOTA2Fantasy/GetProPlayerInfo/v001';

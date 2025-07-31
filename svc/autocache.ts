@@ -1,7 +1,7 @@
 // Processes a queue of auto player cache requests
-import { populateTemp } from '../util/buildPlayer';
-import { runQueue } from '../store/queue';
-import { redisCount, redisCountDistinct } from '../util/utility';
+import { populateTemp } from './util/buildPlayer';
+import { runQueue } from './store/queue';
+import { redisCount, redisCountDistinct } from './util/utility';
 
 async function processCache(job: CacheJob) {
   const accountId = job;

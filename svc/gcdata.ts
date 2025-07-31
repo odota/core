@@ -1,10 +1,10 @@
 // Processes a queue of requests for gcdata (replay salts) without parsing
 // The parser will also request gcdata if needed
-import { runQueue } from '../store/queue';
+import { runQueue } from './store/queue';
 import config from '../config';
-import { apiFetcher } from '../fetcher/getApiData';
-import { gcFetcher } from '../fetcher/getGcData';
-import { getPGroup } from '../util/pgroup';
+import { apiFetcher } from './fetcher/getApiData';
+import { gcFetcher } from './fetcher/getGcData';
+import { getPGroup } from './util/pgroup';
 
 
 async function processGcData(job: GcDataJob) {

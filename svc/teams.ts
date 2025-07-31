@@ -1,12 +1,12 @@
 // Updates the list of teams in the database
 import axios from 'axios';
-import db from '../store/db';
-import { upsert } from '../util/insert';
+import db from './store/db';
+import { upsert } from './util/insert';
 import {
   SteamAPIUrls,
   getSteamAPIData,
   invokeIntervalAsync,
-} from '../util/utility';
+} from './util/utility';
 
 async function doTeams() {
   const result = await db.raw(

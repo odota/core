@@ -1,4 +1,4 @@
-import config from "../config";
+import config from "../../config";
 import cassandra, { getCassandraColumns } from "../store/cassandra";
 import { computeMatchData } from "./compute";
 import type { InsertMatchInput } from "./types";

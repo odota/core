@@ -1,8 +1,8 @@
 // Builds sets of data, e.g. tracked players in the background
 import moment from 'moment';
-import redis from '../store/redis';
-import db from '../store/db';
-import { invokeIntervalAsync } from '../util/utility';
+import redis from './store/redis';
+import db from './store/db';
+import { invokeIntervalAsync } from './util/utility';
 import contributors from '../CONTRIBUTORS';
 import config from '../config';
 

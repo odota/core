@@ -1,5 +1,5 @@
 import { items as itemsConstants } from 'dotaconstants';
-import config from '../config';
+import config from '../../config';
 import { teamScenariosQueryParams, metadata } from './scenariosUtil';
 import db from '../store/db';
 import redis from '../store/redis';

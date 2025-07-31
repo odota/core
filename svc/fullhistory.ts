@@ -5,12 +5,12 @@ import {
   redisCount,
   getSteamAPIData,
   SteamAPIUrls,
-} from '../util/utility';
-import db from '../store/db';
-import { runQueue } from '../store/queue';
-import { getPlayerMatches } from '../util/buildPlayer';
-import type { ApiMatch } from '../util/types';
-import redis from '../store/redis';
+} from './util/utility';
+import db from './store/db';
+import { runQueue } from './store/queue';
+import { getPlayerMatches } from './util/buildPlayer';
+import type { ApiMatch } from './util/types';
+import redis from './store/redis';
 
 async function updatePlayer(player: FullHistoryJob) {
   // done with this player, update

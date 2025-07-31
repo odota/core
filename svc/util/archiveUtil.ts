@@ -1,4 +1,4 @@
-import config from '../config';
+import config from '../../config';
 import { matchArchive, playerArchive } from '../store/archive';
 import QueryStream from 'pg-query-stream';
 import { Client } from 'pg';

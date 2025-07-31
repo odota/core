@@ -1,11 +1,11 @@
 import util from 'util';
-import config from '../config';
+import config from '../../config';
 import { filterMatches } from './filter';
 import redis from '../store/redis';
 import cassandra, { getCassandraColumns } from '../store/cassandra';
 import { deserialize, pick, redisCount, redisCountDistinct } from './utility';
 import { gzipSync, gunzipSync } from 'zlib';
-import { cacheableCols } from '../routes/playerFields';
+import { cacheableCols } from '../api/playerFields';
 import { promises as fs } from 'fs';
 import { playerArchive } from '../store/archive';
 

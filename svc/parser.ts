@@ -6,14 +6,14 @@
  * This object is passed to insertMatch to persist the data into the database.
  * */
 import config from '../config';
-import { runReliableQueue } from '../store/queue';
+import { runReliableQueue } from './store/queue';
 import c from 'ansi-colors';
-import { buildReplayUrl, redisCount } from '../util/utility';
-import redis from '../store/redis';
-import { apiFetcher } from '../fetcher/getApiData';
-import { parsedFetcher } from '../fetcher/getParsedData';
-import { gcFetcher } from '../fetcher/getGcData';
-import { getPGroup } from '../util/pgroup';
+import { buildReplayUrl, redisCount } from './util/utility';
+import redis from './store/redis';
+import { apiFetcher } from './fetcher/getApiData';
+import { parsedFetcher } from './fetcher/getParsedData';
+import { gcFetcher } from './fetcher/getGcData';
+import { getPGroup } from './util/pgroup';
 import moment from 'moment';
 
 const { PARSER_PARALLELISM } = config;

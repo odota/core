@@ -2,7 +2,7 @@ import moment from 'moment';
 import { patch } from 'dotaconstants';
 import util from 'node:util';
 import { promises as fs } from 'fs';
-import config from '../config';
+import config from '../../config';
 import { addJob, addReliableJob } from '../store/queue';
 import db, { getPostgresColumns } from '../store/db';
 import redis from '../store/redis';

@@ -1,5 +1,5 @@
-const { db } = await import('../store/db.js');
-const { upsert } = await import('../util/insert.js');
+const { db } = await import('../svc/store/db.js');
+const { upsert } = await import('../svc/util/insert.js');
 
 const matches = await db
   .select(['radiant_team_id', 'dire_team_id', 'match_id'])

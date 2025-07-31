@@ -1,7 +1,7 @@
 /**
  * Computes team Elo ratings by game
  * */
-import db from '../store/db';
+import db from '../svc/store/db';
 
 // Keep each team's rating in memory and update
 const teams: any = {};

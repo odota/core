@@ -2,7 +2,7 @@ import moment from 'moment';
 import redis from './redis';
 import db from './db';
 import { Redis } from 'ioredis';
-import config from '../config';
+import config from '../../config';
 import { Client } from 'pg';
 import c from 'ansi-colors';
 

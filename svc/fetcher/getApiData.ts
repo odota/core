@@ -1,6 +1,5 @@
 import { SteamAPIUrls, getSteamAPIData, redisCount } from '../util/utility';
 import { blobArchive } from '../store/archive';
-import cassandra from '../store/cassandra';
 import type { ApiMatch } from '../util/types';
 import { MatchFetcher } from './base';
 import { insertMatch } from '../util/insert';

@@ -1,4 +1,4 @@
-import db from '../store/db';
+import db from '../svc/store/db';
 import moment from 'moment';
 
 async function start() {

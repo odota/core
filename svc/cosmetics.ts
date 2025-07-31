@@ -1,8 +1,8 @@
 // Updates game cosmetic items in the database
 import vdfparser from 'vdf-parser';
-import db from '../store/db';
-import { upsert } from '../util/insert';
-import { invokeIntervalAsync } from '../util/utility';
+import db from './store/db';
+import { upsert } from './util/insert';
+import { invokeIntervalAsync } from './util/utility';
 import axios from 'axios';
 
 async function doCosmetics() {

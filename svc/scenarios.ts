@@ -1,10 +1,10 @@
 // Processes a queue of jobs to collect stats on specific scenario data
 import util from 'util';
-import { buildMatch } from '../util/buildMatch';
-import db from '../store/db';
-import { scenarioChecks, validateMatchProperties } from '../util/scenariosUtil';
-import { epochWeek } from '../util/utility';
-import { runQueue } from '../store/queue';
+import { buildMatch } from './util/buildMatch';
+import db from './store/db';
+import { scenarioChecks, validateMatchProperties } from './util/scenariosUtil';
+import { epochWeek } from './util/utility';
+import { runQueue } from './store/queue';
 
 type ScenariosKey = keyof typeof scenarioChecks;
 

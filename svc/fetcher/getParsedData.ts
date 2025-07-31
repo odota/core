@@ -1,4 +1,4 @@
-import config from '../config';
+import config from '../../config';
 import { getRandomParserUrl, redisCount } from '../util/utility';
 import { blobArchive } from '../store/archive';
 import db from '../store/db';

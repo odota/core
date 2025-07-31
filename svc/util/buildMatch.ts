@@ -1,5 +1,5 @@
 import { heroes } from 'dotaconstants';
-import config from '../config';
+import config from '../../config';
 import { computeMatchData } from './compute';
 import {
   buildReplayUrl,

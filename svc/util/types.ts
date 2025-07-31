@@ -1,5 +1,5 @@
-import type apiMatch from '../test/data/details_api.json';
-import type apiMatchPro from '../test/data/details_api_pro.json';
+import type apiMatch from '../../test/data/details_api.json';
+import type apiMatchPro from '../../test/data/details_api_pro.json';
 
 export type ApiMatch = (typeof apiMatch)['result'];
 export type ApiMatchPro = (typeof apiMatchPro)['result'];

@@ -1,10 +1,10 @@
 import moment from 'moment';
-import config from '../config';
+import config from '../../config';
 import db from '../store/db';
 import redis from '../store/redis';
 import { getRandomRetrieverUrl, redisCount } from '../util/utility';
 import axios from 'axios';
-import retrieverMatch from '../test/data/retriever_match.json';
+import retrieverMatch from '../../test/data/retriever_match.json';
 import { insertMatch, upsertPlayer } from '../util/insert';
 import { blobArchive } from '../store/archive';
 import { MatchFetcher } from './base';

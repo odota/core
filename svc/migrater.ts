@@ -1,6 +1,6 @@
 import config from '../config';
-import cassandra, { getCassandraColumns } from '../store/cassandra';
-import redis from '../store/redis';
+import cassandra, { getCassandraColumns } from './store/cassandra';
+import redis from './store/redis';
 import scyllaDriver from 'cassandra-driver';
 import url from 'url';
 

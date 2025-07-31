@@ -1,7 +1,7 @@
 import { patch } from 'dotaconstants';
-import db from '../store/db';
-import { upsert } from '../util/insert';
-import { getPatchIndex } from '../util/utility';
+import db from '../svc/store/db';
+import { upsert } from '../svc/util/insert';
+import { getPatchIndex } from '../svc/util/utility';
 
 async function start() {
   // No loop, just runs once when deployed

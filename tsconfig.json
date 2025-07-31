@@ -12,12 +12,7 @@
     "index.ts",
     "global.d.ts",
     "dev",
-    "processors",
-    "routes",
-    "store",
     "svc",
     "test",
-    "util",
-    "fetcher"
   ]
 }

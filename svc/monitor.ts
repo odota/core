@@ -1,9 +1,9 @@
 // Runs health checks periodically and writes result to Redis
 import axios from 'axios';
 import config from '../config';
-import redis from '../store/redis';
-import db from '../store/db';
-import cassandra from '../store/cassandra';
+import redis from './store/redis';
+import db from './store/db';
+import cassandra from './store/cassandra';
 const apiKey = config.STEAM_API_KEY.split(',')[0];
 
 const health = {

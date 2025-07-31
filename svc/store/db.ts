@@ -1,6 +1,6 @@
 import pg from 'pg';
 import knex from 'knex';
-import config from '../config';
+import config from '../../config';
 // remember: all values returned from the server are either NULL or a string
 pg.types.setTypeParser(20, (val) => (val === null ? null : parseInt(val, 10)));
 console.log('connecting %s', config.POSTGRES_URL);

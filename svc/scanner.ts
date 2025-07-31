@@ -1,15 +1,15 @@
 // Fetches new matches from the Steam API using the sequential endpoint
 import config from '../config';
-import redis from '../store/redis';
-import { insertMatch } from '../util/insert';
-import type { ApiMatch } from '../util/types';
+import redis from './store/redis';
+import { insertMatch } from './util/insert';
+import type { ApiMatch } from './util/types';
 import {
   SteamAPIUrls,
   getApiHosts,
   getSteamAPIData,
   redisCount,
-} from '../util/utility';
-import db from '../store/db';
+} from './util/utility';
+import db from './store/db';
 const API_KEYS = config.STEAM_API_KEY.split(',');
 const PAGE_SIZE = 100;
 // This endpoint is limited to something like 1 request every 5 seconds

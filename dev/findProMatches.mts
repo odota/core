@@ -1,6 +1,6 @@
-const { insertMatch } = await import('../util/insert.js');
-const { db } = await import('../store/db.js');
-const { getSteamAPIData, SteamAPIUrls } = await import('../util/utility.js');
+const { insertMatch } = await import('../svc/util/insert.js');
+const { db } = await import('../svc/store/db.js');
+const { getSteamAPIData, SteamAPIUrls } = await import('../svc/util/utility.js');
 
 async function getPage(url: string, leagueid: number) {
   const data: any = await getSteamAPIData({ url });

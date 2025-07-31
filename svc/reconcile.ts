@@ -4,11 +4,11 @@
  * This service reads the list of players' matches collected from fullhistory, gcdata, and parse steps.
  * It checks our own database and updates player_caches so these matches get associated with the player.
  */
-import db from "../store/db";
-import { getMatchDataFromBlobWithMetadata } from "../util/buildMatch";
-import { getPGroup } from "../util/pgroup";
-import { upsertPlayerCaches } from "../util/playerCaches";
-import type { HistoryType } from "../util/types";
+import db from "./store/db";
+import { getMatchDataFromBlobWithMetadata } from "./util/buildMatch";
+import { getPGroup } from "./util/pgroup";
+import { upsertPlayerCaches } from "./util/playerCaches";
+import type { HistoryType } from "./util/types";
 
 export async function reconcileMatch(rows: HistoryType[]) {
   // validate that all rows have the same match ID

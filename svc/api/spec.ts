@@ -2,7 +2,7 @@ import * as constants from 'dotaconstants';
 import { heroes as heroesConstants, cluster } from 'dotaconstants';
 import moment from 'moment';
 import pg from 'pg';
-import config from '../config';
+import config from '../../config';
 import { addJob, addReliableJob, getReliableJob } from '../store/queue';
 import { search } from '../store/search';
 import { searchES } from '../store/searchES';
@@ -33,7 +33,7 @@ import {
 } from './playerFields';
 import db from '../store/db';
 import redis from '../store/redis';
-import packageJson from '../package.json';
+import packageJson from '../../package.json';
 import generateOperationId from './generateOperationId';
 import {
   getDistributions,

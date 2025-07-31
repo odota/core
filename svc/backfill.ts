@@ -1,10 +1,10 @@
 // Fetches old matches from Steam API and writes to blob storage
 import config from '../config';
-import { blobArchive } from '../store/archive';
-import type { ApiMatch } from '../util/types';
-import { SteamAPIUrls, getSteamAPIData, transformMatch, getApiHosts } from '../util/utility';
+import { blobArchive } from './store/archive';
+import type { ApiMatch } from './util/types';
+import { SteamAPIUrls, getSteamAPIData, transformMatch, getApiHosts } from './util/utility';
 import fs from 'fs';
-import redis from '../store/redis';
+import redis from './store/redis';
 
 // following need to be set
 // STEAM_API_KEY

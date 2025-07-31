@@ -1,7 +1,7 @@
 // Loop through matches table
 // Fill in the cluster and replay_salt columns
 
-const { db } = await import('../store/db.js');
+const { db } = await import('../svc/store/db.js');
 
 const matches = (
   await db.raw(

@@ -1,7 +1,7 @@
 // Randomly requests history refreshes for users to fill in missing matches and update privacy setting
-import db from '../store/db';
-import { addJob } from '../store/queue';
-import { invokeIntervalAsync } from '../util/utility';
+import db from './store/db';
+import { addJob } from './store/queue';
+import { invokeIntervalAsync } from './util/utility';
 
 async function doAutoFullHistory() {
   const result = await db.raw(
