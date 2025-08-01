@@ -96,6 +96,10 @@ let arr = [
   {
     name: 'mmr',
     group: 'backend',
+    env: {
+      // Use the local retriever instance
+      USE_SERVICE_REGISTRY: '',
+    },
   },
   {
     name: 'profiler',
