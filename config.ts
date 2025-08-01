@@ -71,7 +71,6 @@ const defaults = {
   USE_SERVICE_REGISTRY: '', // Use the service registry for determining gc, parser, and proxy urls
   SCANNER_OFFSET: '0', // Delay in match seq num value to run secondary scanner (to pick up missing matches)
   EXTERNAL: '', // Indicates that the service resides outside the registry and should report an external IP
-  AUTO_PARSE_ACCOUNT_IDS: '', // Comma separated list of account IDs to automatically parse
   GOOGLE_CLOUD_PROJECT_ID: '', // Google Cloud project ID
 };
 if (process.env.NODE_ENV === 'development') {

@@ -4,7 +4,6 @@ import redis from './store/redis';
 import db from './store/db';
 import { invokeIntervalAsync } from './util/utility';
 import contributors from '../CONTRIBUTORS';
-import config from '../config';
 
 async function doBuildSets() {
   const subs = await db
@@ -13,14 +12,12 @@ async function doBuildSets() {
     .where('status', '=', 'active');
   const subIds = subs.map((sub) => sub.account_id);
   const contribs = Object.keys(contributors);
-  const autos = config.AUTO_PARSE_ACCOUNT_IDS.split(',');
   console.log(
     '[BUILDSETS] %s subscribers, %s contributors, %s auto',
     subIds.length,
     contribs.length,
-    autos.length,
   );
-  const tracked: string[] = [...subIds, ...contribs, ...autos];
+  const tracked: string[] = [...subIds, ...contribs];
   const command = redis.multi();
   command.del('tracked');
   // Refresh tracked players with expire date in the future
