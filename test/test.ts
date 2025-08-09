@@ -683,6 +683,12 @@ describe(c.blue('[TEST] api limits'), () => {
     await makeWhitelistedRequests('');
   });
 
+  it('should return user error when using invalid key', async function() {
+    const invalidKey = 'not_a_key';
+    const invResp = await supertest(app).get('/api/matches/1781962623?api_key=' + invalidKey);
+    assert.equal(invResp.statusCode, 400);
+  });
+
   it('should be able to make more than 5 calls when using API key', async function testAPIKeyLimitsAndCounting() {
     // Try whitelisted routes. Should not increment usage.
     await makeWhitelistedRequests('?api_key=' + testKey);
