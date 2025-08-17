@@ -237,7 +237,11 @@ keys
       const sub = await stripe.subscriptions.create({
         customer: customer_id,
         items: [{ plan: stripeAPIPlan }],
-        billing_cycle_anchor: moment.utc().add(1, 'month').startOf('month').unix(),
+        billing_cycle_anchor: moment
+          .utc()
+          .add(1, 'month')
+          .startOf('month')
+          .unix(),
         metadata: {
           apiKey,
         },

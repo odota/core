@@ -501,7 +501,12 @@ app.use(async (req, res, next) => {
       (req.headers.authorization &&
         req.headers.authorization.replace('Bearer ', '')) ||
       (req.query.api_key as string);
-    if (apiKey && !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(apiKey)) {
+    if (
+      apiKey &&
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+        apiKey,
+      )
+    ) {
       return res.status(400).json({ error: 'Invalid API key format' });
     }
     if (config.ENABLE_API_LIMIT && apiKey) {

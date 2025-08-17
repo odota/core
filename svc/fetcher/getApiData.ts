@@ -9,9 +9,7 @@ import { insertMatch } from '../util/insert';
  * @param matchId
  * @returns
  */
-async function readApiData(
-  matchId: number,
-): Promise<ApiMatch | null> {
+async function readApiData(matchId: number): Promise<ApiMatch | null> {
   let data = null;
   const archive = await blobArchive.archiveGet(`${matchId}_api`);
   if (archive) {
@@ -81,4 +79,3 @@ class ApiFetcher extends MatchFetcher<ApiMatch> {
 }
 
 export const apiFetcher = new ApiFetcher();
-

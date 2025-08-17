@@ -37,7 +37,13 @@ let apiKey = config.STEAM_API_KEY.split(',')[0];
 export const SteamAPIUrls = {
   api_details: (payload: { match_id: string | number }) =>
     `${apiUrl}/IDOTA2Match_570/GetMatchDetails/V001/?key=${apiKey}&match_id=${payload.match_id}`,
-  api_history: (payload: { account_id?: number, matches_requested?: number, hero_id?: number, leagueid?: number, start_at_match_id?: number }) =>
+  api_history: (payload: {
+    account_id?: number;
+    matches_requested?: number;
+    hero_id?: number;
+    leagueid?: number;
+    start_at_match_id?: number;
+  }) =>
     `${apiUrl}/IDOTA2Match_570/GetMatchHistory/V001/?key=${apiKey}${
       payload.account_id ? `&account_id=${payload.account_id}` : ''
     }${
@@ -51,32 +57,33 @@ export const SteamAPIUrls = {
         ? `&start_at_match_id=${payload.start_at_match_id}`
         : ''
     }`,
-  api_summaries: (payload: { players: Player[] }) => 
+  api_summaries: (payload: { players: Player[] }) =>
     `${apiUrl}/ISteamUser/GetPlayerSummaries/v0002/?key=${apiKey}&steamids=${payload.players
-    .map((p: Player) => convert32to64(String(p.account_id)))
-    .join()}`,
+      .map((p: Player) => convert32to64(String(p.account_id)))
+      .join()}`,
   api_sequence: (payload: { start_at_match_seq_num: number }) =>
     `${apiUrl}/IDOTA2Match_570/GetMatchHistoryBySequenceNum/V001/?key=${apiKey}&start_at_match_seq_num=${payload.start_at_match_seq_num}`,
-  api_heroes: (payload: { language: string }) => 
+  api_heroes: (payload: { language: string }) =>
     `${apiUrl}/IEconDOTA2_570/GetHeroes/v0001/?key=${apiKey}&language=${payload.language}`,
-  api_items: (payload: { language: string}) =>
+  api_items: (payload: { language: string }) =>
     `https://www.dota2.com/datafeed/itemlist?language=${payload.language}`,
   api_live: () =>
     `${apiUrl}/IDOTA2Match_570/GetLiveLeagueGames/v0001/?key=${apiKey}`,
   api_teams: (payload: { team_id: number }) =>
     `${apiUrl}/IDOTA2Teams_570/GetTeamInfo/v1/?key=${apiKey}&team_id=${payload.team_id}`,
-  api_item_schema: () => `${apiUrl}/IEconItems_570/GetSchemaURL/v1?key=${apiKey}`,
+  api_item_schema: () =>
+    `${apiUrl}/IEconItems_570/GetSchemaURL/v1?key=${apiKey}`,
   api_top_live_game: () =>
     `${apiUrl}/IDOTA2Match_570/GetTopLiveGame/v1/?key=${apiKey}&partner=${
-        Math.random() < 0.5 ? '1' : '2'
+      Math.random() < 0.5 ? '1' : '2'
     }`,
-  api_realtime_stats: (payload: { server_steam_id: string }) => 
-  `${apiUrl}/IDOTA2MatchStats_570/GetRealtimeStats/v1?key=${apiKey}&server_steam_id=${payload.server_steam_id}`,
+  api_realtime_stats: (payload: { server_steam_id: string }) =>
+    `${apiUrl}/IDOTA2MatchStats_570/GetRealtimeStats/v1?key=${apiKey}&server_steam_id=${payload.server_steam_id}`,
   api_team_info_by_team_id: (payload: { start_at_team_id: number }) =>
     `${apiUrl}/IDOTA2Match_570/GetTeamInfoByTeamID/v1?key=${apiKey}&start_at_team_id=${payload.start_at_team_id}&teams_requested=1`,
-  api_get_ugc_file_details: (payload: { ugcid: string | undefined }) => 
+  api_get_ugc_file_details: (payload: { ugcid: string | undefined }) =>
     `${apiUrl}/ISteamRemoteStorage/GetUGCFileDetails/v1/?key=${apiKey}&appid=570&ugcid=${payload.ugcid}`,
-}
+};
 
 /**
  * A wrapper around HTTP requests that handles:
@@ -358,8 +365,10 @@ export function averageMedal(values: number[]) {
   const numStars = values.map(
     (value) => Number(String(value)[0]) * 5 + (value % 10) - 1,
   );
-  const avgStars = Math.round(numStars.reduce((a, b) => a + b, 0) / numStars.length);
-  return Math.floor(avgStars / 5) * 10 + avgStars % 5 + 1;
+  const avgStars = Math.round(
+    numStars.reduce((a, b) => a + b, 0) / numStars.length,
+  );
+  return Math.floor(avgStars / 5) * 10 + (avgStars % 5) + 1;
 }
 /**
  * Finds the standard deviation of the input array
@@ -787,7 +796,10 @@ export async function redisCount(prefix: MetricName, incrBy = 1) {
   }
   const key = `${prefix}:v2:${moment.utc().startOf('hour').format('X')}`;
   await redis.incrby(key, incrBy);
-  await redis.expireat(key, moment.utc().startOf('hour').add(1, 'day').format('X'));
+  await redis.expireat(
+    key,
+    moment.utc().startOf('hour').add(1, 'day').format('X'),
+  );
 }
 
 export async function redisCountDistinct(prefix: MetricName, value: string) {
@@ -796,7 +808,10 @@ export async function redisCountDistinct(prefix: MetricName, value: string) {
   }
   const key = `${prefix}:v2:${moment.utc().startOf('hour').format('X')}`;
   await redis.pfadd(key, value);
-  await redis.expireat(key, moment.utc().startOf('hour').add(1, 'day').format('X'));
+  await redis.expireat(
+    key,
+    moment.utc().startOf('hour').add(1, 'day').format('X'),
+  );
 }
 
 /**
@@ -839,23 +854,25 @@ export async function eachLimitPromise<T>(
   let numWorkers = limit;
   const results = Array(items.length);
   let count = 0;
-  return new Promise(resolve => {
-    Array(numWorkers).fill('').forEach(async () => {
-      for (let [i, item] of cursor) {
-        try {
-          results[i] = await func(item);
-        } catch (e) {
-          // Log exceptions but keep iterating
-          console.log(e);
+  return new Promise((resolve) => {
+    Array(numWorkers)
+      .fill('')
+      .forEach(async () => {
+        for (let [i, item] of cursor) {
+          try {
+            results[i] = await func(item);
+          } catch (e) {
+            // Log exceptions but keep iterating
+            console.log(e);
+          }
+          count += 1;
         }
-        count += 1;
-      }
-      // We'll hit this once per worker, after iteration is complete
-      // Only the last one should report results
-      if (count === items.length) {
-        resolve(results);
-      }
-    });
+        // We'll hit this once per worker, after iteration is complete
+        // Only the last one should report results
+        if (count === items.length) {
+          resolve(results);
+        }
+      });
   });
 }
 
@@ -972,13 +989,14 @@ export function shuffle(array: Array<any>) {
 
   // While there remain elements to shuffle...
   while (currentIndex != 0) {
-
     // Pick a remaining element...
     let randomIndex = Math.floor(Math.random() * currentIndex);
     currentIndex--;
 
     // And swap it with the current element.
     [array[currentIndex], array[randomIndex]] = [
-      array[randomIndex], array[currentIndex]];
+      array[randomIndex],
+      array[currentIndex],
+    ];
   }
 }

@@ -1,4 +1,4 @@
-import type { ApiMatch } from "./types";
+import type { ApiMatch } from './types';
 
 export function getPGroup(match: ApiMatch | Match | ParsedMatch): PGroup {
   // This only works if we are an API insert or reconciling (match/parsedmatch)

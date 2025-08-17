@@ -1,11 +1,7 @@
 // Processes a queue of full history/refresh requests for players
 import urllib from 'url';
 import config from '../config';
-import {
-  redisCount,
-  getSteamAPIData,
-  SteamAPIUrls,
-} from './util/utility';
+import { redisCount, getSteamAPIData, SteamAPIUrls } from './util/utility';
 import db from './store/db';
 import { runQueue } from './store/queue';
 import { getPlayerMatches } from './util/buildPlayer';
@@ -144,14 +140,23 @@ async function processFullHistory(job: FullHistoryJob) {
       // });
       // await new Promise((resolve) => setTimeout(resolve, 1000));
       const match = matchesToProcess[keys[i]];
-      const playerSlot = match.players.find(p => p.account_id === player.account_id)?.player_slot;
+      const playerSlot = match.players.find(
+        (p) => p.account_id === player.account_id,
+      )?.player_slot;
       if (playerSlot == null) {
         continue;
       }
-      const row = { account_id: player.account_id, match_id: match.match_id, player_slot: playerSlot };
+      const row = {
+        account_id: player.account_id,
+        match_id: match.match_id,
+        player_slot: playerSlot,
+      };
       // Note: If an account ID shows up here that player is not anonymous anymore (could update fh_unavailable for other players)
       // Log the match IDs we should reconcile, we can query our own DB for data
-      const { rows } = await db.raw('INSERT INTO player_match_history(account_id, match_id, player_slot) VALUES (?, ?, ?) ON CONFLICT DO NOTHING RETURNING *', [row.account_id, row.match_id, row.player_slot]);
+      const { rows } = await db.raw(
+        'INSERT INTO player_match_history(account_id, match_id, player_slot) VALUES (?, ?, ?) ON CONFLICT DO NOTHING RETURNING *',
+        [row.account_id, row.match_id, row.player_slot],
+      );
       if (rows?.length) {
         await redisCount('pmh_fullhistory');
       }

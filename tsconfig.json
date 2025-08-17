@@ -8,11 +8,5 @@
     "outDir": "./build",
     "resolveJsonModule": true
   },
-  "include": [
-    "index.ts",
-    "global.d.ts",
-    "dev",
-    "svc",
-    "test",
-  ]
+  "include": ["index.ts", "global.d.ts", "dev", "svc", "test"]
 }

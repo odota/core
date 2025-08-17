@@ -377,7 +377,8 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           '/players/{account_id}/matches',
         ),
         summary: 'GET /players/{account_id}/matches',
-        description: 'Matches played (full history, and supports column selection)',
+        description:
+          'Matches played (full history, and supports column selection)',
         tags: ['players'],
         parameters: [
           ...playerParamsList,
@@ -1708,7 +1709,8 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
                   keyArr.push(
                     // Redis keys are in the format `${heroId}:${tier}:${name}:${timestamp}`
                     // Get the unix timestamps for the start of the last 7 days
-                    `${heroId}:${tier}:${name}:${moment.utc()
+                    `${heroId}:${tier}:${name}:${moment
+                      .utc()
                       .startOf('day')
                       .subtract(i, 'day')
                       .format('X')}`,

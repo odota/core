@@ -11,9 +11,7 @@ import { MatchFetcher } from './base';
  * @param matchId
  * @returns
  */
-async function readParsedData(
-  matchId: number,
-): Promise<ParserMatch | null> {
+async function readParsedData(matchId: number): Promise<ParserMatch | null> {
   let data = null;
   const archive = await blobArchive.archiveGet(`${matchId}_parsed`);
   if (archive) {

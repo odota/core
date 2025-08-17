@@ -16,7 +16,6 @@ for (let i = 0; i < arr.length; i++) {
     } else {
       output.push(key);
     }
-  } catch (e: any) {
-  }
+  } catch (e: any) {}
 }
 console.log(output.join(','));

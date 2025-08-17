@@ -1,8 +1,13 @@
-import config from "../../config";
-import cassandra, { getCassandraColumns } from "../store/cassandra";
-import { computeMatchData } from "./compute";
-import type { InsertMatchInput } from "./types";
-import { createMatchCopy, getAnonymousAccountId, redisCount, serialize } from "./utility";
+import config from '../../config';
+import cassandra, { getCassandraColumns } from '../store/cassandra';
+import { computeMatchData } from './compute';
+import type { InsertMatchInput } from './types';
+import {
+  createMatchCopy,
+  getAnonymousAccountId,
+  redisCount,
+  serialize,
+} from './utility';
 import { promises as fs } from 'node:fs';
 import util from 'node:util';
 
@@ -63,7 +68,11 @@ export async function upsertPlayerCaches(
         );
       }
       if (type === 'reconcile') {
-        console.log(playerMatch.account_id, copy.match_id, playerMatch.player_slot);
+        console.log(
+          playerMatch.account_id,
+          copy.match_id,
+          playerMatch.player_slot,
+        );
         redisCount('reconcile');
       }
       const query = util.format(

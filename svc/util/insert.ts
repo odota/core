@@ -130,7 +130,6 @@ export async function insertPlayerRating(row: PlayerRating) {
   }
 }
 
-
 /**
  * Inserts a piece of match data into storage
  * We currently can call this function from many places

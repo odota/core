@@ -24,7 +24,8 @@ async function countDay(prefix: MetricName) {
   const keyArr = [];
   for (let i = 0; i < 24; i += 1) {
     keyArr.push(
-      `${prefix}:v2:${moment.utc()
+      `${prefix}:v2:${moment
+        .utc()
         .startOf('hour')
         .subtract(i, 'hour')
         .format('X')}`,
@@ -54,7 +55,8 @@ async function countDayDistinct(prefix: MetricName) {
   const keyArr = [];
   for (let i = 0; i < 24; i += 1) {
     keyArr.push(
-      `${prefix}:v2:${moment.utc()
+      `${prefix}:v2:${moment
+        .utc()
         .startOf('hour')
         .subtract(i, 'hour')
         .format('X')}`,

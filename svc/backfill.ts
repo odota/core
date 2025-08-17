@@ -2,7 +2,12 @@
 import config from '../config';
 import { blobArchive } from './store/archive';
 import type { ApiMatch } from './util/types';
-import { SteamAPIUrls, getSteamAPIData, transformMatch, getApiHosts } from './util/utility';
+import {
+  SteamAPIUrls,
+  getSteamAPIData,
+  transformMatch,
+  getApiHosts,
+} from './util/utility';
 import fs from 'fs';
 import redis from './store/redis';
 
@@ -22,7 +27,9 @@ async function scanApi() {
     // get progress from redis if available, if not, fallback to file
     let seqNum;
     if (redis) {
-      seqNum = Number(await redis.get('backfill:' + process.env.BACKFILL_START)) || Number(process.env.BACKFILL_START);
+      seqNum =
+        Number(await redis.get('backfill:' + process.env.BACKFILL_START)) ||
+        Number(process.env.BACKFILL_START);
     } else {
       seqNum = Number(fs.readFileSync('./match_seq_num.txt')) || 0;
     }
@@ -67,7 +74,10 @@ async function scanApi() {
         console.log('next_seq_num: %s', nextSeqNum);
         // Completed inserting matches on this page so update
         if (redis) {
-          await redis.set('backfill:' + process.env.BACKFILL_START, nextSeqNum.toString());
+          await redis.set(
+            'backfill:' + process.env.BACKFILL_START,
+            nextSeqNum.toString(),
+          );
         } else {
           fs.writeFileSync('./match_seq_num.txt', nextSeqNum.toString());
         }

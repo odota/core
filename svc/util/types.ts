@@ -7,4 +7,8 @@ export type ApiPlayer = ApiMatch['players'][number] & {
   ability_upgrades_arr?: number[];
 };
 export type InsertMatchInput = ApiMatch | ApiMatchPro | ParserMatch | GcMatch;
-export type HistoryType = {account_id: number, match_id: number, player_slot: number};
+export type HistoryType = {
+  account_id: number;
+  match_id: number;
+  player_slot: number;
+};

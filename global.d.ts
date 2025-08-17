@@ -348,7 +348,14 @@ type ProPlayer = {
   account_id: number;
 };
 
-type DataType = 'api' | 'parsed' | 'gcdata' | 'meta' | 'identity' | 'ranks' | 'reconcile';
+type DataType =
+  | 'api'
+  | 'parsed'
+  | 'gcdata'
+  | 'meta'
+  | 'identity'
+  | 'ranks'
+  | 'reconcile';
 type DataOrigin = 'scanner';
 
 type CommonInsertOptions = {

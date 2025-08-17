@@ -1,5 +1,7 @@
 import fs from 'fs';
-const { getPlayerMatchesWithMetadata } = await import('../svc/util/buildPlayer.js');
+const { getPlayerMatchesWithMetadata } = await import(
+  '../svc/util/buildPlayer.js'
+);
 
 // Write player blob to archive
 // await processPlayerMatches(88367253);

@@ -67,7 +67,11 @@ api.use('/players/:account_id/:info?', async (req, res, next) => {
       isPrivate,
     };
     // Keep track of recently visited account IDs for caching
-    await redis.zadd('visitedIds', moment.utc().format('X'), req.params.account_id);
+    await redis.zadd(
+      'visitedIds',
+      moment.utc().format('X'),
+      req.params.account_id,
+    );
     await redis.zremrangebyrank('visitedIds', '0', '-50001');
     return next();
   } catch (e) {

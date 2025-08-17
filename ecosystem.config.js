@@ -21,7 +21,7 @@ let arr = [
     group: 'backend',
     env: {
       BACKFILL_START: 0,
-      BACKFILL_STOP: 1000000000
+      BACKFILL_STOP: 1000000000,
     },
   },
   {
@@ -30,7 +30,7 @@ let arr = [
     group: 'backend',
     env: {
       BACKFILL_START: 1000000000,
-      BACKFILL_STOP: 2000000000
+      BACKFILL_STOP: 2000000000,
     },
   },
   {
@@ -39,7 +39,7 @@ let arr = [
     group: 'backend',
     env: {
       BACKFILL_START: 2000000000,
-      BACKFILL_STOP: 3000000000
+      BACKFILL_STOP: 3000000000,
     },
   },
   {
@@ -48,7 +48,7 @@ let arr = [
     group: 'backend',
     env: {
       BACKFILL_START: 3000000000,
-      BACKFILL_STOP: 4000000000
+      BACKFILL_STOP: 4000000000,
     },
   },
   {
@@ -57,7 +57,7 @@ let arr = [
     group: 'backend',
     env: {
       BACKFILL_START: 4000000000,
-      BACKFILL_STOP: 5000000000
+      BACKFILL_STOP: 5000000000,
     },
   },
   {

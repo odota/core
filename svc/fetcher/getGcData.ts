@@ -14,9 +14,7 @@ import { MatchFetcher } from './base';
  * @param matchId
  * @returns
  */
-async function readGcData(
-  matchId: number,
-): Promise<GcMatch | null> {
+async function readGcData(matchId: number): Promise<GcMatch | null> {
   let data = null;
   const archive = await blobArchive.archiveGet(`${matchId}_gcdata`);
   if (archive) {
@@ -230,4 +228,3 @@ class GcdataFetcher extends MatchFetcher<GcMatch> {
 }
 
 export const gcFetcher = new GcdataFetcher();
-

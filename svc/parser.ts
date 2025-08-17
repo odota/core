@@ -125,12 +125,13 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
     }
 
     // Reconcile anonymous players now that we have parsed data
-    await Promise.all(gcMatch.players
-      .filter(p => !Boolean(pgroup[p.player_slot]?.account_id))
-      .map(async (p) => {
-        // await db.raw('INSERT INTO player_match_history(account_id, match_id, player_slot) VALUES (?, ?, ?) ON CONFLICT DO NOTHING', [p.account_id, gcMatch.match_id, p.player_slot]);
-        await redisCount('pmh_parsed');
-      })
+    await Promise.all(
+      gcMatch.players
+        .filter((p) => !Boolean(pgroup[p.player_slot]?.account_id))
+        .map(async (p) => {
+          // await db.raw('INSERT INTO player_match_history(account_id, match_id, player_slot) VALUES (?, ?, ?) ON CONFLICT DO NOTHING', [p.account_id, gcMatch.match_id, p.player_slot]);
+          await redisCount('pmh_parsed');
+        }),
     );
 
     // Log successful parse and timing
@@ -156,9 +157,9 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
     const message = c[colors[type]](
       `[${new Date().toISOString()}] [parser] [${type}: ${
         end - start
-      }ms] [api: ${apiTime}ms] [gcdata: ${gcTime}ms] [parse: ${parseTime}ms] [queued: ${moment.utc(
-        metadata.timestamp,
-      ).fromNow()}] [pri: ${metadata.priority}] [att: ${metadata.attempts}] ${
+      }ms] [api: ${apiTime}ms] [gcdata: ${gcTime}ms] [parse: ${parseTime}ms] [queued: ${moment
+        .utc(metadata.timestamp)
+        .fromNow()}] [pri: ${metadata.priority}] [att: ${metadata.attempts}] ${
         job.match_id
       } ${error ?? ''}`,
     );

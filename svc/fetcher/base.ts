@@ -1,9 +1,7 @@
 // We could make all the fetchers inherit a base class to give them a consistent structure
 export abstract class MatchFetcher<T> {
   // Read from the store without fetching
-  public abstract readData(
-    matchId: number,
-  ): Promise<T | null>;
+  public abstract readData(matchId: number): Promise<T | null>;
   // Read from the store, fetch it from remote and save if needed
   public abstract getOrFetchData(
     matchId: number,

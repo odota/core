@@ -4,15 +4,15 @@
  * This service reads the list of players' matches collected from fullhistory, gcdata, and parse steps.
  * It checks our own database and updates player_caches so these matches get associated with the player.
  */
-import db from "./store/db";
-import { getMatchDataFromBlobWithMetadata } from "./util/buildMatch";
-import { getPGroup } from "./util/pgroup";
-import { upsertPlayerCaches } from "./util/playerCaches";
-import type { HistoryType } from "./util/types";
+import db from './store/db';
+import { getMatchDataFromBlobWithMetadata } from './util/buildMatch';
+import { getPGroup } from './util/pgroup';
+import { upsertPlayerCaches } from './util/playerCaches';
+import type { HistoryType } from './util/types';
 
 export async function reconcileMatch(rows: HistoryType[]) {
   // validate that all rows have the same match ID
-  const set = new Set(rows.map(r => r.match_id));
+  const set = new Set(rows.map((r) => r.match_id));
   if (set.size > 1) {
     throw new Error('multiple match IDs found in input to reconcileMatch');
   }
@@ -27,43 +27,55 @@ export async function reconcileMatch(rows: HistoryType[]) {
   }
   const pgroup = getPGroup(match);
   // If reconciling after fullhistory, the pgroup won't contain account_id info. Add it.
-  rows.forEach(r => {
+  rows.forEach((r) => {
     if (!pgroup[r.player_slot]?.account_id) {
       pgroup[r.player_slot].account_id = r.account_id;
     }
   });
-  const targetSlots = new Set(rows.map(r => r.player_slot));
+  const targetSlots = new Set(rows.map((r) => r.player_slot));
   // Filter to only players that we want to fill in
-  match.players = match.players.filter(p => targetSlots.has(p.player_slot));
+  match.players = match.players.filter((p) => targetSlots.has(p.player_slot));
   if (!match.players.length) {
     return;
   }
   // Call upsertPlayerCaches: pgroup will be used to populate account_id and heroes fields (for peers search)
-  const result = await upsertPlayerCaches(match, undefined, pgroup, 'reconcile');
+  const result = await upsertPlayerCaches(
+    match,
+    undefined,
+    pgroup,
+    'reconcile',
+  );
   if (result.every(Boolean)) {
     // Delete the rows since we successfully updated
-    await Promise.all(rows.map(async (row) => {
-      return db.raw('DELETE FROM player_match_history WHERE account_id = ? AND match_id = ?', [row.account_id, row.match_id]);
-    }));
+    await Promise.all(
+      rows.map(async (row) => {
+        return db.raw(
+          'DELETE FROM player_match_history WHERE account_id = ? AND match_id = ?',
+          [row.account_id, row.match_id],
+        );
+      }),
+    );
   }
 }
 
 async function doReconcile() {
   while (true) {
     // Fetch rows for a single match (could be multiple players to fill)
-    const { rows }: { rows: HistoryType[] } = await db.raw('UPDATE player_match_history SET retries = coalesce(retries, 0) + 1 WHERE match_id = (SELECT match_id FROM player_match_history ORDER BY retries ASC NULLS FIRST LIMIT 1) RETURNING *');
+    const { rows }: { rows: HistoryType[] } = await db.raw(
+      'UPDATE player_match_history SET retries = coalesce(retries, 0) + 1 WHERE match_id = (SELECT match_id FROM player_match_history ORDER BY retries ASC NULLS FIRST LIMIT 1) RETURNING *',
+    );
     console.log(rows[0].match_id);
     if (rows[0].match_id < 6000000000) {
       // Old match so we probably don't have data (until backfilled)
       // We still might have data, so process it with some probability
       // If not processed, retry with short interval
       if (Math.random() < 0.9) {
-        await new Promise(resolve => setTimeout(resolve, 10));
+        await new Promise((resolve) => setTimeout(resolve, 10));
         continue;
       }
     }
     await reconcileMatch(rows);
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
   }
 }
 doReconcile();

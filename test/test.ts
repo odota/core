@@ -683,9 +683,11 @@ describe(c.blue('[TEST] api limits'), () => {
     await makeWhitelistedRequests('');
   });
 
-  it('should return user error when using invalid key', async function() {
+  it('should return user error when using invalid key', async function () {
     const invalidKey = 'not_a_key';
-    const invResp = await supertest(app).get('/api/matches/1781962623?api_key=' + invalidKey);
+    const invResp = await supertest(app).get(
+      '/api/matches/1781962623?api_key=' + invalidKey,
+    );
     assert.equal(invResp.statusCode, 400);
   });
 
