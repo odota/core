@@ -65,15 +65,6 @@ async function doReconcile() {
       'UPDATE player_match_history SET retries = coalesce(retries, 0) + 1 WHERE match_id = (SELECT match_id FROM player_match_history ORDER BY retries ASC NULLS FIRST LIMIT 1) RETURNING *',
     );
     console.log(rows[0].match_id);
-    if (rows[0].match_id < 6000000000) {
-      // Old match so we probably don't have data (until backfilled)
-      // We still might have data, so process it with some probability
-      // If not processed, retry with short interval
-      if (Math.random() < 0.9) {
-        await new Promise((resolve) => setTimeout(resolve, 10));
-        continue;
-      }
-    }
     await reconcileMatch(rows);
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
