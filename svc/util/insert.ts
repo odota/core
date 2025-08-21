@@ -7,7 +7,6 @@ import { addJob, addReliableJob } from '../store/queue';
 import db, { getPostgresColumns } from '../store/db';
 import redis from '../store/redis';
 import { es, INDEX } from '../store/elasticsearch';
-import cassandra from '../store/cassandra';
 import type knex from 'knex';
 import {
   getAnonymousAccountId,
@@ -126,6 +125,19 @@ export async function insertPlayerRating(row: PlayerRating) {
         rating: row.leaderboard_rank,
       },
       { account_id: row.account_id },
+    );
+  }
+}
+
+export async function reconcile(gcMatch: GcMatch | null, pgroup: PGroup) {
+  if (gcMatch) {
+    // Log the players who were previously anomymous for reconciliation
+    await Promise.all(gcMatch.players
+      .filter(p => !Boolean(pgroup[p.player_slot]?.account_id))
+      .map(async (p) => {
+        await db.raw('INSERT INTO player_match_history(account_id, match_id, player_slot) VALUES (?, ?, ?) ON CONFLICT DO NOTHING', [p.account_id, gcMatch.match_id, p.player_slot]);
+        await redisCount('pmh_gcdata');
+      })
     );
   }
 }

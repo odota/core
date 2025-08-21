@@ -5,7 +5,7 @@ import redis from '../store/redis';
 import { getRandomRetrieverUrl, redisCount } from '../util/utility';
 import axios from 'axios';
 import retrieverMatch from '../../test/data/retriever_match.json';
-import { insertMatch, upsertPlayer } from '../util/insert';
+import { insertMatch, reconcile } from '../util/insert';
 import { blobArchive } from '../store/archive';
 import { MatchFetcher } from './base';
 
@@ -116,14 +116,6 @@ async function saveGcData(
       matchId,
     ],
   );
-  // Log the players who were previously anomymous for reconciliation
-  await Promise.all(matchToInsert.players
-    .filter(p => !Boolean(extraData.pgroup[p.player_slot]?.account_id))
-    .map(async (p) => {
-      await db.raw('INSERT INTO player_match_history(account_id, match_id, player_slot) VALUES (?, ?, ?) ON CONFLICT DO NOTHING', [p.account_id, matchToInsert.match_id, p.player_slot]);
-      await redisCount('pmh_gcdata');
-    })
-  );
   // Put extra fields in matches/player_matches (do last since after this we won't fetch from GC again)
   await insertMatch(matchToInsert, {
     type: 'gcdata',
@@ -132,25 +124,6 @@ async function saveGcData(
     endedAt: data.match.starttime + data.match.duration,
   });
   return null;
-}
-
-/**
- * Attempts once to fetch the GC data and read it back
- * @param matchId
- * @param pgroup
- * @returns The GC data, or nothing if we failed
- */
-async function tryFetchGcData(
-  matchId: number,
-  pgroup: PGroup,
-): Promise<GcMatch | null> {
-  try {
-    await saveGcData(matchId, { pgroup });
-    return readGcData(matchId);
-  } catch (e) {
-    console.log(e);
-    return null;
-  }
 }
 
 /**
@@ -176,6 +149,8 @@ async function getOrFetchGcData(
     redisCount('regcdata');
     if (config.DISABLE_REGCDATA) {
       // If high load, we can disable refetching gcdata
+      // Reconcile anyway to update player match histories
+      await reconcile(saved, extraData.pgroup);
       return { data: saved, error: null };
     }
   }
@@ -185,6 +160,7 @@ async function getOrFetchGcData(
     return { data: null, error };
   }
   const result = await readGcData(matchId);
+  await reconcile(result, extraData.pgroup);
   return { data: result, error: null };
 }
 

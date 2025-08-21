@@ -2,7 +2,7 @@ import config from '../../config';
 import { getRandomParserUrl, redisCount } from '../util/utility';
 import { blobArchive } from '../store/archive';
 import db from '../store/db';
-import { insertMatch } from '../util/insert';
+import { insertMatch, reconcile } from '../util/insert';
 import axios from 'axios';
 import { MatchFetcher } from './base';
 
@@ -82,6 +82,8 @@ async function getOrFetchParseData(
     redisCount('reparse');
     if (config.DISABLE_REPARSE) {
       // If high load, we can disable parsing already parsed matches
+      // Trigger reconcile anyway so we can update player match history with parsed data
+      await reconcile(extraData.gcMatch, extraData.pgroup);
       return { data: saved, skipped: true, error: null };
     }
   }
@@ -94,6 +96,7 @@ async function getOrFetchParseData(
   // if (!result) {
   //   throw new Error('[PARSEDATA]: Could not get data for match ' + matchId);
   // }
+  await reconcile(extraData.gcMatch, extraData.pgroup);
   return { data: null, skipped: false, error };
 }
 

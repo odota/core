@@ -15,7 +15,6 @@ import { parsedFetcher } from './fetcher/getParsedData';
 import { gcFetcher } from './fetcher/getGcData';
 import { getPGroup } from './util/pgroup';
 import moment from 'moment';
-import db from './store/db';
 
 const { PARSER_PARALLELISM } = config;
 
@@ -37,17 +36,6 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
     ) {
       log('skip');
       return true;
-    }
-
-    // Check if match is already parsed according to PG
-    // Doing the check early means we don't verify API or gcdata
-    if (await parsedFetcher.checkAvailable(matchId)) {
-      redisCount('reparse_early');
-      if (config.DISABLE_REPARSE_EARLY) {
-        // If high load, we can disable parsing already parsed matches
-        log('skip');
-        return true;
-      }
     }
 
     // Fetch the API data
@@ -112,6 +100,7 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
         pgroup,
         origin: job.origin,
         url,
+        gcMatch,
       },
     );
     parseTime = Date.now() - parseStart;
@@ -124,16 +113,6 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
       log('skip');
       return true;
     }
-
-    // Reconcile anonymous players now that we have parsed data
-    await Promise.all(
-      gcMatch.players
-        .filter((p) => !Boolean(pgroup[p.player_slot]?.account_id))
-        .map(async (p) => {
-          await db.raw('INSERT INTO player_match_history(account_id, match_id, player_slot) VALUES (?, ?, ?) ON CONFLICT DO NOTHING', [p.account_id, gcMatch.match_id, p.player_slot]);
-          await redisCount('pmh_parsed');
-        }),
-    );
 
     // Log successful parse and timing
     log('success');

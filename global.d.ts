@@ -503,4 +503,5 @@ type ParseExtraData = {
   origin?: DataOrigin;
   pgroup: PGroup;
   url: string;
+  gcMatch: GcMatch;
 };
