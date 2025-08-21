@@ -5,6 +5,7 @@ import config from '../config';
 import { apiFetcher } from './fetcher/getApiData';
 import { gcFetcher } from './fetcher/getGcData';
 import { getPGroup } from './util/pgroup';
+import { reconcile } from './util/insert';
 
 async function processGcData(job: GcDataJob) {
   const matchId = job.match_id;
@@ -18,7 +19,9 @@ async function processGcData(job: GcDataJob) {
     return;
   }
   // Currently, just attempt it once and skip if failed
-  await gcFetcher.getOrFetchData(job.match_id, { pgroup });
+  const { data: gcMatch } = await gcFetcher.getOrFetchData(job.match_id, { pgroup });
+  // Reconcile anonymous players
+  await reconcile(gcMatch, pgroup, 'pmh_gcdata');
   await new Promise((resolve) => setTimeout(resolve, 1));
 }
 

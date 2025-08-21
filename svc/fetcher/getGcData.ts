@@ -5,7 +5,7 @@ import redis from '../store/redis';
 import { getRandomRetrieverUrl, redisCount } from '../util/utility';
 import axios from 'axios';
 import retrieverMatch from '../../test/data/retriever_match.json';
-import { insertMatch, reconcile } from '../util/insert';
+import { insertMatch } from '../util/insert';
 import { blobArchive } from '../store/archive';
 import { MatchFetcher } from './base';
 
@@ -149,8 +149,6 @@ async function getOrFetchGcData(
     redisCount('regcdata');
     if (config.DISABLE_REGCDATA) {
       // If high load, we can disable refetching gcdata
-      // Reconcile anyway to update player match histories
-      await reconcile(saved, extraData.pgroup, 'pmh_gcdata');
       return { data: saved, error: null };
     }
   }
@@ -160,7 +158,6 @@ async function getOrFetchGcData(
     return { data: null, error };
   }
   const result = await readGcData(matchId);
-  await reconcile(result, extraData.pgroup, 'pmh_gcdata');
   return { data: result, error: null };
 }
 
