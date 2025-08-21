@@ -172,7 +172,6 @@ export async function buildStatus() {
         // reapi_last_day: async () => countDay('reapi'),
         regcdata_last_day: async () => countDay('regcdata'),
         reparse_last_day: async () => countDay('reparse'),
-        reparse_early_last_day: async () => countDay('reparse_early'),
         // oldparse_last_day: async () => countDay('oldparse'),
 
         error_last_day: async () => countDay('500_error'),

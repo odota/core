@@ -458,7 +458,6 @@ type MetricName =
   | 'request_ui'
   | 'request'
   | 'distinct_request'
-  | 'reparse_early'
   | 'reparse'
   | 'regcdata'
   | 'reapi'
