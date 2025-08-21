@@ -83,7 +83,7 @@ async function getOrFetchParseData(
     if (config.DISABLE_REPARSE) {
       // If high load, we can disable parsing already parsed matches
       // Trigger reconcile anyway so we can update player match history with parsed data
-      await reconcile(extraData.gcMatch, extraData.pgroup);
+      await reconcile(extraData.gcMatch, extraData.pgroup, 'pmh_parsed');
       return { data: saved, skipped: true, error: null };
     }
   }
@@ -96,7 +96,7 @@ async function getOrFetchParseData(
   // if (!result) {
   //   throw new Error('[PARSEDATA]: Could not get data for match ' + matchId);
   // }
-  await reconcile(extraData.gcMatch, extraData.pgroup);
+  await reconcile(extraData.gcMatch, extraData.pgroup, 'pmh_parsed');
   return { data: null, skipped: false, error };
 }
 

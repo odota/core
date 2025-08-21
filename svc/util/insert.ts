@@ -129,14 +129,16 @@ export async function insertPlayerRating(row: PlayerRating) {
   }
 }
 
-export async function reconcile(gcMatch: GcMatch | null, pgroup: PGroup) {
+export async function reconcile(gcMatch: GcMatch | null, pgroup: PGroup, metricName: MetricName) {
   if (gcMatch) {
     // Log the players who were previously anomymous for reconciliation
     await Promise.all(gcMatch.players
       .filter(p => !Boolean(pgroup[p.player_slot]?.account_id))
       .map(async (p) => {
-        await db.raw('INSERT INTO player_match_history(account_id, match_id, player_slot) VALUES (?, ?, ?) ON CONFLICT DO NOTHING', [p.account_id, gcMatch.match_id, p.player_slot]);
-        await redisCount('pmh_gcdata');
+        if (p.account_id) {
+          await db.raw('INSERT INTO player_match_history(account_id, match_id, player_slot) VALUES (?, ?, ?) ON CONFLICT DO NOTHING', [p.account_id, gcMatch.match_id, p.player_slot]);
+          await redisCount(metricName);
+        }
       })
     );
   }

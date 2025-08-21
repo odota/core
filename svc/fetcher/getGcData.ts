@@ -150,7 +150,7 @@ async function getOrFetchGcData(
     if (config.DISABLE_REGCDATA) {
       // If high load, we can disable refetching gcdata
       // Reconcile anyway to update player match histories
-      await reconcile(saved, extraData.pgroup);
+      await reconcile(saved, extraData.pgroup, 'pmh_gcdata');
       return { data: saved, error: null };
     }
   }
@@ -160,7 +160,7 @@ async function getOrFetchGcData(
     return { data: null, error };
   }
   const result = await readGcData(matchId);
-  await reconcile(result, extraData.pgroup);
+  await reconcile(result, extraData.pgroup, 'pmh_gcdata');
   return { data: result, error: null };
 }
 
