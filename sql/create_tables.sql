@@ -467,7 +467,6 @@ BEGIN
         GRANT SELECT ON picks_bans TO readonly;
         GRANT SELECT ON notable_players TO readonly;
         GRANT SELECT ON public_matches TO readonly;
-        GRANT SELECT ON players TO readonly;
         GRANT SELECT ON team_rating TO readonly;
     END IF;
 END
