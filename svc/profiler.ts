@@ -10,13 +10,9 @@ import {
 import redis from './store/redis';
 
 async function doProfile() {
-  // Fetch 100 items off the queue, if we don't have 100 yet wait
-  const count = await redis.llen('profileQueue');
-  if (count < 100) {
-    return;
-  }
+  // Fetch up to 100 items off the queue, if we don't have 100 yet wait
   const resp = await redis.lpop('profileQueue', 100);
-  if (!resp) {
+  if (!resp || !resp.length) {
     return;
   }
   const jobs = resp.map(item => JSON.parse(item) as ProfileJob);
