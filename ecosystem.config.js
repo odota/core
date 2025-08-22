@@ -102,6 +102,10 @@ let arr = [
     },
   },
   {
+    name: 'autoprofiler',
+    group: 'backend',
+  },
+  {
     name: 'profiler',
     group: 'backend',
   },
@@ -119,7 +123,7 @@ let arr = [
     },
   },
   // {
-  //   name: 'autocache',
+  //   name: 'cacher',
   //   group: 'backend',
   // },
   {
@@ -179,7 +183,7 @@ let arr = [
     group: 'backend',
   },
   {
-    name: 'counts',
+    name: 'counter',
     group: 'backend',
   },
   {

@@ -7,17 +7,21 @@ import {
   convert64to32,
   invokeIntervalAsync,
 } from './util/utility';
+import redis from './store/redis';
 
-async function doProfiler() {
-  // To optimize the api call we need to do 100 players at a time
-  // We sample 100 random rows from the DB, with the downside that we might update a lot of inactive players
-  // Alternatively we could also trigger updates from match insert to target active players
-  // Or trigger update when refresh call is made
-  const result = await db.raw(
-    'SELECT account_id from players TABLESAMPLE SYSTEM_ROWS(100)',
-  );
+async function doProfile() {
+  // Fetch 100 items off the queue, if we don't have 100 yet wait
+  const count = await redis.llen('profileQueue');
+  if (count < 100) {
+    return;
+  }
+  const resp = await redis.lpop('profileQueue', 100);
+  if (!resp) {
+    return;
+  }
+  const jobs = resp.map(item => JSON.parse(item) as ProfileJob);
   const url = SteamAPIUrls.api_summaries({
-    players: result.rows,
+    players: jobs,
   });
   const body = await getSteamAPIData({ url });
   const results = body.response.players.filter(
@@ -45,4 +49,4 @@ async function doProfiler() {
     results.map((player: User) => upsertPlayer(db, player, false)),
   );
 }
-invokeIntervalAsync(doProfiler, 5000);
+invokeIntervalAsync(doProfile, 4000);

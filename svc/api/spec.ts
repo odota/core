@@ -957,7 +957,13 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
               account_id: Number(req.params.account_id),
             },
           });
-          // TODO we can't currently queue update of name/avatar here since it runs on random rows in batches of 100
+          // Queue a refresh of the player name
+          await addJob({
+            name: 'profileQueue',
+            data: {
+              account_id: Number(req.params.account_id),
+            },
+          });
           return res.json({
             length,
           });

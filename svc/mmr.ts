@@ -4,7 +4,6 @@ import db from './store/db';
 import { insertPlayerRating } from './util/insert';
 import config from '../config';
 import {
-  getRetrieverCount,
   redisCount,
   getRandomRetrieverUrl,
 } from './util/utility';
@@ -37,6 +36,6 @@ async function processMmr(job: MmrJob) {
 }
 runQueue(
   'mmrQueue',
-  Number(config.MMR_PARALLELISM) * getRetrieverCount(),
+  Number(config.MMR_PARALLELISM) || 1,
   processMmr,
 );

@@ -280,6 +280,10 @@ type MmrJob = {
   account_id: number;
 };
 
+type ProfileJob = {
+  account_id: number;
+}
+
 type GcDataJob = {
   match_id: number;
 };
@@ -299,6 +303,10 @@ type QueueInput =
   | {
       name: 'mmrQueue';
       data: MmrJob;
+    }
+  | {
+      name: 'profileQueue';
+      data: ProfileJob;
     }
   | {
       name: 'countsQueue';

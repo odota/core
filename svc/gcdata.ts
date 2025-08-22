@@ -26,4 +26,4 @@ async function processGcData(job: GcDataJob) {
 }
 
 console.log('[GCDATA] starting');
-runQueue('gcQueue', Number(config.GCDATA_PARALLELISM), processGcData);
+runQueue('gcQueue', Number(config.GCDATA_PARALLELISM) || 1, processGcData);
