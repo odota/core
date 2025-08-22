@@ -19,6 +19,7 @@ const health = {
   cacheDelay,
   countsDelay,
   scenariosDelay,
+  profileDelay,
 };
 
 type Metric = {
@@ -126,6 +127,13 @@ async function scenariosDelay() {
   return {
     metric: result,
     threshold: 100000,
+  };
+}
+async function profileDelay() {
+  const result = await redis.llen('profileQueue');
+  return {
+    metric: result,
+    threshold: 100000
   };
 }
 async function postgresUsage() {
