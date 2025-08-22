@@ -6,7 +6,7 @@ import db from '../store/db';
 import type { PutObjectCommandOutput } from '@aws-sdk/client-s3';
 import { getFullPlayerMatchesWithMetadata } from './buildPlayer';
 import { getMatchDataFromBlobWithMetadata } from './buildMatch';
-import { isDataComplete, redisCount } from './utility';
+import { isDataComplete, randomInt, redisCount } from './utility';
 
 async function processMatch(matchId: number) {
   // Check if we should archive the blobs (should be parsed and not archived)
@@ -74,10 +74,6 @@ async function archiveRandom(max: number) {
   }
   console.log(page[0]);
   await Promise.allSettled(page.map((i) => processMatch(i)));
-}
-
-function randomInt(min: number, max: number) {
-  return Math.floor(Math.random() * (max - min) + min);
 }
 
 export async function getCurrentMaxArchiveID() {

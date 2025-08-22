@@ -32,6 +32,10 @@ export function convert32to64(id: string): string {
   return (BigInt(id) + BigInt('76561197960265728')).toString();
 }
 
+export function randomInt(min: number, max: number) {
+  return Math.floor(Math.random() * (max - min) + min);
+}
+
 const apiUrl = 'http://api.steampowered.com';
 let apiKey = config.STEAM_API_KEY.split(',')[0];
 export const SteamAPIUrls = {

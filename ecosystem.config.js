@@ -134,10 +134,14 @@ let arr = [
     name: 'monitor',
     group: 'backend',
   },
-  // {
-  //   name: 'gcdata',
-  //   group: 'backend',
-  // },
+  {
+    name: 'autogcdata',
+    group: 'backend',
+  },
+  {
+    name: 'gcdata',
+    group: 'backend',
+  },
   {
     name: 'buildsets',
     group: 'backend',

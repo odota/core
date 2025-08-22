@@ -1,16 +1,11 @@
 import crypto from 'crypto';
 import cassandra from '../svc/store/cassandra';
-import config from '../config';
 import db from '../svc/store/db';
-import { deserialize, redisCount } from '../svc/util/utility';
+import { deserialize, randomInt, redisCount } from '../svc/util/utility';
 import { matchArchive } from '../svc/store/archive';
 
 function randomBigInt(byteCount: number) {
   return BigInt(`0x${crypto.randomBytes(byteCount).toString('hex')}`);
-}
-
-function randomInt(min: number, max: number) {
-  return Math.floor(Math.random() * (max - min) + min);
 }
 
 function isDataComplete(match: Partial<ParsedMatch> | null) {
