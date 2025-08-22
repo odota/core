@@ -443,6 +443,7 @@ type MetricName =
   | 'distinct_match_player_user'
   | 'distinct_match_player_recent_user'
   | 'parser'
+  | 'gcdata'
   | 'meta_parse'
   | 'retriever'
   | 'build_match'

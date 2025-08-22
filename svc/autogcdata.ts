@@ -17,6 +17,7 @@ async function doGcData() {
   if (rand) {
     const { data } = await apiFetcher.getOrFetchData(rand);
     if (data) {
+      console.log(rand);
       await addJob({
         name: 'gcQueue',
         data: { match_id: rand, pgroup: getPGroup(data) },

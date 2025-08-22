@@ -82,6 +82,7 @@ export async function buildStatus() {
         matches_prev_hour: async () => countLastHour('added_match'),
         retriever_matches_last_day: async () => countDay('retriever'),
         parsed_matches_last_day: async () => countDay('parser'),
+        gcdata_matches_last_day: async () => countDay('gcdata'),
         tracked_players: async () => redis.zcard('tracked'),
         auto_parse_last_day: async () => countDay('auto_parse'),
 
