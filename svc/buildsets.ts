@@ -13,7 +13,7 @@ async function doBuildSets() {
   const subIds = subs.map((sub) => sub.account_id);
   const contribs = Object.keys(contributors);
   console.log(
-    '[BUILDSETS] %s subscribers, %s contributors, %s auto',
+    '[BUILDSETS] %s subscribers, %s contributors',
     subIds.length,
     contribs.length,
   );
