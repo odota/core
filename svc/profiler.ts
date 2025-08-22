@@ -49,4 +49,4 @@ async function doProfile() {
     results.map((player: User) => upsertPlayer(db, player, false)),
   );
 }
-invokeIntervalAsync(doProfile, 4000);
+invokeIntervalAsync(doProfile, 2000);
