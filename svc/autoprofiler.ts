@@ -1,8 +1,6 @@
 // Updates Steam profile data for players periodically
 import db from './store/db';
-import {
-  invokeIntervalAsync,
-} from './util/utility';
+import { invokeIntervalAsync } from './util/utility';
 import { addJob } from './store/queue';
 
 async function doProfiler() {
@@ -14,8 +12,13 @@ async function doProfiler() {
     'SELECT account_id from players TABLESAMPLE SYSTEM_ROWS(100)',
   );
   // Queue the rows
-  await Promise.all(result.rows.map(async (row: any) => {
-    await addJob({ name: 'profileQueue', data: { account_id: row.account_id }});
-  }));
+  await Promise.all(
+    result.rows.map(async (row: any) => {
+      await addJob({
+        name: 'profileQueue',
+        data: { account_id: row.account_id },
+      });
+    }),
+  );
 }
 invokeIntervalAsync(doProfiler, 5000);

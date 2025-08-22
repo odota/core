@@ -11,7 +11,9 @@ async function processGcData(job: GcDataJob) {
     return;
   }
   // Currently, just attempt it once and skip if failed
-  const { data: gcMatch } = await gcFetcher.getOrFetchData(job.match_id, { pgroup });
+  const { data: gcMatch } = await gcFetcher.getOrFetchData(job.match_id, {
+    pgroup,
+  });
   // Reconcile anonymous players
   await reconcile(gcMatch, pgroup, 'pmh_gcdata');
   await new Promise((resolve) => setTimeout(resolve, 10));

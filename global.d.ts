@@ -282,7 +282,7 @@ type MmrJob = {
 
 type ProfileJob = {
   account_id: number;
-}
+};
 
 type GcDataJob = {
   match_id: number;

@@ -3,10 +3,7 @@ import { runQueue } from './store/queue';
 import db from './store/db';
 import { insertPlayerRating } from './util/insert';
 import config from '../config';
-import {
-  redisCount,
-  getRandomRetrieverUrl,
-} from './util/utility';
+import { redisCount, getRandomRetrieverUrl } from './util/utility';
 import axios from 'axios';
 
 async function processMmr(job: MmrJob) {
@@ -34,8 +31,4 @@ async function processMmr(job: MmrJob) {
   }
   await new Promise((resolve) => setTimeout(resolve, 1));
 }
-runQueue(
-  'mmrQueue',
-  Number(config.MMR_PARALLELISM) || 1,
-  processMmr,
-);
+runQueue('mmrQueue', Number(config.MMR_PARALLELISM) || 1, processMmr);

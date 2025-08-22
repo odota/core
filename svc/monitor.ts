@@ -133,7 +133,7 @@ async function profileDelay() {
   const result = await redis.llen('profileQueue');
   return {
     metric: result,
-    threshold: 100000
+    threshold: 100000,
   };
 }
 async function postgresUsage() {

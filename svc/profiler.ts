@@ -15,7 +15,7 @@ async function doProfile() {
   if (!resp || !resp.length) {
     return;
   }
-  const jobs = resp.map(item => JSON.parse(item) as ProfileJob);
+  const jobs = resp.map((item) => JSON.parse(item) as ProfileJob);
   const url = SteamAPIUrls.api_summaries({
     players: jobs,
   });
