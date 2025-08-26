@@ -15,7 +15,7 @@ import { parsedFetcher } from './fetcher/getParsedData';
 import { gcFetcher } from './fetcher/getGcData';
 import { getPGroup } from './util/pgroup';
 import moment from 'moment';
-import { reconcile } from './util/insert';
+import { queueReconcile } from './util/insert';
 
 const { PARSER_PARALLELISM } = config;
 
@@ -112,7 +112,7 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
     }
 
     // Reconcile if skipped or success
-    await reconcile(gcMatch, pgroup, 'pmh_parsed');
+    await queueReconcile(gcMatch, pgroup, 'pmh_parsed');
 
     if (skipped) {
       log('skip');

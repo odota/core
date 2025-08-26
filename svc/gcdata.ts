@@ -3,7 +3,7 @@
 import { runQueue } from './store/queue';
 import config from '../config';
 import { gcFetcher } from './fetcher/getGcData';
-import { reconcile } from './util/insert';
+import { queueReconcile } from './util/insert';
 import { redisCount } from './util/utility';
 
 async function processGcData(job: GcDataJob) {
@@ -12,12 +12,12 @@ async function processGcData(job: GcDataJob) {
     return;
   }
   // Currently, just attempt it once and skip if failed
-  const { data: gcMatch } = await gcFetcher.getOrFetchData(job.match_id, {
+  const { data: gcMatch, skipped } = await gcFetcher.getOrFetchData(job.match_id, {
     pgroup,
   });
   if (gcMatch) {
     // Reconcile anonymous players
-    await reconcile(gcMatch, pgroup, 'pmh_gcdata');
+    await queueReconcile(gcMatch, pgroup, 'pmh_gcdata');
     await redisCount('gcdata');
   }
   await new Promise((resolve) => setTimeout(resolve, 10));

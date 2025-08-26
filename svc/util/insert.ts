@@ -129,13 +129,13 @@ export async function insertPlayerRating(row: PlayerRating) {
   }
 }
 
-export async function reconcile(
+export async function queueReconcile(
   gcMatch: GcMatch | null,
   pgroup: PGroup,
   metricName: MetricName,
 ) {
   if (gcMatch) {
-    // Log the players who were previously anomymous for reconciliation
+    // Log the players who were previously anonymous for reconciliation
     await Promise.all(
       gcMatch.players
         .filter((p) => !Boolean(pgroup[p.player_slot]?.account_id))

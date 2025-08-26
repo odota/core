@@ -139,6 +139,7 @@ async function getOrFetchGcData(
 ): Promise<{
   data: GcMatch | null;
   error: string | null;
+  skipped: boolean;
 }> {
   if (!matchId || !Number.isInteger(matchId) || matchId <= 0) {
     throw new Error('invalid match_id');
@@ -149,16 +150,16 @@ async function getOrFetchGcData(
     redisCount('regcdata');
     if (config.DISABLE_REGCDATA) {
       // If high load, we can disable refetching gcdata
-      return { data: saved, error: null };
+      return { data: saved, error: null, skipped: true };
     }
   }
   // If we got here we don't have it saved or want to refetch
   const error = await saveGcData(matchId, extraData);
   if (error) {
-    return { data: null, error };
+    return { data: null, error, skipped: false };
   }
   const result = await readGcData(matchId);
-  return { data: result, error: null };
+  return { data: result, error: null, skipped: false };
 }
 
 async function getOrFetchGcDataWithRetry(
