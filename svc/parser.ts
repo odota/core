@@ -105,14 +105,17 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
       },
     );
     parseTime = Date.now() - parseStart;
+
+    // Reconcile if last attempt (no more retries) or skipped or successful parse
+    if (metadata.attempts === 0 || !parseError) {
+      await queueReconcile(gcMatch, pgroup, 'pmh_parsed');
+    }
+
     if (parseError) {
       console.log('[PARSER] %s: %s', matchId, parseError);
       log('fail', parseError);
       return false;
     }
-
-    // Reconcile if skipped or success
-    await queueReconcile(gcMatch, pgroup, 'pmh_parsed');
 
     if (skipped) {
       log('skip');
