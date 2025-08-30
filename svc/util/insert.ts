@@ -524,13 +524,16 @@ export async function insertMatch(
       match.game_mode !== 19 &&
       match.match_id % 100 < Number(config.GCDATA_PERCENT)
     ) {
-      await addJob({
-        name: 'gcQueue',
-        data: {
-          match_id: match.match_id,
-          pgroup,
-        },
-      });
+      if (!gcQueued) {
+        await addJob({
+          name: 'gcQueue',
+          data: {
+            match_id: match.match_id,
+            pgroup,
+          },
+        });
+        gcQueued = true;
+      }
     }
   }
 
@@ -543,6 +546,17 @@ export async function insertMatch(
       match.lobby_type === 7 &&
       match.match_id % 100 < Number(config.RATING_PERCENT)
     ) {
+      if (!gcQueued) {
+        // Queue job for gcdata to speed up rating process
+        await addJob({
+          name: 'gcQueue',
+          data: {
+            match_id: match.match_id,
+            pgroup,
+          },
+        });
+        gcQueued = true;
+      }
       await db.raw('INSERT INTO rating_queue(match_id, pgroup, radiant_win) VALUES(?, ?, ?)', [match.match_id, JSON.stringify(pgroup), match.radiant_win]);
     }
   }
@@ -651,6 +665,8 @@ export async function insertMatch(
     // let ranksBlob = { match_id: match.match_id, average_rank, players };
     // await upsertBlob('ranks', ranksBlob);
   }
+
+  let gcQueued = false;
 
   await upsertMatchPostgres(match);
   await upsertPlayerCaches(match, average_rank, pgroup, options.type);
