@@ -462,7 +462,7 @@ CREATE INDEX IF NOT EXISTS player_computed_mmr_computed_mmr_idx ON player_comput
 
 CREATE TABLE IF NOT EXISTS rating_queue(
   PRIMARY KEY(match_seq_num),
-  match_seq_num,
+  match_seq_num bigint,
   match_id bigint,
   pgroup json,
   radiant_win boolean
