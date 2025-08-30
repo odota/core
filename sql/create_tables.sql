@@ -453,6 +453,20 @@ CREATE TABLE IF NOT EXISTS player_match_history(
 );
 CREATE INDEX IF NOT EXISTS player_match_history_retries_idx ON player_match_history(retries ASC NULLS FIRST);
 
+CREATE TABLE IF NOT EXISTS player_computed_mmr(
+  PRIMARY KEY(account_id),
+  account_id bigint,
+  computed_mmr real
+);
+
+CREATE TABLE IF NOT EXISTS rating_queue(
+  PRIMARY KEY(id),
+  id bigserial,
+  match_id bigint,
+  pgroup json,
+  radiant_win boolean
+);
+
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'readonly') THEN

@@ -203,6 +203,10 @@ let arr = [
     group: 'backend',
   },
   {
+    name: 'rater',
+    group: 'backend',
+  },
+  {
     name: 'cycler',
     group: 'backend',
   },

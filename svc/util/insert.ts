@@ -533,6 +533,20 @@ export async function insertMatch(
       });
     }
   }
+
+  async function decideRate(match: InsertMatchInput) {
+    // Decide whether to rate the match
+    // Rate a percentage of ranked matches
+    if (options.origin === 'scanner' &&
+      options.type === 'api' &&
+      'lobby_type' in match &&
+      match.lobby_type === 7 &&
+      match.match_id % 100 < Number(config.RATING_PERCENT)
+    ) {
+      await db.raw('INSERT INTO rating_queue(match_id, pgroup, radiant_win) VALUES(?, ?, ?)', [match.match_id, pgroup, match.radiant_win]);
+    }
+  }
+
   async function decideScenarios(match: InsertMatchInput) {
     // Decide if we want to do scenarios (requires parsed match)
     // Only if it originated from scanner to avoid triggering on requests
@@ -648,6 +662,7 @@ export async function insertMatch(
   await decideMmr(match);
   await decideProfile(match);
   await decideGcData(match);
+  await decideRate(match);
   await decideScenarios(match);
   await postParsedMatch(match);
   const parseJob = await decideReplayParse(match);
