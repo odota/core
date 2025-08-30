@@ -33,11 +33,11 @@ async function doRate() {
         throw new Error('no gcdata found for match ' + row.match_id);
       }
       gcMatch = data;
+      await db.raw('UPDATE rating_queue SET gcdata = ? WHERE match_seq_num = ?', [
+        JSON.stringify(data),
+        row.match_seq_num,
+      ]);
     }
-    await db.raw('UPDATE rating_queue SET gcdata = ? WHERE match_seq_num = ?', [
-      JSON.stringify(gcMatch),
-      row.match_seq_num,
-    ]);
     // Get ratings of all players in the match, otherwise default value
     const accountIds = gcMatch.players.map((p) => p.account_id);
     // console.log(accountIds);
