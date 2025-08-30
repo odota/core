@@ -3,7 +3,7 @@ import config from '../../config';
 import db from '../store/db';
 import redis from '../store/redis';
 import { getRandomRetrieverUrl, redisCount } from '../util/utility';
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import retrieverMatch from '../../test/data/retriever_match.json';
 import { insertMatch } from '../util/insert';
 import { blobArchive } from '../store/archive';
@@ -41,9 +41,20 @@ async function saveGcData(
   extraData: GcExtraData,
 ): Promise<string | null> {
   const url = await getRandomRetrieverUrl(`/match/${matchId}`);
-  const { data, headers } = await axios.get<typeof retrieverMatch>(url, {
-    timeout: 5000,
-  });
+  let resp: AxiosResponse<typeof retrieverMatch>;
+  try {
+    console.log(url);
+    resp = await axios.get<typeof retrieverMatch>(url, {
+      timeout: 5000,
+    });
+  } catch (e) {
+    // Non-200 status (e.g. 429 too many requests or 500 server error)
+    if (axios.isAxiosError(e)) {
+      console.log(matchId, e.response?.config?.url, e.message);
+    }
+    return 'axiosError';
+  }
+  const { data, headers } = resp;
   const steamid = headers['x-match-request-steamid'];
   const ip = headers['x-match-request-ip'];
   // Record the total steamids and ip counts (regardless of failure)
@@ -69,7 +80,7 @@ async function saveGcData(
   ) {
     // Really old matches have a 0 replay salt so if we don't have gamemode either it's a valid response
     // Bad data but we can retry
-    throw new Error('invalid data');
+    return 'invalid data';
   }
   // Count successful calls
   redisCount('retriever');
@@ -129,7 +140,7 @@ async function saveGcData(
 /**
  * Returns GC data, reading the saved version.
  * If not present, fills it and then reads it back.
- * Throws if we can't find it
+ * On error, returns object with error prop
  * @param job
  * @returns
  */
@@ -142,7 +153,7 @@ async function getOrFetchGcData(
   skipped: boolean;
 }> {
   if (!matchId || !Number.isInteger(matchId) || matchId <= 0) {
-    throw new Error('invalid match_id');
+    return { data: null, error: 'invalid match id', skipped: true };
   }
   // Check if we have gcdata cached
   const saved = await readGcData(matchId);
@@ -172,18 +183,15 @@ async function getOrFetchGcDataWithRetry(
   let data: GcMatch | null = null;
   let error: string | null = null;
   let tryCount = 1;
-  // Try until we either get data or a non-exception error
-  while (!data && !error) {
-    try {
-      const resp = await getOrFetchGcData(matchId, extraData);
-      data = resp.data;
-      error = resp.error;
-    } catch (e) {
-      if (axios.isAxiosError(e)) {
-        console.log(matchId, e.response?.config?.url, e.message);
-      } else {
-        console.error(e);
-      }
+  // Try until we either get data or non-retryable error
+  while (!data) {
+    const resp = await getOrFetchGcData(matchId, extraData);
+    data = resp.data;
+    error = resp.error;
+    if (error === 'x-match-noretry') {
+      break;
+    }
+    if (!data) {
       await new Promise((resolve) => setTimeout(resolve, 500));
       tryCount += 1;
       console.log('retrying %s, attempt %s', matchId, tryCount);
