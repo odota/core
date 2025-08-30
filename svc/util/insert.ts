@@ -537,13 +537,22 @@ export async function insertMatch(
   async function decideRate(match: InsertMatchInput) {
     // Decide whether to rate the match
     // Rate a percentage of ranked matches
-    if (options.origin === 'scanner' &&
+    if (
+      options.origin === 'scanner' &&
       options.type === 'api' &&
       'lobby_type' in match &&
       match.lobby_type === 7 &&
       match.match_id % 100 < Number(config.RATING_PERCENT)
     ) {
-      await db.raw('INSERT INTO rating_queue(match_seq_num, match_id, pgroup, radiant_win) VALUES(?, ?, ?, ?) ON CONFLICT DO NOTHING', [match.match_seq_num, match.match_id, JSON.stringify(pgroup), match.radiant_win]);
+      await db.raw(
+        'INSERT INTO rating_queue(match_seq_num, match_id, pgroup, radiant_win) VALUES(?, ?, ?, ?) ON CONFLICT DO NOTHING',
+        [
+          match.match_seq_num,
+          match.match_id,
+          JSON.stringify(pgroup),
+          match.radiant_win,
+        ],
+      );
     }
   }
 

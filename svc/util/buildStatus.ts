@@ -93,7 +93,8 @@ export async function buildStatus() {
         pmh_parsed_last_day: async () => countDay('pmh_parsed'),
         reconcile_last_day: async () => countDay('reconcile'),
         requests_last_day: async () => countDay('request'),
-        distinct_requests_last_day: async () => countDayDistinct('distinct_request'),
+        distinct_requests_last_day: async () =>
+          countDayDistinct('distinct_request'),
         requests_ui_last_day: async () => countDay('request_ui'),
         requests_api_key_last_day: async () => countDay('request_api_key'),
         request_api_fail_last_day: async () => countDay('request_api_fail'),
@@ -109,7 +110,7 @@ export async function buildStatus() {
         regcdata_last_day: async () => countDay('regcdata'),
         reparse_last_day: async () => countDay('reparse'),
         // oldparse_last_day: async () => countDay('oldparse'),
-        
+
         steam_api_calls_last_day: async () => countDay('steam_api_call'),
         steam_proxy_calls_last_day: async () => countDay('steam_proxy_call'),
         steam_429_last_day: async () => countDay('steam_429'),
