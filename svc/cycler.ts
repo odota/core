@@ -32,7 +32,9 @@ async function cycle() {
   const zones = zonesResponse.data.items.map((zone: any) => zone.name);
   console.log(zones, zones.length);
   while (true) {
-    const count = Math.ceil((await getCapacity()) / 12) + 1;
+    // Start with a base number for gcdata/rater reqs and add additional retrievers based on parser capacity
+    // Each retriever handles about 1 req/sec so divide by the avg number of seconds per parse
+    const count = Math.ceil((await getCapacity()) / 24) + 2;
     shuffle(zones);
     const zone = zones[0];
     const config = {
