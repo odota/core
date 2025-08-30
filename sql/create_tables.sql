@@ -458,6 +458,7 @@ CREATE TABLE IF NOT EXISTS player_computed_mmr(
   account_id bigint,
   computed_mmr real
 );
+CREATE INDEX IF NOT EXISTS player_computed_mmr_computed_mmr_idx ON player_computed_mmr(computed_mmr);
 
 CREATE TABLE IF NOT EXISTS rating_queue(
   PRIMARY KEY(id),
