@@ -543,7 +543,7 @@ export async function insertMatch(
       match.lobby_type === 7 &&
       match.match_id % 100 < Number(config.RATING_PERCENT)
     ) {
-      await db.raw('INSERT INTO rating_queue(match_id, pgroup, radiant_win) VALUES(?, ?, ?)', [match.match_id, pgroup, match.radiant_win]);
+      await db.raw('INSERT INTO rating_queue(match_id, pgroup, radiant_win) VALUES(?, ?, ?)', [match.match_id, JSON.stringify(pgroup), match.radiant_win]);
     }
   }
 
