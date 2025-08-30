@@ -7,17 +7,22 @@ const kFactor = 32;
 
 async function doRate() {
     while(true) {
-        const { rows } = await db.raw<{rows: { match_seq_num: number, match_id: number, pgroup: PGroup, radiant_win: boolean}[]}>('SELECT match_seq_num, match_id, pgroup, radiant_win from rating_queue order by match_seq_num ASC LIMIT 1');
+        const { rows } = await db.raw<{rows: { match_seq_num: number, match_id: number, pgroup: PGroup, radiant_win: boolean, gcdata: GcMatch | null}[]}>('SELECT match_seq_num, match_id, pgroup, radiant_win, gcdata from rating_queue order by match_seq_num ASC LIMIT 1');
         const row = rows[0];
         if (!row) {
             // No rows, wait and try again
             await new Promise(resolve => setTimeout(resolve, 1000));
         }
-        // Fetch gcdata
-        const { data: gcMatch } = await gcFetcher.getOrFetchDataWithRetry(row.match_id, { pgroup: row.pgroup });
+        let gcMatch = row.gcdata;
         if (!gcMatch) {
-            throw new Error('no gcdata found for match ' + row.match_id);
+            // Fetch gcdata if not available already
+            const { data } = await gcFetcher.getOrFetchDataWithRetry(row.match_id, { pgroup: row.pgroup });
+            if (!data) {
+                throw new Error('no gcdata found for match ' + row.match_id);
+            }
+            gcMatch = data;
         }
+        await db.raw('UPDATE rating_queue SET gcdata = ? WHERE match_seq_num = ?', [JSON.stringify(gcMatch), row.match_seq_num]);
         // Get ratings of all players in the match, otherwise default value
         const accountIds = gcMatch.players.map(p => p.account_id);
         // console.log(accountIds);
@@ -59,4 +64,23 @@ async function doRate() {
     }
 }
 
+async function prefetchGcData() {
+    while (true) {
+        // Find a row in the queue that doesn't have gcdata
+        const { rows } = await db.raw<{rows: { match_seq_num: number, match_id: number, pgroup: PGroup}[]}>('SELECT match_seq_num, match_id, pgroup from rating_queue WHERE gcdata IS NULL LIMIT 1');
+        const row = rows[0];
+        if (!row) {
+            // No rows, wait and try again
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+        // Attempt to fetch once
+        const { data } = await gcFetcher.getOrFetchData(row.match_id, { pgroup: row.pgroup });
+        if (data) {
+            // If successful, update
+            await db.raw('UPDATE rating_queue SET gcdata = ? WHERE match_seq_num = ?', [JSON.stringify(data), row.match_seq_num]);
+        }
+    }
+}
+
 doRate();
+prefetchGcData();
