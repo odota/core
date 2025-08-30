@@ -19,7 +19,9 @@ async function doRate() {
             throw new Error('no gcdata found for match ' + row.match_id);
         }
         // Get ratings of all players in the match, otherwise default value
-        const { rows: existingRatings } = await db.raw<{rows: {account_id: number, computed_mmr: number}[]}>('SELECT account_id, computed_mmr FROM player_computed_mmr WHERE account_id IN ?', [gcMatch.players.map(p => p.account_id)]);
+        const accountIds = gcMatch.players.map(p => p.account_id);
+        console.log(accountIds);
+        const { rows: existingRatings } = await db.raw<{rows: {account_id: number, computed_mmr: number}[]}>('SELECT account_id, computed_mmr FROM player_computed_mmr WHERE account_id IN ?', [accountIds]);
         const ratingMap = new Map<number, number>();
         existingRatings.forEach((r) => {
             ratingMap.set(r.account_id, r.computed_mmr);
