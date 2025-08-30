@@ -7,7 +7,7 @@ const kFactor = 32;
 
 async function doRate() {
     while(true) {
-        const { rows } = await db.raw<{rows: { id: number, match_id: number, pgroup: PGroup, radiant_win: boolean}[]}>('SELECT id, match_id, pgroup, radiant_win from rating_queue order by id ASC LIMIT 1');
+        const { rows } = await db.raw<{rows: { match_seq_num: number, match_id: number, pgroup: PGroup, radiant_win: boolean}[]}>('SELECT match_seq_num, match_id, pgroup, radiant_win from rating_queue order by match_seq_num ASC LIMIT 1');
         const row = rows[0];
         if (!row) {
             // No rows, wait and try again
@@ -53,7 +53,7 @@ async function doRate() {
             await db.raw('INSERT INTO player_computed_mmr(account_id, computed_mmr) VALUES(?, ?) ON CONFLICT(account_id) DO UPDATE SET computed_mmr = EXCLUDED.computed_mmr', [p.account_id, newRating]);
         }
         // Delete row
-        await db.raw('DELETE FROM rating_queue WHERE id = ?', row.id);
+        await db.raw('DELETE FROM rating_queue WHERE match_seq_num = ?', row.match_seq_num);
         // Commit transaction
         await db.raw('COMMIT');
     }

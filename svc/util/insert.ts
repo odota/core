@@ -557,7 +557,7 @@ export async function insertMatch(
         });
         gcQueued = true;
       }
-      await db.raw('INSERT INTO rating_queue(match_id, pgroup, radiant_win) VALUES(?, ?, ?)', [match.match_id, JSON.stringify(pgroup), match.radiant_win]);
+      await db.raw('INSERT INTO rating_queue(match_seq_num, match_id, pgroup, radiant_win) VALUES(?, ?, ?, ?) ON CONFLICT DO NOTHING', [match.match_seq_num, match.match_id, JSON.stringify(pgroup), match.radiant_win]);
     }
   }
 
