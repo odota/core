@@ -6,15 +6,16 @@ import {
   SteamAPIUrls,
   convert64to32,
   invokeIntervalAsync,
+  redisCount,
 } from './util/utility';
 import redis from './store/redis';
 
 async function doProfile() {
-  // Fetch up to 100 items off the queue, if we don't have 100 yet wait
   const resp = await redis.lpop('profileQueue', 100);
   if (!resp || !resp.length) {
     return;
   }
+  redisCount('profiler', resp.length);
   const jobs = resp.map((item) => JSON.parse(item) as ProfileJob);
   const url = SteamAPIUrls.api_summaries({
     players: jobs,

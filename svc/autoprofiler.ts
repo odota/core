@@ -21,4 +21,4 @@ async function doProfiler() {
     }),
   );
 }
-invokeIntervalAsync(doProfiler, 5000);
+invokeIntervalAsync(doProfiler, 10000);

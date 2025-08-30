@@ -489,7 +489,8 @@ type MetricName =
   | 'pmh_fullhistory'
   | 'pmh_gcdata'
   | 'pmh_parsed'
-  | 'reconcile';
+  | 'reconcile'
+  | 'profiler';
 
 // Object to map player_slot to basic info
 type PGroup = {
