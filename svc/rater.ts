@@ -50,7 +50,7 @@ async function doRate() {
             const newRating = oldRating + delta;
             console.log('account_id: %s, oldRating: %s, newRating: %s, delta: %s', p.account_id, oldRating, newRating, delta);
             // Write ratings back to players
-            await db.raw('UPDATE player_computed_mmr SET computed_mmr = ? WHERE account_id = ?', [newRating, p.account_id]);
+            await db.raw('INSERT INTO player_computed_mmr(account_id, computed_mmr) VALUES(?, ?) ON CONFLICT DO UPDATE SET computed_mmr = EXCLUDED.computed_mmr', [newRating, p.account_id]);
         }
         // Delete row
         await db.raw('DELETE FROM rating_queue WHERE id = ?', row.id);
