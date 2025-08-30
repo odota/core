@@ -19,24 +19,12 @@ async function doRate() {
       'SELECT match_seq_num, match_id, pgroup, radiant_win, gcdata from rating_queue order by match_seq_num ASC LIMIT 1',
     );
     const row = rows[0];
-    if (!row) {
-      // No rows, wait and try again
+    let gcMatch = row?.gcdata;
+    if (!row || !gcMatch) {
+      // No rows or no gcdata, wait and try again
+      // Wait for prefetch to fill the match
       await new Promise((resolve) => setTimeout(resolve, 1000));
-    }
-    let gcMatch = row.gcdata;
-    if (!gcMatch) {
-      // Fetch gcdata if not available already
-      const { data } = await gcFetcher.getOrFetchDataWithRetry(row.match_id, {
-        pgroup: row.pgroup,
-      });
-      if (!data) {
-        throw new Error('no gcdata found for match ' + row.match_id);
-      }
-      gcMatch = data;
-      await db.raw('UPDATE rating_queue SET gcdata = ? WHERE match_seq_num = ?', [
-        JSON.stringify(data),
-        row.match_seq_num,
-      ]);
+      continue;
     }
     // Get ratings of all players in the match, otherwise default value
     const accountIds = gcMatch.players.map((p) => p.account_id);
@@ -105,31 +93,37 @@ async function doRate() {
 }
 
 async function prefetchGcData() {
-  while (true) {
-    // Find a row in the queue that doesn't have gcdata
-    const { rows } = await db.raw<{
-      rows: { match_seq_num: number; match_id: number; pgroup: PGroup }[];
-    }>(
-      'SELECT match_seq_num, match_id, pgroup from rating_queue WHERE gcdata IS NULL LIMIT 1',
+  // Find next row in the queue that doesn't have gcdata
+  const { rows } = await db.raw<{
+    rows: { match_seq_num: number; match_id: number; pgroup: PGroup }[];
+  }>(
+    'SELECT match_seq_num, match_id, pgroup from rating_queue WHERE gcdata IS NULL ORDER BY match_seq_num LIMIT 1',
+  );
+  const row = rows[0];
+  if (!row) {
+    // No rows, wait and try again
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    return;
+  }
+  // Attempt to fetch
+  const { data, error } = await gcFetcher.getOrFetchData(row.match_id, {
+    pgroup: row.pgroup,
+  });
+  if (error === 'x-match-noretry') {
+    // This match can't be rated (community prediction), so remove it
+    await db.raw(
+      'DELETE FROM rating_queue WHERE match_seq_num = ?',
+      row.match_seq_num,
     );
-    const row = rows[0];
-    if (!row) {
-      // No rows, wait and try again
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-    }
-    // Attempt to fetch once
-    const { data } = await gcFetcher.getOrFetchData(row.match_id, {
-      pgroup: row.pgroup,
-    });
-    if (data) {
-      // If successful, update
-      await db.raw(
-        'UPDATE rating_queue SET gcdata = ? WHERE match_seq_num = ?',
-        [JSON.stringify(data), row.match_seq_num],
-      );
-    }
+  }
+  if (data) {
+    // If successful, update
+    await db.raw(
+      'UPDATE rating_queue SET gcdata = ? WHERE match_seq_num = ?',
+      [JSON.stringify(data), row.match_seq_num],
+    );
   }
 }
 
 doRate();
-prefetchGcData();
+setInterval(prefetchGcData, 100);
