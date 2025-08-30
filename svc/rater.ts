@@ -93,37 +93,40 @@ async function doRate() {
 }
 
 async function prefetchGcData() {
-  // Find next row in the queue that doesn't have gcdata
-  const { rows } = await db.raw<{
-    rows: { match_seq_num: number; match_id: number; pgroup: PGroup }[];
-  }>(
-    'SELECT match_seq_num, match_id, pgroup from rating_queue WHERE gcdata IS NULL ORDER BY match_seq_num LIMIT 1',
-  );
-  const row = rows[0];
-  if (!row) {
-    // No rows, wait and try again
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    return;
-  }
-  // Attempt to fetch
-  const { data, error } = await gcFetcher.getOrFetchData(row.match_id, {
-    pgroup: row.pgroup,
-  });
-  if (error === 'x-match-noretry') {
-    // This match can't be rated (community prediction), so remove it
-    await db.raw(
-      'DELETE FROM rating_queue WHERE match_seq_num = ?',
-      row.match_seq_num,
+  while (true) {
+    // Find next row in the queue that doesn't have gcdata
+    const { rows } = await db.raw<{
+      rows: { match_seq_num: number; match_id: number; pgroup: PGroup }[];
+    }>(
+      'SELECT match_seq_num, match_id, pgroup from rating_queue WHERE gcdata IS NULL ORDER BY match_seq_num LIMIT 1',
     );
-  }
-  if (data) {
-    // If successful, update
-    await db.raw(
-      'UPDATE rating_queue SET gcdata = ? WHERE match_seq_num = ?',
-      [JSON.stringify(data), row.match_seq_num],
-    );
+    const row = rows[0];
+    if (!row) {
+      // No rows, wait and try again
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      continue;
+    }
+    // Attempt to fetch
+    const { data, error } = await gcFetcher.getOrFetchData(row.match_id, {
+      pgroup: row.pgroup,
+    });
+    if (error === 'x-match-noretry') {
+      // This match can't be rated (community prediction), so remove it
+      await db.raw(
+        'DELETE FROM rating_queue WHERE match_seq_num = ?',
+        row.match_seq_num,
+      );
+    }
+    if (data) {
+      // If successful, update
+      await db.raw(
+        'UPDATE rating_queue SET gcdata = ? WHERE match_seq_num = ?',
+        [JSON.stringify(data), row.match_seq_num],
+      );
+    }
+    await new Promise((resolve) => setTimeout(resolve, 200));
   }
 }
 
 doRate();
-setInterval(prefetchGcData, 100);
+prefetchGcData();
