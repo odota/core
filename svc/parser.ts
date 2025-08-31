@@ -78,7 +78,9 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
       await gcFetcher.getOrFetchDataWithRetry(matchId, {
         pgroup,
         origin: job.origin,
-      });
+      },
+      1000,
+    );
     if (!gcMatch) {
       // non-retryable error
       log('fail', gcError || 'Missing gcdata');

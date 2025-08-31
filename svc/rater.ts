@@ -107,24 +107,22 @@ async function prefetchGcData() {
       continue;
     }
     // Attempt to fetch
-    const { data, error } = await gcFetcher.getOrFetchData(row.match_id, {
+    const { data } = await gcFetcher.getOrFetchDataWithRetry(row.match_id, {
       pgroup: row.pgroup,
-    });
-    if (error === 'x-match-noretry') {
-      // This match can't be rated (community prediction), so remove it
-      await db.raw(
-        'DELETE FROM rating_queue WHERE match_seq_num = ?',
-        row.match_seq_num,
-      );
-    }
+    }, 200);
     if (data) {
       // If successful, update
       await db.raw(
         'UPDATE rating_queue SET gcdata = ? WHERE match_seq_num = ?',
         [JSON.stringify(data), row.match_seq_num],
       );
+    } else {
+      // Match can't be rated due to lack of data
+      await db.raw(
+        'DELETE FROM rating_queue WHERE match_seq_num = ?',
+        row.match_seq_num,
+      );
     }
-    await new Promise((resolve) => setTimeout(resolve, 200));
   }
 }
 

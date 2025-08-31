@@ -11,12 +11,12 @@ async function processGcData(job: GcDataJob) {
   if (!pgroup) {
     return;
   }
-  // Currently, just attempt it once and skip if failed
-  const { data: gcMatch, skipped } = await gcFetcher.getOrFetchData(
+  const { data: gcMatch } = await gcFetcher.getOrFetchDataWithRetry(
     job.match_id,
     {
       pgroup,
     },
+    1000
   );
   if (gcMatch) {
     // Reconcile anonymous players

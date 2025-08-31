@@ -39,7 +39,7 @@ async function readGcData(matchId: number): Promise<GcMatch | null> {
 async function saveGcData(
   matchId: number,
   extraData: GcExtraData,
-): Promise<string | null> {
+): Promise<{data: GcMatch | null, error: string | null, retryable?: boolean }> {
   const url = await getRandomRetrieverUrl(`/match/${matchId}`);
   let resp: AxiosResponse<typeof retrieverMatch>;
   try {
@@ -49,10 +49,11 @@ async function saveGcData(
     });
   } catch (e) {
     // Non-200 status (e.g. 429 too many requests or 500 server error)
+    let message = '';
     if (axios.isAxiosError(e)) {
-      console.log(matchId, e.response?.config?.url, e.message);
+      message = e.message;
     }
-    return 'axiosError';
+    return { data: null, error: 'axiosError: ' + message, retryable: true };
   }
   const { data, headers } = resp;
   const steamid = headers['x-match-request-steamid'];
@@ -70,17 +71,20 @@ async function saveGcData(
   );
   if (headers['x-match-noretry']) {
     // Steam is blocking this match for community prediction, so return error to prevent retry
-    return 'x-match-noretry';
+    return { error: 'x-match-noretry', data: null };
+  }
+  if (data.match.game_mode === 'DOTA_GAMEMODE_NONE') {
+    // Really old matches have a 0 replay salt so if we don't have gamemode stop retrying
+    return { error: 'extremely old GC response format without replay salt', data: null };
   }
   if (
     !data ||
     !data.match ||
     !data.match.players ||
-    (!data.match.replay_salt && data.match.game_mode !== 'DOTA_GAMEMODE_NONE')
+    !data.match.replay_salt
   ) {
-    // Really old matches have a 0 replay salt so if we don't have gamemode either it's a valid response
-    // Bad data but we can retry
-    return 'invalid data';
+    // Response doesn't have expected data, try again
+    return { error: 'invalid data', data: null, retryable: true };
   }
   // Count successful calls
   redisCount('retriever');
@@ -134,7 +138,7 @@ async function saveGcData(
     origin: extraData.origin,
     endedAt: data.match.starttime + data.match.duration,
   });
-  return null;
+  return { data: matchToInsert, error: null };
 }
 
 /**
@@ -150,7 +154,8 @@ async function getOrFetchGcData(
 ): Promise<{
   data: GcMatch | null;
   error: string | null;
-  skipped: boolean;
+  skipped?: boolean;
+  retryable?: boolean;
 }> {
   if (!matchId || !Number.isInteger(matchId) || matchId <= 0) {
     return { data: null, error: 'invalid match id', skipped: true };
@@ -165,17 +170,18 @@ async function getOrFetchGcData(
     }
   }
   // If we got here we don't have it saved or want to refetch
-  const error = await saveGcData(matchId, extraData);
+  const { error, retryable } = await saveGcData(matchId, extraData);
   if (error) {
-    return { data: null, error, skipped: false };
+    return { data: null, error, retryable };
   }
   const result = await readGcData(matchId);
-  return { data: result, error: null, skipped: false };
+  return { data: result, error: null };
 }
 
 async function getOrFetchGcDataWithRetry(
   matchId: number,
   extraData: GcExtraData,
+  retryDelay: number,
 ): Promise<{
   data: GcMatch | null;
   error: string | null;
@@ -188,13 +194,13 @@ async function getOrFetchGcDataWithRetry(
     const resp = await getOrFetchGcData(matchId, extraData);
     data = resp.data;
     error = resp.error;
-    if (error === 'x-match-noretry') {
+    if (error && !resp.retryable) {
       break;
     }
     if (!data) {
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, retryDelay));
       tryCount += 1;
-      console.log('retrying %s, attempt %s', matchId, tryCount);
+      console.log('matchId %s, error %s, attempt %s', matchId, error, tryCount);
     }
   }
   return { data, error };
