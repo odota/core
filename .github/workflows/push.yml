@@ -22,15 +22,7 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-      - name: Build and push core
-        if: github.ref == 'refs/heads/master'
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          # Disabling linux/arm64 build for now to save some time
-          platforms: linux/amd64
-          push: true
-          tags: odota/core:latest
+      # Retriever first to avoid polluting with unnecessary packages
       - name: Build and push retriever
         if: github.ref == 'refs/heads/master'
         uses: docker/build-push-action@v5
@@ -40,3 +32,13 @@ jobs:
           push: true
           tags: odota/retriever:latest
           file: Dockerfile.retriever
+      - name: Build and push core
+        if: github.ref == 'refs/heads/master'
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          # Disabling linux/arm64 build for now to save some time
+          platforms: linux/amd64
+          push: true
+          tags: odota/core:latest
+
