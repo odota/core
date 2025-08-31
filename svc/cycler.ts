@@ -34,7 +34,7 @@ async function cycle() {
   while (true) {
     // Start with a base number for gcdata/rater reqs and add additional retrievers based on parser capacity
     // Each retriever handles about 1 req/sec so divide by the avg number of seconds per parse
-    const count = Math.ceil((await getCapacity()) / 20) + 3;
+    const count = Math.ceil((await getCapacity()) / 12) + 4;
     shuffle(zones);
     const zone = zones[0];
     const config = {
