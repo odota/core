@@ -1,9 +1,9 @@
 // Updates Steam profile data for players periodically
-import db from './store/db';
-import { invokeIntervalAsync, randomInt } from './util/utility';
-import { addJob } from './store/queue';
-import { getPGroup } from './util/pgroup';
-import { apiFetcher } from './fetcher/getApiData';
+import db from './store/db.ts';
+import { invokeIntervalAsync, randomInt } from './util/utility.ts';
+import { addJob } from './store/queue.ts';
+import { getPGroup } from './util/pgroup.ts';
+import { apiFetcher } from './fetcher/getApiData.ts';
 
 async function doGcData() {
   // We don't have a full listing of valid match IDs

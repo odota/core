@@ -1,22 +1,24 @@
-import { heroes } from 'dotaconstants';
-import config from '../../config';
-import { computeMatchData } from './compute';
+import dc from 'dotaconstants';
+import config from '../../config.ts';
+import { computeMatchData } from './compute.ts';
 import {
   buildReplayUrl,
   getStartOfBlockMinutes,
   isContributor,
   redisCount,
   redisCountDistinct,
-} from './utility';
-import redis from '../store/redis';
-import db from '../store/db';
-import { ApiMatch } from './types';
-import { parsedFetcher } from '../fetcher/getParsedData';
-import { apiFetcher } from '../fetcher/getApiData';
-import { gcFetcher } from '../fetcher/getGcData';
-import { archivedFetcher } from '../fetcher/getArchivedData';
-import { metaFetcher } from '../fetcher/getMeta';
-import { benchmarks } from './benchmarksUtil';
+} from './utility.ts';
+import redis from '../store/redis.ts';
+import db from '../store/db.ts';
+import type { ApiMatch } from './types.ts';
+import { parsedFetcher } from '../fetcher/getParsedData.ts';
+import { apiFetcher } from '../fetcher/getApiData.ts';
+import { gcFetcher } from '../fetcher/getGcData.ts';
+import { archivedFetcher } from '../fetcher/getArchivedData.ts';
+import { metaFetcher } from '../fetcher/getMeta.ts';
+import { benchmarks } from './benchmarksUtil.ts';
+
+const { heroes } = dc;
 
 function extendPlayerData(
   player: Player | ParsedPlayer,

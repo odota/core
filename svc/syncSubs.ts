@@ -1,7 +1,7 @@
 // Syncs the list of subscribers from Stripe to the database
-import db from './store/db';
-import stripe from './store/stripe';
-import { invokeIntervalAsync } from './util/utility';
+import db from './store/db.ts';
+import stripe from './store/stripe.ts';
+import { invokeIntervalAsync } from './util/utility.ts';
 
 async function doSyncSubs() {
   // Get list of current subscribers

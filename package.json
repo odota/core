@@ -4,11 +4,10 @@
   "version": "26.0.0",
   "license": "MIT",
   "scripts": {
-    "start": "tsx index",
-    "test": "NODE_ENV=test mocha test/test.ts --exit --node-option import=tsx",
-    "build": "npm install && npm run tsc",
-    "tsc": "tsc --project tsconfig.json",
-    "typecheck": "tsc --project tsconfig.json --noEmit",
+    "start": "node index.ts",
+    "test": "NODE_ENV=test mocha test/test.ts --exit",
+    "build": "npm install",
+    "typecheck": "tsc --project tsconfig.json",
     "lint": "eslint .",
     "lintfix": "eslint . --fix",
     "request": "curl -X POST localhost:5000/api/request/7490235544",
@@ -21,8 +20,9 @@
     "dockerbuild:retriever": "sudo docker build -t odota/retriever -f Dockerfile.retriever .",
     "psql": "docker exec -it odota-postgres psql -U postgres -d yasp",
     "prettier": "prettier --write .",
-    "updateproto": "tsx dev/updateProtos.mts"
+    "updateproto": "node dev/updateProtos.mts"
   },
+  "type": "module",
   "prettier": {
     "singleQuote": true
   },
@@ -52,11 +52,10 @@
     "passport-steam": "^1.0.18",
     "pg": "^8.13.1",
     "pg-query-stream": "^4.7.1",
-    "pm2": "^5.4.3",
+    "pm2": "^6.0.8",
     "protobufjs": "^7.2.5",
     "steam-user": "^5.2.0",
     "stripe": "^9.16.0",
-    "tsx": "^4.19.2",
     "vdf-parser": "^1.2.1",
     "ws": "^8.18.0"
   },

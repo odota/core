@@ -1,8 +1,8 @@
 import crypto from 'crypto';
-import cassandra from '../svc/store/cassandra';
-import db from '../svc/store/db';
-import { deserialize, randomInt, redisCount } from '../svc/util/utility';
-import { matchArchive } from '../svc/store/archive';
+import cassandra from '../svc/store/cassandra.ts';
+import db from '../svc/store/db.ts';
+import { deserialize, randomInt, redisCount } from '../svc/util/utility.ts';
+import { matchArchive } from '../svc/store/archive.ts';
 
 function randomBigInt(byteCount: number) {
   return BigInt(`0x${crypto.randomBytes(byteCount).toString('hex')}`);

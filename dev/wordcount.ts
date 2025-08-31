@@ -1,6 +1,6 @@
-import db from '../svc/store/db';
-import { countWords } from '../svc/util/compute';
-import { mergeObjects } from '../svc/util/utility';
+import db from '../svc/store/db.ts';
+import { countWords } from '../svc/util/compute.ts';
+import { mergeObjects } from '../svc/util/utility.ts';
 
 const args = process.argv.slice(2);
 const limit = Number(args[0]) || 1;

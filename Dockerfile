@@ -1,4 +1,4 @@
-FROM node:22
+FROM node:24
 
 ENV NPM_CONFIG_LOGLEVEL warn
 

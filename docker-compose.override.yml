@@ -1,5 +1,4 @@
 # Extends the configuration for development (inits and mounting directory into core)
-version: '3'
 services:
   postgresinit:
     image: postgres

@@ -1,11 +1,12 @@
-import { items as itemsConstants } from 'dotaconstants';
-import config from '../../config';
-import { teamScenariosQueryParams, metadata } from './scenariosUtil';
-import db from '../store/db';
-import redis from '../store/redis';
-import { benchmarks } from './benchmarksUtil';
+import dc from 'dotaconstants';
+import config from '../../config.ts';
+import { teamScenariosQueryParams, metadata } from './scenariosUtil.ts';
+import db from '../store/db.ts';
+import redis from '../store/redis.ts';
+import { benchmarks } from './benchmarksUtil.ts';
 import type knex from 'knex';
 import type { Request } from 'express';
+import type { PeersCount } from './utility.ts';
 import {
   getStartOfBlockMinutes,
   countItemPopularity,
@@ -13,9 +14,9 @@ import {
   isContributor,
   averageMedal,
   parallelPromise,
-  PeersCount,
-} from './utility';
-import moment from 'moment';
+} from './utility.ts';
+
+const { items: itemsConstants } = dc;
 
 export async function getDistributions() {
   const result: AnyDict = {};

@@ -1,4 +1,4 @@
-import { filterDeps } from '../util/filter';
+import { filterDeps } from '../util/filter.ts';
 
 /**
  * List of columns to support for histograms and totals

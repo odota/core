@@ -7,7 +7,7 @@ import SteamUser from 'steam-user';
 import express from 'express';
 import compression from 'compression';
 import os from 'os';
-import config from '../config';
+import config from '../config.ts';
 import ProtoBuf from 'protobufjs';
 import axios from 'axios';
 

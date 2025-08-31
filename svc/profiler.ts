@@ -1,14 +1,14 @@
 // Updates Steam profile data for players periodically
-import { upsertPlayer, bulkIndexPlayer } from './util/insert';
-import db from './store/db';
+import { upsertPlayer, bulkIndexPlayer } from './util/insert.ts';
+import db from './store/db.ts';
 import {
   getSteamAPIData,
   SteamAPIUrls,
   convert64to32,
   invokeIntervalAsync,
   redisCount,
-} from './util/utility';
-import redis from './store/redis';
+} from './util/utility.ts';
+import redis from './store/redis.ts';
 
 async function doProfile() {
   const resp = await redis.lpop('profileQueue', 100);

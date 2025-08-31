@@ -1,10 +1,12 @@
 import moment from 'moment';
-import redis from './redis';
-import db from './db';
+import redis from './redis.ts';
+import db from './db.ts';
 import { Redis } from 'ioredis';
-import config from '../../config';
-import { Client } from 'pg';
+import config from '../../config.ts';
+import pg from 'pg';
 import c from 'ansi-colors';
+
+const { Client } = pg;
 
 moment.relativeTimeThreshold('ss', 0);
 

@@ -1,9 +1,9 @@
 import ProtoBuf from 'protobufjs';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { buildReplayUrl, redisCount } from '../util/utility';
-import { MatchFetcher } from './base';
-import { gcFetcher } from './getGcData';
+import { buildReplayUrl, redisCount } from '../util/utility.ts';
+import { MatchFetcher } from './base.ts';
+import { gcFetcher } from './getGcData.ts';
 const execPromise = promisify(exec);
 
 // Get a sample meta file

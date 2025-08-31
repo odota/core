@@ -1,13 +1,13 @@
-import config from '../../config';
-import cassandra, { getCassandraColumns } from '../store/cassandra';
-import { computeMatchData } from './compute';
-import type { InsertMatchInput } from './types';
+import config from '../../config.ts';
+import cassandra, { getCassandraColumns } from '../store/cassandra.ts';
+import { computeMatchData } from './compute.ts';
+import type { InsertMatchInput } from './types.ts';
 import {
   createMatchCopy,
   getAnonymousAccountId,
   redisCount,
   serialize,
-} from './utility';
+} from './utility.ts';
 import { promises as fs } from 'node:fs';
 import util from 'node:util';
 

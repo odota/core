@@ -1,4 +1,4 @@
-import commonProperties from './properties/commonProperties';
+import commonProperties from './properties/commonProperties.ts';
 
 export default {
   TeamObjectResponse: {

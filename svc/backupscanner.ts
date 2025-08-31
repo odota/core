@@ -1,14 +1,14 @@
 // Alternative to scanner if seq match data endpoint isn't available
 // Works by repeatedly checking match histories for players
 /*
-import redis from '../store/redis';
-import { insertMatch } from '../store/insert';
-import config from '../config';
+import redis from '../store/redis.ts';
+import { insertMatch } from '../store/insert.ts';
+import config from '../config.ts';
 import {
   generateJob,
   getSteamAPIData,
   invokeIntervalAsync,
-} from '../util/utility';
+} from '../util/utility.ts';
 const parallelism = 1;
 const delay = 1000;
 

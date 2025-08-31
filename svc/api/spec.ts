@@ -1,13 +1,12 @@
-import * as constants from 'dotaconstants';
-import { heroes as heroesConstants, cluster } from 'dotaconstants';
+import constants from 'dotaconstants';
 import moment from 'moment';
 import pg from 'pg';
-import config from '../../config';
-import { addJob, addReliableJob, getReliableJob } from '../store/queue';
-import { search } from '../store/search';
-import { searchES } from '../store/searchES';
-import { buildMatch } from '../util/buildMatch';
-import { getPlayerMatches } from '../util/buildPlayer';
+import config from '../../config.ts';
+import { addJob, addReliableJob, getReliableJob } from '../store/queue.ts';
+import { search } from '../store/search.ts';
+import { searchES } from '../store/searchES.ts';
+import { buildMatch } from '../util/buildMatch.ts';
+import { getPlayerMatches } from '../util/buildPlayer.ts';
 import {
   countPeers,
   getEndOfMonth,
@@ -18,7 +17,7 @@ import {
   queryParamToArray,
   redisCount,
   redisCountDistinct,
-} from '../util/utility';
+} from '../util/utility.ts';
 import {
   matchesCols,
   countsCats,
@@ -30,11 +29,11 @@ import {
   wardmapCols,
   wordcloudCols,
   recentMatchesCols,
-} from './playerFields';
-import db from '../store/db';
-import redis from '../store/redis';
-import packageJson from '../../package.json';
-import generateOperationId from './generateOperationId';
+} from './playerFields.ts';
+import db from '../store/db.ts';
+import redis from '../store/redis.ts';
+import packageJson from '../../package.json' with { type: 'json' };
+import generateOperationId from './generateOperationId.ts';
 import {
   getDistributions,
   getPlayerRatings,
@@ -50,53 +49,54 @@ import {
   getTeamScenarios,
   getItemTimings,
   isSubscriber,
-} from '../util/queries';
-import { filterDeps } from '../util/filter';
+} from '../util/queries.ts';
 const { Client } = pg;
-import heroParams from './requests/heroParams';
-import leagueParams from './requests/leagueParams';
-import matchParams from './requests/matchParams';
-import playerParams from './requests/playerParams';
-import scenarioParams from './requests/scenarioParams';
-import teamParams from './requests/teamParams';
-import BenchmarksResponse from './responses/BenchmarksResponse';
-import DistributionsResponse from './responses/DistributionsResponse';
-import HeroDurationsResponse from './responses/HeroDurationsResponse';
-import HeroItemPopularityResponse from './responses/HeroItemPopularityResponse';
-import HeroMatchupsResponse from './responses/HeroMatchupsResponse';
-import HeroObjectResponse from './responses/HeroObjectResponse';
-import HeroStatsResponse from './responses/HeroStatsResponse';
-import LeagueObjectResponse from './responses/LeagueObjectResponse';
-import MatchObjectResponse from './responses/MatchObjectResponse';
-import MatchResponse from './responses/MatchResponse';
-import MetadataResponse from './responses/MetadataResponse';
-import ParsedMatchesResponse from './responses/ParsedMatchesResponse';
-import PlayerCountsResponse from './responses/PlayerCountsResponse';
-import PlayerHeroesResponse from './responses/PlayerHeroesResponse';
-import PlayerMatchesResponse from './responses/PlayerMatchesResponse';
-import PlayerObjectResponse from './responses/PlayerObjectResponse';
-import PlayerPeersResponse from './responses/PlayerPeersResponse';
-import PlayerProsResponse from './responses/PlayerProsResponse';
-import PlayerRankingsResponse from './responses/PlayerRankingsResponse';
-import PlayerRatingsResponse from './responses/PlayerRatingsResponse';
-import PlayerRecentMatchesResponse from './responses/PlayerRecentMatchesResponse';
-import PlayersResponse from './responses/PlayersResponse';
-import PlayerTotalsResponse from './responses/PlayerTotalsResponse';
-import PlayerWardMapResponse from './responses/PlayerWardMapResponse';
-import PlayerWinLossResponse from './responses/PlayerWinLossResponse';
-import PlayerWordCloudResponse from './responses/PlayerWordCloudResponse';
-import PublicMatchesResponse from './responses/PublicMatchesResponse';
-import RankingsResponse from './responses/RankingsResponse';
-import RecordsResponse from './responses/RecordsResponse';
-import ScenarioItemTimingsResponse from './responses/ScenarioItemTimingsResponse';
-import ScenarioLaneRolesResponse from './responses/ScenarioLaneRolesResponse';
-import ScenarioMiscResponse from './responses/ScenarioMiscResponse';
-import SchemaResponse from './responses/SchemaResponse';
-import SearchResponse from './responses/SearchResponse';
-import TeamHeroesResponse from './responses/TeamHeroesResponse';
-import TeamMatchObjectResponse from './responses/TeamMatchObjectResponse';
-import TeamObjectResponse from './responses/TeamObjectResponse';
-import TeamPlayersResponse from './responses/TeamPlayersResponse';
+import heroParams from './requests/heroParams.ts';
+import leagueParams from './requests/leagueParams.ts';
+import matchParams from './requests/matchParams.ts';
+import playerParams from './requests/playerParams.ts';
+import scenarioParams from './requests/scenarioParams.ts';
+import teamParams from './requests/teamParams.ts';
+import BenchmarksResponse from './responses/BenchmarksResponse.ts';
+import DistributionsResponse from './responses/DistributionsResponse.ts';
+import HeroDurationsResponse from './responses/HeroDurationsResponse.ts';
+import HeroItemPopularityResponse from './responses/HeroItemPopularityResponse.ts';
+import HeroMatchupsResponse from './responses/HeroMatchupsResponse.ts';
+import HeroObjectResponse from './responses/HeroObjectResponse.ts';
+import HeroStatsResponse from './responses/HeroStatsResponse.ts';
+import LeagueObjectResponse from './responses/LeagueObjectResponse.ts';
+import MatchObjectResponse from './responses/MatchObjectResponse.ts';
+import MatchResponse from './responses/MatchResponse.ts';
+import MetadataResponse from './responses/MetadataResponse.ts';
+import ParsedMatchesResponse from './responses/ParsedMatchesResponse.ts';
+import PlayerCountsResponse from './responses/PlayerCountsResponse.ts';
+import PlayerHeroesResponse from './responses/PlayerHeroesResponse.ts';
+import PlayerMatchesResponse from './responses/PlayerMatchesResponse.ts';
+import PlayerObjectResponse from './responses/PlayerObjectResponse.ts';
+import PlayerPeersResponse from './responses/PlayerPeersResponse.ts';
+import PlayerProsResponse from './responses/PlayerProsResponse.ts';
+import PlayerRankingsResponse from './responses/PlayerRankingsResponse.ts';
+import PlayerRatingsResponse from './responses/PlayerRatingsResponse.ts';
+import PlayerRecentMatchesResponse from './responses/PlayerRecentMatchesResponse.ts';
+import PlayersResponse from './responses/PlayersResponse.ts';
+import PlayerTotalsResponse from './responses/PlayerTotalsResponse.ts';
+import PlayerWardMapResponse from './responses/PlayerWardMapResponse.ts';
+import PlayerWinLossResponse from './responses/PlayerWinLossResponse.ts';
+import PlayerWordCloudResponse from './responses/PlayerWordCloudResponse.ts';
+import PublicMatchesResponse from './responses/PublicMatchesResponse.ts';
+import RankingsResponse from './responses/RankingsResponse.ts';
+import RecordsResponse from './responses/RecordsResponse.ts';
+import ScenarioItemTimingsResponse from './responses/ScenarioItemTimingsResponse.ts';
+import ScenarioLaneRolesResponse from './responses/ScenarioLaneRolesResponse.ts';
+import ScenarioMiscResponse from './responses/ScenarioMiscResponse.ts';
+import SchemaResponse from './responses/SchemaResponse.ts';
+import SearchResponse from './responses/SearchResponse.ts';
+import TeamHeroesResponse from './responses/TeamHeroesResponse.ts';
+import TeamMatchObjectResponse from './responses/TeamMatchObjectResponse.ts';
+import TeamObjectResponse from './responses/TeamObjectResponse.ts';
+import TeamPlayersResponse from './responses/TeamPlayersResponse.ts';
+
+const { heroes: heroesConstants, cluster } = constants;
 
 const parameters = {
   ...heroParams,

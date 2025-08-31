@@ -1,5 +1,5 @@
-import db from './db';
-import { es, INDEX } from './elasticsearch';
+import db from './db.ts';
+import { es, INDEX } from './elasticsearch.ts';
 
 export async function searchES(query: string) {
   const accountIdMatch = Number.isInteger(Number(query))

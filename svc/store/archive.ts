@@ -1,14 +1,11 @@
-import config from '../../config';
+import type { PutObjectCommandInput, PutObjectCommandOutput } from '@aws-sdk/client-s3';
+import config from '../../config.ts';
 import { gzipSync, gunzipSync } from 'zlib';
-import {
-  S3Client,
-  PutObjectCommand,
-  GetObjectCommand,
-  PutObjectCommandInput,
-  PutObjectCommandOutput,
-} from '@aws-sdk/client-s3';
-import { redisCount } from '../util/utility';
+import s3 from '@aws-sdk/client-s3';
+import { redisCount } from '../util/utility.ts';
 import axios from 'axios';
+
+const { S3Client, PutObjectCommand, GetObjectCommand } = s3;
 
 async function stream2buffer(stream: any): Promise<Buffer> {
   return new Promise((resolve, reject) => {
@@ -24,7 +21,7 @@ class Archive {
   private accessKeyId: string = '';
   private secretAccessKey: string = '';
   private bucket: string = '';
-  private client: S3Client | null = null;
+  private client: s3.S3Client | null = null;
   constructor(type: 'match' | 'player' | 'blob') {
     this.endpoint = config.ARCHIVE_S3_ENDPOINT;
     this.accessKeyId = config.ARCHIVE_S3_KEY_ID;

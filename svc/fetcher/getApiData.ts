@@ -1,8 +1,8 @@
-import { SteamAPIUrls, getSteamAPIData, redisCount } from '../util/utility';
-import { blobArchive } from '../store/archive';
-import type { ApiMatch } from '../util/types';
-import { MatchFetcher } from './base';
-import { insertMatch } from '../util/insert';
+import { SteamAPIUrls, getSteamAPIData, redisCount } from '../util/utility.ts';
+import { blobArchive } from '../store/archive.ts';
+import type { ApiMatch } from '../util/types.ts';
+import { MatchFetcher } from './base.ts';
+import { insertMatch } from '../util/insert.ts';
 
 /**
  * Return API data by reading it without fetching.

@@ -1,7 +1,7 @@
 // Updates Steam profile data for players periodically
-import db from './store/db';
-import { invokeIntervalAsync } from './util/utility';
-import { addJob } from './store/queue';
+import db from './store/db.ts';
+import { invokeIntervalAsync } from './util/utility.ts';
+import { addJob } from './store/queue.ts';
 
 async function doProfiler() {
   // To optimize the api call we need to do 100 players at a time

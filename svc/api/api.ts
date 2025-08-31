@@ -1,11 +1,12 @@
+import type { FilterType } from '../util/filter.ts';
 import { Router } from 'express';
-import { FilterType, filterDeps } from '../util/filter';
-import spec from './spec';
-import db from '../store/db';
-import { alwaysCols } from './playerFields';
-import { queryParamToArray, redisCount } from '../util/utility';
+import { filterDeps } from '../util/filter.ts';
+import spec from './spec.ts';
+import db from '../store/db.ts';
+import { alwaysCols } from './playerFields.ts';
+import { queryParamToArray, redisCount } from '../util/utility.ts';
 import moment from 'moment';
-import redis from '../store/redis';
+import redis from '../store/redis.ts';
 
 //@ts-ignore
 const api: Router = new Router();

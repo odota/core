@@ -1,9 +1,9 @@
 // Builds sets of data, e.g. tracked players in the background
 import moment from 'moment';
-import redis from './store/redis';
-import db from './store/db';
-import { invokeIntervalAsync } from './util/utility';
-import contributors from '../CONTRIBUTORS';
+import redis from './store/redis.ts';
+import db from './store/db.ts';
+import { invokeIntervalAsync } from './util/utility.ts';
+import contributors from '../CONTRIBUTORS.ts';
 
 async function doBuildSets() {
   const subs = await db

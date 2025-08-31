@@ -289,7 +289,7 @@ type GcDataJob = {
   pgroup: PGroup;
 };
 
-type CountsJob = import('./svc/util/types').ApiMatch;
+type CountsJob = import('./svc/util/types.ts').ApiMatch;
 type ScenariosJob = string;
 type CacheJob = string;
 

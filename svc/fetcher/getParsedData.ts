@@ -1,10 +1,10 @@
-import config from '../../config';
-import { getRandomParserUrl, redisCount } from '../util/utility';
-import { blobArchive } from '../store/archive';
-import db from '../store/db';
-import { insertMatch } from '../util/insert';
+import config from '../../config.ts';
+import { getRandomParserUrl, redisCount } from '../util/utility.ts';
+import { blobArchive } from '../store/archive.ts';
+import db from '../store/db.ts';
+import { insertMatch } from '../util/insert.ts';
 import axios from 'axios';
-import { MatchFetcher } from './base';
+import { MatchFetcher } from './base.ts';
 
 /**
  * Return parse data by reading it without fetching.

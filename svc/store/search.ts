@@ -1,4 +1,4 @@
-import db from './db';
+import db from './db.ts';
 
 export async function search(query: string) {
   const accountIdMatch = Number.isInteger(Number(query))

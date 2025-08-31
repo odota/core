@@ -1,10 +1,10 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import moment from 'moment';
-import stripe from '../store/stripe';
-import db from '../store/db';
-import config from '../../config';
-import { redisCount } from '../util/utility';
+import stripe from '../store/stripe.ts';
+import db from '../store/db.ts';
+import config from '../../config.ts';
+import { redisCount } from '../util/utility.ts';
 
 const stripeAPIPlan = config.STRIPE_API_PLAN;
 const keys = express.Router();

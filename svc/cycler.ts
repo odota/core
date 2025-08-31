@@ -1,7 +1,7 @@
-import config from '../config';
-import redis from './store/redis';
+import config from '../config.ts';
+import redis from './store/redis.ts';
 import axios from 'axios';
-import { shuffle } from './util/utility';
+import { shuffle } from './util/utility.ts';
 
 const { PARSER_PARALLELISM } = config;
 const projectId = config.GOOGLE_CLOUD_PROJECT_ID;

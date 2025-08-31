@@ -12,21 +12,21 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 import { Redis } from 'ioredis';
 import { WebSocketServer, WebSocket } from 'ws';
-import keys from './api/keyManagement';
-import api from './api/api';
-import { upsertPlayer } from './util/insert';
-import db from './store/db';
-import redis from './store/redis';
-import config from '../config';
+import keys from './api/keyManagement.ts';
+import api from './api/api.ts';
+import { upsertPlayer } from './util/insert.ts';
+import db from './store/db.ts';
+import redis from './store/redis.ts';
+import config from '../config.ts';
 import {
   getEndOfDay,
   getEndOfMonth,
   getStartOfBlockMinutes,
   redisCount,
-} from './util/utility';
-import stripe from './store/stripe';
+} from './util/utility.ts';
+import stripe from './store/stripe.ts';
 import axios from 'axios';
-import { buildStatus } from './util/buildStatus';
+import { buildStatus } from './util/buildStatus.ts';
 
 const admins = config.ADMIN_ACCOUNT_IDS.split(',').map((e) => Number(e));
 const SteamStrategy = passportSteam.Strategy;

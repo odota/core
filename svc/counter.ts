@@ -1,19 +1,19 @@
 // Processes a queue of new matches to update totals/ratings
 import moment from 'moment';
-import redis from './store/redis';
-import db from './store/db';
-import { getMatchRankTier } from './util/queries';
-import { upsertPlayer, bulkIndexPlayer, upsert } from './util/insert';
-import { runQueue } from './store/queue';
-import config from '../config';
-import { benchmarks } from './util/benchmarksUtil';
+import redis from './store/redis.ts';
+import db from './store/db.ts';
+import { getMatchRankTier } from './util/queries.ts';
+import { upsertPlayer, bulkIndexPlayer, upsert } from './util/insert.ts';
+import { runQueue } from './store/queue.ts';
+import config from '../config.ts';
+import { benchmarks } from './util/benchmarksUtil.ts';
 import {
   isSignificant,
   getAnonymousAccountId,
   isRadiant,
   getStartOfBlockMinutes,
   redisCount,
-} from './util/utility';
+} from './util/utility.ts';
 
 async function updateHeroRankings(match: Match) {
   if (!isSignificant(match)) {

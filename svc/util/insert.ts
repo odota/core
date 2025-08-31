@@ -1,12 +1,12 @@
 import moment from 'moment';
-import { patch } from 'dotaconstants';
+import dc from 'dotaconstants';
 import util from 'node:util';
 import { promises as fs } from 'fs';
-import config from '../../config';
-import { addJob, addReliableJob } from '../store/queue';
-import db, { getPostgresColumns } from '../store/db';
-import redis from '../store/redis';
-import { es, INDEX } from '../store/elasticsearch';
+import config from '../../config.ts';
+import { addJob, addReliableJob } from '../store/queue.ts';
+import db, { getPostgresColumns } from '../store/db.ts';
+import redis from '../store/redis.ts';
+import { es, INDEX } from '../store/elasticsearch.ts';
 import type knex from 'knex';
 import {
   getAnonymousAccountId,
@@ -19,16 +19,18 @@ import {
   redisCount,
   transformMatch,
   createMatchCopy,
-} from './utility';
+} from './utility.ts';
 import {
   getMatchRankTier,
   isRecentVisitor,
   isRecentlyVisited,
-} from './queries';
-import { getPGroup } from './pgroup';
-import { blobArchive } from '../store/archive';
-import type { ApiMatch, ApiPlayer, InsertMatchInput } from './types';
-import { upsertPlayerCaches } from './playerCaches';
+} from './queries.ts';
+import { getPGroup } from './pgroup.ts';
+import { blobArchive } from '../store/archive.ts';
+import type { ApiMatch, ApiPlayer, InsertMatchInput } from './types.ts';
+import { upsertPlayerCaches } from './playerCaches.ts';
+
+const { patch } = dc;
 
 moment.relativeTimeThreshold('ss', 0);
 

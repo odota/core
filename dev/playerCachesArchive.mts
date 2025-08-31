@@ -1,6 +1,6 @@
 import fs from 'fs';
 const { getPlayerMatchesWithMetadata } = await import(
-  '../svc/util/buildPlayer.js'
+  '../svc/util/buildPlayer.ts'
 );
 
 // Write player blob to archive
