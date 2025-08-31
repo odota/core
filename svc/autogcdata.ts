@@ -25,4 +25,4 @@ async function doGcData() {
     }
   }
 }
-invokeIntervalAsync(doGcData, 5000);
+invokeIntervalAsync(doGcData, 10000);

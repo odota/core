@@ -1,6 +1,6 @@
 import { gcFetcher } from './fetcher/getGcData';
 import db from './store/db';
-import { average, isRadiant } from './util/utility';
+import { average, isRadiant, redisCount } from './util/utility';
 
 const DEFAULT_RATING = 4000;
 const kFactor = 32;
@@ -89,6 +89,7 @@ async function doRate() {
     );
     // Commit transaction
     await db.raw('COMMIT');
+    redisCount('rater');
   }
 }
 
@@ -122,6 +123,7 @@ async function prefetchGcData() {
         'DELETE FROM rating_queue WHERE match_seq_num = ?',
         row.match_seq_num,
       );
+      redisCount('rater_skip');
     }
   }
 }

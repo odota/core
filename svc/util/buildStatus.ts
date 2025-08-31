@@ -85,6 +85,8 @@ export async function buildStatus() {
         // retriever_matches_current_hour: async () => countHour('retriever'),
         parsed_matches_last_day: async () => countDay('parser'),
         gcdata_matches_last_day: async () => countDay('gcdata'),
+        rated_matches_last_day: async () => countDay('rater'),
+        rated_skip_last_day: async () => countDay('rater_skip'),
         profiler_last_day: async () => countDay('profiler'),
         fullhistory_last_day: async () => countDay('fullhistory'),
         fullhistory_skips_last_day: async () => countDay('fullhistory_skip'),
