@@ -8,7 +8,7 @@ import nock from 'nock';
 import assert from 'assert';
 import supertest from 'supertest';
 import stripe from '../svc/store/stripe.ts';
-import pg from 'pg';
+import { Pool } from 'pg';
 import { readFileSync } from 'fs';
 import url from 'url';
 import { Client } from 'cassandra-driver';
@@ -31,11 +31,8 @@ import redis from '../svc/store/redis.ts';
 import db from '../svc/store/db.ts';
 import cassandra from '../svc/store/cassandra.ts';
 import c from 'ansi-colors';
-import s3 from '@aws-sdk/client-s3';
+import { CreateBucketCommand, S3Client } from '@aws-sdk/client-s3';
 
-const { CreateBucketCommand, S3Client } = s3;
-
-const { Pool } = pg;
 const { RETRIEVER_HOST, POSTGRES_URL, CASSANDRA_URL } = config;
 const initPostgresHost = POSTGRES_URL.replace('/yasp_test', '/postgres');
 const initCassandraHost = url.parse(CASSANDRA_URL).host as string;

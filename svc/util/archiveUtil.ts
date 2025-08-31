@@ -1,14 +1,12 @@
 import config from '../../config.ts';
 import { matchArchive, playerArchive } from '../store/archive.ts';
 import QueryStream from 'pg-query-stream';
-import pg from 'pg';
+import { Client } from 'pg';
 import db from '../store/db.ts';
 import type { PutObjectCommandOutput } from '@aws-sdk/client-s3';
 import { getFullPlayerMatchesWithMetadata } from './buildPlayer.ts';
 import { getMatchDataFromBlobWithMetadata } from './buildMatch.ts';
 import { isDataComplete, randomInt, redisCount } from './utility.ts';
-
-const { Client } = pg;
 
 async function processMatch(matchId: number) {
   // Check if we should archive the blobs (should be parsed and not archived)

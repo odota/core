@@ -1,11 +1,10 @@
 {
   "compilerOptions": {
     "target": "es2020",
-    "module": "NodeNext",
+    "module": "nodenext",
     "allowJs": true,
     "strict": true,
     "esModuleInterop": true,
-    "outDir": "./build",
     "resolveJsonModule": true,
     "noEmit": true,
     "allowImportingTsExtensions": true

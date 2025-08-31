@@ -1,6 +1,6 @@
 import constants from 'dotaconstants';
 import moment from 'moment';
-import pg from 'pg';
+import { Client } from 'pg';
 import config from '../../config.ts';
 import { addJob, addReliableJob, getReliableJob } from '../store/queue.ts';
 import { search } from '../store/search.ts';
@@ -50,7 +50,6 @@ import {
   getItemTimings,
   isSubscriber,
 } from '../util/queries.ts';
-const { Client } = pg;
 import heroParams from './requests/heroParams.ts';
 import leagueParams from './requests/leagueParams.ts';
 import matchParams from './requests/matchParams.ts';
