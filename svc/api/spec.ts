@@ -999,17 +999,18 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           const result = await db
             .select()
             .from('players')
-            .rightJoin(
+            .leftJoin(
               'player_computed_mmr',
               'players.account_id',
               'player_computed_mmr.account_id'
             )
-            .rightJoin(
+            .leftJoin(
               'notable_players',
               'players.account_id',
               'notable_players.account_id',
             )
-            .orderBy('player_computed_mmr.computed_mmr', 'desc');
+            .orderBy('player_computed_mmr.computed_mmr', 'desc')
+            .limit(100);
           return res.json(result);
         },
       },
