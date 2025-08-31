@@ -5,23 +5,18 @@ export default {
     title: 'PlayerResponse',
     type: 'object',
     properties: {
-      solo_competitive_rank: {
-        description: 'solo_competitive_rank',
-        type: 'integer',
-        nullable: true,
-      },
-      competitive_rank: {
-        description: 'competitive_rank',
-        type: 'integer',
-        nullable: true,
-      },
       rank_tier: {
-        description: 'rank_tier',
+        description: `The player's Dota medal/rank`,
         type: 'number',
         nullable: true,
       },
       leaderboard_rank: {
-        description: 'leaderboard_rank',
+        description: `The player's rank on the Dota leaderboard (if Immortal)`,
+        type: 'number',
+        nullable: true,
+      },
+      computed_rating: {
+        description: 'Rating estimate based on ranked matches',
         type: 'number',
         nullable: true,
       },

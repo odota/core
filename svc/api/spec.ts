@@ -269,17 +269,19 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
             // 404 error
             return next();
           }
-          const [rt, lr] = await Promise.all([
+          const [rt, lr, cr] = await Promise.all([
             db.first().from('rank_tier').where({ account_id: accountId }),
             db
               .first()
               .from('leaderboard_rank')
               .where({ account_id: accountId }),
+            db.first().from('player_computed_mmr').where({ account_id: accountId }),
           ]);
           const result = {
             profile: playerData,
             rank_tier: rt?.rating ?? null,
             leaderboard_rank: lr?.rating ?? null,
+            computed_rating: cr?.computed_mmr ?? null,
           };
           return res.json(result);
         },
@@ -967,6 +969,48 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           return res.json({
             length,
           });
+        },
+      },
+    },
+    '/topPlayers': {
+      get: {
+        operationId: generateOperationId('get', '/topPlayers'),
+        summary: 'GET /topPlayers',
+        description: 'Get list of highly ranked players',
+        tags: ['top players'],
+        parameters: [],
+        responses: {
+          200: {
+            description: 'Success',
+            content: {
+              'application/json; charset=utf-8': {
+                schema: {
+                  type: 'array',
+                  items: {
+                    $ref: '#/components/schemas/PlayerObjectResponse',
+                  },
+                },
+              },
+            },
+          },
+        },
+        route: () => '/topPlayers',
+        func: async (req, res, next) => {
+          const result = await db
+            .select()
+            .from('players')
+            .rightJoin(
+              'player_computed_mmr',
+              'players.account_id',
+              'player_computed_mmr.account_id'
+            )
+            .rightJoin(
+              'notable_players',
+              'players.account_id',
+              'notable_players.account_id',
+            )
+            .orderBy('player_computed_mmr.computed_mmr', 'desc');
+          return res.json(result);
         },
       },
     },

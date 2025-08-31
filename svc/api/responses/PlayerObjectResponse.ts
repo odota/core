@@ -83,6 +83,11 @@ export default {
         description: 'When the roster lock will end',
         type: 'integer',
       },
+      computed_rating: {
+        description: 'Rating estimate based on ranked matches',
+        type: 'integer',
+        nullable: true,
+      },
     },
   },
 };
