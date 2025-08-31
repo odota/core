@@ -1,5 +1,5 @@
 import axios from 'axios';
-const { config } = await import('../config.js');
+const { config } = await import('../config.ts');
 
 const output: string[] = [];
 

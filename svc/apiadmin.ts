@@ -1,9 +1,9 @@
 // Runs background processes related to API keys and billing/usage
 import moment from 'moment';
-import stripe from './store/stripe';
-import db from './store/db';
-import config from '../config';
-import { invokeIntervalAsync } from './util/utility';
+import stripe from './store/stripe.ts';
+import db from './store/db.ts';
+import config from '../config.ts';
+import { invokeIntervalAsync } from './util/utility.ts';
 import type Stripe from 'stripe';
 
 async function updateStripeUsage() {

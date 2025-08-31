@@ -1,13 +1,13 @@
 import util from 'util';
-import config from '../../config';
-import { filterMatches } from './filter';
-import redis from '../store/redis';
-import cassandra, { getCassandraColumns } from '../store/cassandra';
-import { deserialize, pick, redisCount, redisCountDistinct } from './utility';
+import config from '../../config.ts';
+import { filterMatches } from './filter.ts';
+import redis from '../store/redis.ts';
+import cassandra, { getCassandraColumns } from '../store/cassandra.ts';
+import { deserialize, pick, redisCount, redisCountDistinct } from './utility.ts';
 import { gzipSync, gunzipSync } from 'zlib';
-import { cacheableCols } from '../api/playerFields';
+import { cacheableCols } from '../api/playerFields.ts';
 import { promises as fs } from 'fs';
-import { playerArchive } from '../store/archive';
+import { playerArchive } from '../store/archive.ts';
 
 export async function getPlayerMatches(
   accountId: number,

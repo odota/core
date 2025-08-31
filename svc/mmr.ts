@@ -1,9 +1,9 @@
 // Processes a queue of requests to update MMR/rank medal for players
-import { runQueue } from './store/queue';
-import db from './store/db';
-import { insertPlayerRating } from './util/insert';
-import config from '../config';
-import { redisCount, getRandomRetrieverUrl } from './util/utility';
+import { runQueue } from './store/queue.ts';
+import db from './store/db.ts';
+import { insertPlayerRating } from './util/insert.ts';
+import config from '../config.ts';
+import { redisCount, getRandomRetrieverUrl } from './util/utility.ts';
 import axios from 'axios';
 
 async function processMmr(job: MmrJob) {

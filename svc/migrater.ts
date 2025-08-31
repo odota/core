@@ -1,6 +1,6 @@
-import config from '../config';
-import cassandra, { getCassandraColumns } from './store/cassandra';
-import redis from './store/redis';
+import config from '../config.ts';
+import cassandra, { getCassandraColumns } from './store/cassandra.ts';
+import redis from './store/redis.ts';
 import scyllaDriver from 'cassandra-driver';
 import url from 'url';
 

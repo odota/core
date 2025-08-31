@@ -1,12 +1,12 @@
 // Processes a queue of full history/refresh requests for players
 import urllib from 'url';
-import config from '../config';
-import { redisCount, getSteamAPIData, SteamAPIUrls } from './util/utility';
-import db from './store/db';
-import { runQueue } from './store/queue';
-import { getPlayerMatches } from './util/buildPlayer';
-import type { ApiMatch } from './util/types';
-import redis from './store/redis';
+import config from '../config.ts';
+import { redisCount, getSteamAPIData, SteamAPIUrls } from './util/utility.ts';
+import db from './store/db.ts';
+import { runQueue } from './store/queue.ts';
+import { getPlayerMatches } from './util/buildPlayer.ts';
+import type { ApiMatch } from './util/types.ts';
+import redis from './store/redis.ts';
 
 async function updatePlayer(player: FullHistoryJob) {
   // done with this player, update

@@ -1,6 +1,6 @@
 // Issues reparse requests for all matches in postgres that aren't parsed
-import db from '../svc/store/db';
-import { addReliableJob } from '../svc/store/queue';
+import db from '../svc/store/db.ts';
+import { addReliableJob } from '../svc/store/queue.ts';
 
 async function start() {
   const matches = await db.raw(

@@ -5,17 +5,17 @@
  * Stream is run through a series of processors to count/aggregate it into a single object
  * This object is passed to insertMatch to persist the data into the database.
  * */
-import config from '../config';
-import { runReliableQueue } from './store/queue';
+import config from '../config.ts';
+import { runReliableQueue } from './store/queue.ts';
 import c from 'ansi-colors';
-import { buildReplayUrl, redisCount } from './util/utility';
-import redis from './store/redis';
-import { apiFetcher } from './fetcher/getApiData';
-import { parsedFetcher } from './fetcher/getParsedData';
-import { gcFetcher } from './fetcher/getGcData';
-import { getPGroup } from './util/pgroup';
+import { buildReplayUrl, redisCount } from './util/utility.ts';
+import redis from './store/redis.ts';
+import { apiFetcher } from './fetcher/getApiData.ts';
+import { parsedFetcher } from './fetcher/getParsedData.ts';
+import { gcFetcher } from './fetcher/getGcData.ts';
+import { getPGroup } from './util/pgroup.ts';
 import moment from 'moment';
-import { queueReconcile } from './util/insert';
+import { queueReconcile } from './util/insert.ts';
 
 const { PARSER_PARALLELISM } = config;
 

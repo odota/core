@@ -1,5 +1,7 @@
-import { items } from 'dotaconstants';
-import { playerWon } from './utility';
+import dc from 'dotaconstants';
+import { playerWon } from './utility.ts';
+
+const { items } = dc;
 
 // all items that cost at least 1400
 const itemCost = 1400;

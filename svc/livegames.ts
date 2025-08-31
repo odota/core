@@ -1,12 +1,12 @@
 // Updates the list of currently live games
 import JSONbig from 'json-bigint';
-import redis from './store/redis';
-import db from './store/db';
+import redis from './store/redis.ts';
+import db from './store/db.ts';
 import {
   SteamAPIUrls,
   getSteamAPIData,
   invokeIntervalAsync,
-} from './util/utility';
+} from './util/utility.ts';
 
 async function doLiveGames() {
   // Get the list of pro players

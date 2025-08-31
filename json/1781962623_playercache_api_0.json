@@ -27,7 +27,7 @@
   "cluster": "132",
   "lobby_type": "7",
   "game_mode": "22",
-  "average_rank": "81",
+  "average_rank": "75",
   "heroes": "{\"0\":{\"account_id\":120269134,\"hero_id\":100},\"1\":{\"hero_id\":73},\"2\":{\"account_id\":122866507,\"hero_id\":104},\"3\":{\"account_id\":195471601,\"hero_id\":46},\"4\":{\"account_id\":17120336,\"hero_id\":75},\"128\":{\"account_id\":44152866,\"hero_id\":6},\"129\":{\"account_id\":80319669,\"hero_id\":105},\"130\":{\"account_id\":235274000,\"hero_id\":52},\"131\":{\"hero_id\":59},\"132\":{\"hero_id\":1}}",
   "kda": "2.71"
 }

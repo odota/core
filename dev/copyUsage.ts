@@ -1,4 +1,4 @@
-import db from '../svc/store/db';
+import db from '../svc/store/db.ts';
 import moment from 'moment';
 
 async function start() {

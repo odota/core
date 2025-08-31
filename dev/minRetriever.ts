@@ -1,6 +1,6 @@
 import SteamUser from 'steam-user';
 import express from 'express';
-import config from '../config';
+import config from '../config.ts';
 import ProtoBuf from 'protobufjs';
 
 const app = express();

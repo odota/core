@@ -1,13 +1,14 @@
+import type { AxiosResponse } from 'axios';
 import moment from 'moment';
-import config from '../../config';
-import db from '../store/db';
-import redis from '../store/redis';
-import { getRandomRetrieverUrl, redisCount } from '../util/utility';
-import axios, { AxiosResponse } from 'axios';
-import retrieverMatch from '../../test/data/retriever_match.json';
-import { insertMatch } from '../util/insert';
-import { blobArchive } from '../store/archive';
-import { MatchFetcher } from './base';
+import config from '../../config.ts';
+import db from '../store/db.ts';
+import redis from '../store/redis.ts';
+import { getRandomRetrieverUrl, redisCount } from '../util/utility.ts';
+import axios from 'axios';
+import retrieverMatch from '../../test/data/retriever_match.json' with { type: 'json' };
+import { insertMatch } from '../util/insert.ts';
+import { blobArchive } from '../store/archive.ts';
+import { MatchFetcher } from './base.ts';
 
 /**
  * Return GC data by reading it without fetching.

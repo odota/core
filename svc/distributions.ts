@@ -1,8 +1,8 @@
 // Computes rank/mmr distributions and stores in Redis
 import fs from 'fs';
-import db from './store/db';
-import redis from './store/redis';
-import { invokeIntervalAsync } from './util/utility';
+import db from './store/db.ts';
+import redis from './store/redis.ts';
+import { invokeIntervalAsync } from './util/utility.ts';
 
 function mapMmr(results: { rows: any[]; sum?: number }) {
   const sum = results.rows.reduce(

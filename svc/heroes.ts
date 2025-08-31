@@ -1,12 +1,12 @@
 // Updates the heroes in the database
 import axios from 'axios';
-import db from './store/db';
-import { upsert } from './util/insert';
+import db from './store/db.ts';
+import { upsert } from './util/insert.ts';
 import {
   SteamAPIUrls,
   getSteamAPIData,
   invokeIntervalAsync,
-} from './util/utility';
+} from './util/utility.ts';
 
 async function doHeroes() {
   const url = SteamAPIUrls.api_heroes({

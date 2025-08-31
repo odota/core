@@ -1,8 +1,8 @@
 /**
  * PM2 configuration file
  */
-require('dotenv').config();
-const os = require('os');
+import 'dotenv/config';
+import os from 'os';
 
 const dev = process.env.NODE_ENV === 'development';
 const prod = process.env.NODE_ENV === 'production';
@@ -217,12 +217,8 @@ arr = arr.filter(
   (app) => !process.env.GROUP || app.group === process.env.GROUP,
 );
 
-const apps = arr.map((app) => {
-  // In production, we can use the built files directly
-  // This makes the pm2 memory metrics work
-  const prodScript = `build/index.js`;
-  const devScript = `index.ts`;
-  const script = prod ? prodScript : devScript;
+export const apps = arr.map((app) => {
+  const script = 'index.ts';
   return {
     ...app,
     watch: dev ? true : false,
@@ -231,18 +227,10 @@ const apps = arr.map((app) => {
     exec_mode: app.exec_mode ?? 'fork',
     instances: app.instances ?? 1,
     script: app.script ?? script,
-    interpreter:
-      app.interpreter ??
-      (script.endsWith('.ts') || script.endsWith('.mts')
-        ? 'node_modules/.bin/tsx'
-        : undefined),
+    interpreter: 'node',
     env: {
       ...app.env,
       ROLE: app.name_override ?? app.name,
     },
   };
 });
-
-module.exports = {
-  apps,
-};

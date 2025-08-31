@@ -1,9 +1,9 @@
 // Cleans up old data from the database (originally used for scenarios but now also does other cleanup)
-import db from './store/db';
-import config from '../config';
-import { epochWeek, invokeIntervalAsync } from './util/utility';
+import db from './store/db.ts';
+import config from '../config.ts';
+import { epochWeek, invokeIntervalAsync } from './util/utility.ts';
 import { promises as fs } from 'fs';
-import { isRecentVisitor, isRecentlyVisited } from './util/queries';
+import { isRecentVisitor, isRecentlyVisited } from './util/queries.ts';
 
 async function cleanup() {
   const currentWeek = epochWeek();

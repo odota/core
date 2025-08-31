@@ -1,7 +1,7 @@
-import { redisCount } from '../util/utility';
-import { matchArchive } from '../store/archive';
-import db from '../store/db';
-import { MatchFetcher } from './base';
+import { redisCount } from '../util/utility.ts';
+import { matchArchive } from '../store/archive.ts';
+import db from '../store/db.ts';
+import { MatchFetcher } from './base.ts';
 
 class ArchivedFetcher extends MatchFetcher<ParsedMatch> {
   readData = async (matchId: number): Promise<ParsedMatch | null> => {

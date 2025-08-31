@@ -1,10 +1,10 @@
 // Processes a queue of requests for gcdata (replay salts) without parsing
 // The parser will also request gcdata if needed
-import { runQueue } from './store/queue';
-import config from '../config';
-import { gcFetcher } from './fetcher/getGcData';
-import { queueReconcile } from './util/insert';
-import { redisCount } from './util/utility';
+import { runQueue } from './store/queue.ts';
+import config from '../config.ts';
+import { gcFetcher } from './fetcher/getGcData.ts';
+import { queueReconcile } from './util/insert.ts';
+import { redisCount } from './util/utility.ts';
 
 async function processGcData(job: GcDataJob) {
   const pgroup = job.pgroup;

@@ -7,31 +7,33 @@ import type { Express } from 'express';
 import nock from 'nock';
 import assert from 'assert';
 import supertest from 'supertest';
-import stripe from '../svc/store/stripe';
+import stripe from '../svc/store/stripe.ts';
 import pg from 'pg';
 import { readFileSync } from 'fs';
 import url from 'url';
 import { Client } from 'cassandra-driver';
 import swaggerParser from '@apidevtools/swagger-parser';
-import config from '../config';
-import detailsApi from './data/details_api.json';
-import summariesApi from './data/summaries_api.json';
-import historyApi from './data/history_api.json';
-import heroesApi from './data/heroes_api.json';
-import leaguesApi from './data/leagues_api.json';
-import retrieverPlayer from './data/retriever_player.json';
-import detailsApiPro from './data/details_api_pro.json';
-import retrieverMatch from './data/retriever_match.json';
-import spec from '../svc/api/spec';
-import { getPlayerMatches } from '../svc/util/buildPlayer';
-import { insertMatch, upsertPlayer } from '../svc/util/insert';
-import { buildMatch } from '../svc/util/buildMatch';
-import { es } from '../svc/store/elasticsearch';
-import redis from '../svc/store/redis';
-import db from '../svc/store/db';
-import cassandra from '../svc/store/cassandra';
+import config from '../config.ts';
+import detailsApi from './data/details_api.json' with { type: 'json' };;
+import summariesApi from './data/summaries_api.json' with { type: 'json' };;
+import historyApi from './data/history_api.json' with { type: 'json' };;
+import heroesApi from './data/heroes_api.json' with { type: 'json' };;
+import leaguesApi from './data/leagues_api.json' with { type: 'json' };;
+import retrieverPlayer from './data/retriever_player.json' with { type: 'json' };;
+import detailsApiPro from './data/details_api_pro.json' with { type: 'json' };;
+import retrieverMatch from './data/retriever_match.json' with { type: 'json' };;
+import spec from '../svc/api/spec.ts';
+import { getPlayerMatches } from '../svc/util/buildPlayer.ts';
+import { insertMatch, upsertPlayer } from '../svc/util/insert.ts';
+import { buildMatch } from '../svc/util/buildMatch.ts';
+import { es } from '../svc/store/elasticsearch.ts';
+import redis from '../svc/store/redis.ts';
+import db from '../svc/store/db.ts';
+import cassandra from '../svc/store/cassandra.ts';
 import c from 'ansi-colors';
-import { CreateBucketCommand, S3Client } from '@aws-sdk/client-s3';
+import s3 from '@aws-sdk/client-s3';
+
+const { CreateBucketCommand, S3Client } = s3;
 
 const { Pool } = pg;
 const { RETRIEVER_HOST, POSTGRES_URL, CASSANDRA_URL } = config;
@@ -204,10 +206,10 @@ before(async function setup() {
 
   async function startServices() {
     console.log('starting services');
-    const web = await import('../svc/web.js');
+    const web = await import('../svc/web.ts');
     app = web.app;
-    await import('../svc/parser.js');
-    await import('../svc/mmr.js');
+    await import('../svc/parser.ts');
+    await import('../svc/mmr.ts');
   }
 
   async function loadMatches() {

@@ -1,7 +1,7 @@
-const { insertMatch } = await import('../svc/util/insert.js');
-const { db } = await import('../svc/store/db.js');
+const { insertMatch } = await import('../svc/util/insert.ts');
+const { db } = await import('../svc/store/db.ts');
 const { SteamAPIUrls, getSteamAPIData, isProMatch } = await import(
-  '../svc/util/utility.js'
+  '../svc/util/utility.ts'
 );
 
 // From DB

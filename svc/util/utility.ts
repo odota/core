@@ -1,13 +1,16 @@
-import { game_mode, lobby_type, patch } from 'dotaconstants';
+import type { AxiosRequestConfig } from 'axios';
+import dc from 'dotaconstants';
 import urllib from 'url';
 import moment from 'moment';
-import laneMappings from './laneMappings';
-import config from '../../config';
-import contributors from '../../CONTRIBUTORS';
-import type { ApiMatch, ApiPlayer, InsertMatchInput } from './types';
+import laneMappings from './laneMappings.ts';
+import config from '../../config.ts';
+import contributors from '../../CONTRIBUTORS.ts';
+import type { ApiMatch, ApiPlayer, InsertMatchInput } from './types.ts';
 import type QueryString from 'qs';
-import axios, { AxiosRequestConfig } from 'axios';
-import redis from '../store/redis';
+import axios from 'axios';
+import redis from '../store/redis.ts';
+
+const { game_mode, lobby_type, patch } = dc;
 
 /**
  * Tokenizes an input string.

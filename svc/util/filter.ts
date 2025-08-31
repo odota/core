@@ -1,5 +1,7 @@
-import { getPatchIndex, isRadiant, isSignificant } from './utility';
-import { cluster } from 'dotaconstants';
+import { getPatchIndex, isRadiant, isSignificant } from './utility.ts';
+import dc from 'dotaconstants';
+
+const { cluster } = dc;
 
 export type FilterType = keyof typeof filterDeps;
 /**

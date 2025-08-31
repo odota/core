@@ -1,6 +1,6 @@
 import cassandraDriver from 'cassandra-driver';
 import url from 'url';
-import config from '../../config';
+import config from '../../config.ts';
 const spl = config.CASSANDRA_URL.split(',');
 const cps: string[] = spl.map((u) => url.parse(u).host) as string[];
 console.log('connecting %s', config.CASSANDRA_URL);
