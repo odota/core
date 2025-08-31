@@ -80,8 +80,8 @@ export async function buildStatus() {
 
         matches_last_day: async () => countDay('added_match'),
         matches_prev_hour: async () => countLastHour('added_match'),
-        retriever_matches_last_day: async () => countDay('retriever'),
         retriever_players_last_day: async () => countDay('retriever_player'),
+        retriever_matches_last_day: async () => countDay('retriever'),
         // retriever_matches_current_hour: async () => countHour('retriever'),
         parsed_matches_last_day: async () => countDay('parser'),
         gcdata_matches_last_day: async () => countDay('gcdata'),
