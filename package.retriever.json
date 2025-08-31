@@ -4,7 +4,7 @@
   "version": "26.0.0",
   "license": "MIT",
   "scripts": {
-    "start": "tsx index"
+    "start": "node svc/retriever.ts"
   },
   "repository": {
     "type": "git",
@@ -16,7 +16,6 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "protobufjs": "^7.2.5",
-    "steam-user": "^5.2.0",
-    "tsx": "^4.19.2"
+    "steam-user": "^5.2.0"
   }
 }
