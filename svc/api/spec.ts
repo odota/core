@@ -998,9 +998,9 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
         func: async (req, res, next) => {
           const result = await db
             .select()
-            .from('players')
-            .leftJoin(
-              'player_computed_mmr',
+            .from('player_computed_mmr')
+            .join(
+              'players',
               'players.account_id',
               'player_computed_mmr.account_id'
             )
