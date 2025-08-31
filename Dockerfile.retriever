@@ -12,13 +12,13 @@ ENV NPM_CONFIG_LOGLEVEL warn
 COPY proto /usr/src/proto
 COPY svc/retriever.ts /usr/src/svc/retriever.ts
 COPY config.ts /usr/src/config.ts
-#COPY index.ts /usr/src/index.ts
+COPY index.ts /usr/src/index.ts
 COPY package.retriever.json /usr/src/package.json
 WORKDIR /usr/src
 RUN npm install
 
 ENV PATH /usr/src/node_modules/.bin:$PATH
 
-#ENV ROLE retriever
+ENV ROLE retriever
 
 CMD ["npm",  "start"]
