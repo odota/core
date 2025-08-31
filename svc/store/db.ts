@@ -1,8 +1,8 @@
-import { types } from 'pg';
+import pg from 'pg';
 import knex from 'knex';
 import config from '../../config.ts';
 // remember: all values returned from the server are either NULL or a string
-types.setTypeParser(20, (val) => (val === null ? null : parseInt(val, 10)));
+pg.types.setTypeParser(20, (val) => (val === null ? null : parseInt(val, 10)));
 console.log('connecting %s', config.POSTGRES_URL);
 export const db = knex({
   client: 'pg',
