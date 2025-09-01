@@ -3,8 +3,10 @@ import redis from './redis.ts';
 import db from './db.ts';
 import { Redis } from 'ioredis';
 import config from '../../config.ts';
-import { Client } from 'pg';
+import pg from 'pg';
 import c from 'ansi-colors';
+
+const Client = pg.Client;
 
 moment.relativeTimeThreshold('ss', 0);
 

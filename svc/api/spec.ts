@@ -1,6 +1,6 @@
 import constants from 'dotaconstants';
 import moment from 'moment';
-import { Client } from 'pg';
+import pg from 'pg';
 import config from '../../config.ts';
 import { addJob, addReliableJob, getReliableJob } from '../store/queue.ts';
 import { search } from '../store/search.ts';
@@ -96,6 +96,7 @@ import TeamObjectResponse from './responses/TeamObjectResponse.ts';
 import TeamPlayersResponse from './responses/TeamPlayersResponse.ts';
 
 const { heroes: heroesConstants, cluster } = constants;
+const Client = pg.Client;
 
 const parameters = {
   ...heroParams,
