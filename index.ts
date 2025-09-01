@@ -22,6 +22,7 @@ async function start() {
     // if role variable is set just run that script
     import('./svc/' + process.env.ROLE + '.ts');
   } else if (process.env.GROUP) {
+    console.log('running group %s', process.env.GROUP);
     // or run the group with pm2
     cp.execSync('pm2 start ecosystem.config.js');
     setInterval(
@@ -31,7 +32,7 @@ async function start() {
       24 * 60 * 60 * 1000,
     );
   } else {
-    // Block indefinitely (keep process alive for Docker)
+    console.log('blocking process indefinitely for Docker');
     process.stdin.resume();
   }
 }
