@@ -1001,6 +1001,24 @@ export default {
         description: 'replay_url',
         type: 'string',
       },
+      pauses: {
+        description:
+          'Array containing information about pauses during the game. Each item contains the time and duration of the pause.',
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            time: {
+              description: 'Time in seconds at which pause started',
+              type: 'integer',
+            },
+            duration: {
+              description: 'The duration of the pause',
+              type: 'integer',
+            },
+          },
+        },
+      }
     },
   },
 };
