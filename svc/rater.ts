@@ -98,28 +98,30 @@ async function prefetchGcData() {
     const { rows } = await db.raw<{
       rows: { match_seq_num: number; match_id: number; pgroup: PGroup }[];
     }>(
-      'SELECT match_seq_num, match_id, pgroup from rating_queue WHERE gcdata IS NULL ORDER BY match_seq_num LIMIT 10',
+      'SELECT match_seq_num, match_id, pgroup from rating_queue WHERE gcdata IS NULL ORDER BY match_seq_num LIMIT 5',
     );
     if (rows.length) {
       // Attempt to fetch for each
       await Promise.all(rows.map(async (row) => {
-        const { data } = await gcFetcher.getOrFetchDataWithRetry(row.match_id, {
+        const { data } = await gcFetcher.getOrFetchData(row.match_id, {
           pgroup: row.pgroup,
-        }, 500);
+        });
         if (data) {
           // If successful, update
           await db.raw(
             'UPDATE rating_queue SET gcdata = ? WHERE match_seq_num = ?',
             [JSON.stringify(data), row.match_seq_num],
           );
-        } else {
-          // Match can't be rated due to lack of data
-          await db.raw(
-            'DELETE FROM rating_queue WHERE match_seq_num = ?',
-            row.match_seq_num,
-          );
-          redisCount('rater_skip');
         }
+        // If community prediction matches come back they can block the queue, might want a way of detecting them
+        // } else {
+        //   // Match can't be rated due to lack of data
+        //   await db.raw(
+        //     'DELETE FROM rating_queue WHERE match_seq_num = ?',
+        //     row.match_seq_num,
+        //   );
+        //   redisCount('rater_skip');
+        // }
       }));
     }
     await new Promise((resolve) => setTimeout(resolve, 1000));
