@@ -38,7 +38,7 @@ async function start() {
         .on('readable', function () {
           // readable is emitted as soon a row is received and parsed
           let row: any;
-          //@ts-ignore
+          //@ts-expect-error
           while ((row = this.read())) {
             // console.log(row.tkn.toString());
             // console.log(row);

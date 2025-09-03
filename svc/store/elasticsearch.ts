@@ -3,7 +3,7 @@ import config from '../../config.ts';
 console.log('connecting %s', config.ELASTICSEARCH_URL);
 export const es = new elasticsearch.Client({
   node: `http://${config.ELASTICSEARCH_URL}`,
-  //@ts-ignore
+  //@ts-expect-error
   apiVersion: '6.8',
 });
 export const INDEX = config.NODE_ENV === 'test' ? 'dota-test' : 'dota';

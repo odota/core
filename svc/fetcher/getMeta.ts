@@ -47,7 +47,7 @@ export async function getMetaFromUrl(url: string) {
     console.time('[METAPARSE]: download/bunzip');
     const { stdout } = await execPromise(
       `curl -L ${url} | bunzip2`,
-      //@ts-ignore
+      //@ts-expect-error
       { shell: true, encoding: 'buffer', maxBuffer: 10 * 1024 * 1024 },
     );
     console.timeEnd('[METAPARSE]: download/bunzip');

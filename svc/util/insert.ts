@@ -77,7 +77,7 @@ export async function upsertPlayer(
     return;
   }
   if (indexPlayer) {
-    //@ts-ignore
+    //@ts-expect-error
     await es.update({
       index: INDEX,
       type: 'player',

@@ -115,7 +115,7 @@ function mergeMatches(
         Object.keys(localMatch).forEach((key) => {
           const typedKey = key as keyof ParsedPlayerMatch;
           // For each key prefer nonnull value, with precedence to local store
-          //@ts-ignore
+          //@ts-expect-error
           localMatch[typedKey] =
             localMatch[typedKey] ?? archivedMatch[typedKey] ?? null;
         });

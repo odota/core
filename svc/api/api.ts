@@ -8,7 +8,7 @@ import { queryParamToArray, redisCount } from '../util/utility.ts';
 import moment from 'moment';
 import redis from '../store/redis.ts';
 
-//@ts-ignore
+//@ts-expect-error
 const api: Router = new Router();
 // Player endpoints middleware
 api.use('/players/:account_id/:info?', async (req, res, next) => {

@@ -74,7 +74,7 @@ keys
           api_key,
         };
         const customer = await stripe.customers.retrieve(customer_id);
-        //@ts-ignore
+        //@ts-expect-error
         const source = customer.sources.data[0];
         toReturn.credit_brand = source?.brand;
         toReturn.credit_last4 = source?.last4;
@@ -288,7 +288,7 @@ keys
         email,
       });
       await stripe.subscriptions.update(subscription_id, {
-        //@ts-ignore
+        //@ts-expect-error
         source: id,
       });
       res.sendStatus(200);
