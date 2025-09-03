@@ -104,25 +104,23 @@ async function prefetchGcData() {
     );
     if (rows.length) {
       await eachLimitPromise(rows, async (row) => {
-        const { data } = await gcFetcher.getOrFetchData(row.match_id, {
+        const { data } = await gcFetcher.getOrFetchDataWithRetry(row.match_id, {
           pgroup: row.pgroup,
-        });
+        }, 500);
         if (data) {
           // If successful, update
           await db.raw(
             'UPDATE rating_queue SET gcdata = ? WHERE match_seq_num = ?',
             [JSON.stringify(data), row.match_seq_num],
           );
+        } else {
+          // Match can't be rated due to lack of data (community prediction?)
+          await db.raw(
+            'DELETE FROM rating_queue WHERE match_seq_num = ?',
+            row.match_seq_num,
+          );
+          redisCount('rater_skip');
         }
-        // If community prediction matches come back they can block the queue, might want a way of detecting them
-        // } else {
-        //   // Match can't be rated due to lack of data
-        //   await db.raw(
-        //     'DELETE FROM rating_queue WHERE match_seq_num = ?',
-        //     row.match_seq_num,
-        //   );
-        //   redisCount('rater_skip');
-        // }
       }, capacity);
     } else {
       await new Promise((resolve) => setTimeout(resolve, 1000));

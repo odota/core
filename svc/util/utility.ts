@@ -879,6 +879,7 @@ export async function eachLimitPromise<T>(
           } catch (e) {
             // Log exceptions but keep iterating
             console.log(e);
+            results[i] = null;
           }
           count += 1;
         }
