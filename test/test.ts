@@ -81,7 +81,6 @@ before(async function globalSetup() {
     // We faked the replay salt to 1 to match the testfile name
     .reply(200, retrieverMatch);
 
-  config.ENABLE_RANDOM_MMR_UPDATE = '1';
   await initPostgres();
   await initElasticsearch();
   await initRedis();
@@ -313,7 +312,7 @@ suite(c.blue('[TEST] players'), async () => {
   });
 });
 
-suite(c.blue('[TEST] replay parse'), async function () {
+suite(c.blue('[TEST] replay parse'), () => {
   const tests = [detailsApi.result];
   const matchData = tests[0];
   before(async () => {
@@ -326,8 +325,15 @@ suite(c.blue('[TEST] replay parse'), async function () {
       origin: 'scanner',
     });
     assert.ok(parseJob);
-    console.log('waiting for replay parse');
-    await new Promise((resolve) => setTimeout(resolve, 20000));
+    let notDone = true;
+    let tries = 0;
+    while (notDone && tries < 30) {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      tries += 1;
+      console.log('waiting for replay parse... %s', tries);
+      const row = await db.first().from('queue').where({ type: 'parse' });
+      notDone = Boolean(row);
+    }
   });
   test('should have api data in buildMatch', async () => {
     // ensure api data got inserted

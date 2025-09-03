@@ -85,6 +85,7 @@ if (process.env.NODE_TEST_CONTEXT) {
   process.env.ARCHIVE_S3_KEY_SECRET = 'minioadmin';
   process.env.SESSION_SECRET = 'testsecretvalue';
   process.env.FRONTEND_PORT = '5001';
+  process.env.ENABLE_RANDOM_MMR_UPDATE = '1';
 }
 
 // Export the combined values
