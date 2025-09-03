@@ -1,6 +1,6 @@
 import { gcFetcher } from './fetcher/getGcData.ts';
 import db from './store/db.ts';
-import { average, isRadiant, redisCount } from './util/utility.ts';
+import { average, getRetrieverCapacity, isRadiant, redisCount } from './util/utility.ts';
 
 const DEFAULT_RATING = 4000;
 const kFactor = 32;
@@ -98,7 +98,8 @@ async function prefetchGcData() {
     const { rows } = await db.raw<{
       rows: { match_seq_num: number; match_id: number; pgroup: PGroup }[];
     }>(
-      'SELECT match_seq_num, match_id, pgroup from rating_queue WHERE gcdata IS NULL ORDER BY match_seq_num LIMIT 5',
+      'SELECT match_seq_num, match_id, pgroup from rating_queue WHERE gcdata IS NULL ORDER BY match_seq_num LIMIT ?',
+      [await getRetrieverCapacity()]
     );
     if (rows.length) {
       // Attempt to fetch for each

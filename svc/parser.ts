@@ -8,7 +8,7 @@
 import config from '../config.ts';
 import { runReliableQueue } from './store/queue.ts';
 import c from 'ansi-colors';
-import { buildReplayUrl, redisCount } from './util/utility.ts';
+import { buildReplayUrl, getParserCapacity, redisCount } from './util/utility.ts';
 import redis from './store/redis.ts';
 import { apiFetcher } from './fetcher/getApiData.ts';
 import { parsedFetcher } from './fetcher/getParsedData.ts';
@@ -16,8 +16,6 @@ import { gcFetcher } from './fetcher/getGcData.ts';
 import { getPGroup } from './util/pgroup.ts';
 import moment from 'moment';
 import { queueReconcile } from './util/insert.ts';
-
-const { PARSER_PARALLELISM } = config;
 
 async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
   const start = Date.now();
@@ -164,15 +162,9 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
     }
   }
 }
-async function getCapacity() {
-  if (config.USE_SERVICE_REGISTRY) {
-    return redis.zcard('registry:parser');
-  }
-  return Number(PARSER_PARALLELISM);
-}
 runReliableQueue(
   'parse',
-  Number(PARSER_PARALLELISM),
+  Number(config.PARSER_PARALLELISM),
   parseProcessor,
-  getCapacity,
+  getParserCapacity,
 );

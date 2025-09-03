@@ -725,7 +725,17 @@ function makeUrlArray(input: string) {
   return output;
 }
 
-export function getRetrieverCount() {
+export async function getParserCapacity() {
+  if (config.USE_SERVICE_REGISTRY) {
+    return redis.zcard('registry:parser');
+  }
+  return Number(config.PARSER_PARALLELISM);
+}
+
+export async function getRetrieverCapacity() {
+  if (config.USE_SERVICE_REGISTRY) {
+    return redis.zcard('registry:retriever');
+  }
   return RETRIEVER_ARRAY.length;
 }
 
