@@ -1,6 +1,11 @@
 import { gcFetcher } from './fetcher/getGcData.ts';
 import db from './store/db.ts';
-import { average, eachLimitPromise, getRetrieverCapacity, isRadiant, redisCount } from './util/utility.ts';
+import {
+  average,
+  getRetrieverCapacity,
+  isRadiant,
+  redisCount,
+} from './util/utility.ts';
 import QueryStream from 'pg-query-stream';
 import pg from 'pg';
 import config from '../config.ts';
@@ -97,11 +102,10 @@ async function doRate() {
 }
 
 type DataRow = {
- match_seq_num: number; match_id: number; pgroup: PGroup;
+  match_seq_num: number;
+  match_id: number;
+  pgroup: PGroup;
 };
-const Client = pg.Client;
-const client = new Client(config.POSTGRES_URL);
-await client.connect();
 
 async function processRow(row: DataRow) {
   const { data } = await gcFetcher.getOrFetchData(row.match_id, {
@@ -109,10 +113,10 @@ async function processRow(row: DataRow) {
   });
   if (data) {
     // If successful, update
-    await db.raw(
-      'UPDATE rating_queue SET gcdata = ? WHERE match_seq_num = ?',
-      [JSON.stringify(data), row.match_seq_num],
-    );
+    await db.raw('UPDATE rating_queue SET gcdata = ? WHERE match_seq_num = ?', [
+      JSON.stringify(data),
+      row.match_seq_num,
+    ]);
   }
   // else {
   //   // Match can't be rated due to lack of data (community prediction?)
@@ -125,22 +129,19 @@ async function processRow(row: DataRow) {
 }
 
 async function prefetchGcData() {
-  const query = new QueryStream(
-    `SELECT match_seq_num, match_id, pgroup from rating_queue WHERE gcdata IS NULL ORDER BY match_seq_num`
-  );
-  const stream = client.query(query);
-  stream.on('readable', async () => {
-    let row: DataRow;
-    while ((row = stream.read())) {
+  while (true) {
+    console.time('SQL');
+    const { rows } = await db.raw<{ rows: DataRow[] }>(
+      `SELECT match_seq_num, match_id, pgroup from rating_queue WHERE gcdata IS NULL ORDER BY match_seq_num LIMIT 1`,
+    );
+    console.timeEnd('SQL');
+    const row = rows[0];
+    if (row) {
       await processRow(row);
-      const capacity = await getRetrieverCapacity();
-      await new Promise((resolve) => setTimeout(resolve, 1000 / capacity));
     }
-  });
-  stream.on('end', async () => {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    prefetchGcData();
-  });
+    const capacity = await getRetrieverCapacity();
+    await new Promise((resolve) => setTimeout(resolve, 1000 / capacity));
+  }
 }
 
 doRate();

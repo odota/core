@@ -36,8 +36,8 @@ const testKey = '56bc4c35-586c-4f58-a55b-7a5247613872';
 let app: Express;
 
 before(async function globalSetup() {
-      // fake api responses
-    nock('http://api.steampowered.com')
+  // fake api responses
+  nock('http://api.steampowered.com')
     // fake 500 error to test error handling
     .get('/IDOTA2Match_570/GetMatchDetails/V001/')
     .query(true)
@@ -64,7 +64,7 @@ before(async function globalSetup() {
     .get('/IDOTA2Match_570/GetLeagueListing/v0001/')
     .query(true)
     .reply(200, leaguesApi);
-    nock(`http://${RETRIEVER_HOST}`)
+  nock(`http://${RETRIEVER_HOST}`)
     .get(/\/profile\/.*/)
     // fake mmr response up to 14 times for 7 non-anonymous players in test match inserted twice
     // add 1 more for refresh request
@@ -80,153 +80,153 @@ before(async function globalSetup() {
     .query(true)
     // We faked the replay salt to 1 to match the testfile name
     .reply(200, retrieverMatch);
-    
-      config.ENABLE_RANDOM_MMR_UPDATE = '1';
-      await initPostgres();
-      await initElasticsearch();
-      await initRedis();
-      await initCassandra();
-      await initMinio();
-      await loadMatches();
-      await loadPlayers();
-      await startServices();
-      // Wait one second to give mmr time to update
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-    
-      async function initElasticsearch() {
-        console.log('Create Elasticsearch Mapping');
-        const mapping = JSON.parse(
-          readFileSync('./elasticsearch/index.json', { encoding: 'utf-8' }),
-        );
-        const exists = await es.indices.exists({
-          index: 'dota-test', // Check if index already exists, in which case, delete it
-        });
-        if (exists.body) {
-          await es.indices.delete({
-            index: 'dota-test',
-          });
-        }
-        await es.indices.create({
-          index: 'dota-test',
-        });
-        await es.indices.close({
-          index: 'dota-test',
-        });
-        await es.indices.putSettings({
-          index: 'dota-test',
-          body: mapping.settings,
-        });
-        await es.indices.putMapping({
-          index: 'dota-test',
-          type: 'player',
-          body: mapping.mappings.player,
-        });
-        await es.indices.open({
-          index: 'dota-test',
-        });
-      }
-    
-      async function initRedis() {
-        console.log('wiping redis');
-        await redis.flushdb();
-      }
-    
-      async function initPostgres() {
-        const pool = new Pool({
-          connectionString: initPostgresHost,
-        });
-        const client = await pool.connect();
-        console.log('drop postgres test database');
-        await client.query('DROP DATABASE IF EXISTS yasp_test');
-        console.log('create postgres test database');
-        await client.query('CREATE DATABASE yasp_test');
-        const pool2 = new Pool({
-          connectionString: POSTGRES_URL,
-        });
-        const client2 = await pool2.connect();
-        console.log('create postgres test tables');
-        const query = readFileSync('./sql/create_tables.sql', 'utf8');
-        await client2.query(query);
-        // ready to create client
-        console.log('insert postgres test data');
-        // populate the DB with this leagueid so we insert a pro match
-        await db.raw(
-          "INSERT INTO leagues(leagueid, tier) VALUES(5399, 'professional')",
-        );
-      }
-    
-      async function initCassandra() {
-        const init = new Client({
-          contactPoints: [initCassandraHost],
-          localDataCenter: 'datacenter1',
-        });
-        console.log('drop cassandra test keyspace');
-        await init.execute('DROP KEYSPACE IF EXISTS yasp_test');
-        console.log('create cassandra test keyspace');
-        await init.execute(
-          "CREATE KEYSPACE yasp_test WITH REPLICATION = { 'class': 'NetworkTopologyStrategy', 'datacenter1': 1 };",
-        );
-        console.log('create cassandra tables');
-        const tables = readFileSync('./sql/create_tables.cql', 'utf8')
-          .split(';')
-          .filter((cql) => cql.length > 1);
-        for (let i = 0; i < tables.length; i++) {
-          const cql = tables[i];
-          await init.execute('USE yasp_test');
-          await init.execute(cql);
-        }
-      }
-    
-      async function initMinio() {
-        const client = new S3Client({
-          region: 'us-east-1',
-          credentials: {
-            accessKeyId: config.ARCHIVE_S3_KEY_ID,
-            secretAccessKey: config.ARCHIVE_S3_KEY_SECRET,
-          },
-          endpoint: config.ARCHIVE_S3_ENDPOINT,
-          forcePathStyle: true,
-        });
-        // Make a new test bucket with a new name
-        // There's no good way to delete the test bucket automatically since we can't delete nonempty buckets
-        console.log('create minio test bucket');
-        await client.send(
-          new CreateBucketCommand({
-            ACL: 'public-read',
-            Bucket: config.BLOB_ARCHIVE_S3_BUCKET,
-          }),
-        );
-      }
-    
-      async function startServices() {
-        console.log('starting services');
-        await import('../svc/parser.ts');
-        await import('../svc/mmr.ts');
-        const web = await import('../svc/web.ts');
-        app = web.app;
-      }
-    
-      async function loadMatches() {
-        console.log('loading matches');
-        const arr = [detailsApi.result, detailsApiPro.result, detailsApiPro.result];
-        for (let i = 0; i < arr.length; i++) {
-          const m = arr[i];
-          await insertMatch(m, {
-            type: 'api',
-            // Pretend to be scanner insert so we queue mmr/counts update etc.
-            origin: 'scanner',
-            skipParse: true,
-          });
-        }
-      }
-    
-      async function loadPlayers() {
-        console.log('loading players');
-        await Promise.all(
-          summariesApi.response.players.map((p) => upsertPlayer(db, p, true)),
-        );
-      }
+
+  config.ENABLE_RANDOM_MMR_UPDATE = '1';
+  await initPostgres();
+  await initElasticsearch();
+  await initRedis();
+  await initCassandra();
+  await initMinio();
+  await loadMatches();
+  await loadPlayers();
+  await startServices();
+  // Wait one second to give mmr time to update
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
+  async function initElasticsearch() {
+    console.log('Create Elasticsearch Mapping');
+    const mapping = JSON.parse(
+      readFileSync('./elasticsearch/index.json', { encoding: 'utf-8' }),
+    );
+    const exists = await es.indices.exists({
+      index: 'dota-test', // Check if index already exists, in which case, delete it
     });
+    if (exists.body) {
+      await es.indices.delete({
+        index: 'dota-test',
+      });
+    }
+    await es.indices.create({
+      index: 'dota-test',
+    });
+    await es.indices.close({
+      index: 'dota-test',
+    });
+    await es.indices.putSettings({
+      index: 'dota-test',
+      body: mapping.settings,
+    });
+    await es.indices.putMapping({
+      index: 'dota-test',
+      type: 'player',
+      body: mapping.mappings.player,
+    });
+    await es.indices.open({
+      index: 'dota-test',
+    });
+  }
+
+  async function initRedis() {
+    console.log('wiping redis');
+    await redis.flushdb();
+  }
+
+  async function initPostgres() {
+    const pool = new Pool({
+      connectionString: initPostgresHost,
+    });
+    const client = await pool.connect();
+    console.log('drop postgres test database');
+    await client.query('DROP DATABASE IF EXISTS yasp_test');
+    console.log('create postgres test database');
+    await client.query('CREATE DATABASE yasp_test');
+    const pool2 = new Pool({
+      connectionString: POSTGRES_URL,
+    });
+    const client2 = await pool2.connect();
+    console.log('create postgres test tables');
+    const query = readFileSync('./sql/create_tables.sql', 'utf8');
+    await client2.query(query);
+    // ready to create client
+    console.log('insert postgres test data');
+    // populate the DB with this leagueid so we insert a pro match
+    await db.raw(
+      "INSERT INTO leagues(leagueid, tier) VALUES(5399, 'professional')",
+    );
+  }
+
+  async function initCassandra() {
+    const init = new Client({
+      contactPoints: [initCassandraHost],
+      localDataCenter: 'datacenter1',
+    });
+    console.log('drop cassandra test keyspace');
+    await init.execute('DROP KEYSPACE IF EXISTS yasp_test');
+    console.log('create cassandra test keyspace');
+    await init.execute(
+      "CREATE KEYSPACE yasp_test WITH REPLICATION = { 'class': 'NetworkTopologyStrategy', 'datacenter1': 1 };",
+    );
+    console.log('create cassandra tables');
+    const tables = readFileSync('./sql/create_tables.cql', 'utf8')
+      .split(';')
+      .filter((cql) => cql.length > 1);
+    for (let i = 0; i < tables.length; i++) {
+      const cql = tables[i];
+      await init.execute('USE yasp_test');
+      await init.execute(cql);
+    }
+  }
+
+  async function initMinio() {
+    const client = new S3Client({
+      region: 'us-east-1',
+      credentials: {
+        accessKeyId: config.ARCHIVE_S3_KEY_ID,
+        secretAccessKey: config.ARCHIVE_S3_KEY_SECRET,
+      },
+      endpoint: config.ARCHIVE_S3_ENDPOINT,
+      forcePathStyle: true,
+    });
+    // Make a new test bucket with a new name
+    // There's no good way to delete the test bucket automatically since we can't delete nonempty buckets
+    console.log('create minio test bucket');
+    await client.send(
+      new CreateBucketCommand({
+        ACL: 'public-read',
+        Bucket: config.BLOB_ARCHIVE_S3_BUCKET,
+      }),
+    );
+  }
+
+  async function startServices() {
+    console.log('starting services');
+    await import('../svc/parser.ts');
+    await import('../svc/mmr.ts');
+    const web = await import('../svc/web.ts');
+    app = web.app;
+  }
+
+  async function loadMatches() {
+    console.log('loading matches');
+    const arr = [detailsApi.result, detailsApiPro.result, detailsApiPro.result];
+    for (let i = 0; i < arr.length; i++) {
+      const m = arr[i];
+      await insertMatch(m, {
+        type: 'api',
+        // Pretend to be scanner insert so we queue mmr/counts update etc.
+        origin: 'scanner',
+        skipParse: true,
+      });
+    }
+  }
+
+  async function loadPlayers() {
+    console.log('loading players');
+    await Promise.all(
+      summariesApi.response.players.map((p) => upsertPlayer(db, p, true)),
+    );
+  }
+});
 
 suite('[TEST] swagger schema', async () => {
   test('should be valid', async () => {
@@ -444,22 +444,26 @@ suite(c.blue('[TEST] api routes'), async function () {
       if (path.indexOf('/explorer') === 0 || path.indexOf('/request') === 0) {
         continue;
       }
-      await test(`should visit ${replacedPath}`, { timeout: 2000 }, async () => {
-        const res = await supertest(app)[verb as HttpVerb](
-          // Add query parameters to test search, rankings, benchmarks
-          `/api${replacedPath}?q=testsearch&hero_id=1`,
-        );
-        if (res.statusCode !== 200) {
-          console.error(verb, replacedPath, res.body);
-        }
-        if (replacedPath.startsWith('/admin')) {
-          assert.equal(res.statusCode, 403);
-        } else if (replacedPath.startsWith('/subscribeSuccess')) {
-          assert.equal(res.statusCode, 400);
-        } else {
-          assert.equal(res.statusCode, 200);
-        }
-      });
+      await test(
+        `should visit ${replacedPath}`,
+        { timeout: 2000 },
+        async () => {
+          const res = await supertest(app)[verb as HttpVerb](
+            // Add query parameters to test search, rankings, benchmarks
+            `/api${replacedPath}?q=testsearch&hero_id=1`,
+          );
+          if (res.statusCode !== 200) {
+            console.error(verb, replacedPath, res.body);
+          }
+          if (replacedPath.startsWith('/admin')) {
+            assert.equal(res.statusCode, 403);
+          } else if (replacedPath.startsWith('/subscribeSuccess')) {
+            assert.equal(res.statusCode, 400);
+          } else {
+            assert.equal(res.statusCode, 200);
+          }
+        },
+      );
     }
   });
 });
@@ -779,4 +783,4 @@ describe(c.blue('[TEST] generateMatchups'), () => {
 */
 after(() => {
   process.exit(0);
-})
+});

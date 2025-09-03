@@ -1,7 +1,14 @@
-import type { PutObjectCommandInput, PutObjectCommandOutput } from '@aws-sdk/client-s3';
+import type {
+  PutObjectCommandInput,
+  PutObjectCommandOutput,
+} from '@aws-sdk/client-s3';
 import config from '../../config.ts';
 import { gzipSync, gunzipSync } from 'zlib';
-import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+import {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+} from '@aws-sdk/client-s3';
 import { redisCount } from '../util/utility.ts';
 import axios from 'axios';
 

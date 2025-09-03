@@ -16,7 +16,7 @@ async function processGcData(job: GcDataJob) {
     {
       pgroup,
     },
-    1000
+    1000,
   );
   if (gcMatch) {
     // Reconcile anonymous players

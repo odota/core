@@ -272,7 +272,10 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
               .first()
               .from('leaderboard_rank')
               .where({ account_id: accountId }),
-            db.first().from('player_computed_mmr').where({ account_id: accountId }),
+            db
+              .first()
+              .from('player_computed_mmr')
+              .where({ account_id: accountId }),
           ]);
           const result = {
             profile: playerData,
@@ -999,7 +1002,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
             .join(
               'players',
               'players.account_id',
-              'player_computed_mmr.account_id'
+              'player_computed_mmr.account_id',
             )
             .leftJoin(
               'notable_players',

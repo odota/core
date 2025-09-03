@@ -8,7 +8,11 @@
 import config from '../config.ts';
 import { runReliableQueue } from './store/queue.ts';
 import c from 'ansi-colors';
-import { buildReplayUrl, getParserCapacity, redisCount } from './util/utility.ts';
+import {
+  buildReplayUrl,
+  getParserCapacity,
+  redisCount,
+} from './util/utility.ts';
 import redis from './store/redis.ts';
 import { apiFetcher } from './fetcher/getApiData.ts';
 import { parsedFetcher } from './fetcher/getParsedData.ts';
@@ -73,12 +77,14 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
     // Fetch the gcdata and construct a replay URL
     const gcStart = Date.now();
     const { data: gcMatch, error: gcError } =
-      await gcFetcher.getOrFetchDataWithRetry(matchId, {
-        pgroup,
-        origin: job.origin,
-      },
-      1000,
-    );
+      await gcFetcher.getOrFetchDataWithRetry(
+        matchId,
+        {
+          pgroup,
+          origin: job.origin,
+        },
+        1000,
+      );
     if (!gcMatch) {
       // non-retryable error
       log('fail', gcError || 'Missing gcdata');

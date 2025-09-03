@@ -40,7 +40,11 @@ async function readGcData(matchId: number): Promise<GcMatch | null> {
 async function saveGcData(
   matchId: number,
   extraData: GcExtraData,
-): Promise<{data: GcMatch | null, error: string | null, retryable?: boolean }> {
+): Promise<{
+  data: GcMatch | null;
+  error: string | null;
+  retryable?: boolean;
+}> {
   const url = await getRandomRetrieverUrl(`/match/${matchId}`);
   let resp: AxiosResponse<typeof retrieverMatch>;
   try {
@@ -77,14 +81,12 @@ async function saveGcData(
   }
   if (data.match.game_mode === 'DOTA_GAMEMODE_NONE') {
     // Really old matches have a 0 replay salt so if we don't have gamemode stop retrying
-    return { error: 'extremely old GC response format without replay salt', data: null };
+    return {
+      error: 'extremely old GC response format without replay salt',
+      data: null,
+    };
   }
-  if (
-    !data ||
-    !data.match ||
-    !data.match.players ||
-    !data.match.replay_salt
-  ) {
+  if (!data || !data.match || !data.match.players || !data.match.replay_salt) {
     // Response doesn't have expected data, try again
     return { error: 'invalid data', data: null, retryable: true };
   }

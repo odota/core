@@ -3,7 +3,12 @@ import config from '../../config.ts';
 import { filterMatches } from './filter.ts';
 import redis from '../store/redis.ts';
 import cassandra, { getCassandraColumns } from '../store/cassandra.ts';
-import { deserialize, pick, redisCount, redisCountDistinct } from './utility.ts';
+import {
+  deserialize,
+  pick,
+  redisCount,
+  redisCountDistinct,
+} from './utility.ts';
 import { gzipSync, gunzipSync } from 'zlib';
 import { cacheableCols } from '../api/playerFields.ts';
 import { promises as fs } from 'fs';

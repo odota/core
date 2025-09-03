@@ -30,7 +30,7 @@ async function readParsedData(matchId: number): Promise<ParserMatch | null> {
 async function fetchParseData(
   matchId: number,
   { leagueid, start_time, duration, origin, pgroup, url }: ParseExtraData,
-): Promise<{ data: ParserMatch | null, error: string | null }> {
+): Promise<{ data: ParserMatch | null; error: string | null }> {
   try {
     // Make a HEAD request for the replay to see if it's available
     await axios.head(url, { timeout: 10000 });

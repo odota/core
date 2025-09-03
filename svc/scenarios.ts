@@ -2,7 +2,10 @@
 import util from 'util';
 import { buildMatch } from './util/buildMatch.ts';
 import db from './store/db.ts';
-import { scenarioChecks, validateMatchProperties } from './util/scenariosUtil.ts';
+import {
+  scenarioChecks,
+  validateMatchProperties,
+} from './util/scenariosUtil.ts';
 import { epochWeek } from './util/utility.ts';
 import { runQueue } from './store/queue.ts';
 
