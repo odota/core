@@ -100,6 +100,7 @@ type DataRow = {
  match_seq_num: number; match_id: number; pgroup: PGroup;
 };
 const Client = pg.Client;
+const client = new Client(config.POSTGRES_URL);
 
 async function processRow(row: DataRow) {
   const { data } = await gcFetcher.getOrFetchData(row.match_id, {
@@ -127,9 +128,8 @@ async function prefetchGcData() {
     const query = new QueryStream(
       `SELECT match_seq_num, match_id, pgroup from rating_queue WHERE gcdata IS NULL ORDER BY match_seq_num`
     );
-    const pg = new Client(config.POSTGRES_URL);
-    await pg.connect();
-    const stream = pg.query(query);
+    await client.connect();
+    const stream = client.query(query);
     stream.on('readable', async () => {
       let row: DataRow;
       while ((row = stream.read())) {
@@ -139,7 +139,7 @@ async function prefetchGcData() {
       }
     });
     stream.on('end', async () => {
-      await pg.end();
+      await client.end();
       await new Promise((resolve) => setTimeout(resolve, 1000));
     });
   }

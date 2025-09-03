@@ -1,6 +1,6 @@
-import constants from 'dotaconstants';
+import constants, { heroes, cluster } from 'dotaconstants';
 import moment from 'moment';
-import pg from 'pg';
+import { Client } from 'pg';
 import config from '../../config.ts';
 import { addJob, addReliableJob, getReliableJob } from '../store/queue.ts';
 import { search } from '../store/search.ts';
@@ -94,9 +94,6 @@ import TeamHeroesResponse from './responses/TeamHeroesResponse.ts';
 import TeamMatchObjectResponse from './responses/TeamMatchObjectResponse.ts';
 import TeamObjectResponse from './responses/TeamObjectResponse.ts';
 import TeamPlayersResponse from './responses/TeamPlayersResponse.ts';
-
-const { heroes: heroesConstants, cluster } = constants;
-const Client = pg.Client;
 
 const parameters = {
   ...heroParams,
@@ -443,9 +440,9 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
         },
         route: () => '/players/:account_id/heroes',
         func: async (req, res, next) => {
-          const heroes: AnyDict = {};
+          const counts: AnyDict = {};
           // prefill heroes with every hero
-          Object.keys(heroesConstants).forEach((heroId) => {
+          Object.keys(heroes).forEach((heroId) => {
             const hero_id_int = parseInt(heroId);
             const hero = {
               hero_id: hero_id_int,
@@ -457,7 +454,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
               against_games: 0,
               against_win: 0,
             };
-            heroes[hero_id_int] = hero;
+            result[hero_id_int] = hero;
           });
           res.locals.queryObj.project =
             res.locals.queryObj.project.concat(heroesCols);
@@ -472,27 +469,27 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
               const tm = group[key];
               const tmHero = tm.hero_id;
               // don't count invalid heroes
-              if (tmHero in heroes) {
+              if (tmHero in result) {
                 if (isRadiant({ player_slot: Number(key) }) === isRadiant(m)) {
                   if (tm.account_id === m.account_id) {
-                    heroes[tmHero].games += 1;
-                    heroes[tmHero].win += playerWin ? 1 : 0;
-                    if (m.start_time > heroes[tmHero].last_played) {
-                      heroes[tmHero].last_played = m.start_time;
+                    counts[tmHero].games += 1;
+                    counts[tmHero].win += playerWin ? 1 : 0;
+                    if (m.start_time > result[tmHero].last_played) {
+                      counts[tmHero].last_played = m.start_time;
                     }
                   } else {
-                    heroes[tmHero].with_games += 1;
-                    heroes[tmHero].with_win += playerWin ? 1 : 0;
+                    counts[tmHero].with_games += 1;
+                    counts[tmHero].with_win += playerWin ? 1 : 0;
                   }
                 } else {
-                  heroes[tmHero].against_games += 1;
-                  heroes[tmHero].against_win += playerWin ? 1 : 0;
+                  counts[tmHero].against_games += 1;
+                  counts[tmHero].against_win += playerWin ? 1 : 0;
                 }
               }
             });
           });
-          const result = Object.keys(heroes)
-            .map((k) => heroes[k])
+          const result = Object.keys(counts)
+            .map((k) => counts[k])
             .filter(
               (hero) =>
                 !res.locals.queryObj.having ||
@@ -1719,7 +1716,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           }
           // Assemble the result for each hero
           const result = await Promise.all(
-            Object.values(heroesConstants).map((hero) => getHeroStat(hero)),
+            Object.values(heroes).map((hero) => getHeroStat(hero)),
           );
           redis.setex('heroStats2', 60, JSON.stringify(result));
           return res.json(result);
