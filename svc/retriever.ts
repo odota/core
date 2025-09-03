@@ -154,9 +154,9 @@ app.get('/match/:match_id', (req, res, next) => {
   const timeout = setTimeout(() => {
     // Respond after 3 seconds to send back header info
     // Currently consumers are configured to fail after 4 seconds
-    // Use a 200 status code to avoid exception, we'll check the response body after
+    // Use a 204 status code to avoid exception, we'll check the response body after and read headers
     console.timeEnd('match:' + matchId);
-    res.end();
+    res.status(204).end();
   }, 3000);
   client.sendToGC(
     DOTA_APPID,
@@ -173,9 +173,9 @@ app.get('/match/:match_id', (req, res, next) => {
         const matchData: any = CMsgGCMatchDetailsResponse.decode(payload);
         if (matchData.result === 15) {
           // Valve is blocking GC access to this match, probably a community prediction match
-          // Send back 200 success with a specific header that tells us not to retry
+          // Send back 204 success with a specific header that tells us not to retry
           res.setHeader('x-match-noretry', matchData.result);
-          return res.end();
+          return res.status(204).end();
         }
         matchSuccesses += 1;
         // Reset on success

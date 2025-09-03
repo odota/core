@@ -52,7 +52,7 @@ async function saveGcData(
       timeout: 3500,
     });
   } catch (e) {
-    // Non-200 status (e.g. 429 too many requests or 500 server error)
+    // Non-2xx status (e.g. 429 too many requests or 500 server error)
     let message = '';
     if (axios.isAxiosError(e)) {
       message = e.message;
@@ -64,7 +64,7 @@ async function saveGcData(
   const { data, headers } = resp;
   const steamid = headers['x-match-request-steamid'];
   const ip = headers['x-match-request-ip'];
-  // Record the total steamids and ip counts (sent back with 200 response even if request timed out)
+  // Record the total steamids and ip counts from headers (sent with 204 response even if request timed out)
   redis.hincrby('retrieverSteamIDs', steamid, 1);
   redis.expireat(
     'retrieverSteamIDs',
