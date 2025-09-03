@@ -1,6 +1,9 @@
 import { gcFetcher } from './fetcher/getGcData.ts';
 import db from './store/db.ts';
 import { average, eachLimitPromise, getRetrieverCapacity, isRadiant, redisCount } from './util/utility.ts';
+import QueryStream from 'pg-query-stream';
+import pg from 'pg';
+import config from '../config.ts';
 
 const DEFAULT_RATING = 4000;
 const kFactor = 32;
@@ -93,38 +96,52 @@ async function doRate() {
   }
 }
 
+type DataRow = {
+ match_seq_num: number; match_id: number; pgroup: PGroup;
+};
+const Client = pg.Client;
+
+async function processRow(row: DataRow) {
+  const { data } = await gcFetcher.getOrFetchData(row.match_id, {
+    pgroup: row.pgroup,
+  });
+  if (data) {
+    // If successful, update
+    await db.raw(
+      'UPDATE rating_queue SET gcdata = ? WHERE match_seq_num = ?',
+      [JSON.stringify(data), row.match_seq_num],
+    );
+  }
+  // else {
+  //   // Match can't be rated due to lack of data (community prediction?)
+  //   await db.raw(
+  //     'DELETE FROM rating_queue WHERE match_seq_num = ?',
+  //     row.match_seq_num,
+  //   );
+  //   redisCount('rater_skip');
+  // }
+}
+
 async function prefetchGcData() {
   while (true) {
-    const capacity = await getRetrieverCapacity();
-    const { rows } = await db.raw<{
-      rows: { match_seq_num: number; match_id: number; pgroup: PGroup }[];
-    }>(
-      'SELECT match_seq_num, match_id, pgroup from rating_queue WHERE gcdata IS NULL ORDER BY match_seq_num LIMIT ?',
-      [100]
+    const query = new QueryStream(
+      `SELECT match_seq_num, match_id, pgroup from rating_queue WHERE gcdata IS NULL ORDER BY match_seq_num`
     );
-    if (rows.length) {
-      await eachLimitPromise(rows, async (row) => {
-        const { data } = await gcFetcher.getOrFetchDataWithRetry(row.match_id, {
-          pgroup: row.pgroup,
-        }, 500);
-        if (data) {
-          // If successful, update
-          await db.raw(
-            'UPDATE rating_queue SET gcdata = ? WHERE match_seq_num = ?',
-            [JSON.stringify(data), row.match_seq_num],
-          );
-        } else {
-          // Match can't be rated due to lack of data (community prediction?)
-          await db.raw(
-            'DELETE FROM rating_queue WHERE match_seq_num = ?',
-            row.match_seq_num,
-          );
-          redisCount('rater_skip');
-        }
-      }, capacity);
-    } else {
+    const pg = new Client(config.POSTGRES_URL);
+    await pg.connect();
+    const stream = pg.query(query);
+    stream.on('readable', async () => {
+      let row: DataRow;
+      while ((row = stream.read())) {
+        await processRow(row);
+        const capacity = await getRetrieverCapacity();
+        await new Promise((resolve) => setTimeout(resolve, 1000 / capacity));
+      }
+    });
+    stream.on('end', async () => {
+      await pg.end();
       await new Promise((resolve) => setTimeout(resolve, 1000));
-    }
+    });
   }
 }
 
