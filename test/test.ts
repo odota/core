@@ -1,238 +1,235 @@
-/* global before describe it beforeEach after */
-/**
- * Main test script to run tests
- * */
-process.env.NODE_ENV = 'test';
 import type { Express } from 'express';
-import nock from 'nock';
-import assert from 'assert';
+import assert from 'node:assert';
 import supertest from 'supertest';
 import stripe from '../svc/store/stripe.ts';
+import { es } from '../svc/store/elasticsearch.ts';
+import redis from '../svc/store/redis.ts';
+import { CreateBucketCommand, S3Client } from '@aws-sdk/client-s3';
+import summariesApi from './data/summaries_api.json' with { type: 'json' };
+import historyApi from './data/history_api.json' with { type: 'json' };
+import heroesApi from './data/heroes_api.json' with { type: 'json' };
+import leaguesApi from './data/leagues_api.json' with { type: 'json' };
+import retrieverPlayer from './data/retriever_player.json' with { type: 'json' };
+import detailsApiPro from './data/details_api_pro.json' with { type: 'json' };
+import retrieverMatch from './data/retriever_match.json' with { type: 'json' };
+import detailsApi from './data/details_api.json' with { type: 'json' };
 import { Pool } from 'pg';
 import { readFileSync } from 'fs';
 import url from 'url';
 import { Client } from 'cassandra-driver';
+import nock from 'nock';
 import swaggerParser from '@apidevtools/swagger-parser';
 import config from '../config.ts';
-import detailsApi from './data/details_api.json' with { type: 'json' };;
-import summariesApi from './data/summaries_api.json' with { type: 'json' };;
-import historyApi from './data/history_api.json' with { type: 'json' };;
-import heroesApi from './data/heroes_api.json' with { type: 'json' };;
-import leaguesApi from './data/leagues_api.json' with { type: 'json' };;
-import retrieverPlayer from './data/retriever_player.json' with { type: 'json' };;
-import detailsApiPro from './data/details_api_pro.json' with { type: 'json' };;
-import retrieverMatch from './data/retriever_match.json' with { type: 'json' };;
 import spec from '../svc/api/spec.ts';
 import { getPlayerMatches } from '../svc/util/buildPlayer.ts';
 import { insertMatch, upsertPlayer } from '../svc/util/insert.ts';
 import { buildMatch } from '../svc/util/buildMatch.ts';
-import { es } from '../svc/store/elasticsearch.ts';
-import redis from '../svc/store/redis.ts';
 import db from '../svc/store/db.ts';
 import cassandra from '../svc/store/cassandra.ts';
 import c from 'ansi-colors';
-import { CreateBucketCommand, S3Client } from '@aws-sdk/client-s3';
+import { suite, test, before, beforeEach, after } from 'node:test';
 
 const { RETRIEVER_HOST, POSTGRES_URL, CASSANDRA_URL } = config;
 const initPostgresHost = POSTGRES_URL.replace('/yasp_test', '/postgres');
 const initCassandraHost = url.parse(CASSANDRA_URL).host as string;
-
+const testKey = '56bc4c35-586c-4f58-a55b-7a5247613872';
 let app: Express;
-// fake api responses
-nock('http://api.steampowered.com')
-  // fake 500 error to test error handling
-  .get('/IDOTA2Match_570/GetMatchDetails/V001/')
-  .query(true)
-  .reply(500, {})
-  // fake match details
-  .get('/IDOTA2Match_570/GetMatchDetails/V001/')
-  .query(true)
-  // Once on insert call and once during parse processor
-  .times(2)
-  .reply(200, detailsApi)
-  // fake player summaries
-  .get('/ISteamUser/GetPlayerSummaries/v0002/')
-  .query(true)
-  .reply(200, summariesApi)
-  // fake full history
-  .get('/IDOTA2Match_570/GetMatchHistory/V001/')
-  .query(true)
-  .reply(200, historyApi)
-  // fake heroes list
-  .get('/IEconDOTA2_570/GetHeroes/v0001/')
-  .query(true)
-  .reply(200, heroesApi)
-  // fake leagues
-  .get('/IDOTA2Match_570/GetLeagueListing/v0001/')
-  .query(true)
-  .reply(200, leaguesApi);
-nock(`http://${RETRIEVER_HOST}`)
-  .get(/\/profile\/.*/)
-  // fake mmr response up to 14 times for 7 non-anonymous players in test match inserted twice
-  // add 1 more for refresh request
-  .times(15)
-  .query(true)
-  .reply(200, retrieverPlayer)
-  // fake error to test handling
-  .get('/match/1781962623')
-  .query(true)
-  .reply(500, {})
-  // fake GC match details
-  .get('/match/1781962623')
-  .query(true)
-  // We faked the replay salt to 1 to match the testfile name
-  .reply(200, retrieverMatch);
-before(async function setup() {
-  this.timeout(60000);
-  config.ENABLE_RANDOM_MMR_UPDATE = '1';
-  await initPostgres();
-  await initElasticsearch();
-  await initRedis();
-  await initCassandra();
-  await initMinio();
-  await loadMatches();
-  await loadPlayers();
-  await startServices();
-  // Wait one second to give mmr time to update
-  await new Promise((resolve) => setTimeout(resolve, 1000));
 
-  async function initElasticsearch() {
-    console.log('Create Elasticsearch Mapping');
-    const mapping = JSON.parse(
-      readFileSync('./elasticsearch/index.json', { encoding: 'utf-8' }),
-    );
-    const exists = await es.indices.exists({
-      index: 'dota-test', // Check if index already exists, in which case, delete it
+before(async function globalSetup() {
+      // fake api responses
+    nock('http://api.steampowered.com')
+    // fake 500 error to test error handling
+    .get('/IDOTA2Match_570/GetMatchDetails/V001/')
+    .query(true)
+    .reply(500, {})
+    // fake match details
+    .get('/IDOTA2Match_570/GetMatchDetails/V001/')
+    .query(true)
+    // Once on insert call and once during parse processor
+    .times(2)
+    .reply(200, detailsApi)
+    // fake player summaries
+    .get('/ISteamUser/GetPlayerSummaries/v0002/')
+    .query(true)
+    .reply(200, summariesApi)
+    // fake full history
+    .get('/IDOTA2Match_570/GetMatchHistory/V001/')
+    .query(true)
+    .reply(200, historyApi)
+    // fake heroes list
+    .get('/IEconDOTA2_570/GetHeroes/v0001/')
+    .query(true)
+    .reply(200, heroesApi)
+    // fake leagues
+    .get('/IDOTA2Match_570/GetLeagueListing/v0001/')
+    .query(true)
+    .reply(200, leaguesApi);
+    nock(`http://${RETRIEVER_HOST}`)
+    .get(/\/profile\/.*/)
+    // fake mmr response up to 14 times for 7 non-anonymous players in test match inserted twice
+    // add 1 more for refresh request
+    .times(15)
+    .query(true)
+    .reply(200, retrieverPlayer)
+    // fake error to test handling
+    .get('/match/1781962623')
+    .query(true)
+    .reply(500, {})
+    // fake GC match details
+    .get('/match/1781962623')
+    .query(true)
+    // We faked the replay salt to 1 to match the testfile name
+    .reply(200, retrieverMatch);
+    
+      config.ENABLE_RANDOM_MMR_UPDATE = '1';
+      await initPostgres();
+      await initElasticsearch();
+      await initRedis();
+      await initCassandra();
+      await initMinio();
+      await loadMatches();
+      await loadPlayers();
+      await startServices();
+      // Wait one second to give mmr time to update
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    
+      async function initElasticsearch() {
+        console.log('Create Elasticsearch Mapping');
+        const mapping = JSON.parse(
+          readFileSync('./elasticsearch/index.json', { encoding: 'utf-8' }),
+        );
+        const exists = await es.indices.exists({
+          index: 'dota-test', // Check if index already exists, in which case, delete it
+        });
+        if (exists.body) {
+          await es.indices.delete({
+            index: 'dota-test',
+          });
+        }
+        await es.indices.create({
+          index: 'dota-test',
+        });
+        await es.indices.close({
+          index: 'dota-test',
+        });
+        await es.indices.putSettings({
+          index: 'dota-test',
+          body: mapping.settings,
+        });
+        await es.indices.putMapping({
+          index: 'dota-test',
+          type: 'player',
+          body: mapping.mappings.player,
+        });
+        await es.indices.open({
+          index: 'dota-test',
+        });
+      }
+    
+      async function initRedis() {
+        console.log('wiping redis');
+        await redis.flushdb();
+      }
+    
+      async function initPostgres() {
+        const pool = new Pool({
+          connectionString: initPostgresHost,
+        });
+        const client = await pool.connect();
+        console.log('drop postgres test database');
+        await client.query('DROP DATABASE IF EXISTS yasp_test');
+        console.log('create postgres test database');
+        await client.query('CREATE DATABASE yasp_test');
+        const pool2 = new Pool({
+          connectionString: POSTGRES_URL,
+        });
+        const client2 = await pool2.connect();
+        console.log('create postgres test tables');
+        const query = readFileSync('./sql/create_tables.sql', 'utf8');
+        await client2.query(query);
+        // ready to create client
+        console.log('insert postgres test data');
+        // populate the DB with this leagueid so we insert a pro match
+        await db.raw(
+          "INSERT INTO leagues(leagueid, tier) VALUES(5399, 'professional')",
+        );
+      }
+    
+      async function initCassandra() {
+        const init = new Client({
+          contactPoints: [initCassandraHost],
+          localDataCenter: 'datacenter1',
+        });
+        console.log('drop cassandra test keyspace');
+        await init.execute('DROP KEYSPACE IF EXISTS yasp_test');
+        console.log('create cassandra test keyspace');
+        await init.execute(
+          "CREATE KEYSPACE yasp_test WITH REPLICATION = { 'class': 'NetworkTopologyStrategy', 'datacenter1': 1 };",
+        );
+        console.log('create cassandra tables');
+        const tables = readFileSync('./sql/create_tables.cql', 'utf8')
+          .split(';')
+          .filter((cql) => cql.length > 1);
+        for (let i = 0; i < tables.length; i++) {
+          const cql = tables[i];
+          await init.execute('USE yasp_test');
+          await init.execute(cql);
+        }
+      }
+    
+      async function initMinio() {
+        const client = new S3Client({
+          region: 'us-east-1',
+          credentials: {
+            accessKeyId: config.ARCHIVE_S3_KEY_ID,
+            secretAccessKey: config.ARCHIVE_S3_KEY_SECRET,
+          },
+          endpoint: config.ARCHIVE_S3_ENDPOINT,
+          forcePathStyle: true,
+        });
+        // Make a new test bucket with a new name
+        // There's no good way to delete the test bucket automatically since we can't delete nonempty buckets
+        console.log('create minio test bucket');
+        await client.send(
+          new CreateBucketCommand({
+            ACL: 'public-read',
+            Bucket: config.BLOB_ARCHIVE_S3_BUCKET,
+          }),
+        );
+      }
+    
+      async function startServices() {
+        console.log('starting services');
+        await import('../svc/parser.ts');
+        await import('../svc/mmr.ts');
+        const web = await import('../svc/web.ts');
+        app = web.app;
+      }
+    
+      async function loadMatches() {
+        console.log('loading matches');
+        const arr = [detailsApi.result, detailsApiPro.result, detailsApiPro.result];
+        for (let i = 0; i < arr.length; i++) {
+          const m = arr[i];
+          await insertMatch(m, {
+            type: 'api',
+            // Pretend to be scanner insert so we queue mmr/counts update etc.
+            origin: 'scanner',
+            skipParse: true,
+          });
+        }
+      }
+    
+      async function loadPlayers() {
+        console.log('loading players');
+        await Promise.all(
+          summariesApi.response.players.map((p) => upsertPlayer(db, p, true)),
+        );
+      }
     });
-    if (exists.body) {
-      await es.indices.delete({
-        index: 'dota-test',
-      });
-    }
-    await es.indices.create({
-      index: 'dota-test',
-    });
-    await es.indices.close({
-      index: 'dota-test',
-    });
-    await es.indices.putSettings({
-      index: 'dota-test',
-      body: mapping.settings,
-    });
-    await es.indices.putMapping({
-      index: 'dota-test',
-      type: 'player',
-      body: mapping.mappings.player,
-    });
-    await es.indices.open({
-      index: 'dota-test',
-    });
-  }
 
-  async function initRedis() {
-    console.log('wiping redis');
-    await redis.flushdb();
-  }
-
-  async function initPostgres() {
-    const pool = new Pool({
-      connectionString: initPostgresHost,
-    });
-    const client = await pool.connect();
-    console.log('drop postgres test database');
-    await client.query('DROP DATABASE IF EXISTS yasp_test');
-    console.log('create postgres test database');
-    await client.query('CREATE DATABASE yasp_test');
-    const pool2 = new Pool({
-      connectionString: POSTGRES_URL,
-    });
-    const client2 = await pool2.connect();
-    console.log('create postgres test tables');
-    const query = readFileSync('./sql/create_tables.sql', 'utf8');
-    await client2.query(query);
-    // ready to create client
-    console.log('insert postgres test data');
-    // populate the DB with this leagueid so we insert a pro match
-    await db.raw(
-      "INSERT INTO leagues(leagueid, tier) VALUES(5399, 'professional')",
-    );
-  }
-
-  async function initCassandra() {
-    const init = new Client({
-      contactPoints: [initCassandraHost],
-      localDataCenter: 'datacenter1',
-    });
-    console.log('drop cassandra test keyspace');
-    await init.execute('DROP KEYSPACE IF EXISTS yasp_test');
-    console.log('create cassandra test keyspace');
-    await init.execute(
-      "CREATE KEYSPACE yasp_test WITH REPLICATION = { 'class': 'NetworkTopologyStrategy', 'datacenter1': 1 };",
-    );
-    console.log('create cassandra tables');
-    const tables = readFileSync('./sql/create_tables.cql', 'utf8')
-      .split(';')
-      .filter((cql) => cql.length > 1);
-    for (let i = 0; i < tables.length; i++) {
-      const cql = tables[i];
-      await init.execute('USE yasp_test');
-      await init.execute(cql);
-    }
-  }
-
-  async function initMinio() {
-    const client = new S3Client({
-      region: 'us-east-1',
-      credentials: {
-        accessKeyId: config.ARCHIVE_S3_KEY_ID,
-        secretAccessKey: config.ARCHIVE_S3_KEY_SECRET,
-      },
-      endpoint: config.ARCHIVE_S3_ENDPOINT,
-      forcePathStyle: true,
-    });
-    // Make a new test bucket with a new name
-    // There's no good way to delete the test bucket automatically since we can't delete nonempty buckets
-    console.log('create minio test bucket');
-    await client.send(
-      new CreateBucketCommand({
-        ACL: 'public-read',
-        Bucket: config.BLOB_ARCHIVE_S3_BUCKET,
-      }),
-    );
-  }
-
-  async function startServices() {
-    console.log('starting services');
-    const web = await import('../svc/web.ts');
-    app = web.app;
-    await import('../svc/parser.ts');
-    await import('../svc/mmr.ts');
-  }
-
-  async function loadMatches() {
-    console.log('loading matches');
-    const arr = [detailsApi.result, detailsApiPro.result, detailsApiPro.result];
-    for (let i = 0; i < arr.length; i++) {
-      const m = arr[i];
-      await insertMatch(m, {
-        type: 'api',
-        // Pretend to be scanner insert so we queue mmr/counts update etc.
-        origin: 'scanner',
-        skipParse: true,
-      });
-    }
-  }
-
-  async function loadPlayers() {
-    console.log('loading players');
-    await Promise.all(
-      summariesApi.response.players.map((p) => upsertPlayer(db, p, true)),
-    );
-  }
-});
-describe(c.blue('[TEST] swagger schema'), async function testSwaggerSchema() {
-  this.timeout(2000);
-  it('should be valid', (cb) => {
+suite('[TEST] swagger schema', async () => {
+  test('should be valid', async () => {
     const validOpts = {
       validate: {
         schema: true,
@@ -240,10 +237,11 @@ describe(c.blue('[TEST] swagger schema'), async function testSwaggerSchema() {
       },
     };
     // We stringify and imediately parse the object in order to remove the route() and func() properties, which arent a part of the OpenAPI spec
-    swaggerParser.validate(JSON.parse(JSON.stringify(spec)), validOpts, cb);
+    await swaggerParser.validate(JSON.parse(JSON.stringify(spec)), validOpts);
   });
 });
-describe(c.blue('[TEST] player_caches'), async () => {
+
+suite(c.blue('[TEST] player_caches'), async () => {
   // Test fetching matches for first player
   let data = null;
   before(async () => {
@@ -251,12 +249,13 @@ describe(c.blue('[TEST] player_caches'), async () => {
       project: ['match_id'],
     });
   });
-  it('should have one row in player_caches', async () => {
+  test('should have one row in player_caches', async () => {
     assert.equal(data.length, 1);
   });
 });
-describe(c.blue('[TEST] privacy setting'), async () => {
-  it('should return one row due to default privacy setting', async () => {
+
+suite(c.blue('[TEST] privacy setting'), async () => {
+  test('should return one row due to default privacy setting', async () => {
     await db.raw(
       'UPDATE players SET fh_unavailable = NULL WHERE account_id = ?',
       ['120269134'],
@@ -264,7 +263,7 @@ describe(c.blue('[TEST] privacy setting'), async () => {
     const res = await supertest(app).get('/api/players/120269134/matches');
     assert.equal(res.body.length, 1);
   });
-  it('should return one row due to visible match data', async () => {
+  test('should return one row due to visible match data', async () => {
     await db.raw(
       'UPDATE players SET fh_unavailable = FALSE WHERE account_id = ?',
       ['120269134'],
@@ -272,7 +271,7 @@ describe(c.blue('[TEST] privacy setting'), async () => {
     const res = await supertest(app).get('/api/players/120269134/matches');
     assert.equal(res.body.length, 1);
   });
-  it('should return no rows due to hidden match data', async () => {
+  test('should return no rows due to hidden match data', async () => {
     await db.raw(
       'UPDATE players SET fh_unavailable = TRUE WHERE account_id = ?',
       ['120269134'],
@@ -280,7 +279,7 @@ describe(c.blue('[TEST] privacy setting'), async () => {
     const res = await supertest(app).get('/api/players/120269134/matches');
     assert.equal(res.body.length, 0);
   });
-  it('should return no rows in recentMatches due to hidden match data', async () => {
+  test('should return no rows in recentMatches due to hidden match data', async () => {
     await db.raw(
       'UPDATE players SET fh_unavailable = TRUE WHERE account_id = ?',
       ['120269134'],
@@ -291,29 +290,30 @@ describe(c.blue('[TEST] privacy setting'), async () => {
     assert.equal(res.body.length, 0);
   });
 });
-describe(c.blue('[TEST] players'), async () => {
+
+suite(c.blue('[TEST] players'), async () => {
   let data: any = null;
   before(async () => {
     const res = await supertest(app).get('/api/players/120269134');
     data = res.body;
   });
-  it('should have profile data', async () => {
+  test('should have profile data', async () => {
     assert.equal(data.profile.account_id, 120269134);
     assert.ok(data.profile.personaname);
   });
-  it('should have Dota Plus data', async () => {
+  test('should have Dota Plus data', async () => {
     assert.equal(data.profile.plus, true);
   });
-  it('should have rank_tier data', async () => {
+  test('should have rank_tier data', async () => {
     assert.equal(data.rank_tier, 80);
   });
-  it('should return 404 for nonexistent player', async () => {
+  test('should return 404 for nonexistent player', async () => {
     const res = await supertest(app).get('/api/players/666');
     assert.equal(res.statusCode, 404);
   });
 });
-describe(c.blue('[TEST] replay parse'), async function () {
-  this.timeout(120000);
+
+suite(c.blue('[TEST] replay parse'), async function () {
   const tests = [detailsApi.result];
   const matchData = tests[0];
   before(async () => {
@@ -329,7 +329,7 @@ describe(c.blue('[TEST] replay parse'), async function () {
     console.log('waiting for replay parse');
     await new Promise((resolve) => setTimeout(resolve, 20000));
   });
-  it('should have api data in buildMatch', async () => {
+  test('should have api data in buildMatch', async () => {
     // ensure api data got inserted
     const match = await buildMatch(matchData.match_id, {});
     assert.ok(match);
@@ -339,7 +339,7 @@ describe(c.blue('[TEST] replay parse'), async function () {
     assert.equal(match.players[0].hero_damage, 12234);
     assert.ok(match.start_time);
   });
-  it('should have gcdata in buildMatch', async () => {
+  test('should have gcdata in buildMatch', async () => {
     // ensure gcdata got inserted
     const match = (await buildMatch(matchData.match_id, {})) as ParsedMatch;
     assert.ok(match);
@@ -348,7 +348,7 @@ describe(c.blue('[TEST] replay parse'), async function () {
     assert.equal(match.players[0].party_size, 10);
     assert.equal(match.replay_salt, 1);
   });
-  it('should have parse data in buildMatch', async () => {
+  test('should have parse data in buildMatch', async () => {
     // ensure parse data got inserted
     const match = (await buildMatch(matchData.match_id, {})) as ParsedMatch;
     assert.ok(match);
@@ -363,7 +363,7 @@ describe(c.blue('[TEST] replay parse'), async function () {
     assert.ok(match.radiant_gold_adv);
     assert.ok(match.radiant_gold_adv.length);
   });
-  it('should have parse match data in postgres', async () => {
+  test('should have parse match data in postgres', async () => {
     // Assert that the pro data (with parsed info) is in postgres
     const proMatch = await db.raw('select * from matches where match_id = ?', [
       matchData.match_id,
@@ -384,7 +384,7 @@ describe(c.blue('[TEST] replay parse'), async function () {
     assert.equal(teamMatch.rows.length, 2);
     assert.equal(teamRankings.rows.length, 2);
   });
-  it('should have parse data for non-anonymous players in player_caches', async () => {
+  test('should have parse data for non-anonymous players in player_caches', async () => {
     const result = await cassandra.execute(
       'SELECT * from player_caches WHERE match_id = ? ALLOW FILTERING',
       [matchData.match_id],
@@ -400,8 +400,8 @@ describe(c.blue('[TEST] replay parse'), async function () {
     assert.equal(result.rows.length, 7);
   });
 });
-describe(c.blue('[TEST] teamRanking'), () => {
-  it('should have team rankings', async () => {
+suite(c.blue('[TEST] teamRanking'), () => {
+  test('should have team rankings', async () => {
     const rows = await db
       .select(['team_id', 'rating', 'wins', 'losses'])
       .from('team_rating');
@@ -414,9 +414,9 @@ describe(c.blue('[TEST] teamRanking'), () => {
     assert(loser.rating < winner.rating);
   });
 });
-describe(c.blue('[TEST] api routes'), async function () {
-  this.timeout(5000);
-  before(async () => {
+
+suite(c.blue('[TEST] api routes'), async function () {
+  test('visit all routes in spec', async () => {
     const tests: string[][] = [];
     console.log('getting API spec and setting up tests');
     const res = await supertest(app).get('/api');
@@ -439,12 +439,12 @@ describe(c.blue('[TEST] api routes'), async function () {
       });
     });
     for (let i = 0; i < tests.length; i++) {
-      const test = tests[i];
-      const [path, verb, replacedPath] = test;
+      const t = tests[i];
+      const [path, verb, replacedPath] = t;
       if (path.indexOf('/explorer') === 0 || path.indexOf('/request') === 0) {
         continue;
       }
-      const newTest = it(`should visit ${replacedPath}`, async () => {
+      await test(`should visit ${replacedPath}`, { timeout: 2000 }, async () => {
         const res = await supertest(app)[verb as HttpVerb](
           // Add query parameters to test search, rankings, benchmarks
           `/api${replacedPath}?q=testsearch&hero_id=1`,
@@ -460,37 +460,37 @@ describe(c.blue('[TEST] api routes'), async function () {
           assert.equal(res.statusCode, 200);
         }
       });
-      this.addTest(newTest);
     }
   });
-  it('placeholder', () => {
-    assert(true);
-  });
 });
-describe(c.blue('[TEST] api management'), () => {
+
+suite(c.blue('[TEST] api management'), () => {
+  let previousKey: string;
+  let previousCustomer: string;
+  let previousSub: string;
+  let previousIsCanceled: boolean;
   beforeEach(async function getApiRecord() {
     const res = await db.from('api_keys').where({
       account_id: 1,
     });
-    this.previousKey = res[0]?.api_key;
-    this.previousCustomer = res[0]?.customer_id;
-    this.previousSub = res[0]?.subscription_id;
-    this.previousIsCanceled = res[0]?.is_canceled;
+    previousKey = res[0]?.api_key;
+    previousCustomer = res[0]?.customer_id;
+    previousSub = res[0]?.subscription_id;
+    previousIsCanceled = res[0]?.is_canceled;
   });
 
-  it('should get 403 when not logged in.', async () => {
+  test('should get 403 when not logged in.', async () => {
     const res = await supertest(app).get('/keys');
     assert.equal(res.statusCode, 403);
   });
 
-  it('should not get fields for GET', async () => {
+  test('should not get fields for GET', async () => {
     const res = await supertest(app).get('/keys?loggedin=1');
     assert.equal(res.statusCode, 200);
     assert.deepStrictEqual(res.body, {});
   });
 
-  it('should create api key', async function testCreatingApiKey() {
-    this.timeout(5000);
+  test('should create api key', async function testCreatingApiKey() {
     let res = await supertest(app)
       .post('/keys?loggedin=1')
       .send({
@@ -514,8 +514,7 @@ describe(c.blue('[TEST] api management'), () => {
     assert.equal(rows.length, 1);
   });
 
-  it('post should not change key', async function testPostDoesNotChangeKey() {
-    this.timeout(5000);
+  test('post should not change key', async function testPostDoesNotChangeKey() {
     let res = await supertest(app).get('/keys?loggedin=1');
     assert.equal(res.statusCode, 200);
     assert.equal(res.body.customer.credit_brand, 'Visa');
@@ -538,17 +537,16 @@ describe(c.blue('[TEST] api management'), () => {
     if (res2.length === 0) {
       throw Error('No API record found');
     }
-    assert.equal(res2[0].customer_id, this.previousCustomer);
-    assert.equal(res2[0].subscription_id, this.previousSub);
+    assert.equal(res2[0].customer_id, previousCustomer);
+    assert.equal(res2[0].subscription_id, previousSub);
 
     res = await supertest(app).get('/keys?loggedin=1');
     assert.equal(res.statusCode, 200);
     assert.equal(res.body.customer.credit_brand, previousCredit);
-    assert.equal(res.body.customer.api_key, this.previousKey);
+    assert.equal(res.body.customer.api_key, previousKey);
   });
 
-  it('put should update payment but not change customer/sub', async function testPutOnlyChangesBilling() {
-    this.timeout(5000);
+  test('put should update payment but not change customer/sub', async function testPutOnlyChangesBilling() {
     let res = await supertest(app)
       .put('/keys?loggedin=1')
       .send({
@@ -562,7 +560,7 @@ describe(c.blue('[TEST] api management'), () => {
     res = await supertest(app).get('/keys?loggedin=1');
     assert.equal(res.statusCode, 200);
     assert.equal(res.body.customer.credit_brand, 'MasterCard');
-    assert.equal(res.body.customer.api_key, this.previousKey);
+    assert.equal(res.body.customer.api_key, previousKey);
 
     const res2 = await db.from('api_keys').where({
       account_id: 1,
@@ -570,13 +568,12 @@ describe(c.blue('[TEST] api management'), () => {
     if (res2.length === 0) {
       throw Error('No API record found');
     }
-    assert.equal(res2[0].customer_id, this.previousCustomer);
-    assert.equal(res2[0].subscription_id, this.previousSub);
+    assert.equal(res2[0].customer_id, previousCustomer);
+    assert.equal(res2[0].subscription_id, previousSub);
   });
-  it('delete should set is_deleted and remove from redis but not change other db fields', async function testDeleteOnlyModifiesKey() {
-    this.timeout(5000);
-    assert.notEqual(this.previousKey, null);
-    assert.equal(this.previousIsCanceled, undefined);
+  test('delete should set is_deleted and remove from redis but not change other db fields', async function testDeleteOnlyModifiesKey() {
+    assert.notEqual(previousKey, null);
+    assert.equal(previousIsCanceled, undefined);
     const res = await supertest(app).delete('/keys?loggedin=1');
     assert.equal(res.statusCode, 200);
     const res2 = await db.from('api_keys').where({
@@ -585,14 +582,13 @@ describe(c.blue('[TEST] api management'), () => {
     if (res2.length === 0) {
       throw Error('No API record found');
     }
-    assert.equal(res2[0].api_key, this.previousKey);
-    assert.equal(res2[0].customer_id, this.previousCustomer);
-    assert.equal(res2[0].subscription_id, this.previousSub);
+    assert.equal(res2[0].api_key, previousKey);
+    assert.equal(res2[0].customer_id, previousCustomer);
+    assert.equal(res2[0].subscription_id, previousSub);
     assert.equal(res2[0].is_canceled, true);
   });
 
-  it('should get new key with new sub but not change customer', async function testGettingNewKey() {
-    this.timeout(5000);
+  test('should get new key with new sub but not change customer', async function testGettingNewKey() {
     let res = await supertest(app)
       .post('/keys?loggedin=1')
       .send({
@@ -610,28 +606,27 @@ describe(c.blue('[TEST] api management'), () => {
     if (res2.length === 0) {
       throw Error('No API record found');
     }
-    assert.equal(res2[0].customer_id, this.previousCustomer);
-    assert.notEqual(res2[0].subscription_id, this.previousSub);
+    assert.equal(res2[0].customer_id, previousCustomer);
+    assert.notEqual(res2[0].subscription_id, previousSub);
 
     res = await supertest(app).get('/keys?loggedin=1');
     assert.equal(res.statusCode, 200);
     assert.equal(res.body.customer.credit_brand, 'Discover');
     assert.notEqual(res.body.customer.api_key, null);
-    assert.notEqual(res.body.customer.api_key, this.previousKey);
+    assert.notEqual(res.body.customer.api_key, previousKey);
   });
-  it('should fail to create key if open invoice', async function openInvoice() {
-    this.timeout(5000);
+  test('should fail to create key if open invoice', async function openInvoice() {
     // delete the key first
     let res = await supertest(app).delete('/keys?loggedin=1');
     assert.equal(res.statusCode, 200);
 
     await stripe.invoiceItems.create({
-      customer: this.previousCustomer,
+      customer: previousCustomer,
       price: 'price_1Lm1siCHN72mG1oKkk3Jh1JT', // test $123 one time
     });
 
     const invoice = await stripe.invoices.create({
-      customer: this.previousCustomer,
+      customer: previousCustomer,
     });
 
     await stripe.invoices.finalizeInvoice(invoice.id);
@@ -661,9 +656,7 @@ describe(c.blue('[TEST] api management'), () => {
   });
 });
 
-const testKey = '56bc4c35-586c-4f58-a55b-7a5247613872';
-
-describe(c.blue('[TEST] api limits'), () => {
+suite(c.blue('[TEST] api limits'), () => {
   before(async () => {
     config.ENABLE_API_LIMIT = '1';
     config.API_FREE_LIMIT = '5';
@@ -673,7 +666,7 @@ describe(c.blue('[TEST] api limits'), () => {
     );
   });
 
-  it('should be able to make API calls without key with whitelisted routes unaffected. One call should fail as rate limit is hit. Last ones should succeed as they are whitelisted', async function testNoApiLimit() {
+  test('should be able to make API calls without key with whitelisted routes unaffected. One call should fail as rate limit is hit. Last ones should succeed as they are whitelisted', async function testNoApiLimit() {
     await makeWhitelistedRequests('');
     await makeRateCheckedRequests('', 5);
     const res = await supertest(app).get('/api/matches/1781962623');
@@ -682,7 +675,7 @@ describe(c.blue('[TEST] api limits'), () => {
     await makeWhitelistedRequests('');
   });
 
-  it('should return user error when using invalid key', async function () {
+  test('should return user error when using invalid key', async function () {
     const invalidKey = 'not_a_key';
     const invResp = await supertest(app).get(
       '/api/matches/1781962623?api_key=' + invalidKey,
@@ -690,7 +683,7 @@ describe(c.blue('[TEST] api limits'), () => {
     assert.equal(invResp.statusCode, 400);
   });
 
-  it('should be able to make more than 5 calls when using API key', async function testAPIKeyLimitsAndCounting() {
+  test('should be able to make more than 5 calls when using API key', async function testAPIKeyLimitsAndCounting() {
     // Try whitelisted routes. Should not increment usage.
     await makeWhitelistedRequests('?api_key=' + testKey);
 
@@ -784,3 +777,6 @@ describe(c.blue('[TEST] generateMatchups'), () => {
   });
 });
 */
+after(() => {
+  process.exit(0);
+})

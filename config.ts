@@ -73,12 +73,10 @@ const defaults = {
   EXTERNAL: '', // Indicates that the service resides outside the registry and should report an external IP
   GOOGLE_CLOUD_PROJECT_ID: '', // Google Cloud project ID
 };
-if (process.env.NODE_ENV === 'development') {
-  // force PORT to null in development so we can run multiple web services without conflict
-  process.env.PORT = '';
-}
-if (process.env.NODE_ENV === 'test') {
+if (process.env.NODE_TEST_CONTEXT) {
+  console.log('[TEST MODE] setting config to test values');
   process.env.PORT = ''; // use service defaults
+  process.env.NODE_ENV = 'test';
   process.env.POSTGRES_URL = process.env.POSTGRES_URL + '_test';
   process.env.CASSANDRA_URL = process.env.CASSANDRA_URL + '_test';
   process.env.REDIS_URL = process.env.REDIS_URL?.slice(0, -1) + '1';
