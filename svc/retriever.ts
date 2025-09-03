@@ -9,7 +9,6 @@ import compression from 'compression';
 import os from 'os';
 import config from '../config.ts';
 import ProtoBuf from 'protobufjs';
-import axios from 'axios';
 
 const app = express();
 const steamObj: Record<string, SteamUser> = {};
@@ -71,7 +70,7 @@ setInterval(() => {
   if (config.SERVICE_REGISTRY_HOST && !noneReady()) {
     const registerUrl = `https://${config.SERVICE_REGISTRY_HOST}/register/retriever/${publicIP}?key=${config.RETRIEVER_SECRET}`;
     console.log('registerUrl: %s', registerUrl);
-    axios.post(registerUrl);
+    fetch(registerUrl, { method: 'POST' });
   }
 }, 5000);
 
@@ -221,8 +220,10 @@ async function init() {
           '&count=' +
           numAccounts;
         console.log('logOnUrl: %s', logOnUrl);
-        const resp = await axios.get(logOnUrl);
-        logOns = resp.data;
+        const resp = await fetch(logOnUrl);
+        if (resp.ok) {
+          logOns = await resp.json();
+        }
       } catch (e) {
         console.warn(e);
         await new Promise((resolve) => setTimeout(resolve, 1000));

@@ -1,8 +1,5 @@
 FROM node:24-alpine
 
-# needed for downloading metadata, although we could replace with axios
-# RUN apk add --no-cache curl
-
 ENV NPM_CONFIG_LOGLEVEL warn
 
 # COPY . /usr/src
