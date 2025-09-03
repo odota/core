@@ -1,22 +1,20 @@
 /**
  * Entry point for the application.
  * */
-import axios from 'axios';
 import cp from 'child_process';
 import fs from 'fs';
 
 async function start() {
   if (process.env.PROVIDER === 'gce' && !fs.existsSync('/usr/src/.env')) {
-    const resp = await axios.get(
+    const resp = await fetch(
       'http://metadata.google.internal/computeMetadata/v1/project/attributes/env',
       {
         headers: {
           'Metadata-Flavor': 'Google',
         },
-        responseType: 'arraybuffer',
       },
     );
-    fs.writeFileSync('/usr/src/.env', resp.data);
+    fs.writeFileSync('/usr/src/.env', await resp.text());
   }
   if (process.env.ROLE) {
     // if role variable is set just run that script
