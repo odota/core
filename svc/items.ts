@@ -1,5 +1,5 @@
 // Updates game items in the database
-import dc from 'dotaconstants';
+import { items } from 'dotaconstants';
 import db from './store/db.ts';
 import { upsert } from './util/insert.ts';
 import {
@@ -7,8 +7,6 @@ import {
   getSteamAPIData,
   invokeIntervalAsync,
 } from './util/utility.ts';
-
-const { items } = dc;
 
 async function doItems() {
   const url = SteamAPIUrls.api_items({

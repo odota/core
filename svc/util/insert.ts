@@ -1,5 +1,5 @@
 import moment from 'moment';
-import dc from 'dotaconstants';
+import { patch } from 'dotaconstants';
 import util from 'node:util';
 import { promises as fs } from 'fs';
 import config from '../../config.ts';
@@ -29,8 +29,6 @@ import { getPGroup } from './pgroup.ts';
 import { blobArchive } from '../store/archive.ts';
 import type { ApiMatch, ApiPlayer, InsertMatchInput } from './types.ts';
 import { upsertPlayerCaches } from './playerCaches.ts';
-
-const { patch } = dc;
 
 moment.relativeTimeThreshold('ss', 0);
 

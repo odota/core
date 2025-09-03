@@ -1,4 +1,4 @@
-import dc from 'dotaconstants';
+import { items as itemsConstants } from 'dotaconstants';
 import config from '../../config.ts';
 import { teamScenariosQueryParams, metadata } from './scenariosUtil.ts';
 import db from '../store/db.ts';
@@ -15,8 +15,6 @@ import {
   averageMedal,
   parallelPromise,
 } from './utility.ts';
-
-const { items: itemsConstants } = dc;
 
 export async function getDistributions() {
   const result: AnyDict = {};

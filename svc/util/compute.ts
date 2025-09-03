@@ -1,4 +1,4 @@
-import dc from 'dotaconstants';
+import { heroes, cluster, ancients } from 'dotaconstants';
 import {
   getLaneFromPosData,
   getPatchIndex,
@@ -7,8 +7,6 @@ import {
   min,
   tokenize,
 } from './utility.ts';
-
-const { heroes, cluster, ancients } = dc;
 
 /**
  * Count the words that occur in a set of messages

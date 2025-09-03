@@ -1,4 +1,4 @@
-import dc from 'dotaconstants';
+import { heroes } from 'dotaconstants';
 import config from '../../config.ts';
 import { computeMatchData } from './compute.ts';
 import {
@@ -17,8 +17,6 @@ import { gcFetcher } from '../fetcher/getGcData.ts';
 import { archivedFetcher } from '../fetcher/getArchivedData.ts';
 import { metaFetcher } from '../fetcher/getMeta.ts';
 import { benchmarks } from './benchmarksUtil.ts';
-
-const { heroes } = dc;
 
 function extendPlayerData(
   player: Player | ParsedPlayer,

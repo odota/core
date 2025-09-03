@@ -1,9 +1,7 @@
 import moment from 'moment';
 import redis from '../store/redis.ts';
 import { parallelPromise } from './utility.ts';
-import dc from 'dotaconstants';
-
-const { game_mode, lobby_type, region, cluster } = dc;
+import { game_mode, lobby_type, region, cluster } from 'dotaconstants';
 
 function generatePercentiles(arr: string[]) {
   // sort the list

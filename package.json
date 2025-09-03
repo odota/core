@@ -40,7 +40,7 @@
     "compression": "^1.8.1",
     "cookie-session": "2.1.0",
     "cors": "^2.8.5",
-    "dotaconstants": "^9.5.0",
+    "dotaconstants": "^10.6.0",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "http-proxy": "^1.18.1",

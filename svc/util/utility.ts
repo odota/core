@@ -1,5 +1,5 @@
 import type { AxiosRequestConfig } from 'axios';
-import dc from 'dotaconstants';
+import { game_mode, lobby_type, patch } from 'dotaconstants';
 import urllib from 'url';
 import moment from 'moment';
 import laneMappings from './laneMappings.ts';
@@ -9,8 +9,6 @@ import type { ApiMatch, ApiPlayer, InsertMatchInput } from './types.ts';
 import type QueryString from 'qs';
 import axios from 'axios';
 import redis from '../store/redis.ts';
-
-const { game_mode, lobby_type, patch } = dc;
 
 /**
  * Tokenizes an input string.
