@@ -127,14 +127,14 @@ async function processRow(row: DataRow) {
 
 async function prefetchGcData() {
   while (true) {
-    console.time('SQL');
     const { rows } = await db.raw<{ rows: DataRow[] }>(
       `SELECT match_seq_num, match_id, pgroup from rating_queue WHERE gcdata IS NULL ORDER BY match_seq_num LIMIT 1`,
     );
-    console.timeEnd('SQL');
     const row = rows[0];
     if (row) {
+      console.time('fetch');
       await processRow(row);
+      console.timeEnd('fetch');
     }
     const capacity = await getRetrieverCapacity();
     await new Promise((resolve) => setTimeout(resolve, 1000 / capacity));
