@@ -20,7 +20,7 @@
     "dockerbuild:retriever": "sudo docker build -t odota/retriever -f Dockerfile.retriever .",
     "psql": "docker exec -it odota-postgres psql -U postgres -d yasp",
     "prettier": "prettier --write .",
-    "updateproto": "node dev/updateProtos.mts"
+    "updateproto": "node dev/updateProtos.ts"
   },
   "type": "module",
   "prettier": {
