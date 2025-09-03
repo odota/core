@@ -101,6 +101,7 @@ type DataRow = {
 };
 const Client = pg.Client;
 const client = new Client(config.POSTGRES_URL);
+await client.connect();
 
 async function processRow(row: DataRow) {
   const { data } = await gcFetcher.getOrFetchData(row.match_id, {
@@ -124,25 +125,22 @@ async function processRow(row: DataRow) {
 }
 
 async function prefetchGcData() {
-  while (true) {
-    const query = new QueryStream(
-      `SELECT match_seq_num, match_id, pgroup from rating_queue WHERE gcdata IS NULL ORDER BY match_seq_num`
-    );
-    await client.connect();
-    const stream = client.query(query);
-    stream.on('readable', async () => {
-      let row: DataRow;
-      while ((row = stream.read())) {
-        await processRow(row);
-        const capacity = await getRetrieverCapacity();
-        await new Promise((resolve) => setTimeout(resolve, 1000 / capacity));
-      }
-    });
-    stream.on('end', async () => {
-      await client.end();
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-    });
-  }
+  const query = new QueryStream(
+    `SELECT match_seq_num, match_id, pgroup from rating_queue WHERE gcdata IS NULL ORDER BY match_seq_num`
+  );
+  const stream = client.query(query);
+  stream.on('readable', async () => {
+    let row: DataRow;
+    while ((row = stream.read())) {
+      await processRow(row);
+      const capacity = await getRetrieverCapacity();
+      await new Promise((resolve) => setTimeout(resolve, 1000 / capacity));
+    }
+  });
+  stream.on('end', async () => {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    prefetchGcData();
+  });
 }
 
 doRate();
