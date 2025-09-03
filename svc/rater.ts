@@ -95,36 +95,34 @@ async function doRate() {
 
 async function prefetchGcData() {
   while (true) {
-    // Find next row in the queue that doesn't have gcdata
     const { rows } = await db.raw<{
       rows: { match_seq_num: number; match_id: number; pgroup: PGroup }[];
     }>(
-      'SELECT match_seq_num, match_id, pgroup from rating_queue WHERE gcdata IS NULL ORDER BY match_seq_num LIMIT 1',
+      'SELECT match_seq_num, match_id, pgroup from rating_queue WHERE gcdata IS NULL ORDER BY match_seq_num LIMIT 10',
     );
-    const row = rows[0];
-    if (!row) {
-      // No rows, wait and try again
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      continue;
+    if (rows.length) {
+      // Attempt to fetch for each
+      await Promise.all(rows.map(async (row) => {
+        const { data } = await gcFetcher.getOrFetchDataWithRetry(row.match_id, {
+          pgroup: row.pgroup,
+        }, 500);
+        if (data) {
+          // If successful, update
+          await db.raw(
+            'UPDATE rating_queue SET gcdata = ? WHERE match_seq_num = ?',
+            [JSON.stringify(data), row.match_seq_num],
+          );
+        } else {
+          // Match can't be rated due to lack of data
+          await db.raw(
+            'DELETE FROM rating_queue WHERE match_seq_num = ?',
+            row.match_seq_num,
+          );
+          redisCount('rater_skip');
+        }
+      }));
     }
-    // Attempt to fetch
-    const { data } = await gcFetcher.getOrFetchDataWithRetry(row.match_id, {
-      pgroup: row.pgroup,
-    }, 200);
-    if (data) {
-      // If successful, update
-      await db.raw(
-        'UPDATE rating_queue SET gcdata = ? WHERE match_seq_num = ?',
-        [JSON.stringify(data), row.match_seq_num],
-      );
-    } else {
-      // Match can't be rated due to lack of data
-      await db.raw(
-        'DELETE FROM rating_queue WHERE match_seq_num = ?',
-        row.match_seq_num,
-      );
-      redisCount('rater_skip');
-    }
+    await new Promise((resolve) => setTimeout(resolve, 1000));
   }
 }
 
