@@ -6,9 +6,6 @@ import {
   isRadiant,
   redisCount,
 } from './util/utility.ts';
-import QueryStream from 'pg-query-stream';
-import pg from 'pg';
-import config from '../config.ts';
 
 const DEFAULT_RATING = 4000;
 const kFactor = 32;
