@@ -1,6 +1,6 @@
 import { gcFetcher } from './fetcher/getGcData.ts';
 import db from './store/db.ts';
-import { average, getRetrieverCapacity, isRadiant, redisCount } from './util/utility.ts';
+import { average, eachLimitPromise, getRetrieverCapacity, isRadiant, redisCount } from './util/utility.ts';
 
 const DEFAULT_RATING = 4000;
 const kFactor = 32;
@@ -95,15 +95,15 @@ async function doRate() {
 
 async function prefetchGcData() {
   while (true) {
+    const capacity = await getRetrieverCapacity();
     const { rows } = await db.raw<{
       rows: { match_seq_num: number; match_id: number; pgroup: PGroup }[];
     }>(
       'SELECT match_seq_num, match_id, pgroup from rating_queue WHERE gcdata IS NULL ORDER BY match_seq_num LIMIT ?',
-      [await getRetrieverCapacity()]
+      [100]
     );
     if (rows.length) {
-      // Attempt to fetch for each
-      await Promise.all(rows.map(async (row) => {
+      await eachLimitPromise(rows, async (row) => {
         const { data } = await gcFetcher.getOrFetchData(row.match_id, {
           pgroup: row.pgroup,
         });
@@ -123,9 +123,10 @@ async function prefetchGcData() {
         //   );
         //   redisCount('rater_skip');
         // }
-      }));
+      }, capacity);
+    } else {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     }
-    await new Promise((resolve) => setTimeout(resolve, 1000));
   }
 }
 

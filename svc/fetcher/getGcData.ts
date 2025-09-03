@@ -44,9 +44,8 @@ async function saveGcData(
   const url = await getRandomRetrieverUrl(`/match/${matchId}`);
   let resp: AxiosResponse<typeof retrieverMatch>;
   try {
-    console.log(url);
     resp = await axios.get<typeof retrieverMatch>(url, {
-      timeout: 5000,
+      timeout: 3500,
     });
   } catch (e) {
     // Non-200 status (e.g. 429 too many requests or 500 server error)
@@ -54,12 +53,14 @@ async function saveGcData(
     if (axios.isAxiosError(e)) {
       message = e.message;
     }
+    console.log(url, message);
     return { data: null, error: 'axiosError: ' + message, retryable: true };
   }
+  console.log(url, resp.status);
   const { data, headers } = resp;
   const steamid = headers['x-match-request-steamid'];
   const ip = headers['x-match-request-ip'];
-  // Record the total steamids and ip counts (regardless of failure)
+  // Record the total steamids and ip counts (sent back with 200 response even if request timed out)
   redis.hincrby('retrieverSteamIDs', steamid, 1);
   redis.expireat(
     'retrieverSteamIDs',
@@ -171,12 +172,11 @@ async function getOrFetchGcData(
     }
   }
   // If we got here we don't have it saved or want to refetch
-  const { error, retryable } = await saveGcData(matchId, extraData);
+  const { data, error, retryable } = await saveGcData(matchId, extraData);
   if (error) {
     return { data: null, error, retryable };
   }
-  const result = await readGcData(matchId);
-  return { data: result, error: null };
+  return { data, error: null };
 }
 
 async function getOrFetchGcDataWithRetry(

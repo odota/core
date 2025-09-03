@@ -30,7 +30,7 @@ async function readParsedData(matchId: number): Promise<ParserMatch | null> {
 async function fetchParseData(
   matchId: number,
   { leagueid, start_time, duration, origin, pgroup, url }: ParseExtraData,
-): Promise<{ error: string | null }> {
+): Promise<{ data: ParserMatch | null, error: string | null }> {
   try {
     // Make a HEAD request for the replay to see if it's available
     await axios.head(url, { timeout: 10000 });
@@ -38,7 +38,7 @@ async function fetchParseData(
     if (axios.isAxiosError(e)) {
       console.log(e.message);
     }
-    return { error: 'Replay not found' };
+    return { data: null, error: 'Replay not found' };
   }
 
   // Pipelined for efficiency, but timings:
@@ -50,7 +50,7 @@ async function fetchParseData(
   console.log('[PARSER]', parseUrl);
   const resp = await axios.get<ParserMatch>(parseUrl, { timeout: 150000 });
   if (!resp.data) {
-    return { error: 'Parse failed' };
+    return { data: null, error: 'Parse failed' };
   }
   const result: ParserMatch = {
     ...resp.data,
@@ -66,7 +66,7 @@ async function fetchParseData(
     pgroup,
     endedAt: start_time + duration,
   });
-  return { error: null };
+  return { data: result, error: null };
 }
 
 async function getOrFetchParseData(
@@ -85,16 +85,11 @@ async function getOrFetchParseData(
       return { data: saved, skipped: true, error: null };
     }
   }
-  const { error } = await fetchParseData(matchId, extraData);
+  const { error, data } = await fetchParseData(matchId, extraData);
   if (error) {
     return { data: null, skipped: false, error };
   }
-  // We don't actually need the readback right now, so save some work
-  // const result = await readParseData(matchId);
-  // if (!result) {
-  //   throw new Error('[PARSEDATA]: Could not get data for match ' + matchId);
-  // }
-  return { data: null, skipped: false, error };
+  return { data, skipped: false, error };
 }
 
 class ParsedFetcher extends MatchFetcher<ParserMatch> {

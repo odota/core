@@ -629,7 +629,7 @@ export async function insertMatch(
     return job;
   }
 
-  // Make a copy of the match with some modifications
+  // Make a copy of the match with some modifications (only applicable to api matches)
   const match = transformMatch(origMatch);
   // Use the passed pgroup if gcdata or parsed, otherwise build it
   // Do this after removing anonymous account IDs
