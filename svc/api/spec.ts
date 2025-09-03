@@ -454,7 +454,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
               against_games: 0,
               against_win: 0,
             };
-            result[hero_id_int] = hero;
+            counts[hero_id_int] = hero;
           });
           res.locals.queryObj.project =
             res.locals.queryObj.project.concat(heroesCols);
