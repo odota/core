@@ -135,9 +135,9 @@ async function prefetchGcData(i: number) {
     );
     const row = rows[0];
     if (row) {
-      console.time('fetch');
+      console.time('fetch ' + row.match_seq_num + ' ' + i);
       await processRow(row);
-      console.timeEnd('fetch');
+      console.timeEnd('fetch ' + row.match_seq_num + ' ' + i);
     }
   }
 }
