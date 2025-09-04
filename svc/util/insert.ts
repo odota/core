@@ -524,13 +524,13 @@ export async function insertMatch(
       match.game_mode !== 19 &&
       match.match_id % 100 < Number(config.GCDATA_PERCENT)
     ) {
-      await addJob({
+      await addReliableJob({
         name: 'gcQueue',
         data: {
           match_id: match.match_id,
           pgroup,
         },
-      });
+      }, {});
     }
   }
 
@@ -553,6 +553,13 @@ export async function insertMatch(
           match.radiant_win,
         ],
       );
+      await addReliableJob({
+        name: 'gcQueue',
+        data: {
+          match_id: match.match_id,
+          pgroup,
+        },
+      }, {});
     }
   }
 

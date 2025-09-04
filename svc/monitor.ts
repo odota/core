@@ -88,9 +88,11 @@ async function parseDelay() {
   };
 }
 async function gcDelay() {
-  const result = await redis.llen('gcQueue');
+  const result = await db.raw(
+    "select count(*) from queue where type = 'gcQueue'",
+  );
   return {
-    metric: result,
+    metric: result.rows[0].count,
     threshold: 100000,
   };
 }
@@ -153,7 +155,7 @@ async function cassandraUsage() {
   });
   return {
     metric: size,
-    threshold: 3 * 10 ** 12,
+    threshold: 5 * 10 ** 12,
   };
 }
 async function redisUsage() {

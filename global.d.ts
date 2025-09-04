@@ -287,6 +287,7 @@ type ProfileJob = {
 type GcDataJob = {
   match_id: number;
   pgroup: PGroup;
+  reconcile?: boolean;
 };
 
 type CountsJob = import('./svc/util/types.ts').ApiMatch;
@@ -336,7 +337,7 @@ type QueueInput =
 
 type ReliableQueueRow = {
   id: number;
-  type: string;
+  type: QueueName;
   timestamp: string;
   attempts: number;
   data: any;

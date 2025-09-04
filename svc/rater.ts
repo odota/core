@@ -2,7 +2,6 @@ import { gcFetcher } from './fetcher/getGcData.ts';
 import db from './store/db.ts';
 import {
   average,
-  getRetrieverCapacity,
   isRadiant,
   redisCount,
 } from './util/utility.ts';
@@ -12,22 +11,28 @@ const kFactor = 32;
 
 async function doRate() {
   while (true) {
+    // TODO remove pgroup/gcdata from schema and here when migrated
     const { rows } = await db.raw<{
       rows: {
         match_seq_num: number;
         match_id: number;
         pgroup: PGroup;
         radiant_win: boolean;
-        gcdata: GcMatch | null;
       }[];
     }>(
-      'SELECT match_seq_num, match_id, pgroup, radiant_win, gcdata from rating_queue order by match_seq_num ASC LIMIT 1',
+      'SELECT match_seq_num, match_id, pgroup, radiant_win from rating_queue order by match_seq_num ASC LIMIT 1',
     );
     const row = rows[0];
-    let gcMatch = row?.gcdata;
-    if (!row || !gcMatch) {
-      // No rows or no gcdata, wait and try again
-      // Wait for prefetch to fill the match
+    if (!row) {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      continue;
+    }
+    let gcMatch = await gcFetcher.readData(row.match_id);
+    if (!gcMatch) {
+      const result = await gcFetcher.getOrFetchDataWithRetry(row.match_id, { pgroup: row.pgroup }, 500);
+      gcMatch = result.data;
+    }
+    if (!gcMatch) {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       continue;
     }
@@ -97,57 +102,4 @@ async function doRate() {
     redisCount('rater');
   }
 }
-
-type DataRow = {
-  match_seq_num: number;
-  match_id: number;
-  pgroup: PGroup;
-};
-
-async function processRow(row: DataRow) {
-  const { data } = await gcFetcher.getOrFetchData(row.match_id, {
-    pgroup: row.pgroup,
-  });
-  if (data) {
-    // If successful, update
-    await db.raw('UPDATE rating_queue SET gcdata = ? WHERE match_seq_num = ?', [
-      JSON.stringify(data),
-      row.match_seq_num,
-    ]);
-  }
-  // else {
-  //   // Match can't be rated due to lack of data (community prediction?)
-  //   await db.raw(
-  //     'DELETE FROM rating_queue WHERE match_seq_num = ?',
-  //     row.match_seq_num,
-  //   );
-  //   redisCount('rater_skip');
-  // }
-}
-
-const numWorkers = 4;
-
-async function prefetchGcData(i: number) {
-  while (true) {
-    const { rows } = await db.raw<{ rows: DataRow[] }>(
-      `SELECT match_seq_num, match_id, pgroup from rating_queue WHERE gcdata IS NULL AND match_seq_num % ? = ? ORDER BY match_seq_num LIMIT 1`,
-      [numWorkers, i]
-    );
-    const row = rows[0];
-    if (row) {
-      console.time('fetch ' + row.match_seq_num + ' ' + i);
-      await processRow(row);
-      console.timeEnd('fetch ' + row.match_seq_num + ' ' + i);
-    } else {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    }
-  }
-}
-
 doRate();
-// const capacity = await getRetrieverCapacity();
-// The number of workers needs to stay constant in order to partition the queue properly
-// We could adjust the delay between iterations based on capacity
-for (let i = 0; i < numWorkers; i++) {
-  prefetchGcData(i);
-}
