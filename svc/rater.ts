@@ -125,7 +125,7 @@ async function processRow(row: DataRow) {
   // }
 }
 
-const numWorkers = 2;
+const numWorkers = 4;
 
 async function prefetchGcData(i: number) {
   while (true) {
