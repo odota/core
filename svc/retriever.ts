@@ -12,13 +12,13 @@ import ProtoBuf from 'protobufjs';
 
 const app = express();
 const steamObj: Record<string, SteamUser> = {};
-const minUpTimeSeconds = 300;
 
-const numAccounts = 5;
-const matchesPerAccount = 100;
+const minUpTimeSeconds = 300;
+const numAccounts = 4;
+const matchesPerAccount = 150;
 const accountAttemptMax = 5;
+const matchRequestInterval = 500;
 const port = config.PORT || config.RETRIEVER_PORT;
-const getMatchRequestInterval = () => 1000;
 const noneReady = () =>
   Object.values(steamObj).filter((client) => client.steamID).length === 0;
 let lastMatchRequestTime: number | null = null;
@@ -57,13 +57,10 @@ const CMsgGCMatchDetailsResponse = builder.lookupType(
 
 setInterval(() => {
   const shouldRestart =
-    (matchRequests - matchSuccesses > 100 && getUptime() > minUpTimeSeconds) ||
-    (matchRequests > Object.keys(steamObj).length * matchesPerAccount &&
-      getUptime() > minUpTimeSeconds) ||
-    (profileRequests - profileSuccesses > 1000 &&
-      getUptime() > minUpTimeSeconds) ||
-    (noneReady() && getUptime() > minUpTimeSeconds);
-  if (shouldRestart && config.NODE_ENV !== 'development') {
+    (matchRequests >= Object.keys(steamObj).length * matchesPerAccount) || 
+    (matchRequests - matchSuccesses > matchesPerAccount) ||
+    (noneReady());
+  if (shouldRestart && config.NODE_ENV !== 'development' && getUptime() > minUpTimeSeconds) {
     return selfDestruct();
   }
   // Re-register ourselves as available
@@ -90,7 +87,7 @@ app.use((req, res, next) => {
     profileSuccesses,
     profileRequests,
     getUptime(),
-    getMatchRequestInterval(),
+    matchRequestInterval,
     req.query,
   );
   if (config.RETRIEVER_SECRET && config.RETRIEVER_SECRET !== req.query.key) {
@@ -130,7 +127,7 @@ app.get('/match/:match_id', (req, res, next) => {
   const curTime = Date.now();
   if (
     lastMatchRequestTime &&
-    curTime - lastMatchRequestTime < getMatchRequestInterval()
+    curTime - lastMatchRequestTime < matchRequestInterval
   ) {
     return res.status(429).json({
       error: 'too many requests',
