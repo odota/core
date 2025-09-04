@@ -472,12 +472,12 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
               const tm = group[key];
               const tmHero = tm.hero_id;
               // don't count invalid heroes
-              if (tmHero in result) {
+              if (tmHero in counts) {
                 if (isRadiant({ player_slot: Number(key) }) === isRadiant(m)) {
                   if (tm.account_id === m.account_id) {
                     counts[tmHero].games += 1;
                     counts[tmHero].win += playerWin ? 1 : 0;
-                    if (m.start_time > result[tmHero].last_played) {
+                    if (m.start_time > counts[tmHero].last_played) {
                       counts[tmHero].last_played = m.start_time;
                     }
                   } else {
