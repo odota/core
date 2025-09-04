@@ -13,11 +13,11 @@ import ProtoBuf from 'protobufjs';
 const app = express();
 const steamObj: Record<string, SteamUser> = {};
 
-const minUpTimeSeconds = 300;
-const numAccounts = 4;
-const matchesPerAccount = 150;
+const minUpTimeSeconds = 360;
+const numAccounts = 5;
+const matchesPerAccount = 190;
 const accountAttemptMax = 5;
-const matchRequestInterval = 500;
+const matchRequestInterval = 1000 / (matchesPerAccount * numAccounts / minUpTimeSeconds);
 const port = config.PORT || config.RETRIEVER_PORT;
 const noneReady = () =>
   Object.values(steamObj).filter((client) => client.steamID).length === 0;
