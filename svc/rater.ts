@@ -138,6 +138,8 @@ async function prefetchGcData(i: number) {
       console.time('fetch ' + row.match_seq_num + ' ' + i);
       await processRow(row);
       console.timeEnd('fetch ' + row.match_seq_num + ' ' + i);
+    } else {
+      await new Promise(resolve => setTimeout(resolve, 1000));
     }
   }
 }
