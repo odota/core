@@ -125,10 +125,13 @@ async function processRow(row: DataRow) {
   // }
 }
 
-async function prefetchGcData() {
+const numWorkers = 2;
+
+async function prefetchGcData(i: number) {
   while (true) {
     const { rows } = await db.raw<{ rows: DataRow[] }>(
-      `SELECT match_seq_num, match_id, pgroup from rating_queue WHERE gcdata IS NULL ORDER BY match_seq_num LIMIT 1`,
+      `SELECT match_seq_num, match_id, pgroup from rating_queue WHERE gcdata IS NULL AND match_seq_num % ? = ? ORDER BY match_seq_num LIMIT 1`,
+      [numWorkers, i]
     );
     const row = rows[0];
     if (row) {
@@ -136,9 +139,13 @@ async function prefetchGcData() {
       await processRow(row);
       console.timeEnd('fetch');
     }
-    const capacity = await getRetrieverCapacity();
   }
 }
 
 doRate();
-prefetchGcData();
+// const capacity = await getRetrieverCapacity();
+// The number of workers needs to stay constant in order to partition the queue properly
+// We could adjust the delay between iterations based on capacity
+for (let i = 0; i < numWorkers; i++) {
+  prefetchGcData(i);
+}
