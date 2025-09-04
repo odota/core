@@ -482,6 +482,7 @@ type MetricName =
   | 'archive_hit'
   | 'archive_miss'
   | 'archive_write_bytes'
+  | 'archive_read_bytes'
   | 'archive_get_error'
   | 'archive_put_error'
   | 'slow_api_hit'

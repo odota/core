@@ -142,6 +142,7 @@ export async function buildStatus() {
         match_archive_read_last_day: async () => countDay('match_archive_read'),
         archive_hit_last_day: async () => countDay('archive_hit'),
         archive_miss_last_day: async () => countDay('archive_miss'),
+        archive_read_bytes_last_day: async () => countDay('archive_read_bytes'),
         archive_write_bytes_last_day: async () =>
           countDay('archive_write_bytes'),
         archive_get_error_last_day: async () => countDay('archive_get_error'),

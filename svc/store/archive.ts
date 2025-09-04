@@ -101,16 +101,17 @@ class Archive {
       }
     }
     redisCount('archive_hit');
-    const zip = gunzipSync(buffer);
+    redisCount('archive_read_bytes', buffer.length);
+    const unzip = gunzipSync(buffer);
     if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
       console.log(
         '[ARCHIVE] %s: read %s bytes, decompressed %s bytes',
         key,
         buffer.length,
-        zip.length,
+        unzip.length,
       );
     }
-    return zip;
+    return unzip;
   };
   public archivePut = async (
     key: string,
