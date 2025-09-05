@@ -256,8 +256,9 @@ app.get('/retrieverData', async (req, res, next) => {
           await redis.hget('retrieverSuccessSteamIDs', accountName),
         );
         const ratio = success / reqs;
+        const isLowRatio = reqs > 25 && ratio <= 0;
         // Don't add high usage logons or high fail logons
-        if (reqs < 190 && (reqs < 25 || ratio > 0)) {
+        if (reqs < 100) {
           await redis.sadd('retrieverDataSet', accountData[i]);
         }
       }
