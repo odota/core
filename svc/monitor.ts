@@ -20,6 +20,7 @@ const health = {
   countsDelay,
   scenariosDelay,
   profileDelay,
+  rateDelay,
 };
 
 type Metric = {
@@ -135,6 +136,15 @@ async function profileDelay() {
   const result = await redis.llen('profileQueue');
   return {
     metric: result,
+    threshold: 100000,
+  };
+}
+async function rateDelay() {
+  const result = await db.raw(
+    "select count(*) from rating_queue",
+  );
+  return {
+    metric: result.rows[0].count,
     threshold: 100000,
   };
 }
