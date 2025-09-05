@@ -135,7 +135,7 @@ let arr = [
     group: 'backend',
   },
   {
-    name: 'autogcdata',
+    name: 'autoreconcile',
     group: 'backend',
   },
   {

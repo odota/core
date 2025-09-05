@@ -464,9 +464,7 @@ CREATE TABLE IF NOT EXISTS rating_queue(
   PRIMARY KEY(match_seq_num),
   match_seq_num bigint,
   match_id bigint,
-  pgroup json,
-  radiant_win boolean,
-  gcdata json
+  radiant_win boolean
 );
 
 DO $$

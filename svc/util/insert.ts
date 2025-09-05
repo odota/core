@@ -530,7 +530,9 @@ export async function insertMatch(
           match_id: match.match_id,
           pgroup,
         },
-      }, {});
+      }, {
+        caller: options.origin,
+      });
     }
   }
 
@@ -545,11 +547,10 @@ export async function insertMatch(
       match.match_id % 100 < Number(config.RATING_PERCENT)
     ) {
       await db.raw(
-        'INSERT INTO rating_queue(match_seq_num, match_id, pgroup, radiant_win) VALUES(?, ?, ?, ?) ON CONFLICT DO NOTHING',
+        'INSERT INTO rating_queue(match_seq_num, match_id, radiant_win) VALUES(?, ?, ?) ON CONFLICT DO NOTHING',
         [
           match.match_seq_num,
           match.match_id,
-          JSON.stringify(pgroup),
           match.radiant_win,
         ],
       );
@@ -559,7 +560,9 @@ export async function insertMatch(
           match_id: match.match_id,
           pgroup,
         },
-      }, {});
+      }, {
+        caller: options.origin,
+      });
     }
   }
 

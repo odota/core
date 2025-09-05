@@ -11,12 +11,10 @@ const kFactor = 32;
 
 async function doRate() {
   while (true) {
-    // TODO remove pgroup/gcdata from schema and here when migrated
     const { rows } = await db.raw<{
       rows: {
         match_seq_num: number;
         match_id: number;
-        pgroup: PGroup;
         radiant_win: boolean;
       }[];
     }>(
@@ -28,10 +26,6 @@ async function doRate() {
       continue;
     }
     let gcMatch = await gcFetcher.readData(row.match_id);
-    if (!gcMatch) {
-      const result = await gcFetcher.getOrFetchDataWithRetry(row.match_id, { pgroup: row.pgroup }, 500);
-      gcMatch = result.data;
-    }
     if (!gcMatch) {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       continue;

@@ -287,7 +287,6 @@ type ProfileJob = {
 type GcDataJob = {
   match_id: number;
   pgroup: PGroup;
-  reconcile?: boolean;
 };
 
 type CountsJob = import('./svc/util/types.ts').ApiMatch;

@@ -3,7 +3,6 @@
 import { runReliableQueue } from './store/queue.ts';
 import config from '../config.ts';
 import { gcFetcher } from './fetcher/getGcData.ts';
-import { queueReconcile } from './util/insert.ts';
 import { getRetrieverCapacity, redisCount } from './util/utility.ts';
 
 async function processGcData(job: GcDataJob) {
@@ -19,10 +18,6 @@ async function processGcData(job: GcDataJob) {
     500,
   );
   if (gcMatch) {
-    // Reconcile anonymous players
-    if (job.reconcile) {
-      await queueReconcile(gcMatch, pgroup, 'pmh_gcdata');
-    }
     await redisCount('gcdata');
   }
   await new Promise((resolve) => setTimeout(resolve, 1));
