@@ -18,7 +18,7 @@ async function doRate() {
         radiant_win: boolean;
       }[];
     }>(
-      'SELECT match_seq_num, match_id, pgroup, radiant_win from rating_queue order by match_seq_num ASC LIMIT 1',
+      'SELECT match_seq_num, match_id, radiant_win from rating_queue order by match_seq_num ASC LIMIT 1',
     );
     const row = rows[0];
     if (!row) {
