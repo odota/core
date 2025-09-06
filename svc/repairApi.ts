@@ -6,6 +6,8 @@ import db from "./store/db.ts";
 import { reconcileMatch } from "./util/reconcileUtil.ts";
 
 async function doRepair() {
+    // TODO currently paused until backfill is complete so we can find matches
+    process.stdin.resume();
     while (true) {
         const { rows } = await db.raw('select match_id, retries from player_match_history ORDER BY retries DESC NULLS LAST LIMIT 1');
         const row = rows[0];
@@ -15,9 +17,9 @@ async function doRepair() {
         // Reconcile the match now that it's fixed
         let { rows: allRows } = await db.raw('select * from player_match_history where match_id = ?', [row.match_id]);
         console.log(allRows);
+        // TODO enable when validated
         // await reconcileMatch(allRows);
-        // await new Promise(resolve => setTimeout(resolve, 10000));
-        process.stdin.resume();
+        await new Promise(resolve => setTimeout(resolve, 10000));
     }
 }
 doRepair();

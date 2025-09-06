@@ -69,7 +69,7 @@ class ApiFetcher extends MatchFetcher<ApiMatch> {
     // Insert the data normally as if API data from scanner
     let data = await this.getData(matchId);
     let pageBack = 0;
-    while (!data && pageBack <= 1000) {
+    while (!data && pageBack <= 100) {
       pageBack += 1;
       console.log('paging back %s for matchId %s', pageBack, matchId);
       data = await this.getData(matchId - pageBack);
@@ -91,6 +91,7 @@ class ApiFetcher extends MatchFetcher<ApiMatch> {
       throw new Error('could not find in seqnum response match ' + matchId);
     }
     console.log(match);
+    // TODO enable when validated
     // await insertMatch(match, {
     //   type: 'api',
     // });
