@@ -7,7 +7,7 @@ import { reconcileMatch } from "./util/reconcileUtil.ts";
 
 async function doRepair() {
     // TODO currently paused until backfill is complete so we can find matches
-    process.stdin.resume();
+    return;
     while (true) {
         const { rows } = await db.raw('select match_id, retries from player_match_history ORDER BY retries DESC NULLS LAST LIMIT 1');
         const row = rows[0];
