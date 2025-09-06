@@ -15,27 +15,6 @@ const builder = root.loadSync('./proto/dota_match_metadata.proto', {
 });
 const CDOTAMatchMetadataFile = builder.lookupType('CDOTAMatchMetadataFile');
 
-async function getMeta(matchId: number) {
-  const gcdata = await gcFetcher.readData(matchId);
-  if (!gcdata) {
-    return null;
-  }
-  const url = buildReplayUrl(
-    gcdata.match_id,
-    gcdata.cluster,
-    gcdata.replay_salt,
-    true,
-  );
-  // Parse it from url
-  const message = await getMetaFromUrl(url);
-  if (message) {
-    // Count the number of meta parses
-    redisCount('meta_parse');
-  }
-  // Return the info, it may be null if we failed at any step or meta isn't available
-  return message;
-}
-
 export async function getMetaFromUrl(url: string) {
   try {
     // Timings:
@@ -71,10 +50,29 @@ export async function getMetaFromUrl(url: string) {
 }
 
 class MetaFetcher extends MatchFetcher<Record<string, any>> {
-  readData = () => {
+  getData = () => {
     throw new Error('not implemented');
   };
-  getOrFetchData = getMeta;
+  getOrFetchData = async (matchId: number) => {
+    const gcdata = await gcFetcher.getData(matchId);
+    if (!gcdata) {
+      return null;
+    }
+    const url = buildReplayUrl(
+      gcdata.match_id,
+      gcdata.cluster,
+      gcdata.replay_salt,
+      true,
+    );
+    // Parse it from url
+    const message = await getMetaFromUrl(url);
+    if (message) {
+      // Count the number of meta parses
+      redisCount('meta_parse');
+    }
+    // Return the info, it may be null if we failed at any step or meta isn't available
+    return message;
+  };
   checkAvailable = () => {
     throw new Error('not implemented');
   };

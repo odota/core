@@ -39,6 +39,7 @@ async function scanApi() {
     const begin = Date.now();
     const url = SteamAPIUrls.api_sequence({
       start_at_match_seq_num: seqNum,
+      matches_requested: 100,
     });
     let data = null;
     try {

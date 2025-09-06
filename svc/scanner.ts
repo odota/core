@@ -40,6 +40,7 @@ async function scanApi() {
     const scannerWaitCatchup = SCANNER_WAIT / parallelism;
     const url = SteamAPIUrls.api_sequence({
       start_at_match_seq_num: seqNum,
+      matches_requested: PAGE_SIZE,
     });
     let data = null;
     try {

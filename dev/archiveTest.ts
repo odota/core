@@ -16,7 +16,7 @@ const { matchArchive } = await import('../svc/store/archive.ts');
 // console.log(JSON.stringify(match).length, JSON.stringify(readBack).length);
 
 // Verify we get back null for invalid match id
-const nullMatch = await archivedFetcher.readData(123);
+const nullMatch = await archivedFetcher.getData(123);
 console.log(nullMatch);
 
 // Confirm API returns the same data whether we used the archive or not

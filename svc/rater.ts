@@ -25,7 +25,7 @@ async function doRate() {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       continue;
     }
-    let gcMatch = await gcFetcher.readData(row.match_id);
+    let gcMatch = await gcFetcher.getData(row.match_id);
     if (!gcMatch) {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       continue;

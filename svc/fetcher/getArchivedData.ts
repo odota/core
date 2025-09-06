@@ -4,7 +4,7 @@ import db from '../store/db.ts';
 import { MatchFetcher } from './base.ts';
 
 class ArchivedFetcher extends MatchFetcher<ParsedMatch> {
-  readData = async (matchId: number): Promise<ParsedMatch | null> => {
+  getData = async (matchId: number): Promise<ParsedMatch | null> => {
     try {
       // Check if the parsed data is archived
       // Most matches won't be in the archive so it's more efficient not to always try
@@ -28,7 +28,7 @@ class ArchivedFetcher extends MatchFetcher<ParsedMatch> {
   getOrFetchData = async (matchId: number) => {
     // Circular dependency if we import
     // await doArchiveMatchFromBlobs(matchId);
-    return { data: await this.readData(matchId), error: null };
+    return { data: await this.getData(matchId), error: null };
   };
   checkAvailable = async (matchId: number) => {
     return Boolean(

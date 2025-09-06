@@ -124,21 +124,6 @@ async function processFullHistory(job: FullHistoryJob) {
     );
     const keys = Object.keys(matchesToProcess);
     for (let i = 0; i < keys.length; i++) {
-      // Disabled due to Steam GetMatchDetails being broken
-      // This would update the match blob with the visibility and update player caches to make them show up under a player
-      // Could possibly queue these matches for GC data fetch and then trigger a reconciliation from our own DB (similar to proposed change after parsing a match)
-      // const url = SteamAPIUrls.api_details({
-      //   match_id: Number(matchId),
-      // });
-      // const body = await getSteamAPIData({ url });
-      // const match = body.result;
-      // Don't insert match blob to avoid overwriting with less data from API
-      // Only update player_caches to associate the match with players
-      // await insertMatch(match, {
-      //   type: 'api',
-      //   cacheOnly: true,
-      // });
-      // await new Promise((resolve) => setTimeout(resolve, 1000));
       const match = matchesToProcess[keys[i]];
       const playerSlot = match.players.find(
         (p) => p.account_id === player.account_id,

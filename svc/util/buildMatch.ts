@@ -150,11 +150,11 @@ export async function getMatchDataFromBlobWithMetadata(
     ParserMatch | null,
     ParsedMatch | null,
   ] = await Promise.all([
-    apiFetcher.readData(matchId),
-    gcFetcher.readData(matchId),
-    parsedFetcher.readData(matchId),
+    apiFetcher.getData(matchId),
+    gcFetcher.getData(matchId),
+    parsedFetcher.getData(matchId),
     !options?.noArchive
-      ? archivedFetcher.readData(matchId)
+      ? archivedFetcher.getData(matchId)
       : Promise.resolve(null),
   ]);
 

@@ -10,34 +10,7 @@ import { insertMatch } from '../util/insert.ts';
 import { blobArchive } from '../store/archive.ts';
 import { MatchFetcher } from './base.ts';
 
-/**
- * Return GC data by reading it without fetching.
- * @param matchId
- * @returns
- */
-async function readGcData(matchId: number): Promise<GcMatch | null> {
-  let data = null;
-  const archive = await blobArchive.archiveGet(`${matchId}_gcdata`);
-  if (archive) {
-    redisCount('blob_archive_read');
-  }
-  data = archive ? (JSON.parse(archive.toString()) as GcMatch) : null;
-  if (
-    data?.match_id == null ||
-    data?.cluster == null ||
-    data?.replay_salt == null
-  ) {
-    return null;
-  }
-  return data;
-}
-
-/**
- * Requests GC data from the retriever (optionally with retry) and saves it locally
- * @param job
- * @returns
- */
-async function saveGcData(
+async function fetchGcData(
   matchId: number,
   extraData: GcExtraData,
 ): Promise<{
@@ -145,74 +118,51 @@ async function saveGcData(
   return { data: matchToInsert, error: null };
 }
 
-/**
- * Returns GC data, reading the saved version.
- * If not present, fills it and then reads it back.
- * On error, returns object with error prop
- * @param job
- * @returns
- */
-async function getOrFetchGcData(
-  matchId: number,
-  extraData: GcExtraData,
-): Promise<{
-  data: GcMatch | null;
-  error: string | null;
-  skipped?: boolean;
-  retryable?: boolean;
-}> {
-  if (!matchId || !Number.isInteger(matchId) || matchId <= 0) {
-    return { data: null, error: 'invalid match id', skipped: true };
-  }
-  // Check if we have gcdata cached
-  const saved = await readGcData(matchId);
-  if (saved) {
-    redisCount('regcdata');
-    if (config.DISABLE_REGCDATA) {
-      // If high load, we can disable refetching gcdata
-      return { data: saved, error: null, skipped: true };
-    }
-  }
-  // If we got here we don't have it saved or want to refetch
-  const { data, error, retryable } = await saveGcData(matchId, extraData);
-  if (error) {
-    return { data: null, error, retryable };
-  }
-  return { data, error: null };
-}
-
-async function getOrFetchGcDataWithRetry(
-  matchId: number,
-  extraData: GcExtraData,
-  retryDelay: number,
-): Promise<{
-  data: GcMatch | null;
-  error: string | null;
-}> {
-  let data: GcMatch | null = null;
-  let error: string | null = null;
-  let tryCount = 1;
-  // Try until we either get data or non-retryable error
-  while (!data) {
-    const resp = await getOrFetchGcData(matchId, extraData);
-    data = resp.data;
-    error = resp.error;
-    if (error && !resp.retryable) {
-      break;
-    }
-    if (!data) {
-      await new Promise((resolve) => setTimeout(resolve, retryDelay));
-      tryCount += 1;
-      console.log('matchId %s, error %s, attempt %s', matchId, error, tryCount);
-    }
-  }
-  return { data, error };
-}
-
 class GcdataFetcher extends MatchFetcher<GcMatch> {
-  readData = readGcData;
-  getOrFetchData = getOrFetchGcData;
-  getOrFetchDataWithRetry = getOrFetchGcDataWithRetry;
+  getData = async (matchId: number): Promise<GcMatch | null> => {
+    let data = null;
+    const archive = await blobArchive.archiveGet(`${matchId}_gcdata`);
+    if (archive) {
+      redisCount('blob_archive_read');
+    }
+    data = archive ? (JSON.parse(archive.toString()) as GcMatch) : null;
+    if (
+      data?.match_id == null ||
+      data?.cluster == null ||
+      data?.replay_salt == null
+    ) {
+      return null;
+    }
+    return data;
+  }
+  getOrFetchData = async (
+    matchId: number,
+    extraData: GcExtraData,
+  ): Promise<{
+    data: GcMatch | null;
+    error: string | null;
+    skipped?: boolean;
+    retryable?: boolean;
+  }> => {
+    if (!matchId || !Number.isInteger(matchId) || matchId <= 0) {
+      return { data: null, error: 'invalid match id', skipped: true };
+    }
+    // Check if we have gcdata cached
+    const saved = await this.getData(matchId);
+    if (saved) {
+      redisCount('regcdata');
+      if (config.DISABLE_REGCDATA) {
+        // If high load, we can disable refetching gcdata
+        return { data: saved, error: null, skipped: true };
+      }
+    }
+    // If we got here we don't have it saved or want to refetch
+    const { data, error, retryable } = await fetchGcData(matchId, extraData);
+    if (error) {
+      return { data: null, error, retryable };
+    }
+    return { data, error: null };
+  }
   checkAvailable = async (matchId: number) => {
     throw new Error('not implemented');
   };

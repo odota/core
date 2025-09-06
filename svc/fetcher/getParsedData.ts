@@ -6,27 +6,6 @@ import { insertMatch } from '../util/insert.ts';
 import axios from 'axios';
 import { MatchFetcher } from './base.ts';
 
-/**
- * Return parse data by reading it without fetching.
- * @param matchId
- * @returns
- */
-async function readParsedData(matchId: number): Promise<ParserMatch | null> {
-  let data = null;
-  const archive = await blobArchive.archiveGet(`${matchId}_parsed`);
-  if (archive) {
-    redisCount('blob_archive_read');
-  }
-  data = archive ? (JSON.parse(archive.toString()) as ParserMatch) : null;
-  return data;
-}
-
-/**
- * Requests parse data and saves it locally
- * @param matchId
- * @param replayUrl
- * @returns
- */
 async function fetchParseData(
   matchId: number,
   { leagueid, start_time, duration, origin, pgroup, url }: ParseExtraData,
@@ -69,32 +48,38 @@ async function fetchParseData(
   return { data: result, error: null };
 }
 
-async function getOrFetchParseData(
-  matchId: number,
-  extraData: ParseExtraData,
-): Promise<{
-  data: ParserMatch | null;
-  skipped: boolean;
-  error: string | null;
-}> {
-  const saved = await readParsedData(matchId);
-  if (saved) {
-    redisCount('reparse');
-    if (config.DISABLE_REPARSE) {
-      // If high load, we can disable parsing already parsed matches
-      return { data: saved, skipped: true, error: null };
-    }
-  }
-  const { error, data } = await fetchParseData(matchId, extraData);
-  if (error) {
-    return { data: null, skipped: false, error };
-  }
-  return { data, skipped: false, error };
-}
-
 class ParsedFetcher extends MatchFetcher<ParserMatch> {
-  readData = readParsedData;
-  getOrFetchData = getOrFetchParseData;
+  getData = async (matchId: number): Promise<ParserMatch | null> => {
+    let data = null;
+    const archive = await blobArchive.archiveGet(`${matchId}_parsed`);
+    if (archive) {
+      redisCount('blob_archive_read');
+    }
+    data = archive ? (JSON.parse(archive.toString()) as ParserMatch) : null;
+    return data;
+  }
+  getOrFetchData = async (
+    matchId: number,
+    extraData: ParseExtraData,
+  ): Promise<{
+    data: ParserMatch | null;
+    skipped: boolean;
+    error: string | null;
+  }> => {
+    const saved = await this.getData(matchId);
+    if (saved) {
+      redisCount('reparse');
+      if (config.DISABLE_REPARSE) {
+        // If high load, we can disable parsing already parsed matches
+        return { data: saved, skipped: true, error: null };
+      }
+    }
+    const { error, data } = await fetchParseData(matchId, extraData);
+    if (error) {
+      return { data: null, skipped: false, error };
+    }
+    return { data, skipped: false, error };
+  }
   checkAvailable = async (matchId: number) => {
     return Boolean(
       (
