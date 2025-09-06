@@ -3,6 +3,30 @@ import { getMatchDataFromBlobWithMetadata } from "./buildMatch.ts";
 import { upsertPlayerCaches } from "./insert.ts";
 import { getPGroup } from "./pgroup.ts";
 import type { HistoryType } from "./types.ts";
+import { redisCount } from "./utility.ts";
+
+export async function queueReconcile(
+  gcMatch: GcMatch | null,
+  pgroup: PGroup,
+  metricName: MetricName,
+) {
+  if (gcMatch) {
+    // Log the players who were previously anonymous for reconciliation
+    await Promise.all(
+      gcMatch.players
+        .filter((p) => !Boolean(pgroup[p.player_slot]?.account_id))
+        .map(async (p) => {
+          if (p.account_id) {
+            await db.raw(
+              'INSERT INTO player_match_history(account_id, match_id, player_slot) VALUES (?, ?, ?) ON CONFLICT DO NOTHING',
+              [p.account_id, gcMatch.match_id, p.player_slot],
+            );
+            await redisCount(metricName);
+          }
+        }),
+    );
+  }
+}
 
 export async function reconcileMatch(rows: HistoryType[]) {
   // validate that all rows have the same match ID

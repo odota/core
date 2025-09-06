@@ -20,7 +20,9 @@
     "dockerbuild:retriever": "sudo docker build -t odota/retriever -f Dockerfile.retriever .",
     "psql": "docker exec -it odota-postgres psql -U postgres -d yasp",
     "prettier": "npx prettier --write .",
-    "updateproto": "node dev/updateProtos.ts"
+    "updateproto": "node dev/updateProtos.ts",
+    "dpdm": "npx dpdm everything.ts",
+    "madge": "npx madge everything.ts --image deptree.svg"
   },
   "type": "module",
   "prettier": {
