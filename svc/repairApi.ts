@@ -6,8 +6,7 @@ import db from "./store/db.ts";
 import { reconcileMatch } from "./util/reconcileUtil.ts";
 
 async function doRepair() {
-    const { rows } = await db.raw('select match_id, retries from player_match_history TABLESAMPLE SYSTEM_ROWS(1) WHERE retries >= 10');
-    // select match_id, retries from player_match_history WHERE retries > 5 ORDER BY random() limit 1
+    const { rows } = await db.raw('select match_id, retries from player_match_history ORDER BY retries DESC NULLS LAST LIMIT 1');
     const row = rows[0];
     if (row) {
         await apiFetcher.fetchDataFromSeqNumApi(row.match_id);
