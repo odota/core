@@ -1,6 +1,5 @@
 import { redisCount } from "../util/utility.ts";
 
-// We could make all the fetchers inherit a base class to give them a consistent structure
 export abstract class MatchFetcher<T> {
   // Name of the counter to increment when we find saved data
   public savedDataMetricName: MetricName | undefined;

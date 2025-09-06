@@ -17,7 +17,8 @@ const CDOTAMatchMetadataFile = builder.lookupType('CDOTAMatchMetadataFile');
 
 class MetaFetcher extends MatchFetcher<Record<string, any>> {
   getData = async (matchId: number) => {
-    return this.fetchData(matchId);
+    const result = await this.fetchData(matchId);
+    return result.data;
   };
   fetchData = async (matchId: number) => {
     const gcdata = await gcFetcher.getData(matchId);

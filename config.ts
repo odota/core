@@ -65,7 +65,7 @@ const defaults = {
   ENABLE_PLAYER_ARCHIVE: '', // Allow reading/writing player match blobs to S3 storage
   DISABLE_REPARSE: '', // Disable reparsing matches that are already parsed
   DISABLE_REGCDATA: '', // Disable refetching new GC data on every request (cache it)
-  DISABLE_REAPI: '', // Disable refetching new API data on every request
+  DISABLE_REAPI: '1', // Disable refetching new API data on every request (enabled by default as SteamGetMatchDetails is broken)
   API_KEY_GEN_THRESHOLD: '0', // Account ID requirement (delta from max) for generating API keys
   SERVICE_REGISTRY_HOST: '', // Host for external services to register themselves at
   USE_SERVICE_REGISTRY: '', // Use the service registry for determining gc, parser, and proxy urls

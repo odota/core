@@ -3,8 +3,10 @@ import { blobArchive } from '../store/archive.ts';
 import type { ApiMatch } from '../util/types.ts';
 import { MatchFetcher } from './base.ts';
 import { insertMatch } from '../util/insert.ts';
+import { config } from '../../config.ts';
 
 class ApiFetcher extends MatchFetcher<ApiMatch> {
+  useSavedData = Boolean(config.DISABLE_REAPI);
   getData = async (matchId: number): Promise<ApiMatch | null> => {
     let data = null;
     const archive = await blobArchive.archiveGet(`${matchId}_api`);
