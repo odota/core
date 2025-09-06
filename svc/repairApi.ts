@@ -1,7 +1,7 @@
 // Get a match ID with a high number of retries from player_match_history
 // It probably doesn't have apidata
 // Call fetchDataFromSeqNumApi on it
-import { apiFetcher } from "./fetcher/getApiData.ts";
+import { apiFetcher } from "./fetcher/ApiFetcher.ts";
 import db from "./store/db.ts";
 import { reconcileMatch } from "./util/reconcileUtil.ts";
 

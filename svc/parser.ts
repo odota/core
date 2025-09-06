@@ -14,9 +14,9 @@ import {
   redisCount,
 } from './util/utility.ts';
 import redis from './store/redis.ts';
-import { apiFetcher } from './fetcher/getApiData.ts';
-import { parsedFetcher } from './fetcher/getParsedData.ts';
-import { gcFetcher } from './fetcher/getGcData.ts';
+import { apiFetcher } from './fetcher/ApiFetcher.ts';
+import { parsedFetcher } from './fetcher/ParsedFetcher.ts';
+import { gcFetcher } from './fetcher/GcdataFetcher.ts';
 import { getPGroup } from './util/pgroup.ts';
 import moment from 'moment';
 import { queueReconcile } from './util/reconcileUtil.ts';

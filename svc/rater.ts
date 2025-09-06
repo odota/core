@@ -1,4 +1,4 @@
-import { gcFetcher } from './fetcher/getGcData.ts';
+import { gcFetcher } from './fetcher/GcdataFetcher.ts';
 import db from './store/db.ts';
 import {
   average,

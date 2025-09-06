@@ -11,11 +11,11 @@ import {
 import redis from '../store/redis.ts';
 import db from '../store/db.ts';
 import type { ApiMatch } from './types.ts';
-import { parsedFetcher } from '../fetcher/getParsedData.ts';
-import { apiFetcher } from '../fetcher/getApiData.ts';
-import { gcFetcher } from '../fetcher/getGcData.ts';
-import { archivedFetcher } from '../fetcher/getArchivedData.ts';
-import { metaFetcher } from '../fetcher/getMeta.ts';
+import { parsedFetcher } from '../fetcher/ParsedFetcher.ts';
+import { apiFetcher } from '../fetcher/ApiFetcher.ts';
+import { gcFetcher } from '../fetcher/GcdataFetcher.ts';
+import { archivedFetcher } from '../fetcher/ArchivedFetcher.ts';
+import { metaFetcher } from '../fetcher/MetaFetcher.ts';
 import { benchmarks } from './benchmarksUtil.ts';
 
 function extendPlayerData(

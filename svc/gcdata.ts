@@ -2,7 +2,7 @@
 // The parser will also request gcdata if needed
 import { runReliableQueue } from './store/queue.ts';
 import config from '../config.ts';
-import { gcFetcher } from './fetcher/getGcData.ts';
+import { gcFetcher } from './fetcher/GcdataFetcher.ts';
 import { getRetrieverCapacity, redisCount } from './util/utility.ts';
 
 async function processGcData(job: GcDataJob) {

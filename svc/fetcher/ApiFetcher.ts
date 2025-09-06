@@ -14,24 +14,13 @@ class ApiFetcher extends MatchFetcher<ApiMatch> {
     data = archive ? (JSON.parse(archive.toString()) as ApiMatch) : null;
     return data;
   }
-  getOrFetchData = async (matchId: number): Promise<{
-    data: ApiMatch | null;
-    error: string | null;
-  }> => {
-    if (!matchId || !Number.isInteger(matchId) || matchId <= 0) {
-      return { data: null, error: '[APIDATA]: invalid match_id' };
-    }
-    // Check if we have apidata cached
-    let saved = await this.getData(matchId);
-    if (saved) {
-      return { data: saved, error: null };
-    }
-    const url = SteamAPIUrls.api_details({
-      match_id: matchId,
-    });
+  fetchData = async (matchId: number) => {
     let match;
     try {
       // We currently can't fetch because the Steam GetMatchDetails API is broken
+      // const url = SteamAPIUrls.api_details({
+      //   match_id: matchId,
+      // });
       // const body = await getSteamAPIData({
       //   url,
       // });
@@ -50,15 +39,12 @@ class ApiFetcher extends MatchFetcher<ApiMatch> {
       });
       // insertMatch transforms the data before saving
       // So we need to read it back instead of returning match here
-      saved = await this.getData(matchId);
-      if (saved) {
-        return { data: saved, error: null };
+      const result = await this.getData(matchId);
+      if (result) {
+        return { data: result, error: null };
       }
     }
-    return {
-      data: null,
-      error: '[APIDATA]: Could not get API data for match ' + matchId,
-    };
+    return { data: null, error: '[APIDATA]: Could not get API data for match ' + matchId };
   };
   fetchDataFromSeqNumApi = async (matchId: number) => {
     // Try to get match data from blob store

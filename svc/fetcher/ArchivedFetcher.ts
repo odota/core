@@ -25,10 +25,10 @@ class ArchivedFetcher extends MatchFetcher<ParsedMatch> {
     }
     return null;
   };
-  getOrFetchData = async (matchId: number) => {
+  fetchData = (matchId: number) => {
     // Circular dependency if we import
     // await doArchiveMatchFromBlobs(matchId);
-    return { data: await this.getData(matchId), error: null };
+    throw new Error('not implemented');
   };
   checkAvailable = async (matchId: number) => {
     return Boolean(

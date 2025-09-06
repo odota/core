@@ -1,4 +1,4 @@
-import { archivedFetcher } from '../svc/fetcher/getArchivedData.ts';
+import { archivedFetcher } from '../svc/fetcher/ArchivedFetcher.ts';
 
 const { matchArchive } = await import('../svc/store/archive.ts');
 
