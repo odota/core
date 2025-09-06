@@ -48,6 +48,8 @@ class ApiFetcher extends MatchFetcher<ApiMatch> {
       await insertMatch(match, {
         type: 'api',
       });
+      // insertMatch transforms the data before saving
+      // So we need to read it back instead of returning match here
       saved = await this.getData(matchId);
       if (saved) {
         return { data: saved, error: null };
@@ -59,13 +61,37 @@ class ApiFetcher extends MatchFetcher<ApiMatch> {
     };
   };
   fetchDataFromSeqNumApi = async (matchId: number) => {
-    // TODO implement
     // Try to get match data from blob store
     // If not available, go back 1 ID number and try again until success (or 0)
     // count how many times we do this (max 100)
     // on success, call GetMatchHistoryBySequenceNum with the seq num of the preceding match and matches_requested of the number of times we went back
     // Get just the one match in the array matching the target number
     // Insert the data normally as if API data from scanner
+    let data = await this.getData(matchId);
+    let pageBack = 0;
+    while (!data && pageBack < 100) {
+      pageBack += 1;
+      data = await this.getData(matchId - pageBack);
+    }
+    if (!data) {
+      return;
+    }
+    const precedingSeqNum = data.match_seq_num;
+    const url = SteamAPIUrls.api_sequence({
+      start_at_match_seq_num: precedingSeqNum,
+      matches_requested: pageBack,
+    });
+    const body = await getSteamAPIData({
+      url,
+    });
+    const match = body.result.matches.find((m: ApiMatch) => m.match_id === matchId);
+    if (!match) {
+      return;
+    }
+    console.log(match);
+    // await insertMatch(match, {
+    //   type: 'api',
+    // });
   };
   checkAvailable = () => {
     throw new Error('not implemented');

@@ -207,6 +207,10 @@ let arr = [
     group: 'backend',
   },
   {
+    name: 'repairApi',
+    group: 'backend',
+  },
+  {
     name: 'cycler',
     group: 'backend',
   },

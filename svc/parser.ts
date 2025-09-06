@@ -19,7 +19,30 @@ import { parsedFetcher } from './fetcher/getParsedData.ts';
 import { gcFetcher } from './fetcher/getGcData.ts';
 import { getPGroup } from './util/pgroup.ts';
 import moment from 'moment';
-import { queueReconcile } from './util/insert.ts';
+import db from './store/db.ts';
+
+async function queueReconcile(
+  gcMatch: GcMatch | null,
+  pgroup: PGroup,
+  metricName: MetricName,
+) {
+  if (gcMatch) {
+    // Log the players who were previously anonymous for reconciliation
+    await Promise.all(
+      gcMatch.players
+        .filter((p) => !Boolean(pgroup[p.player_slot]?.account_id))
+        .map(async (p) => {
+          if (p.account_id) {
+            await db.raw(
+              'INSERT INTO player_match_history(account_id, match_id, player_slot) VALUES (?, ?, ?) ON CONFLICT DO NOTHING',
+              [p.account_id, gcMatch.match_id, p.player_slot],
+            );
+            await redisCount(metricName);
+          }
+        }),
+    );
+  }
+}
 
 async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
   const start = Date.now();
