@@ -69,12 +69,13 @@ class ApiFetcher extends MatchFetcher<ApiMatch> {
     // Insert the data normally as if API data from scanner
     let data = await this.getData(matchId);
     let pageBack = 0;
-    while (!data && pageBack < 100) {
+    while (!data && pageBack <= 100) {
       pageBack += 1;
+      console.log('paging back %s for matchId %s', pageBack, matchId);
       data = await this.getData(matchId - pageBack);
     }
     if (!data) {
-      return;
+      throw new Error('could not find data for match ' + matchId);
     }
     const precedingSeqNum = data.match_seq_num;
     const url = SteamAPIUrls.api_sequence({
@@ -86,7 +87,7 @@ class ApiFetcher extends MatchFetcher<ApiMatch> {
     });
     const match = body.result.matches.find((m: ApiMatch) => m.match_id === matchId);
     if (!match) {
-      return;
+      throw new Error('could not find in seqnum response match ' + matchId);
     }
     console.log(match);
     // await insertMatch(match, {
