@@ -16,7 +16,8 @@ async function doRepair() {
         let { rows: allRows } = await db.raw('select * from player_match_history where match_id = ?', [row.match_id]);
         console.log(allRows);
         // await reconcileMatch(allRows);
-        await new Promise(resolve => setTimeout(resolve, 60000));
+        // await new Promise(resolve => setTimeout(resolve, 10000));
+        process.stdin.resume();
     }
 }
 doRepair();
