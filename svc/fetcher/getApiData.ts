@@ -69,10 +69,11 @@ class ApiFetcher extends MatchFetcher<ApiMatch> {
     // Insert the data normally as if API data from scanner
     let data = await this.getData(matchId);
     let pageBack = 0;
-    while (!data && pageBack <= 100) {
+    while (!data && pageBack <= 1000) {
       pageBack += 1;
       console.log('paging back %s for matchId %s', pageBack, matchId);
       data = await this.getData(matchId - pageBack);
+      await new Promise(resolve => setTimeout(resolve, 500));
     }
     if (!data) {
       throw new Error('could not find data for match ' + matchId);
