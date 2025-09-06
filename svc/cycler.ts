@@ -5,7 +5,7 @@ import { shuffle } from './util/utility.ts';
 
 const { PARSER_PARALLELISM } = config;
 const projectId = config.GOOGLE_CLOUD_PROJECT_ID;
-const lifetime = 360;
+const lifetime = 600;
 const template = 'retriever-20250324';
 
 async function getToken() {
