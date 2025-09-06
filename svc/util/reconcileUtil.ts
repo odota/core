@@ -2,7 +2,7 @@ import db from "../store/db.ts";
 import { getMatchDataFromBlobWithMetadata } from "./buildMatch.ts";
 import { upsertPlayerCaches } from "./insert.ts";
 import { getPGroup } from "./pgroup.ts";
-import { HistoryType } from "./types.ts";
+import type { HistoryType } from "./types.ts";
 
 export async function reconcileMatch(rows: HistoryType[]) {
   // validate that all rows have the same match ID
