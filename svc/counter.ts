@@ -16,7 +16,7 @@ import {
 } from './util/utility.ts';
 
 runReliableQueue('countsQueue', 1, async function count(match: ApiMatch) {
-  console.log('match %s', match.match_id);
+  console.time('match ' + match.match_id);
   db.raw('BEGIN TRANSACTION');
   await Promise.all(
     [
@@ -30,8 +30,8 @@ runReliableQueue('countsQueue', 1, async function count(match: ApiMatch) {
       updateBenchmarks(match),
     ]
   );
-
   db.raw('COMMIT');
+  console.timeEnd('match ' + match.match_id);
   return true;
 });
 

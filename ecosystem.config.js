@@ -189,6 +189,7 @@ let arr = [
   {
     name: 'counter',
     group: 'backend',
+    instances: 2,
   },
   {
     name: 'syncSubs',
