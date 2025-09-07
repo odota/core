@@ -18,14 +18,19 @@ import {
 runReliableQueue('countsQueue', 1, async function count(match: ApiMatch) {
   console.log('match %s', match.match_id);
   db.raw('BEGIN TRANSACTION');
-  await updateHeroRankings(match);
-  await upsertMatchSample(match);
-  await updateRecords(match);
-  await updateLastPlayed(match);
-  await updateHeroSearch(match);
-  await updateHeroCounts(match);
-  await updateMatchCounts(match);
-  await updateBenchmarks(match);
+  await Promise.all(
+    [
+      updateHeroRankings(match),
+      upsertMatchSample(match),
+      updateRecords(match),
+      updateLastPlayed(match),
+      updateHeroSearch(match),
+      updateHeroCounts(match),
+      updateMatchCounts(match),
+      updateBenchmarks(match),
+    ]
+  );
+
   db.raw('COMMIT');
   return true;
 });
