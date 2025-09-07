@@ -17,6 +17,7 @@ const PAGE_SIZE = 100;
 const SCANNER_WAIT = 5000;
 const isSecondary = Boolean(Number(config.SCANNER_OFFSET));
 const offset = Number(config.SCANNER_OFFSET);
+let nextSeqNum: number;
 
 if (config.NODE_ENV === 'development') {
   let numResult = await getCurrentSeqNum();
@@ -32,114 +33,91 @@ if (config.NODE_ENV === 'development') {
     );
   }
 }
-runInLoop(scanApi, 0);
-
-async function scanApi() {
-  let nextSeqNum;
-  while (true) {
-    // If primary (offset 0) or first secondary iteration, read value from storage
-    // If secondary, use the nextseqnum value from previous iteration
-    const current = await getCurrentSeqNum();
-    let seqNum = current - offset;
-    if (isSecondary && nextSeqNum) {
-      if (nextSeqNum > seqNum) {
-        // Secondary scanner is catching up too much. Wait and try again
-        console.log('secondary scanner waiting', seqNum, current, offset);
-        await new Promise((resolve) => setTimeout(resolve, SCANNER_WAIT));
-        continue;
-      } else {
-        seqNum = nextSeqNum;
-      }
-    }
-    const start = Date.now();
-    const apiHosts = await getApiHosts();
-    const parallelism = Math.min(apiHosts.length, API_KEYS.length);
-    const scannerWaitCatchup = SCANNER_WAIT / parallelism;
-    const url = SteamAPIUrls.api_sequence({
-      start_at_match_seq_num: seqNum,
-      matches_requested: PAGE_SIZE,
-    });
-    let data = null;
-    try {
-      data = await getSteamAPIData({
-        url,
-        proxy: apiHosts,
-      });
-    } catch (err: any) {
-      console.log(err);
-      if (err?.result?.statusDetail === 'Error retrieving match data.') {
-        redisCount('skip_seq_num');
-        // Could increment nextSeqNum by 1 to avoid stalling (maybe after some number of retries?)
-      }
-      // failed, try the same number again
+runInLoop(async function scanApi() {
+  // If primary (offset 0) or first secondary iteration, read value from storage
+  // If secondary, use the nextseqnum value from previous iteration
+  const current = await getCurrentSeqNum();
+  let seqNum = current - offset;
+  if (isSecondary && nextSeqNum) {
+    if (nextSeqNum > seqNum) {
+      // Secondary scanner is catching up too much. Wait and try again
+      console.log('secondary scanner waiting', seqNum, current, offset);
       await new Promise((resolve) => setTimeout(resolve, SCANNER_WAIT));
-      continue;
+      return;
+    } else {
+      seqNum = nextSeqNum;
     }
-    const resp =
-      data && data.result && data.result.matches ? data.result.matches : [];
-    console.log('[API] match_seq_num:%s, matches:%s', seqNum, resp.length);
-    console.time('insert');
-    try {
-      await Promise.all(
-        resp.map(async (match: ApiMatch) => {
-          // Optionally throttle inserts to prevent overload
-          if (match.match_id % 100 >= Number(config.SCANNER_PERCENT)) {
+  }
+  const start = Date.now();
+  const apiHosts = await getApiHosts();
+  const parallelism = Math.min(apiHosts.length, API_KEYS.length);
+  const scannerWaitCatchup = SCANNER_WAIT / parallelism;
+  const url = SteamAPIUrls.api_sequence({
+    start_at_match_seq_num: seqNum,
+    matches_requested: PAGE_SIZE,
+  });
+  let data = await getSteamAPIData({
+    url,
+    proxy: apiHosts,
+  });
+  const resp =
+    data && data.result && data.result.matches ? data.result.matches : [];
+  console.log('[API] match_seq_num:%s, matches:%s', seqNum, resp.length);
+  console.time('insert');
+  await Promise.all(
+    resp.map(async (match: ApiMatch) => {
+      // Optionally throttle inserts to prevent overload
+      if (match.match_id % 100 >= Number(config.SCANNER_PERCENT)) {
+        return;
+      }
+      // check if match was previously processed
+      const result = await redis.zscore('scanner_insert', match.match_id);
+      // console.log(match.match_id, result);
+      // don't insert this match if we already processed it recently
+      if (!result) {
+        if (isSecondary) {
+          // On secondary, don't insert if no min value or too far behind
+          const minInRange = Number(
+            (await redis.zrange('scanner_insert', 0, 0))[0],
+          );
+          if (!minInRange || match.match_id < minInRange) {
             return;
           }
-          // check if match was previously processed
-          const result = await redis.zscore('scanner_insert', match.match_id);
-          // console.log(match.match_id, result);
-          // don't insert this match if we already processed it recently
-          if (!result) {
-            if (isSecondary) {
-              // On secondary, don't insert if no min value or too far behind
-              const minInRange = Number(
-                (await redis.zrange('scanner_insert', 0, 0))[0],
-              );
-              if (!minInRange || match.match_id < minInRange) {
-                return;
-              }
-              // secondary scanner picked up a missing match
-              redisCount('secondary_scanner');
-            }
-            await insertMatch(match, {
-              type: 'api',
-              origin: 'scanner',
-            });
-            await redis.zadd('scanner_insert', match.match_id, match.match_id);
-            // To avoid dups we should always keep more matches here than SCANNER_OFFSET
-            await redis.zremrangebyrank('scanner_insert', '0', '-100001');
-          }
-        }),
-      );
-    } catch (e) {
-      await new Promise((resolve) => setTimeout(resolve, SCANNER_WAIT));
-      // Wait before throwing to avoid excessive retries
-      throw e;
-    }
-    console.timeEnd('insert');
-    // Completed inserting matches on this page so update redis
-    if (resp.length) {
-      nextSeqNum = resp[resp.length - 1].match_seq_num + 1;
-      console.log('next_seq_num: %s', nextSeqNum);
-      if (!isSecondary) {
-        // Only set match seq num on primary
-        await db.raw(
-          'INSERT INTO last_seq_num(match_seq_num) VALUES (?) ON CONFLICT DO NOTHING',
-          [nextSeqNum],
-        );
+          // secondary scanner picked up a missing match
+          redisCount('secondary_scanner');
+        }
+        await insertMatch(match, {
+          type: 'api',
+          origin: 'scanner',
+        });
+        await redis.zadd('scanner_insert', match.match_id, match.match_id);
+        // To avoid dups we should always keep more matches here than SCANNER_OFFSET
+        await redis.zremrangebyrank('scanner_insert', '0', '-100001');
       }
+    }),
+  );
+  console.timeEnd('insert');
+  // Completed inserting matches on this page so update redis
+  if (resp.length) {
+    nextSeqNum = resp[resp.length - 1].match_seq_num + 1;
+    console.log('next_seq_num: %s', nextSeqNum);
+    if (!isSecondary) {
+      // Only set match seq num on primary
+      await db.raw(
+        'INSERT INTO last_seq_num(match_seq_num) VALUES (?) ON CONFLICT DO NOTHING',
+        [nextSeqNum],
+      );
     }
-    const end = Date.now();
-    const elapsed = end - start;
-    const adjustedWait = Math.max(
-      // If not a full page, delay the next iteration
-      (resp.length < PAGE_SIZE ? SCANNER_WAIT : scannerWaitCatchup) - elapsed,
-      0,
-    );
-    await new Promise((resolve) => setTimeout(resolve, adjustedWait));
   }
-}
+  const end = Date.now();
+  const elapsed = end - start;
+  const adjustedWait = Math.max(
+    // If not a full page, delay the next iteration
+    (resp.length < PAGE_SIZE ? SCANNER_WAIT : scannerWaitCatchup) - elapsed,
+    0,
+  );
+  await new Promise((resolve) => setTimeout(resolve, adjustedWait));
+}, 0);
 
 async function getCurrentSeqNum(): Promise<number> {
   const result = await db.raw('select max(match_seq_num) from last_seq_num;');

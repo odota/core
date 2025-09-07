@@ -19,10 +19,11 @@ import redis from './store/redis.ts';
 
 // current run started at 5000000000
 const stop = Number(process.env.BACKFILL_STOP) || 6200000000;
+
 runInLoop(async function backfill() {
   // This endpoint is limited to something like 1 request every 5 seconds
   const apiHosts = await getApiHosts();
-  const SCANNER_WAIT = 2000 / apiHosts.length;
+  const SCANNER_WAIT = 1000 / apiHosts.length;
   // get progress from redis if available, if not, fallback to file
   let seqNum;
   if (redis) {
@@ -33,6 +34,7 @@ runInLoop(async function backfill() {
     seqNum = Number(fs.readFileSync('./match_seq_num.txt')) || 0;
   }
   if (seqNum > stop) {
+    await new Promise(resolve => setTimeout(resolve, 1000));
     process.exit(0);
   }
   const begin = Date.now();
@@ -41,17 +43,11 @@ runInLoop(async function backfill() {
     matches_requested: 100,
   });
   let data = null;
-  try {
-    data = await getSteamAPIData({
-      url,
-      // We could rotate through proxies here to ensure consistent load
-      proxy: apiHosts,
-    });
-  } catch (err: any) {
-    console.log(err);
-    await new Promise((resolve) => setTimeout(resolve, SCANNER_WAIT));
-    return;
-  }
+  data = await getSteamAPIData({
+    url,
+    // We could rotate through proxies here to ensure consistent load
+    proxy: apiHosts,
+  });
   const resp =
     data && data.result && data.result.matches ? data.result.matches : [];
   console.log('[API] match_seq_num:%s, matches:%s', seqNum, resp.length);

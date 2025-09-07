@@ -15,7 +15,7 @@ import {
   redisCount,
 } from './util/utility.ts';
 
-runQueue('countsQueue', 1, async (match: Match) => {
+runQueue('countsQueue', 1, async function count(match: Match) {
   console.log('match %s', match.match_id);
   await updateHeroRankings(match);
   await upsertMatchSample(match);
