@@ -19,7 +19,6 @@ runInLoop(async function autoReconcile() {
     {
       attempts: 1,
       priority: 9,
-      caller: 'autoreconcile',
     },
   );
 }, 10000);

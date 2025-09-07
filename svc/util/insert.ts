@@ -509,7 +509,6 @@ export async function insertMatch(
           pgroup,
         },
       }, {
-        caller: options.origin,
       });
     }
   }
@@ -539,7 +538,6 @@ export async function insertMatch(
           pgroup,
         },
       }, {
-        caller: options.origin,
       });
     }
   }
@@ -611,7 +609,6 @@ export async function insertMatch(
       {
         priority,
         attempts,
-        caller: options.origin,
       },
     );
     return job;
