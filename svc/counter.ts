@@ -15,9 +15,9 @@ import {
   redisCount,
 } from './util/utility.ts';
 
+// TODO delete this if we're doing it during insertMatch
 runReliableQueue('countsQueue', 1, async function count(match: ApiMatch) {
   console.time('match ' + match.match_id);
-  db.raw('BEGIN TRANSACTION');
   await Promise.all(
     [
       updateHeroRankings(match),
@@ -30,7 +30,6 @@ runReliableQueue('countsQueue', 1, async function count(match: ApiMatch) {
       updateBenchmarks(match),
     ]
   );
-  db.raw('COMMIT');
   console.timeEnd('match ' + match.match_id);
   return true;
 });

@@ -19,6 +19,8 @@ import {
   redisCount,
   transformMatch,
   createMatchCopy,
+  isSignificant,
+  getStartOfBlockMinutes,
 } from './utility.ts';
 import {
   getMatchRankTier,
@@ -29,6 +31,7 @@ import { getPGroup } from './pgroup.ts';
 import { blobArchive } from '../store/archive.ts';
 import cassandra, { getCassandraColumns } from '../store/cassandra.ts';
 import { computeMatchData } from './compute.ts';
+import { benchmarks } from './benchmarksUtil.ts';
 
 moment.relativeTimeThreshold('ss', 0);
 
@@ -439,19 +442,42 @@ export async function insertMatch(
       );
     }
   }
-  async function decideCounts(match: InsertMatchInput) {
+  async function updateCounts(match: InsertMatchInput) {
     // Update temporary match counts/hero rankings
     if (options.origin === 'scanner' && options.type === 'api') {
-      await addReliableJob(
-        {
-          name: 'countsQueue',
-          data: match as ApiMatch,
-        },
-        {},
-      );
+      await Promise.all(
+        [
+          updateHeroRankings(match as ApiMatch),
+          upsertMatchSample(match as ApiMatch),
+          updateRecords(match as ApiMatch),
+          updateLastPlayed(match as ApiMatch),
+          updateHeroSearch(match as ApiMatch),
+          updateHeroCounts(match as ApiMatch),
+          updateMatchCounts(match as ApiMatch),
+          updateBenchmarks(match as ApiMatch),
+        ]);
     }
   }
-  async function decideMmr(match: InsertMatchInput) {
+  async function upsertPlayers(match: InsertMatchInput) {
+    // Player discovery
+    // Add a placeholder player with just the ID
+    // We could also trigger profile update here but we probably don't need to update name after each match
+    // The profiler process will update profiles randomly
+    // We can also discover players from gcdata where they're not anonymous
+    const arr = match.players.filter((p) => {
+      return p.account_id && p.account_id !== getAnonymousAccountId();
+    });
+    await Promise.all(
+      arr.map((p) =>
+        // Avoid extraneous writes to player table by not using upsert function
+        db.raw(
+          'INSERT INTO players(account_id) VALUES(?) ON CONFLICT DO NOTHING',
+          [p.account_id],
+        ),
+      ),
+    );
+  }
+  async function queueMmr(match: InsertMatchInput) {
     // Trigger an update for player rank_tier if ranked match
     const arr = match.players.filter<ApiPlayer>((p): p is ApiPlayer => {
       return Boolean(
@@ -475,26 +501,7 @@ export async function insertMatch(
       ),
     );
   }
-  async function decideProfile(match: InsertMatchInput) {
-    // Player discovery
-    // Add a placeholder player with just the ID
-    // We could also trigger profile update here but we probably don't need to update name after each match
-    // The profiler process will update profiles randomly
-    // We can also discover players from gcdata where they're not anonymous
-    const arr = match.players.filter((p) => {
-      return p.account_id && p.account_id !== getAnonymousAccountId();
-    });
-    await Promise.all(
-      arr.map((p) =>
-        // Avoid extraneous writes to player table by not using upsert function
-        db.raw(
-          'INSERT INTO players(account_id) VALUES(?) ON CONFLICT DO NOTHING',
-          [p.account_id],
-        ),
-      ),
-    );
-  }
-  async function decideGcData(match: InsertMatchInput) {
+  async function queueGcData(match: InsertMatchInput) {
     // Trigger a request for gcdata
     if (
       options.origin === 'scanner' &&
@@ -517,7 +524,7 @@ export async function insertMatch(
     }
   }
 
-  async function decideRate(match: InsertMatchInput) {
+  async function queueRate(match: InsertMatchInput) {
     // Decide whether to rate the match
     // Rate a percentage of ranked matches
     if (
@@ -544,7 +551,7 @@ export async function insertMatch(
     }
   }
 
-  async function decideScenarios(match: InsertMatchInput) {
+  async function queueScenarios(match: InsertMatchInput) {
     // Decide if we want to do scenarios (requires parsed match)
     // Only if it originated from scanner to avoid triggering on requests
     if (
@@ -567,7 +574,7 @@ export async function insertMatch(
       );
     }
   }
-  async function decideReplayParse(match: InsertMatchInput) {
+  async function queueParse(match: InsertMatchInput) {
     if (options.skipParse) {
       return null;
     }
@@ -654,14 +661,14 @@ export async function insertMatch(
   await resetMatchCache(match);
   await resetPlayerTemp(match);
   await telemetry(match);
-  await decideCounts(match);
-  await decideMmr(match);
-  await decideProfile(match);
-  await decideGcData(match);
-  await decideRate(match);
-  await decideScenarios(match);
+  await updateCounts(match);
+  await upsertPlayers(match);
+  await queueMmr(match);
+  await queueGcData(match);
+  await queueRate(match);
+  await queueScenarios(match);
   await postParsedMatch(match);
-  const parseJob = await decideReplayParse(match);
+  const parseJob = await queueParse(match);
   return { parseJob, pgroup };
 }
 
@@ -744,3 +751,315 @@ export async function upsertPlayerCaches(
     }),
   );
 }
+
+async function updateHeroRankings(match: ApiMatch) {
+  if (!isSignificant(match)) {
+    return;
+  }
+  const { avg } = await getMatchRankTier(match.players);
+  const matchScore = avg && !Number.isNaN(Number(avg)) ? avg * 100 : undefined;
+  if (!matchScore) {
+    return;
+  }
+  await Promise.all(
+    match.players.map(async (player) => {
+      if (
+        !player.account_id ||
+        player.account_id === getAnonymousAccountId() ||
+        !player.hero_id
+      ) {
+        return;
+      }
+      const radiant_win = match.radiant_win;
+      // Treat the result as an Elo rating change where the opponent is the average rank tier of the match * 100
+      const win = Number(isRadiant(player) === radiant_win);
+      const kFactor = 100;
+      const data1 = await db.select('score').from('hero_ranking').where({
+        account_id: player.account_id,
+        hero_id: player.hero_id,
+      });
+      const currRating1 = Number((data1 && data1[0] && data1[0].score) || 4000);
+      const r1 = 10 ** (currRating1 / 1000);
+      const r2 = 10 ** (matchScore / 1000);
+      const e1 = r1 / (r1 + r2);
+      const ratingDiff1 = kFactor * (win - e1);
+      const newScore = currRating1 + ratingDiff1;
+      return db.raw(
+        'INSERT INTO hero_ranking VALUES(?, ?, ?) ON CONFLICT(account_id, hero_id) DO UPDATE SET score = ?',
+        [player.account_id, player.hero_id, newScore, newScore],
+      );
+    }),
+  );
+}
+
+async function upsertMatchSample(match: ApiMatch) {
+  if (
+    isSignificant(match) &&
+    match.match_id % 100 < Number(config.PUBLIC_SAMPLE_PERCENT)
+  ) {
+    const { avg, num } = await getMatchRankTier(match.players);
+    if (!avg || num < 2) {
+      return;
+    }
+    const trx = await db.transaction();
+    try {
+      const matchMmrData = {
+        avg_rank_tier: avg ?? null,
+        num_rank_tier: num ?? null,
+      };
+      const radiant_team = match.players
+        .filter((p) => isRadiant(p))
+        .map((p) => p.hero_id);
+      const dire_team = match.players
+        .filter((p) => !isRadiant(p))
+        .map((p) => p.hero_id);
+      const newMatch = { ...match, ...matchMmrData, radiant_team, dire_team };
+      await upsert(trx, 'public_matches', newMatch, {
+        match_id: newMatch.match_id,
+      });
+    } catch (e) {
+      await trx.rollback();
+      throw e;
+    }
+    await trx.commit();
+    return;
+  }
+}
+async function updateRecord(
+  field: keyof ApiMatch | keyof ApiPlayer,
+  match: ApiMatch,
+  player: ApiPlayer,
+) {
+  redis.zadd(
+    `records:${field}`,
+    (match[field as keyof ApiMatch] ||
+      player[field as keyof ApiPlayer]) as number,
+    [match.match_id, match.start_time, player.hero_id].join(':'),
+  );
+  // Keep only 100 top scores
+  redis.zremrangebyrank(`records:${field}`, '0', '-101');
+  const expire = moment.utc().add(1, 'month').startOf('month').format('X');
+  redis.expireat(`records:${field}`, expire);
+}
+async function updateRecords(match: ApiMatch) {
+  if (isSignificant(match) && match.lobby_type === 7) {
+    updateRecord('duration', match, {} as ApiPlayer);
+    match.players.forEach((player) => {
+      updateRecord('kills', match, player);
+      updateRecord('deaths', match, player);
+      updateRecord('assists', match, player);
+      updateRecord('last_hits', match, player);
+      updateRecord('denies', match, player);
+      updateRecord('gold_per_min', match, player);
+      updateRecord('xp_per_min', match, player);
+      updateRecord('hero_damage', match, player);
+      updateRecord('tower_damage', match, player);
+      updateRecord('hero_healing', match, player);
+    });
+  }
+}
+async function updateLastPlayed(match: ApiMatch) {
+  const filteredPlayers = match.players.filter(
+    (player) =>
+      player.account_id && player.account_id !== getAnonymousAccountId(),
+  );
+  const lastMatchTime = new Date(match.start_time * 1000);
+  const bulkUpdate = filteredPlayers.reduce<any>((acc, player) => {
+    acc.push(
+      {
+        update: {
+          _id: player.account_id,
+        },
+      },
+      {
+        doc: {
+          last_match_time: lastMatchTime,
+        },
+        doc_as_upsert: true,
+      },
+    );
+    return acc;
+  }, []);
+  bulkIndexPlayer(bulkUpdate);
+  await Promise.all(
+    filteredPlayers.map((player) =>
+      upsertPlayer(
+        db,
+        {
+          account_id: player.account_id,
+          last_match_time: lastMatchTime,
+          // If the player's ID is showing up then they aren't anonymous
+          fh_unavailable: false,
+        },
+        false,
+      ),
+    ),
+  );
+}
+/**
+ * Update table storing heroes played in a game for lookup of games by heroes played
+ * */
+async function updateHeroSearch(match: ApiMatch) {
+  const radiant = [];
+  const dire = [];
+  for (let i = 0; i < match.players.length; i += 1) {
+    const p = match.players[i];
+    if (p.hero_id === 0) {
+      // exclude this match if any hero is 0
+      return;
+    }
+    if (isRadiant(p)) {
+      radiant.push(p.hero_id);
+    } else {
+      dire.push(p.hero_id);
+    }
+  }
+  // Turn the arrays into strings
+  // const rcg = groupToString(radiant);
+  // const dcg = groupToString(dire);
+  // Always store the team whose string representation comes first (as teamA)
+  // This lets us only search in one order when we do a query
+  // Currently disabled because this doesn't work if the query is performed with a subset
+  // const inverted = rcg > dcg;
+  const inverted = false;
+  const teamA = inverted ? dire : radiant;
+  const teamB = inverted ? radiant : dire;
+  const teamAWin = inverted ? !match.radiant_win : match.radiant_win;
+  return db.raw(
+    'INSERT INTO hero_search (match_id, teamA, teamB, teamAWin, start_time) VALUES (?, ?, ?, ?, ?) ON CONFLICT DO NOTHING',
+    [match.match_id, teamA, teamB, teamAWin, match.start_time],
+  );
+}
+
+async function updateHeroCounts(match: ApiMatch) {
+  // If match has leagueid, update pro picks and wins
+  // If turbo, update picks and wins
+  // Otherwise, update pub picks and wins if significant
+  // If none of the above, skip
+  // If pub and we have a rank tier, also update the 1-8 rank pick/win
+  let tier: string | null = null;
+  let rank: number | null = null;
+  if (match.leagueid) {
+    tier = 'pro';
+  } else if (match.game_mode === 23) {
+    tier = 'turbo';
+  } else if (isSignificant(match)) {
+    tier = 'pub';
+    let { avg } = await getMatchRankTier(match.players);
+    if (avg) {
+      rank = Math.floor(avg / 10);
+    }
+  }
+  if (!tier) {
+    return;
+  }
+  const timestamp = moment.utc().startOf('day').unix();
+  const expire = moment.utc().startOf('day').add(8, 'day').unix();
+  for (let i = 0; i < match.players.length; i += 1) {
+    const player = match.players[i];
+    const heroId = player.hero_id;
+    if (heroId) {
+      const win = Number(isRadiant(player) === match.radiant_win);
+      const updateKeys = (prefix: string) => {
+        const rKey = `${heroId}:${prefix}:pick:${timestamp}`;
+        redis.incr(rKey);
+        redis.expireat(rKey, expire);
+        if (win) {
+          const rKeyWin = `${heroId}:${prefix}:win:${timestamp}`;
+          redis.incr(rKeyWin);
+          redis.expireat(rKeyWin, expire);
+        }
+      };
+      if (tier) {
+        // pro, pub, or turbo
+        updateKeys(tier);
+      }
+      if (rank) {
+        // 1 to 8 based on the average level of the match
+        updateKeys(rank.toString());
+      }
+    }
+  }
+  // Do bans for pro
+  if (match.leagueid) {
+    match.picks_bans?.forEach((pb) => {
+      if (pb.is_pick === false) {
+        const heroId = pb.hero_id;
+        const rKey = `${heroId}:pro:ban:${timestamp}`;
+        redis.incr(rKey);
+        redis.expireat(rKey, expire);
+      }
+    });
+  }
+}
+
+async function updateMatchCounts(match: ApiMatch) {
+  await redisCount(`${match.game_mode}_game_mode` as MetricName);
+  await redisCount(`${match.lobby_type}_lobby_type` as MetricName);
+  await redisCount(`${match.cluster}_cluster` as MetricName);
+}
+
+async function updateBenchmarks(match: ApiMatch) {
+  if (
+    match.match_id % 100 < Number(config.BENCHMARKS_SAMPLE_PERCENT) &&
+    isSignificant(match)
+  ) {
+    for (let i = 0; i < match.players.length; i += 1) {
+      const p = match.players[i];
+      // only do if all players have heroes
+      if (p.hero_id) {
+        Object.keys(benchmarks).forEach((key) => {
+          const metric = benchmarks[key](match, p);
+          if (
+            metric !== undefined &&
+            metric !== null &&
+            !Number.isNaN(Number(metric))
+          ) {
+            const rkey = [
+              'benchmarks',
+              getStartOfBlockMinutes(
+                Number(config.BENCHMARK_RETENTION_MINUTES),
+                0,
+              ),
+              key,
+              p.hero_id,
+            ].join(':');
+            redis.zadd(rkey, metric, match.match_id);
+            // expire at time two epochs later (after prev/current cycle)
+            const expiretime = getStartOfBlockMinutes(
+              Number(config.BENCHMARK_RETENTION_MINUTES),
+              2,
+            );
+            redis.expireat(rkey, expiretime);
+          }
+        });
+      }
+    }
+  }
+}
+/*
+// Stores winrate of each subset of heroes in this game
+function updateCompositions(match) {
+  generateMatchups(match, 5, true).forEach((team) => {
+    const key = team.split(':')[0];
+    const win = Number(team.split(':')[1]);
+    db.raw(`INSERT INTO compositions (composition, games, wins)
+    VALUES (?, 1, ?)
+    ON CONFLICT(composition)
+    DO UPDATE SET games = compositions.games + 1, wins = compositions.wins + ?
+    `, [key, win, win]);
+    redis.hincrby('compositions', team, 1);
+  });
+}
+
+// Stores result of each matchup of subsets of heroes in this game
+function updateMatchups(match) {
+  generateMatchups(match, 1).forEach((key) => {
+    db.raw(`INSERT INTO matchups (matchup, num)
+    VALUES (?, 1)
+    ON CONFLICT(matchup)
+    DO UPDATE SET num = matchups.num + 1
+    `, [key])
+    redis.hincrby('matchups', key, 1);
+}
+*/
