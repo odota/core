@@ -1,6 +1,5 @@
 // Fetches old matches from Steam API and writes to blob storage
 import { blobArchive } from './store/archive.ts';
-import type { ApiMatch } from './util/types.ts';
 import {
   SteamAPIUrls,
   getSteamAPIData,

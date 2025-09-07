@@ -7,7 +7,8 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "noEmit": true,
-    "allowImportingTsExtensions": true
+    "allowImportingTsExtensions": true,
+    "erasableSyntaxOnly": true
   },
   "include": ["index.ts", "global.d.ts", "dev", "svc", "test"]
 }

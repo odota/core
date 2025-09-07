@@ -68,7 +68,7 @@ async function countDayDistinct(prefix: MetricName) {
 export async function buildStatus() {
   const obj = {
     // Health uses a custom shape, everything else is a Record<string, number>
-    health: async (): Promise<Record<string, any>> => {
+    health: async (): Promise<Record<string, any> | null> => {
       const result = await redis.get('health:v2');
       return result ? JSON.parse(result) : null;
     },

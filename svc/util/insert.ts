@@ -19,6 +19,7 @@ import {
   redisCount,
   transformMatch,
   createMatchCopy,
+  InsertMatchInput,
 } from './utility.ts';
 import {
   getMatchRankTier,
@@ -27,7 +28,6 @@ import {
 } from './queries.ts';
 import { getPGroup } from './pgroup.ts';
 import { blobArchive } from '../store/archive.ts';
-import type { ApiMatch, ApiPlayer, InsertMatchInput } from './types.ts';
 import cassandra, { getCassandraColumns } from '../store/cassandra.ts';
 import { computeMatchData } from './compute.ts';
 
@@ -443,10 +443,10 @@ export async function insertMatch(
   async function decideCounts(match: InsertMatchInput) {
     // Update temporary match counts/hero rankings
     if (options.origin === 'scanner' && options.type === 'api') {
-      await addJob({
+      await addReliableJob({
         name: 'countsQueue',
         data: match as ApiMatch,
-      });
+      }, {});
     }
   }
   async function decideMmr(match: InsertMatchInput) {

@@ -2,7 +2,6 @@
 import config from '../config.ts';
 import redis from './store/redis.ts';
 import { insertMatch } from './util/insert.ts';
-import type { ApiMatch } from './util/types.ts';
 import {
   SteamAPIUrls,
   getApiHosts,

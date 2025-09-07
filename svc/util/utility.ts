@@ -5,7 +5,6 @@ import moment from 'moment';
 import laneMappings from './laneMappings.ts';
 import config from '../../config.ts';
 import contributors from '../../CONTRIBUTORS.ts';
-import type { ApiMatch, ApiPlayer, InsertMatchInput } from './types.ts';
 import type QueryString from 'qs';
 import axios from 'axios';
 import redis from '../store/redis.ts';
@@ -953,6 +952,8 @@ export function queryParamToArray(
   }
   return [];
 }
+
+export type InsertMatchInput = ApiMatch | GcMatch | ParserMatch;
 
 export function transformMatch(
   origMatch: Readonly<InsertMatchInput>,

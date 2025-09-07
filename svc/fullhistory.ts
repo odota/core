@@ -3,14 +3,13 @@ import urllib from 'url';
 import config from '../config.ts';
 import { redisCount, getSteamAPIData, SteamAPIUrls } from './util/utility.ts';
 import db from './store/db.ts';
-import { runQueue } from './store/queue.ts';
+import { runReliableQueue } from './store/queue.ts';
 import { getPlayerMatches } from './util/buildPlayer.ts';
-import type { ApiMatch } from './util/types.ts';
 import redis from './store/redis.ts';
 
 // Approximately 5 req/sec limit per apiHost
 // Short fullhistory uses 1 req, long 5 req, some percentage will need to query for up to 500 matches
-runQueue(
+runReliableQueue(
   'fhQueue',
   Number(config.FULLHISTORY_PARALLELISM) || 1,
   processFullHistory,
@@ -37,7 +36,7 @@ async function processFullHistory(job: FullHistoryJob) {
     Number(player.account_id) === 0 ||
     Number.isNaN(Number(player.account_id))
   ) {
-    return;
+    return true;
   }
 
   // If this player has already recently been processed, don't do it again
@@ -46,7 +45,7 @@ async function processFullHistory(job: FullHistoryJob) {
     (await redis.get('fh_queue:' + player.account_id))
   ) {
     redisCount('fullhistory_skip');
-    return;
+    return true;
   }
   await redis.setex('fh_queue:' + player.account_id, 30 * 60, '1');
 
@@ -162,4 +161,5 @@ async function processFullHistory(job: FullHistoryJob) {
   }
   await updatePlayer(player);
   console.timeEnd('doFullHistory: ' + player.account_id.toString());
+  return true;
 }

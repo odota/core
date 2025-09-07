@@ -1,5 +1,3 @@
-import type { ApiMatch } from './types.ts';
-
 export function getPGroup(match: ApiMatch | Match | ParsedMatch): PGroup {
   // This only works if we are an API insert or reconciling (match/parsedmatch)
   // GcMatch doesn't have hero ID and ParserMatch doesn't have account_id

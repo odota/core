@@ -10,7 +10,6 @@ import {
 } from './utility.ts';
 import redis from '../store/redis.ts';
 import db from '../store/db.ts';
-import type { ApiMatch } from './types.ts';
 import { parsedFetcher } from '../fetcher/ParsedFetcher.ts';
 import { apiFetcher } from '../fetcher/ApiFetcher.ts';
 import { gcFetcher } from '../fetcher/GcdataFetcher.ts';

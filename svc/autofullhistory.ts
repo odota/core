@@ -1,6 +1,6 @@
 // Randomly requests history refreshes for users to fill in missing matches and update privacy setting
 import db from './store/db.ts';
-import { addJob } from './store/queue.ts';
+import { addReliableJob } from './store/queue.ts';
 import { runInLoop } from './util/utility.ts';
 
 runInLoop(async function autoFh() {
@@ -10,12 +10,12 @@ runInLoop(async function autoFh() {
   console.log(result.rows);
   await Promise.all(
     result.rows.map((row: any) =>
-      addJob({
+      addReliableJob({
         name: 'fhQueue',
         data: {
           account_id: row.account_id,
         },
-      }),
+      }, {}),
     ),
   );
 }, 1000);

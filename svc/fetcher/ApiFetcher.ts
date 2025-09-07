@@ -1,6 +1,5 @@
 import { SteamAPIUrls, getSteamAPIData, redisCount } from '../util/utility.ts';
 import { blobArchive } from '../store/archive.ts';
-import type { ApiMatch } from '../util/types.ts';
 import { MatchFetcher } from './base.ts';
 import { insertMatch } from '../util/insert.ts';
 import { config } from '../../config.ts';

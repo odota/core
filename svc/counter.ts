@@ -4,7 +4,7 @@ import redis from './store/redis.ts';
 import db from './store/db.ts';
 import { getMatchRankTier } from './util/queries.ts';
 import { upsertPlayer, bulkIndexPlayer, upsert } from './util/insert.ts';
-import { runQueue } from './store/queue.ts';
+import { runReliableQueue } from './store/queue.ts';
 import config from '../config.ts';
 import { benchmarks } from './util/benchmarksUtil.ts';
 import {
@@ -15,8 +15,9 @@ import {
   redisCount,
 } from './util/utility.ts';
 
-runQueue('countsQueue', 1, async function count(match: Match) {
+runReliableQueue('countsQueue', 1, async function count(match: ApiMatch) {
   console.log('match %s', match.match_id);
+  db.raw('BEGIN TRANSACTION');
   await updateHeroRankings(match);
   await upsertMatchSample(match);
   await updateRecords(match);
@@ -25,9 +26,11 @@ runQueue('countsQueue', 1, async function count(match: Match) {
   await updateHeroCounts(match);
   await updateMatchCounts(match);
   await updateBenchmarks(match);
+  db.raw('COMMIT');
+  return true;
 });
 
-async function updateHeroRankings(match: Match) {
+async function updateHeroRankings(match: ApiMatch) {
   if (!isSignificant(match)) {
     return;
   }
@@ -45,9 +48,9 @@ async function updateHeroRankings(match: Match) {
       ) {
         return;
       }
-      player.radiant_win = match.radiant_win;
+      const radiant_win = match.radiant_win;
       // Treat the result as an Elo rating change where the opponent is the average rank tier of the match * 100
-      const win = Number(isRadiant(player) === player.radiant_win);
+      const win = Number(isRadiant(player) === radiant_win);
       const kFactor = 100;
       const data1 = await db.select('score').from('hero_ranking').where({
         account_id: player.account_id,
@@ -67,7 +70,7 @@ async function updateHeroRankings(match: Match) {
   );
 }
 
-async function upsertMatchSample(match: Match) {
+async function upsertMatchSample(match: ApiMatch) {
   if (
     isSignificant(match) &&
     match.match_id % 100 < Number(config.PUBLIC_SAMPLE_PERCENT)
@@ -101,13 +104,13 @@ async function upsertMatchSample(match: Match) {
   }
 }
 async function updateRecord(
-  field: keyof Match | keyof Player,
-  match: Match,
-  player: Player,
+  field: keyof ApiMatch | keyof ApiPlayer,
+  match: ApiMatch,
+  player: ApiPlayer,
 ) {
   redis.zadd(
     `records:${field}`,
-    match[field as keyof Match] || player[field as keyof Player],
+    (match[field as keyof ApiMatch] || player[field as keyof ApiPlayer]) as number,
     [match.match_id, match.start_time, player.hero_id].join(':'),
   );
   // Keep only 100 top scores
@@ -115,9 +118,9 @@ async function updateRecord(
   const expire = moment.utc().add(1, 'month').startOf('month').format('X');
   redis.expireat(`records:${field}`, expire);
 }
-async function updateRecords(match: Match) {
+async function updateRecords(match: ApiMatch) {
   if (isSignificant(match) && match.lobby_type === 7) {
-    updateRecord('duration', match, {} as Player);
+    updateRecord('duration', match, {} as ApiPlayer);
     match.players.forEach((player) => {
       updateRecord('kills', match, player);
       updateRecord('deaths', match, player);
@@ -132,7 +135,7 @@ async function updateRecords(match: Match) {
     });
   }
 }
-async function updateLastPlayed(match: Match) {
+async function updateLastPlayed(match: ApiMatch) {
   const filteredPlayers = match.players.filter(
     (player) =>
       player.account_id && player.account_id !== getAnonymousAccountId(),
@@ -173,7 +176,7 @@ async function updateLastPlayed(match: Match) {
 /**
  * Update table storing heroes played in a game for lookup of games by heroes played
  * */
-async function updateHeroSearch(match: Match) {
+async function updateHeroSearch(match: ApiMatch) {
   const radiant = [];
   const dire = [];
   for (let i = 0; i < match.players.length; i += 1) {
@@ -205,7 +208,7 @@ async function updateHeroSearch(match: Match) {
   );
 }
 
-async function updateHeroCounts(match: Match) {
+async function updateHeroCounts(match: ApiMatch) {
   // If match has leagueid, update pro picks and wins
   // If turbo, update picks and wins
   // Otherwise, update pub picks and wins if significant
@@ -267,13 +270,13 @@ async function updateHeroCounts(match: Match) {
   }
 }
 
-async function updateMatchCounts(match: Match) {
+async function updateMatchCounts(match: ApiMatch) {
   await redisCount(`${match.game_mode}_game_mode` as MetricName);
   await redisCount(`${match.lobby_type}_lobby_type` as MetricName);
   await redisCount(`${match.cluster}_cluster` as MetricName);
 }
 
-async function updateBenchmarks(match: Match) {
+async function updateBenchmarks(match: ApiMatch) {
   if (
     match.match_id % 100 < Number(config.BENCHMARKS_SAMPLE_PERCENT) &&
     isSignificant(match)

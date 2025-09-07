@@ -100,9 +100,11 @@ async function gcDelay() {
   };
 }
 async function fhDelay() {
-  const result = await redis.llen('fhQueue');
+  const result = await db.raw(
+    "select count(*) from queue where type = 'fhQueue'",
+  );
   return {
-    metric: result,
+    metric: result.rows[0].count,
     threshold: 100000,
   };
 }
@@ -121,9 +123,11 @@ async function cacheDelay() {
   };
 }
 async function countsDelay() {
-  const result = await redis.llen('countsQueue');
+  const result = await db.raw(
+    "select count(*) from queue where type = 'countsQueue'",
+  );
   return {
-    metric: result,
+    metric: result.rows[0].count,
     threshold: 100000,
   };
 }

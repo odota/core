@@ -946,12 +946,12 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
         },
         route: () => '/players/:account_id/refresh',
         func: async (req, res, next) => {
-          const length = await addJob({
+          const length = await addReliableJob({
             name: 'fhQueue',
             data: {
               account_id: Number(req.params.account_id),
             },
-          });
+          }, {});
           // Also queue a refresh of the user's rank/medal
           await addJob({
             name: 'mmrQueue',

@@ -289,7 +289,7 @@ type GcDataJob = {
   pgroup: PGroup;
 };
 
-type CountsJob = import('./svc/util/types.ts').ApiMatch;
+type CountsJob = ApiMatch;
 type ScenariosJob = string;
 type CacheJob = string;
 
@@ -517,4 +517,24 @@ type ParseExtraData = {
   pgroup: PGroup;
   url: string;
   gcMatch: GcMatch;
+};
+
+type HistoryType = {
+  account_id: number;
+  match_id: number;
+  player_slot: number;
+};
+
+type ApiMatchResponse = typeof import('./test/data/details_api.json');
+type ApiMatch = ApiMatchResponse['result'] & { 
+  picks_bans?: {
+    hero_id: number;
+    order: number;
+    is_pick: boolean;
+}[];
+  radiant_team_id?: number;
+  dire_team_id?: number;
+};
+type ApiPlayer = ApiMatch['players'][number] & {
+  ability_upgrades_arr?: number[];
 };

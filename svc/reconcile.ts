@@ -6,7 +6,6 @@
  */
 import db from './store/db.ts';
 import { reconcileMatch } from './util/reconcileUtil.ts';
-import type { HistoryType } from './util/types.ts';
 import { runInLoop } from './util/utility.ts';
 
 runInLoop(async function reconcile() {
