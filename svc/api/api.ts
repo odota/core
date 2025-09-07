@@ -1,4 +1,3 @@
-import type { FilterType } from '../util/filter.ts';
 import { Router } from 'express';
 import { filterDeps } from '../util/filter.ts';
 import spec from './spec.ts';
@@ -34,7 +33,7 @@ api.use('/players/:account_id/:info?', async (req, res, next) => {
         ),
       );
       // build array of required projections due to filters
-      filterCols = filterCols.concat(filterDeps[key as FilterType] || []);
+      filterCols = filterCols.concat(filterDeps[key as keyof typeof filterDeps] || []);
     });
     const sortCols = queryParamToArray(
       req.query.sort,

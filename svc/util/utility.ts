@@ -580,21 +580,6 @@ export function countItemPopularity(items: any[]) {
   }, {});
 }
 
-export type PeersCount = Record<
-  string,
-  {
-    account_id: number;
-    last_played: number;
-    win: number;
-    games: number;
-    with_win: number;
-    with_games: number;
-    against_win: number;
-    against_games: number;
-    with_gpm_sum: number;
-    with_xpm_sum: number;
-  }
->;
 /**
  * Counts the peer account_ids in the input match array
  * */
@@ -952,8 +937,6 @@ export function queryParamToArray(
   }
   return [];
 }
-
-export type InsertMatchInput = ApiMatch | GcMatch | ParserMatch;
 
 export function transformMatch(
   origMatch: Readonly<InsertMatchInput>,

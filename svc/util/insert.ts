@@ -8,7 +8,6 @@ import db, { getPostgresColumns } from '../store/db.ts';
 import redis from '../store/redis.ts';
 import { es, INDEX } from '../store/elasticsearch.ts';
 import type knex from 'knex';
-import type { InsertMatchInput } from './utility.ts';
 import {
   getAnonymousAccountId,
   convert64to32,

@@ -538,3 +538,20 @@ type ApiMatch = ApiMatchResponse['result'] & {
 type ApiPlayer = ApiMatch['players'][number] & {
   ability_upgrades_arr?: number[];
 };
+type InsertMatchInput = ApiMatch | GcMatch | ParserMatch;
+
+type PeersCount = Record<
+  string,
+  {
+    account_id: number;
+    last_played: number;
+    win: number;
+    games: number;
+    with_win: number;
+    with_games: number;
+    against_win: number;
+    against_games: number;
+    with_gpm_sum: number;
+    with_xpm_sum: number;
+  }
+>;

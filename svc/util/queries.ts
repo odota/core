@@ -6,7 +6,6 @@ import redis from '../store/redis.ts';
 import { benchmarks } from './benchmarksUtil.ts';
 import type knex from 'knex';
 import type { Request } from 'express';
-import type { PeersCount } from './utility.ts';
 import {
   getStartOfBlockMinutes,
   countItemPopularity,
