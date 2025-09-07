@@ -7,16 +7,13 @@
 import db from './store/db.ts';
 import { reconcileMatch } from './util/reconcileUtil.ts';
 import type { HistoryType } from './util/types.ts';
+import { runInLoop } from './util/utility.ts';
 
-async function doReconcile() {
-  while (true) {
+runInLoop(async function reconcile() {
     // Fetch rows for a single match (could be multiple players to fill)
     const { rows }: { rows: HistoryType[] } = await db.raw(
       'UPDATE player_match_history SET retries = coalesce(retries, 0) + 1 WHERE match_id = (SELECT match_id FROM player_match_history ORDER BY retries ASC NULLS FIRST LIMIT 1) RETURNING *',
     );
     console.log(rows[0].match_id);
     await reconcileMatch(rows);
-    await new Promise((resolve) => setTimeout(resolve, 100));
-  }
-}
-doReconcile();
+}, 100);

@@ -5,10 +5,10 @@ import db from './store/db.ts';
 import {
   SteamAPIUrls,
   getSteamAPIData,
-  invokeIntervalAsync,
+  runInLoop,
 } from './util/utility.ts';
 
-async function doLiveGames() {
+runInLoop(async function liveGames() {
   // Get the list of pro players
   const proPlayers: ProPlayer[] = await db.select().from('notable_players');
   // Get the list of live games
@@ -47,5 +47,4 @@ async function doLiveGames() {
     //   server_steam_id: match.server_steam_id
     // });
   }
-}
-invokeIntervalAsync(doLiveGames, 60 * 1000);
+}, 60 * 1000);

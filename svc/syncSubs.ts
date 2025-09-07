@@ -1,9 +1,9 @@
 // Syncs the list of subscribers from Stripe to the database
 import db from './store/db.ts';
 import stripe from './store/stripe.ts';
-import { invokeIntervalAsync } from './util/utility.ts';
+import { runInLoop } from './util/utility.ts';
 
-async function doSyncSubs() {
+runInLoop(async function doSyncSubs() {
   // Get list of current subscribers
   const result = [];
   for await (const sub of stripe.subscriptions.list({
@@ -27,4 +27,4 @@ async function doSyncSubs() {
   }
   await db.raw('COMMIT');
 }
-invokeIntervalAsync(doSyncSubs, 60 * 1000);
+, 60 * 1000);

@@ -1,9 +1,9 @@
 // Updates Steam profile data for players periodically
 import db from './store/db.ts';
-import { invokeIntervalAsync } from './util/utility.ts';
+import { runInLoop } from './util/utility.ts';
 import { addJob } from './store/queue.ts';
 
-async function doProfiler() {
+runInLoop(async function autoProfile() {
   // To optimize the api call we need to do 100 players at a time
   // We sample 100 random rows from the DB, with the downside that we might update a lot of inactive players
   // Alternatively we could also trigger updates from match insert to target active players
@@ -20,5 +20,4 @@ async function doProfiler() {
       });
     }),
   );
-}
-invokeIntervalAsync(doProfiler, 15000);
+}, 15000);

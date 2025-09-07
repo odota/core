@@ -11,6 +11,8 @@ import { runQueue } from './store/queue.ts';
 
 type ScenariosKey = keyof typeof scenarioChecks;
 
+runQueue('scenariosQueue', 1, processScenarios);
+
 // Processors generally get back job objects but this one uses a string
 async function processScenarios(matchID: string) {
   console.log('[SCENARIOS] match: %s', matchID);
@@ -55,4 +57,3 @@ async function processScenarios(matchID: string) {
     });
   });
 }
-runQueue('scenariosQueue', 1, processScenarios);

@@ -21,6 +21,13 @@ import { getPGroup } from './util/pgroup.ts';
 import moment from 'moment';
 import { queueReconcile } from './util/reconcileUtil.ts';
 
+runReliableQueue(
+  'parse',
+  Number(config.PARSER_PARALLELISM),
+  parseProcessor,
+  getParserCapacity,
+);
+
 async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
   const start = Date.now();
   let apiTime = 0;
@@ -168,9 +175,3 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
     }
   }
 }
-runReliableQueue(
-  'parse',
-  Number(config.PARSER_PARALLELISM),
-  parseProcessor,
-  getParserCapacity,
-);

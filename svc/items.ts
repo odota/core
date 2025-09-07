@@ -5,10 +5,10 @@ import { upsert } from './util/insert.ts';
 import {
   SteamAPIUrls,
   getSteamAPIData,
-  invokeIntervalAsync,
+  runInLoop,
 } from './util/utility.ts';
 
-async function doItems() {
+runInLoop(async function doItems() {
   const url = SteamAPIUrls.api_items({
     language: 'english',
   });
@@ -29,6 +29,4 @@ async function doItems() {
       });
     }),
   );
-}
-
-invokeIntervalAsync(doItems, 60 * 60 * 1000);
+}, 60 * 60 * 1000);

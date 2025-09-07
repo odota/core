@@ -1,11 +1,11 @@
 // Cleans up old data from the database (originally used for scenarios but now also does other cleanup)
 import db from './store/db.ts';
 import config from '../config.ts';
-import { epochWeek, invokeIntervalAsync } from './util/utility.ts';
+import { epochWeek, runInLoop } from './util/utility.ts';
 import { promises as fs } from 'fs';
 import { isRecentVisitor, isRecentlyVisited } from './util/queries.ts';
 
-async function cleanup() {
+runInLoop(async function cleanup() {
   const currentWeek = epochWeek();
   await db('team_scenarios')
     .whereNull('epoch_week')
@@ -48,5 +48,4 @@ async function cleanup() {
     }
   }
   return;
-}
-invokeIntervalAsync(cleanup, 1000 * 60 * 60 * 6);
+}, 1000 * 60 * 60 * 6);

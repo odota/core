@@ -2,10 +2,10 @@
 import vdfparser from 'vdf-parser';
 import db from './store/db.ts';
 import { upsert } from './util/insert.ts';
-import { invokeIntervalAsync } from './util/utility.ts';
+import { runInLoop } from './util/utility.ts';
 import axios from 'axios';
 
-async function doCosmetics() {
+runInLoop(async function cosmetics() {
   const itemsResp = await axios.get(
     'https://raw.githubusercontent.com/dotabuff/d2vpkr/master/dota/scripts/items/items_game.txt',
     { responseType: 'text' },
@@ -47,5 +47,4 @@ async function doCosmetics() {
   for (let i = 0; i < ids.length; i++) {
     await processItem(ids[i]);
   }
-}
-invokeIntervalAsync(doCosmetics, 12 * 60 * 60 * 1000);
+}, 12 * 60 * 60 * 1000);

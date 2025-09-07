@@ -5,12 +5,12 @@ import {
   getSteamAPIData,
   SteamAPIUrls,
   convert64to32,
-  invokeIntervalAsync,
+  runInLoop,
   redisCount,
 } from './util/utility.ts';
 import redis from './store/redis.ts';
 
-async function doProfile() {
+runInLoop(async function profile() {
   const resp = await redis.lpop('profileQueue', 100);
   if (!resp || !resp.length) {
     return;
@@ -45,5 +45,4 @@ async function doProfile() {
   await Promise.all(
     results.map((player: User) => upsertPlayer(db, player, false)),
   );
-}
-invokeIntervalAsync(doProfile, 2000);
+}, 2000);

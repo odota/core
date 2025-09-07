@@ -2,9 +2,9 @@
 import axios from 'axios';
 import db from './store/db.ts';
 import { upsert } from './util/insert.ts';
-import { invokeIntervalAsync } from './util/utility.ts';
+import { runInLoop } from './util/utility.ts';
 
-async function doProPlayers() {
+runInLoop(async function proPlayers() {
   const url = 'http://www.dota2.com/webapi/IDOTA2Fantasy/GetProPlayerInfo/v001';
   const resp = await axios.get(url);
   const apiPros = resp.data.player_infos;
@@ -16,5 +16,4 @@ async function doProPlayers() {
       }),
     ),
   );
-}
-invokeIntervalAsync(doProPlayers, 30 * 60 * 1000);
+}, 30 * 60 * 1000);

@@ -5,10 +5,10 @@ import { upsert } from './util/insert.ts';
 import {
   SteamAPIUrls,
   getSteamAPIData,
-  invokeIntervalAsync,
+  runInLoop,
 } from './util/utility.ts';
 
-async function doTeams() {
+runInLoop(async function doTeams() {
   const result = await db.raw(
     'select distinct team_id from team_match TABLESAMPLE SYSTEM_ROWS(1000)',
   );
@@ -89,5 +89,4 @@ async function doTeams() {
       team_id: m.team_id,
     });
   }
-}
-invokeIntervalAsync(doTeams, 60 * 60 * 1000);
+}, 60 * 60 * 1000);

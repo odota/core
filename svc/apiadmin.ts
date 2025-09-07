@@ -3,10 +3,10 @@ import moment from 'moment';
 import stripe from './store/stripe.ts';
 import db from './store/db.ts';
 import config from '../config.ts';
-import { invokeIntervalAsync } from './util/utility.ts';
+import { runInLoop } from './util/utility.ts';
 import type Stripe from 'stripe';
 
-async function updateStripeUsage() {
+runInLoop(async function apiAdmin() {
   const options = {
     plan: config.STRIPE_API_PLAN,
     limit: 100,
@@ -75,5 +75,4 @@ async function updateStripeUsage() {
     }
   }
   console.log(`updateStripeUsage processed ${num} records`);
-}
-invokeIntervalAsync(updateStripeUsage, 5 * 60 * 1000); // Every 5 minutes
+}, 5 * 60 * 1000);

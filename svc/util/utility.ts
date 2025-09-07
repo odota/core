@@ -830,30 +830,20 @@ export async function redisCountDistinct(prefix: MetricName, value: string) {
 }
 
 /**
- * Calls an async function at a specific interval.
+ * Runs an async function on a loop, waiting the delay between each iteration
  * @param func
  * @param delay
  */
-export async function invokeIntervalAsync(
+export async function runInLoop(
   func: () => Promise<void>,
   delay: number,
 ) {
   while (true) {
     console.log('running %s', func.name);
     console.time(func.name);
-    let exception;
-    try {
-      await func();
-    } catch (e) {
-      console.error(e);
-      exception = e;
-    }
+    await func();
     console.timeEnd(func.name);
     await new Promise((resolve) => setTimeout(resolve, delay));
-    // Wait the interval before throwing to prevent excessive retry loops
-    if (exception) {
-      throw exception;
-    }
   }
 }
 

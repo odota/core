@@ -2,7 +2,13 @@
 import fs from 'fs';
 import db from './store/db.ts';
 import redis from './store/redis.ts';
-import { invokeIntervalAsync } from './util/utility.ts';
+import { runInLoop } from './util/utility.ts';
+
+runInLoop(async function distributions() {
+  const results = await db.raw(fs.readFileSync(`./sql/ranks.sql`, 'utf8'));
+  const ranks = mapMmr(results);
+  await redis.set(`distribution:ranks`, JSON.stringify(ranks));
+}, 6 * 60 * 60 * 1000);
 
 function mapMmr(results: { rows: any[]; sum?: number }) {
   const sum = results.rows.reduce(
@@ -26,10 +32,3 @@ function mapMmr(results: { rows: any[]; sum?: number }) {
   });
   return { rows, sum };
 }
-
-async function doDistributions() {
-  const results = await db.raw(fs.readFileSync(`./sql/ranks.sql`, 'utf8'));
-  const ranks = mapMmr(results);
-  await redis.set(`distribution:ranks`, JSON.stringify(ranks));
-}
-invokeIntervalAsync(doDistributions, 6 * 60 * 60 * 1000);

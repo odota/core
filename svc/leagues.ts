@@ -2,9 +2,9 @@
 import axios from 'axios';
 import db from './store/db.ts';
 import { upsert } from './util/insert.ts';
-import { invokeIntervalAsync } from './util/utility.ts';
+import { runInLoop } from './util/utility.ts';
 
-async function doLeagues() {
+runInLoop(async function leagues() {
   const url = 'http://www.dota2.com/webapi/IDOTA2League/GetLeagueInfoList/v001';
   const resp = await axios.get(url);
   const apiLeagues = resp.data.infos;
@@ -30,5 +30,4 @@ async function doLeagues() {
       leagueid: league.league_id,
     });
   }
-}
-invokeIntervalAsync(doLeagues, 30 * 60 * 1000);
+}, 30 * 60 * 1000);

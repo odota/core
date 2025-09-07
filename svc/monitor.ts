@@ -4,6 +4,7 @@ import config from '../config.ts';
 import redis from './store/redis.ts';
 import db from './store/db.ts';
 import cassandra from './store/cassandra.ts';
+import { runInLoop } from './util/utility.ts';
 const apiKey = config.STEAM_API_KEY.split(',')[0];
 
 const health = {
@@ -28,7 +29,8 @@ type Metric = {
   threshold: number;
   timestamp?: number;
 };
-setInterval(async () => {
+
+runInLoop(async function monitor() {
   const result: Record<string, Metric> = {};
   const arr = Object.entries(health);
   for (let i = 0; i < arr.length; i++) {

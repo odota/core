@@ -2,10 +2,10 @@
 import moment from 'moment';
 import redis from './store/redis.ts';
 import db from './store/db.ts';
-import { invokeIntervalAsync } from './util/utility.ts';
+import { runInLoop } from './util/utility.ts';
 import contributors from '../CONTRIBUTORS.ts';
 
-async function doBuildSets() {
+runInLoop(async function buildSets() {
   const subs = await db
     .select<{ account_id: string }[]>(['account_id'])
     .from('subscriber')
@@ -27,5 +27,4 @@ async function doBuildSets() {
     ),
   );
   await command.exec();
-}
-invokeIntervalAsync(doBuildSets, 60 * 1000);
+}, 60 * 1000);

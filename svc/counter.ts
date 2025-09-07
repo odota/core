@@ -15,6 +15,18 @@ import {
   redisCount,
 } from './util/utility.ts';
 
+runQueue('countsQueue', 1, async (match: Match) => {
+  console.log('match %s', match.match_id);
+  await updateHeroRankings(match);
+  await upsertMatchSample(match);
+  await updateRecords(match);
+  await updateLastPlayed(match);
+  await updateHeroSearch(match);
+  await updateHeroCounts(match);
+  await updateMatchCounts(match);
+  await updateBenchmarks(match);
+});
+
 async function updateHeroRankings(match: Match) {
   if (!isSignificant(match)) {
     return;
@@ -325,15 +337,3 @@ function updateMatchups(match) {
     redis.hincrby('matchups', key, 1);
 }
 */
-async function processCounts(match: Match) {
-  console.log('match %s', match.match_id);
-  await updateHeroRankings(match);
-  await upsertMatchSample(match);
-  await updateRecords(match);
-  await updateLastPlayed(match);
-  await updateHeroSearch(match);
-  await updateHeroCounts(match);
-  await updateMatchCounts(match);
-  await updateBenchmarks(match);
-}
-runQueue('countsQueue', 1, processCounts);

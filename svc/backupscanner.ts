@@ -7,10 +7,15 @@ import config from '../config.ts';
 import {
   generateJob,
   getSteamAPIData,
-  invokeIntervalAsync,
+  runInLoop,
 } from '../util/utility.ts';
 const parallelism = 1;
 const delay = 1000;
+
+runInLoop(async function backupScan() {
+  const ids = await redis.zrange('tracked', 0, -1);
+  processPlayer(id[0]);
+}, 1000);
 
 async function processMatch(matchId: number) {
   // Check if exists
@@ -56,9 +61,4 @@ async function processPlayer(accountId: string) {
     await processMatch(matches[i]);
   }
 }
-async function doBackupScanner() {
-  const ids = await redis.zrange('tracked', 0, -1);
-  processPlayer(id[0]);
-}
-invokeIntervalAsync(doBackupScanner, 1000);
 */

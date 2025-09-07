@@ -8,6 +8,16 @@ import { getPlayerMatches } from './util/buildPlayer.ts';
 import type { ApiMatch } from './util/types.ts';
 import redis from './store/redis.ts';
 
+// Approximately 5 req/sec limit per apiHost
+// Short fullhistory uses 1 req, long 5 req, some percentage will need to query for up to 500 matches
+runQueue(
+  'fhQueue',
+  Number(config.FULLHISTORY_PARALLELISM) || 1,
+  processFullHistory,
+  // Currently not using proxy so don't need to throttle capacity
+  // async () => redis.zcard('registry:proxy') * 5,
+);
+
 async function updatePlayer(player: FullHistoryJob) {
   // done with this player, update
   await db('players')
@@ -153,13 +163,3 @@ async function processFullHistory(job: FullHistoryJob) {
   await updatePlayer(player);
   console.timeEnd('doFullHistory: ' + player.account_id.toString());
 }
-
-// Approximately 5 req/sec limit per apiHost
-// Short fullhistory uses 1 req, long 5 req, some percentage will need to query for up to 500 matches
-runQueue(
-  'fhQueue',
-  Number(config.FULLHISTORY_PARALLELISM) || 1,
-  processFullHistory,
-  // Currently not using proxy so don't need to throttle capacity
-  // async () => redis.zcard('registry:proxy') * 5,
-);

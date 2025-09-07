@@ -5,6 +5,8 @@ import config from '../config.ts';
 import { gcFetcher } from './fetcher/GcdataFetcher.ts';
 import { getRetrieverCapacity, redisCount } from './util/utility.ts';
 
+runReliableQueue('gcQueue', Number(config.GCDATA_PARALLELISM) || 1, processGcData, getRetrieverCapacity);
+
 async function processGcData(job: GcDataJob) {
   const pgroup = job.pgroup;
   if (!pgroup) {
@@ -23,5 +25,3 @@ async function processGcData(job: GcDataJob) {
   await new Promise((resolve) => setTimeout(resolve, 1));
   return true;
 }
-
-runReliableQueue('gcQueue', Number(config.GCDATA_PARALLELISM) || 1, processGcData, getRetrieverCapacity);

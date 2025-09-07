@@ -6,7 +6,7 @@ import config from '../config.ts';
 import { redisCount, getRandomRetrieverUrl } from './util/utility.ts';
 import axios from 'axios';
 
-async function processMmr(job: MmrJob) {
+runQueue('mmrQueue', Number(config.MMR_PARALLELISM) || 1, async (job: MmrJob) => {
   const accountId = job.account_id;
   const url = await getRandomRetrieverUrl(`/profile/${accountId}`);
   console.log(url);
@@ -30,5 +30,4 @@ async function processMmr(job: MmrJob) {
     await insertPlayerRating(data);
   }
   await new Promise((resolve) => setTimeout(resolve, 1));
-}
-runQueue('mmrQueue', Number(config.MMR_PARALLELISM) || 1, processMmr);
+});

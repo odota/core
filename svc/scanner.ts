@@ -8,6 +8,7 @@ import {
   getApiHosts,
   getSteamAPIData,
   redisCount,
+  runInLoop,
 } from './util/utility.ts';
 import db from './store/db.ts';
 const API_KEYS = config.STEAM_API_KEY.split(',');
@@ -15,9 +16,25 @@ const PAGE_SIZE = 100;
 // This endpoint is limited to something like 1 request every 5 seconds
 const SCANNER_WAIT = 5000;
 const isSecondary = Boolean(Number(config.SCANNER_OFFSET));
+const offset = Number(config.SCANNER_OFFSET);
+
+if (config.NODE_ENV === 'development') {
+  let numResult = await getCurrentSeqNum();
+  if (!numResult) {
+    // Never do this in production to avoid skipping sequence number if we didn't pull .env properly
+    const url = SteamAPIUrls.api_history({});
+    // Just get the approximate current seq num
+    const data = await getSteamAPIData({ url });
+    numResult = data.result.matches[0].match_seq_num;
+    await db.raw(
+      'INSERT INTO last_seq_num(match_seq_num) VALUES (?) ON CONFLICT DO NOTHING',
+      [numResult],
+    );
+  }
+}
+runInLoop(scanApi, 0);
 
 async function scanApi() {
-  const offset = Number(config.SCANNER_OFFSET);
   let nextSeqNum;
   while (true) {
     // If primary (offset 0) or first secondary iteration, read value from storage
@@ -128,22 +145,3 @@ async function getCurrentSeqNum(): Promise<number> {
   const result = await db.raw('select max(match_seq_num) from last_seq_num;');
   return Number(result.rows[0].max) || 0;
 }
-
-async function start() {
-  if (config.NODE_ENV === 'development') {
-    let numResult = await getCurrentSeqNum();
-    if (!numResult) {
-      // Never do this in production to avoid skipping sequence number if we didn't pull .env properly
-      const url = SteamAPIUrls.api_history({});
-      // Just get the approximate current seq num
-      const data = await getSteamAPIData({ url });
-      numResult = data.result.matches[0].match_seq_num;
-      await db.raw(
-        'INSERT INTO last_seq_num(match_seq_num) VALUES (?) ON CONFLICT DO NOTHING',
-        [numResult],
-      );
-    }
-  }
-  await scanApi();
-}
-start();
