@@ -26,5 +26,4 @@ runInLoop(async function doSyncSubs() {
     ]);
   }
   await db.raw('COMMIT');
-}
-, 60 * 1000);
+}, 60 * 1000);

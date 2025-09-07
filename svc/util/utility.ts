@@ -65,7 +65,10 @@ export const SteamAPIUrls = {
     `${apiUrl}/ISteamUser/GetPlayerSummaries/v0002/?key=${apiKey}&steamids=${payload.players
       .map((p: ProfileJob) => convert32to64(String(p.account_id)))
       .join()}`,
-  api_sequence: (payload: { start_at_match_seq_num: number, matches_requested: number }) =>
+  api_sequence: (payload: {
+    start_at_match_seq_num: number;
+    matches_requested: number;
+  }) =>
     `${apiUrl}/IDOTA2Match_570/GetMatchHistoryBySequenceNum/V001/?key=${apiKey}&start_at_match_seq_num=${payload.start_at_match_seq_num}&matches_requested=${payload.matches_requested}`,
   api_heroes: (payload: { language: string }) =>
     `${apiUrl}/IEconDOTA2_570/GetHeroes/v0001/?key=${apiKey}&language=${payload.language}`,
@@ -195,7 +198,9 @@ export async function getSteamAPIData(options: GetDataOptions): Promise<any> {
   return body;
 }
 
-export async function getSteamAPIDataWithRetry(options: GetDataOptions): Promise<any> {
+export async function getSteamAPIDataWithRetry(
+  options: GetDataOptions,
+): Promise<any> {
   let body;
   while (!body) {
     try {
@@ -832,10 +837,7 @@ export async function redisCountDistinct(prefix: MetricName, value: string) {
  * @param func
  * @param delay
  */
-export async function runInLoop(
-  func: () => Promise<void>,
-  delay: number,
-) {
+export async function runInLoop(func: () => Promise<void>, delay: number) {
   while (true) {
     console.log('running %s', func.name);
     console.time(func.name);

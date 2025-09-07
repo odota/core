@@ -33,7 +33,9 @@ api.use('/players/:account_id/:info?', async (req, res, next) => {
         ),
       );
       // build array of required projections due to filters
-      filterCols = filterCols.concat(filterDeps[key as keyof typeof filterDeps] || []);
+      filterCols = filterCols.concat(
+        filterDeps[key as keyof typeof filterDeps] || [],
+      );
     });
     const sortCols = queryParamToArray(
       req.query.sort,

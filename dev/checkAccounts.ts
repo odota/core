@@ -11,7 +11,7 @@ for (let i = Number(process.argv[2]) || 0; i < accountArray.length; i++) {
     password: pass,
   };
   console.log(logOnDetails);
-  await new Promise(resolve => {
+  await new Promise((resolve) => {
     const client = new SteamUser();
     client.logOn(logOnDetails);
     client.on('loggedOn', (logOnResp: any) => {
@@ -26,7 +26,7 @@ for (let i = Number(process.argv[2]) || 0; i < accountArray.length; i++) {
     });
     client.on('steamGuard', () => {
       console.error(i, user, pass, 'failed', 'steamguard');
-      process.exit(1)
+      process.exit(1);
     });
     client.on('error', (err: any) => {
       console.error(err);
@@ -38,5 +38,5 @@ for (let i = Number(process.argv[2]) || 0; i < accountArray.length; i++) {
       process.exit(1);
     });
   });
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  await new Promise((resolve) => setTimeout(resolve, 1000));
 }

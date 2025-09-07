@@ -31,7 +31,7 @@ class ParsedFetcher extends MatchFetcher<ParserMatch> {
       }
       return { data: null, error: 'Replay not found' };
     }
-  
+
     // Pipelined for efficiency, but timings:
     // DL: 2967ms (curl http://replay152.valve.net/570/7503212404_1277518156.dem.bz2)
     // bunzip: 6716ms (bunzip2 7503212404_1277518156.dem.bz2)

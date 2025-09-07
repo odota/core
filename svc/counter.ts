@@ -110,7 +110,8 @@ async function updateRecord(
 ) {
   redis.zadd(
     `records:${field}`,
-    (match[field as keyof ApiMatch] || player[field as keyof ApiPlayer]) as number,
+    (match[field as keyof ApiMatch] ||
+      player[field as keyof ApiPlayer]) as number,
     [match.match_id, match.start_time, player.hero_id].join(':'),
   );
   // Keep only 100 top scores

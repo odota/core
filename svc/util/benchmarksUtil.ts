@@ -1,4 +1,7 @@
-export const benchmarks: Record<string, (m: ApiMatch | Match, p: ApiPlayer | Player) => number> = {
+export const benchmarks: Record<
+  string,
+  (m: ApiMatch | Match, p: ApiPlayer | Player) => number
+> = {
   gold_per_min(m, p) {
     return p.gold_per_min;
   },

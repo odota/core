@@ -526,12 +526,12 @@ type HistoryType = {
 };
 
 type ApiMatchResponse = typeof import('./test/data/details_api.json');
-type ApiMatch = ApiMatchResponse['result'] & { 
+type ApiMatch = ApiMatchResponse['result'] & {
   picks_bans?: {
     hero_id: number;
     order: number;
     is_pick: boolean;
-}[];
+  }[];
   radiant_team_id?: number;
   dire_team_id?: number;
 };

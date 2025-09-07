@@ -146,9 +146,7 @@ async function profileDelay() {
   };
 }
 async function rateDelay() {
-  const result = await db.raw(
-    "select count(*) from rating_queue",
-  );
+  const result = await db.raw('select count(*) from rating_queue');
   return {
     metric: result.rows[0].count,
     threshold: 100000,

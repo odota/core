@@ -10,12 +10,15 @@ runInLoop(async function autoFh() {
   console.log(result.rows);
   await Promise.all(
     result.rows.map((row: any) =>
-      addReliableJob({
-        name: 'fhQueue',
-        data: {
-          account_id: row.account_id,
+      addReliableJob(
+        {
+          name: 'fhQueue',
+          data: {
+            account_id: row.account_id,
+          },
         },
-      }, {}),
+        {},
+      ),
     ),
   );
 }, 1000);

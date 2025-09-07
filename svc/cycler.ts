@@ -60,4 +60,3 @@ async function getCapacity() {
   }
   return Number(PARSER_PARALLELISM);
 }
-

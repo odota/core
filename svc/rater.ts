@@ -1,11 +1,6 @@
 import { gcFetcher } from './fetcher/GcdataFetcher.ts';
 import db from './store/db.ts';
-import {
-  average,
-  isRadiant,
-  redisCount,
-  runInLoop,
-} from './util/utility.ts';
+import { average, isRadiant, redisCount, runInLoop } from './util/utility.ts';
 
 const DEFAULT_RATING = 4000;
 const kFactor = 32;

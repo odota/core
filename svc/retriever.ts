@@ -17,7 +17,8 @@ const minUpTimeSeconds = 600;
 const numAccounts = 6;
 const matchesPerAccount = 100;
 const accountAttemptMax = 5;
-const matchRequestInterval = 1000 / (matchesPerAccount * numAccounts / minUpTimeSeconds);
+const matchRequestInterval =
+  1000 / ((matchesPerAccount * numAccounts) / minUpTimeSeconds);
 const port = config.PORT || config.RETRIEVER_PORT;
 const noneReady = () =>
   Object.values(steamObj).filter((client) => client.steamID).length === 0;
@@ -57,10 +58,14 @@ const CMsgGCMatchDetailsResponse = builder.lookupType(
 
 setInterval(() => {
   const shouldRestart =
-    (matchRequests >= Object.keys(steamObj).length * matchesPerAccount) || 
-    (matchRequests - matchSuccesses > matchesPerAccount) ||
-    (noneReady());
-  if (shouldRestart && config.NODE_ENV !== 'development' && getUptime() > minUpTimeSeconds) {
+    matchRequests >= Object.keys(steamObj).length * matchesPerAccount ||
+    matchRequests - matchSuccesses > matchesPerAccount ||
+    noneReady();
+  if (
+    shouldRestart &&
+    config.NODE_ENV !== 'development' &&
+    getUptime() > minUpTimeSeconds
+  ) {
     return selfDestruct();
   }
   // Re-register ourselves as available

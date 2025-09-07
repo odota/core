@@ -442,10 +442,13 @@ export async function insertMatch(
   async function decideCounts(match: InsertMatchInput) {
     // Update temporary match counts/hero rankings
     if (options.origin === 'scanner' && options.type === 'api') {
-      await addReliableJob({
-        name: 'countsQueue',
-        data: match as ApiMatch,
-      }, {});
+      await addReliableJob(
+        {
+          name: 'countsQueue',
+          data: match as ApiMatch,
+        },
+        {},
+      );
     }
   }
   async function decideMmr(match: InsertMatchInput) {
@@ -501,14 +504,16 @@ export async function insertMatch(
       match.game_mode !== 19 &&
       match.match_id % 100 < Number(config.GCDATA_PERCENT)
     ) {
-      await addReliableJob({
-        name: 'gcQueue',
-        data: {
-          match_id: match.match_id,
-          pgroup,
+      await addReliableJob(
+        {
+          name: 'gcQueue',
+          data: {
+            match_id: match.match_id,
+            pgroup,
+          },
         },
-      }, {
-      });
+        {},
+      );
     }
   }
 
@@ -524,20 +529,18 @@ export async function insertMatch(
     ) {
       await db.raw(
         'INSERT INTO rating_queue(match_seq_num, match_id, radiant_win) VALUES(?, ?, ?) ON CONFLICT DO NOTHING',
-        [
-          match.match_seq_num,
-          match.match_id,
-          match.radiant_win,
-        ],
+        [match.match_seq_num, match.match_id, match.radiant_win],
       );
-      await addReliableJob({
-        name: 'gcQueue',
-        data: {
-          match_id: match.match_id,
-          pgroup,
+      await addReliableJob(
+        {
+          name: 'gcQueue',
+          data: {
+            match_id: match.match_id,
+            pgroup,
+          },
         },
-      }, {
-      });
+        {},
+      );
     }
   }
 

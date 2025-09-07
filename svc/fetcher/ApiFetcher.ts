@@ -1,4 +1,8 @@
-import { SteamAPIUrls, getSteamAPIDataWithRetry, redisCount } from '../util/utility.ts';
+import {
+  SteamAPIUrls,
+  getSteamAPIDataWithRetry,
+  redisCount,
+} from '../util/utility.ts';
 import { blobArchive } from '../store/archive.ts';
 import { MatchFetcher } from './base.ts';
 import { insertMatch } from '../util/insert.ts';
@@ -14,7 +18,7 @@ class ApiFetcher extends MatchFetcher<ApiMatch> {
     }
     data = archive ? (JSON.parse(archive.toString()) as ApiMatch) : null;
     return data;
-  }
+  };
   fetchData = async (matchId: number) => {
     let match;
     try {
@@ -45,7 +49,10 @@ class ApiFetcher extends MatchFetcher<ApiMatch> {
         return { data: result, error: null };
       }
     }
-    return { data: null, error: '[APIDATA]: Could not get API data for match ' + matchId };
+    return {
+      data: null,
+      error: '[APIDATA]: Could not get API data for match ' + matchId,
+    };
   };
   fetchDataFromSeqNumApi = async (matchId: number) => {
     // Try to get match data from blob store
@@ -60,7 +67,7 @@ class ApiFetcher extends MatchFetcher<ApiMatch> {
       pageBack += 1;
       console.log('paging back %s for matchId %s', pageBack, matchId);
       data = await this.getData(matchId - pageBack);
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
     }
     if (!data) {
       throw new Error('could not find data for match ' + matchId);
@@ -73,7 +80,9 @@ class ApiFetcher extends MatchFetcher<ApiMatch> {
     const body = await getSteamAPIDataWithRetry({
       url,
     });
-    const match = body.result.matches.find((m: ApiMatch) => m.match_id === matchId);
+    const match = body.result.matches.find(
+      (m: ApiMatch) => m.match_id === matchId,
+    );
     if (!match) {
       throw new Error('could not find in seqnum response match ' + matchId);
     }

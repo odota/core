@@ -29,10 +29,7 @@ class GcdataFetcher extends MatchFetcher<GcMatch> {
     }
     return data;
   };
-  fetchData = async (
-    matchId: number,
-    extraData: GcExtraData,
-  ) => {
+  fetchData = async (matchId: number, extraData: GcExtraData) => {
     const url = await getRandomRetrieverUrl(`/match/${matchId}`);
     let resp: AxiosResponse<typeof retrieverMatch>;
     try {
@@ -74,7 +71,12 @@ class GcdataFetcher extends MatchFetcher<GcMatch> {
         data: null,
       };
     }
-    if (!data || !data.match || !data.match.players || !data.match.replay_salt) {
+    if (
+      !data ||
+      !data.match ||
+      !data.match.players ||
+      !data.match.replay_salt
+    ) {
       // Response doesn't have expected data, try again
       return { error: 'invalid data', data: null, retryable: true };
     }

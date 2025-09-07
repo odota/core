@@ -33,7 +33,7 @@ runInLoop(async function backfill() {
     seqNum = Number(fs.readFileSync('./match_seq_num.txt')) || 0;
   }
   if (seqNum > stop) {
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     process.exit(0);
   }
   const begin = Date.now();

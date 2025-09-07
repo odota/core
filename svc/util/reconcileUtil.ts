@@ -1,8 +1,8 @@
-import db from "../store/db.ts";
-import { getMatchDataFromBlobWithMetadata } from "./buildMatch.ts";
-import { upsertPlayerCaches } from "./insert.ts";
-import { getPGroup } from "./pgroup.ts";
-import { redisCount } from "./utility.ts";
+import db from '../store/db.ts';
+import { getMatchDataFromBlobWithMetadata } from './buildMatch.ts';
+import { upsertPlayerCaches } from './insert.ts';
+import { getPGroup } from './pgroup.ts';
+import { redisCount } from './utility.ts';
 
 export async function queueReconcile(
   gcMatch: GcMatch | null,
