@@ -4,7 +4,7 @@ import db from './store/db.ts';
 import { upsert } from './util/insert.ts';
 import {
   SteamAPIUrls,
-  getSteamAPIData,
+  getSteamAPIDataWithRetry,
   runInLoop,
 } from './util/utility.ts';
 
@@ -12,7 +12,7 @@ runInLoop(async function doItems() {
   const url = SteamAPIUrls.api_items({
     language: 'english',
   });
-  const body = await getSteamAPIData({ url });
+  const body = await getSteamAPIDataWithRetry({ url });
   if (!body || !body.result || !body.result.data) {
     throw new Error('invalid body');
   }

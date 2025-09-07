@@ -2,7 +2,7 @@
 import { upsertPlayer, bulkIndexPlayer } from './util/insert.ts';
 import db from './store/db.ts';
 import {
-  getSteamAPIData,
+  getSteamAPIDataWithRetry,
   SteamAPIUrls,
   convert64to32,
   runInLoop,
@@ -20,7 +20,7 @@ runInLoop(async function profile() {
   const url = SteamAPIUrls.api_summaries({
     players: jobs,
   });
-  const body = await getSteamAPIData({ url });
+  const body = await getSteamAPIDataWithRetry({ url });
   const results = body.response.players.filter(
     (player: User) => player.steamid,
   );

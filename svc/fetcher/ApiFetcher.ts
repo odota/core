@@ -1,4 +1,4 @@
-import { SteamAPIUrls, getSteamAPIData, redisCount } from '../util/utility.ts';
+import { SteamAPIUrls, getSteamAPIDataWithRetry, redisCount } from '../util/utility.ts';
 import { blobArchive } from '../store/archive.ts';
 import { MatchFetcher } from './base.ts';
 import { insertMatch } from '../util/insert.ts';
@@ -70,7 +70,7 @@ class ApiFetcher extends MatchFetcher<ApiMatch> {
       start_at_match_seq_num: precedingSeqNum,
       matches_requested: pageBack,
     });
-    const body = await getSteamAPIData({
+    const body = await getSteamAPIDataWithRetry({
       url,
     });
     const match = body.result.matches.find((m: ApiMatch) => m.match_id === matchId);

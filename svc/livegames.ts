@@ -4,7 +4,7 @@ import redis from './store/redis.ts';
 import db from './store/db.ts';
 import {
   SteamAPIUrls,
-  getSteamAPIData,
+  getSteamAPIDataWithRetry,
   runInLoop,
 } from './util/utility.ts';
 
@@ -13,7 +13,7 @@ runInLoop(async function liveGames() {
   const proPlayers: ProPlayer[] = await db.select().from('notable_players');
   // Get the list of live games
   const url = SteamAPIUrls.api_top_live_game();
-  const body = await getSteamAPIData({ url, raw: true });
+  const body = await getSteamAPIDataWithRetry({ url, raw: true });
   const json = JSONbig.parse(body);
   // If a match contains a pro player
   // add their name to the match object, save it to redis zset, keyed by server_steam_id

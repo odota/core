@@ -2,7 +2,7 @@
 import { blobArchive } from './store/archive.ts';
 import {
   SteamAPIUrls,
-  getSteamAPIData,
+  getSteamAPIDataWithRetry,
   transformMatch,
   getApiHosts,
   runInLoop,
@@ -42,7 +42,7 @@ runInLoop(async function backfill() {
     matches_requested: 100,
   });
   let data = null;
-  data = await getSteamAPIData({
+  data = await getSteamAPIDataWithRetry({
     url,
     // We could rotate through proxies here to ensure consistent load
     proxy: apiHosts,

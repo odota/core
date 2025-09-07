@@ -4,7 +4,7 @@ import db from './store/db.ts';
 import { upsert } from './util/insert.ts';
 import {
   SteamAPIUrls,
-  getSteamAPIData,
+  getSteamAPIDataWithRetry,
   runInLoop,
 } from './util/utility.ts';
 
@@ -32,16 +32,10 @@ runInLoop(async function doTeams() {
     const url = SteamAPIUrls.api_team_info_by_team_id({
       start_at_team_id: m.team_id,
     });
-    let body;
-    try {
-      body = await getSteamAPIData({
-        url,
-        raw: true,
-      });
-    } catch (err) {
-      // Just move on if we failed due to transient error (will retry on next iteration)
-      continue;
-    }
+    let body = await getSteamAPIDataWithRetry({
+      url,
+      raw: true,
+    });
     const raw = body;
     body = JSON.parse(body);
     if (!body.result || !body.result.teams) {
@@ -73,7 +67,7 @@ runInLoop(async function doTeams() {
         const ugcUrl = SteamAPIUrls.api_get_ugc_file_details({
           ugcid: logoUgc,
         });
-        const ugcBody = await getSteamAPIData({
+        const ugcBody = await getSteamAPIDataWithRetry({
           url: ugcUrl,
         });
         if (ugcBody && ugcBody.data) {

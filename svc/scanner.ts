@@ -5,7 +5,7 @@ import { insertMatch } from './util/insert.ts';
 import {
   SteamAPIUrls,
   getApiHosts,
-  getSteamAPIData,
+  getSteamAPIDataWithRetry,
   redisCount,
   runInLoop,
 } from './util/utility.ts';
@@ -24,7 +24,7 @@ if (config.NODE_ENV === 'development') {
     // Never do this in production to avoid skipping sequence number if we didn't pull .env properly
     const url = SteamAPIUrls.api_history({});
     // Just get the approximate current seq num
-    const data = await getSteamAPIData({ url });
+    const data = await getSteamAPIDataWithRetry({ url });
     numResult = data.result.matches[0].match_seq_num;
     await db.raw(
       'INSERT INTO last_seq_num(match_seq_num) VALUES (?) ON CONFLICT DO NOTHING',
@@ -55,7 +55,7 @@ runInLoop(async function scanApi() {
     start_at_match_seq_num: seqNum,
     matches_requested: PAGE_SIZE,
   });
-  let data = await getSteamAPIData({
+  let data = await getSteamAPIDataWithRetry({
     url,
     proxy: apiHosts,
   });

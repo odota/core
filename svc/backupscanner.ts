@@ -6,7 +6,7 @@ import { insertMatch } from '../store/insert.ts';
 import config from '../config.ts';
 import {
   generateJob,
-  getSteamAPIData,
+  getSteamAPIDataWithRetry,
   runInLoop,
 } from '../util/utility.ts';
 const parallelism = 1;
@@ -24,7 +24,7 @@ async function processMatch(matchId: number) {
     const url = SteamAPIUrls.api_details({
       match_id: matchId,
     });
-    const body = await getSteamAPIData({
+    const body = await getSteamAPIDataWithRetry({
       url,
       delay,
     });
@@ -45,7 +45,7 @@ async function processPlayer(accountId: string) {
   const url = SteamAPIUrls.api_history({
     account_id: accountId,
   });
-  const body = await getSteamAPIData({
+  const body = await getSteamAPIDataWithRetry({
     url,
     delay,
   });

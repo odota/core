@@ -1,7 +1,7 @@
 // Processes a queue of full history/refresh requests for players
 import urllib from 'url';
 import config from '../config.ts';
-import { redisCount, getSteamAPIData, SteamAPIUrls } from './util/utility.ts';
+import { redisCount, getSteamAPIDataWithRetry, SteamAPIUrls } from './util/utility.ts';
 import db from './store/db.ts';
 import { runReliableQueue } from './store/queue.ts';
 import { getPlayerMatches } from './util/buildPlayer.ts';
@@ -65,15 +65,7 @@ async function processFullHistory(job: FullHistoryJob) {
     player: FullHistoryJob,
     url: string,
   ): Promise<void> => {
-    let body;
-    while (!body) {
-      try {
-        body = await getSteamAPIData({ url });
-      } catch (err: any) {
-        // Can retry on transient error
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-      }
-    }
+    let body = await getSteamAPIDataWithRetry({ url });
 
     // check for specific error code if user had a private account, if so, update player and don't retry
     if (body?.result?.status === 15) {

@@ -194,6 +194,20 @@ export async function getSteamAPIData(options: GetDataOptions): Promise<any> {
   }
   return body;
 }
+
+export async function getSteamAPIDataWithRetry(options: GetDataOptions): Promise<any> {
+  let body;
+  while (!body) {
+    try {
+      body = await getSteamAPIData(options);
+    } catch (err: any) {
+      // Can retry on transient error
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+  }
+  return body;
+}
+
 /**
  * Determines if a player is radiant
  * */
