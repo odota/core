@@ -1,9 +1,9 @@
 import { redisCount } from "../util/utility.ts";
 
 export abstract class MatchFetcher<T> {
-  // Name of the counter to increment when we find saved data
+  // Name of the counter to increment when we find saved data when getOrFetching
   public savedDataMetricName: MetricName | undefined;
-  // Whether to use saved data already in store. Default to false to always fetch fresh data
+  // Whether to use saved data already in store when getOrFetching. Default to false to always fetch fresh data
   public useSavedData = false;
   // Read from the store without fetching
   public abstract getData(matchId: number): Promise<T | null>;
@@ -27,7 +27,7 @@ export abstract class MatchFetcher<T> {
     const result = await this.fetchData(matchId, extraData);
     return result;
   };
-  // Repeatedly tries readOrFetchData until we have successful data
+  // Repeatedly tries until we have successful data
   public getOrFetchDataWithRetry = async (
     matchId: number,
     extraData: GcExtraData,
