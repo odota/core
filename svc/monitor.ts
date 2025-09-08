@@ -122,15 +122,6 @@ async function cacheDelay() {
     threshold: 100000,
   };
 }
-async function countsDelay() {
-  const result = await db.raw(
-    "select count(*) from queue where type = 'countsQueue'",
-  );
-  return {
-    metric: result.rows[0].count,
-    threshold: 100000,
-  };
-}
 async function scenariosDelay() {
   const result = await redis.llen('scenariosQueue');
   return {

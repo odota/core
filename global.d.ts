@@ -310,10 +310,6 @@ type QueueInput =
       data: ProfileJob;
     }
   | {
-      name: 'countsQueue';
-      data: CountsJob;
-    }
-  | {
       name: 'fhQueue';
       data: FullHistoryJob;
     }

@@ -142,16 +142,14 @@ export async function addReliableJob(
   );
   const job = rows[0];
   if (job) {
-    if (name !== 'countsQueue') {
-      const message = c.magenta(
-        `[${new Date().toISOString()}] [${
-          options.caller ?? config.ROLE
-        }] [queue: ${name}] [pri: ${job.priority}] [att: ${job.attempts}] ${
-          name === 'parse' ? data.match_id : ''
-        }`,
-      );
-      redis.publish('queue', message);
-    }
+    const message = c.magenta(
+      `[${new Date().toISOString()}] [${
+        options.caller ?? config.ROLE
+      }] [queue: ${name}] [pri: ${job.priority}] [att: ${job.attempts}] ${
+        name === 'parse' ? data.match_id : ''
+      }`,
+    );
+    redis.publish('queue', message);
   }
   return job;
 }

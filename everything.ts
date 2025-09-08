@@ -10,7 +10,6 @@ import './svc/buildsets.ts';
 import './svc/cacher.ts';
 import './svc/cleanup.ts';
 import './svc/cosmetics.ts';
-import './svc/counter.ts';
 import './svc/cycler.ts';
 import './svc/distributions.ts';
 import './svc/fetcher.ts';
