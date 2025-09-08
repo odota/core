@@ -18,7 +18,6 @@ const health = {
   gcDelay,
   mmrDelay,
   cacheDelay,
-  countsDelay,
   scenariosDelay,
   profileDelay,
   rateDelay,
