@@ -1000,7 +1000,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
         route: () => '/topPlayers',
         func: async (req, res, next) => {
           const result = await db
-            .select(['*', 'players.account_id as account_id'])
+            .select(['*', 'players.account_id as account_id', 'rank_tier.rating as rank_tier'])
             .from('player_computed_mmr')
             .join(
               'players',
@@ -1011,6 +1011,11 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
               'notable_players',
               'players.account_id',
               'notable_players.account_id',
+            )
+            .leftJoin(
+              'rank_tier',
+              'players.account_id',
+              'rank_tier.account_id',
             )
             .orderBy('player_computed_mmr.computed_mmr', 'desc')
             .limit(100);
