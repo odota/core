@@ -61,6 +61,7 @@ class ApiFetcher extends MatchFetcher<ApiMatch> {
     // on success, call GetMatchHistoryBySequenceNum with the seq num of the preceding match and matches_requested of the number of times we went back
     // Get just the one match in the array matching the target number
     // Insert the data normally as if API data from scanner
+    // TODO limit range to older matches based on current max
     let data = await this.getData(matchId);
     let pageBack = 0;
     while (!data && pageBack <= 100) {
