@@ -489,7 +489,11 @@ type MetricName =
   | 'reconcile'
   | 'profiler'
   | 'rater'
-  | 'rater_skip';
+  | 'rater_skip'
+  | 'backfill_success'
+  | 'backfill_fail'
+  | 'backfill_skip'
+  | 'backfill_page_back';
 
 // Object to map player_slot to basic info
 type PGroup = {
@@ -499,6 +503,10 @@ type PGroup = {
     hero_id: number;
   };
 };
+
+type ApiExtraData = {
+  seqNumBackfill?: boolean;
+}
 
 type GcExtraData = {
   origin?: DataOrigin;

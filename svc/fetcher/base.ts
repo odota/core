@@ -10,7 +10,7 @@ export abstract class MatchFetcher<T> {
   // Read from the store, fetch it from remote and save if needed
   public async getOrFetchData(
     matchId: number,
-    extraData?: GcExtraData | ParseExtraData,
+    extraData?: GcExtraData | ParseExtraData | ApiExtraData,
   ): Promise<{
     data: T | null;
     error: string | null;
@@ -72,7 +72,7 @@ export abstract class MatchFetcher<T> {
   // Fetches the data from the remote store
   public abstract fetchData(
     matchId: number,
-    extraData?: GcExtraData | ParseExtraData,
+    extraData?: GcExtraData | ParseExtraData | ApiExtraData,
   ): Promise<{
     data: T | null;
     error: string | null;

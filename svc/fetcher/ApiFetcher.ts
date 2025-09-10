@@ -7,6 +7,7 @@ import { blobArchive } from '../store/archive.ts';
 import { MatchFetcher } from './base.ts';
 import { insertMatch } from '../util/insert.ts';
 import { config } from '../../config.ts';
+import db from '../store/db.ts';
 
 export class ApiFetcher extends MatchFetcher<ApiMatch> {
   useSavedData = Boolean(config.DISABLE_REAPI);
@@ -19,7 +20,7 @@ export class ApiFetcher extends MatchFetcher<ApiMatch> {
     data = archive ? (JSON.parse(archive.toString()) as ApiMatch) : null;
     return data;
   };
-  fetchData = async (matchId: number) => {
+  fetchData = async (matchId: number, options?: { seqNumBackfill?: boolean }) => {
     let match;
     try {
       // We currently can't fetch because the Steam GetMatchDetails API is broken
@@ -30,6 +31,9 @@ export class ApiFetcher extends MatchFetcher<ApiMatch> {
       //   url,
       // });
       // match = body.result;
+      if (options?.seqNumBackfill) {
+        match = await this.backfillFromSeqNumApi_INTERNAL(matchId);
+      }
     } catch (e: any) {
       if (e?.result?.error === 'Match ID not found') {
         // Steam API reported this ID doesn't exist
@@ -54,14 +58,22 @@ export class ApiFetcher extends MatchFetcher<ApiMatch> {
       error: '[APIDATA]: Could not get API data for match ' + matchId,
     };
   };
-  fetchDataFromSeqNumApi = async (matchId: number) => {
+  backfillFromSeqNumApi_INTERNAL = async (matchId: number) => {
     // Try to get match data from blob store
     // If not available, go back 1 ID number and try again until success (or 0)
     // count how many times we do this (max 100)
     // on success, call GetMatchHistoryBySequenceNum with the seq num of the preceding match and matches_requested of the number of times we went back
     // Get just the one match in the array matching the target number
     // Insert the data normally as if API data from scanner
-    // TODO limit range to older matches based on current max
+    
+    // Don't try with recent matches since there might be gaps in match IDs
+    const max = (await db.raw('select max(match_id) from public_matches'))
+      ?.rows?.[0]?.max;
+    const limit = max - 10000;
+    if (matchId > limit) {
+      redisCount('backfill_skip');
+      return null;
+    }
     let data = await this.getData(matchId);
     let pageBack = 0;
     while (!data && pageBack <= 100) {
@@ -69,9 +81,11 @@ export class ApiFetcher extends MatchFetcher<ApiMatch> {
       console.log('paging back %s for matchId %s', pageBack, matchId);
       data = await this.getData(matchId - pageBack);
       await new Promise((resolve) => setTimeout(resolve, 500));
+      redisCount('backfill_page_back');
     }
     if (!data) {
-      throw new Error('could not find data for match ' + matchId);
+      redisCount('backfill_fail');
+      throw new Error('could not find preceding seqnum for match ' + matchId);
     }
     const precedingSeqNum = data.match_seq_num;
     const url = SteamAPIUrls.api_sequence({
@@ -85,13 +99,12 @@ export class ApiFetcher extends MatchFetcher<ApiMatch> {
       (m: ApiMatch) => m.match_id === matchId,
     );
     if (!match) {
+      redisCount('backfill_fail');
       throw new Error('could not find in seqnum response match ' + matchId);
     }
+    redisCount('backfill_success');
     console.log(match);
-    // TODO enable when validated
-    // await insertMatch(match, {
-    //   type: 'api',
-    // });
+    return match;
   };
   checkAvailable = () => {
     throw new Error('not implemented');

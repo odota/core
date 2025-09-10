@@ -120,6 +120,10 @@ export async function buildStatus() {
         steam_api_backfill_last_day: async () => countDay('steam_api_backfill'),
         // steam_api_notfound_last_day: async () => countDay('steam_api_notfound'),
         // steam_gc_backfill_last_day: async () => countDay('steam_gc_backfill'),
+        backfill_success_last_day: async () => countDay('backfill_success'),
+        backfill_fail_last_day: async () => countDay('backfill_fail'),
+        backfill_skip_last_day: async () => countDay('backfill_skip'),
+        backfill_page_back_last_day: async () => countDay('backfill_page_back'),
 
         api_hits_last_day: async () => countDay('api_hits'),
         api_hits_ui_last_day: async () => countDay('api_hits_ui'),

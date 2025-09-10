@@ -1,6 +1,5 @@
 // Get a match ID with a high number of retries from player_match_history
-// It probably doesn't have apidata
-// Call fetchDataFromSeqNumApi on it
+// It probably doesn't have apidata, so backfill it with seqnum data
 import { apiFetcher } from './fetcher/allFetchers.ts';
 import db from './store/db.ts';
 import { reconcileMatch } from './util/reconcileUtil.ts';
@@ -14,7 +13,7 @@ runInLoop(async function repair() {
   );
   const row = rows[0];
   if (row) {
-    await apiFetcher.fetchDataFromSeqNumApi(row.match_id);
+    await apiFetcher.getOrFetchData(row.match_id, { seqNumBackfill: true });
   }
   // Reconcile the match now that it's fixed
   let { rows: allRows } = await db.raw(
