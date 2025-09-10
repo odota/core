@@ -74,5 +74,3 @@ export class MetaFetcher extends MatchFetcher<Record<string, any>> {
     throw new Error('not implemented');
   };
 }
-
-export const metaFetcher = new MetaFetcher();

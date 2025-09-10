@@ -10,10 +10,11 @@ import {
 } from './utility.ts';
 import redis from '../store/redis.ts';
 import db from '../store/db.ts';
-import { metaFetcher } from '../fetcher/MetaFetcher.ts';
 import { benchmarks } from './benchmarksUtil.ts';
 import * as allFetchers from '../fetcher/allFetchers.ts';
 import { getMatchBlob } from './getMatchBlob.ts';
+
+const { metaFetcher } = allFetchers;
 
 function extendPlayerData(
   player: Player | ParsedPlayer,
