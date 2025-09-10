@@ -1,5 +1,6 @@
+import * as allFetchers from '../fetcher/allFetchers.ts';
 import db from '../store/db.ts';
-import { getMatchDataFromBlobWithMetadata } from './buildMatch.ts';
+import { getMatchBlob } from './getMatchBlob.ts';
 import { upsertPlayerCaches } from './insert.ts';
 import { getPGroup } from './pgroup.ts';
 import { redisCount } from './utility.ts';
@@ -34,7 +35,7 @@ export async function reconcileMatch(rows: HistoryType[]) {
     throw new Error('multiple match IDs found in input to reconcileMatch');
   }
   // optional: Verify each player/match combination doesn't exist in player_caches (or we have parsed data to update)
-  const [match] = await getMatchDataFromBlobWithMetadata(rows[0].match_id);
+  const [match] = await getMatchBlob(rows[0].match_id, allFetchers);
   if (!match) {
     // Note: unless we backfill, we have limited API data for old matches
     // For more recent matches we're more likely to have data

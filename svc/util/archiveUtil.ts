@@ -5,8 +5,18 @@ import { Client } from 'pg';
 import db from '../store/db.ts';
 import type { PutObjectCommandOutput } from '@aws-sdk/client-s3';
 import { getFullPlayerMatchesWithMetadata } from './buildPlayer.ts';
-import { getMatchDataFromBlobWithMetadata } from './buildMatch.ts';
 import { isDataComplete, randomInt, redisCount } from './utility.ts';
+import { getMatchBlob } from './getMatchBlob.ts';
+import { ApiFetcher } from '../fetcher/ApiFetcher.ts';
+import { ParsedFetcher } from '../fetcher/ParsedFetcher.ts';
+import { GcdataFetcher } from '../fetcher/GcdataFetcher.ts';
+
+// Don't include archive when archiving
+const fetchers = {
+  apiFetcher: new ApiFetcher(),
+  gcFetcher: new GcdataFetcher(),
+  parsedFetcher: new ParsedFetcher(),
+};
 
 async function processMatch(matchId: number) {
   // Check if we should archive the blobs (should be parsed and not archived)
@@ -124,9 +134,7 @@ async function doArchivePlayerMatches(
  */
 export async function doArchiveMatchFromBlobs(matchId: number) {
   // Don't read from archive when determining whether to archive
-  const [match, metadata] = await getMatchDataFromBlobWithMetadata(matchId, {
-    noArchive: true,
-  });
+  const [match, metadata] = await getMatchBlob(matchId, fetchers);
   if (match && metadata?.has_parsed) {
     // check data completeness with isDataComplete
     if (!isDataComplete(match as ParsedMatch)) {

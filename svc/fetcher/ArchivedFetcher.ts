@@ -2,8 +2,9 @@ import { redisCount } from '../util/utility.ts';
 import { matchArchive } from '../store/archive.ts';
 import db from '../store/db.ts';
 import { MatchFetcher } from './base.ts';
+import { doArchiveMatchFromBlobs } from '../util/archiveUtil.ts';
 
-class ArchivedFetcher extends MatchFetcher<ParsedMatch> {
+export class ArchivedFetcher extends MatchFetcher<ParsedMatch> {
   getData = async (matchId: number): Promise<ParsedMatch | null> => {
     try {
       // Check if the parsed data is archived
@@ -25,10 +26,9 @@ class ArchivedFetcher extends MatchFetcher<ParsedMatch> {
     }
     return null;
   };
-  fetchData = (matchId: number) => {
-    // Circular dependency if we import
-    // await doArchiveMatchFromBlobs(matchId);
-    throw new Error('not implemented');
+  fetchData = async (matchId: number) => {
+    await doArchiveMatchFromBlobs(matchId);
+    return { data: null, error: null };
   };
   checkAvailable = async (matchId: number) => {
     return Boolean(
@@ -41,5 +41,3 @@ class ArchivedFetcher extends MatchFetcher<ParsedMatch> {
     );
   };
 }
-
-export const archivedFetcher = new ArchivedFetcher();

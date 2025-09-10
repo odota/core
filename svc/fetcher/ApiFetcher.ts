@@ -8,7 +8,7 @@ import { MatchFetcher } from './base.ts';
 import { insertMatch } from '../util/insert.ts';
 import { config } from '../../config.ts';
 
-class ApiFetcher extends MatchFetcher<ApiMatch> {
+export class ApiFetcher extends MatchFetcher<ApiMatch> {
   useSavedData = Boolean(config.DISABLE_REAPI);
   getData = async (matchId: number): Promise<ApiMatch | null> => {
     let data = null;
@@ -97,5 +97,3 @@ class ApiFetcher extends MatchFetcher<ApiMatch> {
     throw new Error('not implemented');
   };
 }
-
-export const apiFetcher = new ApiFetcher();

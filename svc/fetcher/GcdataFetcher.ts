@@ -10,7 +10,7 @@ import { blobArchive } from '../store/archive.ts';
 import { MatchFetcher } from './base.ts';
 import config from '../../config.ts';
 
-class GcdataFetcher extends MatchFetcher<GcMatch> {
+export class GcdataFetcher extends MatchFetcher<GcMatch> {
   savedDataMetricName: MetricName = 'regcdata';
   useSavedData = Boolean(config.DISABLE_REGCDATA);
   getData = async (matchId: number): Promise<GcMatch | null> => {
@@ -138,5 +138,3 @@ class GcdataFetcher extends MatchFetcher<GcMatch> {
     throw new Error('not implemented');
   };
 }
-
-export const gcFetcher = new GcdataFetcher();

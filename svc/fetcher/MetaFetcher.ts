@@ -3,8 +3,10 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import { buildReplayUrl, redisCount } from '../util/utility.ts';
 import { MatchFetcher } from './base.ts';
-import { gcFetcher } from './GcdataFetcher.ts';
+import { GcdataFetcher } from './GcdataFetcher.ts';
 const execPromise = promisify(exec);
+
+const gcFetcher = new GcdataFetcher();
 
 // Get a sample meta file
 // curl http://replay117.valve.net/570/7468445438_1951738768.meta.bz2
@@ -15,7 +17,7 @@ const builder = root.loadSync('./proto/dota_match_metadata.proto', {
 });
 const CDOTAMatchMetadataFile = builder.lookupType('CDOTAMatchMetadataFile');
 
-class MetaFetcher extends MatchFetcher<Record<string, any>> {
+export class MetaFetcher extends MatchFetcher<Record<string, any>> {
   getData = async (matchId: number) => {
     const result = await this.fetchData(matchId);
     return result.data;

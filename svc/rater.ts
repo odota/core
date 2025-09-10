@@ -1,4 +1,4 @@
-import { gcFetcher } from './fetcher/GcdataFetcher.ts';
+import { gcFetcher } from './fetcher/allFetchers.ts';
 import db from './store/db.ts';
 import { average, isRadiant, redisCount, runInLoop } from './util/utility.ts';
 

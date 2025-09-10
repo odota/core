@@ -6,7 +6,7 @@ import axios from 'axios';
 import { MatchFetcher } from './base.ts';
 import config from '../../config.ts';
 
-class ParsedFetcher extends MatchFetcher<ParserMatch> {
+export class ParsedFetcher extends MatchFetcher<ParserMatch> {
   savedDataMetricName: MetricName = 'reparse';
   useSavedData = Boolean(config.DISABLE_REPARSE);
   getData = async (matchId: number): Promise<ParserMatch | null> => {
@@ -69,5 +69,3 @@ class ParsedFetcher extends MatchFetcher<ParserMatch> {
     );
   };
 }
-
-export const parsedFetcher = new ParsedFetcher();

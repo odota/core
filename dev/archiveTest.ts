@@ -1,6 +1,4 @@
-import { archivedFetcher } from '../svc/fetcher/ArchivedFetcher.ts';
-
-const { matchArchive } = await import('../svc/store/archive.ts');
+import { archivedFetcher } from '../svc/fetcher/allFetchers.ts';
 
 // Read some match data
 // const match = await getMatchDataFromBlob(7465883253);
