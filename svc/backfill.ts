@@ -22,7 +22,6 @@ const stop = Number(process.env.BACKFILL_STOP) || 6200000000;
 runInLoop(async function backfill() {
   // This endpoint is limited to something like 1 request every 5 seconds
   const apiHosts = await getApiHosts();
-  const SCANNER_WAIT = 1000 / apiHosts.length;
   // get progress from redis if available, if not, fallback to file
   let seqNum;
   if (redis) {
@@ -36,7 +35,7 @@ runInLoop(async function backfill() {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     process.exit(0);
   }
-  const begin = Date.now();
+  // const begin = Date.now();
   const url = SteamAPIUrls.api_sequence({
     start_at_match_seq_num: seqNum,
     matches_requested: 100,
@@ -81,9 +80,7 @@ runInLoop(async function backfill() {
     // If any fail, log the error and try the same number again
     console.error(e);
   }
-  const end = Date.now();
-  const elapsed = end - begin;
-  const adjustedWait = Math.max(SCANNER_WAIT - elapsed, 0);
-  console.log('iteration: %dms', elapsed);
-  await new Promise((resolve) => setTimeout(resolve, adjustedWait));
+  // const end = Date.now();
+  // const elapsed = end - begin;
+  // console.log('iteration: %dms', elapsed);
 }, 0);

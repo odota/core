@@ -47,10 +47,8 @@ runInLoop(async function scanApi() {
       seqNum = nextSeqNum;
     }
   }
-  const start = Date.now();
+  // const start = Date.now();
   const apiHosts = await getApiHosts();
-  const parallelism = Math.min(apiHosts.length, API_KEYS.length);
-  const scannerWaitCatchup = SCANNER_WAIT / parallelism;
   const url = SteamAPIUrls.api_sequence({
     start_at_match_seq_num: seqNum,
     matches_requested: PAGE_SIZE,
@@ -108,13 +106,11 @@ runInLoop(async function scanApi() {
       );
     }
   }
-  const end = Date.now();
-  const elapsed = end - start;
-  const adjustedWait = Math.max(
-    // If not a full page, delay the next iteration
-    (resp.length < PAGE_SIZE ? SCANNER_WAIT : scannerWaitCatchup) - elapsed,
-    0,
-  );
+  // const end = Date.now();
+  // const elapsed = end - start;
+  // If not a mostly full page, wait full interval
+  // This is sometimes 99 now since Valve is hiding high MMR matches
+  const adjustedWait = resp.length < PAGE_SIZE * 0.9 ? SCANNER_WAIT : 0;
   await new Promise((resolve) => setTimeout(resolve, adjustedWait));
 }, 0);
 
