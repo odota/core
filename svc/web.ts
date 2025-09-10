@@ -258,7 +258,7 @@ app.get('/retrieverData', async (req, res, next) => {
         const ratio = success / reqs;
         const isLowRatio = reqs > 25 && ratio <= 0;
         // Don't add high usage logons or high fail logons
-        if (reqs < 150) {
+        if (reqs < 100) {
           await redis.sadd('retrieverDataSet', accountData[i]);
         }
       }
