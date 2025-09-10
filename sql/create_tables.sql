@@ -363,7 +363,7 @@ CREATE TABLE IF NOT EXISTS queue (
   next_attempt_time timestamp with time zone,
   priority int
 );
-CREATE INDEX IF NOT EXISTS queue_priority_id_idx on queue(priority, id);
+CREATE INDEX IF NOT EXISTS queue_type_priority_id_idx on queue(type, priority, id);
 
 CREATE TABLE IF NOT EXISTS solo_competitive_rank (
   PRIMARY KEY (account_id),
