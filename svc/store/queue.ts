@@ -21,7 +21,7 @@ export async function runQueue(
     while (true) {
       // If we have a way to measure capacity, throttle the processing speed based on capacity
       if (getCapacity && i >= (await getCapacity())) {
-        await new Promise((resolve) => setTimeout(resolve, 5000));
+        await new Promise((resolve) => setTimeout(resolve, 3000));
         continue;
       }
       const job = await consumer.blpop(queueName, '0');
@@ -59,7 +59,7 @@ export async function runReliableQueue(
     while (true) {
       // If we have a way to measure capacity, throttle the processing speed based on capacity
       if (getCapacity && i >= (await getCapacity())) {
-        await new Promise((resolve) => setTimeout(resolve, 5000));
+        await new Promise((resolve) => setTimeout(resolve, 3000));
         continue;
       }
       await consumer.query('BEGIN TRANSACTION');
@@ -103,7 +103,7 @@ export async function runReliableQueue(
       } else {
         await consumer.query('COMMIT');
         // console.log('no job available, waiting');
-        await new Promise((resolve) => setTimeout(resolve, 5000));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
     }
   };
