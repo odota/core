@@ -9,18 +9,18 @@ runInLoop(async function repair() {
   // Disabled until backfill complete
   return;
   const { rows } = await db.raw(
-    'select match_id, retries from player_match_history ORDER BY retries DESC NULLS LAST LIMIT 1',
+    'select match_id, retries from player_match_history WHERE retries >= 10 ORDER BY retries DESC NULLS LAST LIMIT 1',
   );
   const row = rows[0];
   if (row) {
     await apiFetcher.getOrFetchData(row.match_id, { seqNumBackfill: true });
+    // Reconcile the match now that it's fixed
+    let { rows: allRows } = await db.raw(
+      'select * from player_match_history where match_id = ?',
+      [row.match_id],
+    );
+    console.log(allRows);
+    // TODO enable when validated
+    // await reconcileMatch(allRows);
   }
-  // Reconcile the match now that it's fixed
-  let { rows: allRows } = await db.raw(
-    'select * from player_match_history where match_id = ?',
-    [row.match_id],
-  );
-  console.log(allRows);
-  // TODO enable when validated
-  // await reconcileMatch(allRows);
 }, 10000);
