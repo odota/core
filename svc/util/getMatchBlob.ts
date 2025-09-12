@@ -1,9 +1,14 @@
-import { MatchFetcher } from "../fetcher/base.ts";
-import { redisCount } from "./utility.ts";
+import { MatchFetcher } from '../fetcher/base.ts';
+import { redisCount } from './utility.ts';
 
 export async function getMatchBlob(
   matchId: number,
-  fetchers: { apiFetcher: MatchFetcher<ApiMatch>, gcFetcher: MatchFetcher<GcMatch>, parsedFetcher: MatchFetcher<ParserMatch>, archivedFetcher?: MatchFetcher<ParsedMatch> },
+  fetchers: {
+    apiFetcher: MatchFetcher<ApiMatch>;
+    gcFetcher: MatchFetcher<GcMatch>;
+    parsedFetcher: MatchFetcher<ParserMatch>;
+    archivedFetcher: MatchFetcher<ParsedMatch> | null;
+  },
 ): Promise<[Match | ParsedMatch | null, GetMatchDataMetadata | null]> {
   let { apiFetcher, gcFetcher, parsedFetcher, archivedFetcher } = fetchers;
   let [api, gcdata, parsed, archived]: [

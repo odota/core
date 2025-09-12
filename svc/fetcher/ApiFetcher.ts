@@ -20,7 +20,10 @@ export class ApiFetcher extends MatchFetcher<ApiMatch> {
     data = archive ? (JSON.parse(archive.toString()) as ApiMatch) : null;
     return data;
   };
-  fetchData = async (matchId: number, options?: { seqNumBackfill?: boolean }) => {
+  fetchData = async (
+    matchId: number,
+    options?: { seqNumBackfill?: boolean },
+  ) => {
     let match;
     try {
       // We currently can't fetch because the Steam GetMatchDetails API is broken
@@ -65,7 +68,7 @@ export class ApiFetcher extends MatchFetcher<ApiMatch> {
     // on success, call GetMatchHistoryBySequenceNum with the seq num of the preceding match and matches_requested of the number of times we went back
     // Get just the one match in the array matching the target number
     // Insert the data normally as if API data from scanner
-    
+
     // Don't try with recent matches since there might be gaps in match IDs
     const max = (await db.raw('select max(match_id) from public_matches'))
       ?.rows?.[0]?.max;

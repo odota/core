@@ -506,7 +506,7 @@ type PGroup = {
 
 type ApiExtraData = {
   seqNumBackfill?: boolean;
-}
+};
 
 type GcExtraData = {
   origin?: DataOrigin;

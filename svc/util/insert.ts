@@ -445,17 +445,16 @@ export async function insertMatch(
   async function updateCounts(match: InsertMatchInput) {
     // Update temporary match counts/hero rankings
     if (options.origin === 'scanner' && options.type === 'api') {
-      await Promise.all(
-        [
-          updateHeroRankings(match as ApiMatch),
-          upsertMatchSample(match as ApiMatch),
-          updateRecords(match as ApiMatch),
-          updateLastPlayed(match as ApiMatch),
-          updateHeroSearch(match as ApiMatch),
-          updateHeroCounts(match as ApiMatch),
-          updateMatchCounts(match as ApiMatch),
-          updateBenchmarks(match as ApiMatch),
-        ]);
+      await Promise.all([
+        updateHeroRankings(match as ApiMatch),
+        upsertMatchSample(match as ApiMatch),
+        updateRecords(match as ApiMatch),
+        updateLastPlayed(match as ApiMatch),
+        updateHeroSearch(match as ApiMatch),
+        updateHeroCounts(match as ApiMatch),
+        updateMatchCounts(match as ApiMatch),
+        updateBenchmarks(match as ApiMatch),
+      ]);
     }
   }
   async function upsertPlayers(match: InsertMatchInput) {

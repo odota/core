@@ -16,6 +16,7 @@ const fetchers = {
   apiFetcher: new ApiFetcher(),
   gcFetcher: new GcdataFetcher(),
   parsedFetcher: new ParsedFetcher(),
+  archivedFetcher: null,
 };
 
 async function processMatch(matchId: number) {
