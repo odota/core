@@ -8,7 +8,8 @@
     "resolveJsonModule": true,
     "noEmit": true,
     "allowImportingTsExtensions": true,
-    "erasableSyntaxOnly": true
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true
   },
   "include": ["index.ts", "global.d.ts", "dev", "svc", "test"]
 }
