@@ -12,9 +12,6 @@ export class ParsedFetcher extends MatchFetcher<ParserMatch> {
   getData = async (matchId: number): Promise<ParserMatch | null> => {
     let data = null;
     const archive = await blobArchive.archiveGet(`${matchId}_parsed`);
-    if (archive) {
-      redisCount('blob_archive_read');
-    }
     data = archive ? (JSON.parse(archive.toString()) as ParserMatch) : null;
     return data;
   };

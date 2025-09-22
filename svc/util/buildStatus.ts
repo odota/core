@@ -142,7 +142,6 @@ export async function buildStatus() {
         get_player_matches_last_day: async () => countDay('player_matches'),
         // self_player_matches_last_day: async () => countDay('self_profile_view'),
 
-        blob_archive_read_last_day: async () => countDay('blob_archive_read'),
         match_archive_read_last_day: async () => countDay('match_archive_read'),
         archive_hit_last_day: async () => countDay('archive_hit'),
         archive_miss_last_day: async () => countDay('archive_miss'),

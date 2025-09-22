@@ -15,11 +15,17 @@ export class GcdataFetcher extends MatchFetcher<GcMatch> {
   useSavedData = Boolean(config.DISABLE_REGCDATA);
   getData = async (matchId: number): Promise<GcMatch | null> => {
     let data = null;
-    const archive = await blobArchive.archiveGet(`${matchId}_gcdata`);
-    if (archive) {
-      redisCount('blob_archive_read');
+    // Read the memory cache to see if it's there
+    const cache = await redis.get('cache_gcdata:' + matchId);
+    if (cache) {
+      data = JSON.parse(cache);
     }
-    data = archive ? (JSON.parse(archive.toString()) as GcMatch) : null;
+    // Read from blob archive
+    if (!data) {
+      const archive = await blobArchive.archiveGet(`${matchId}_gcdata`);
+      data = archive ? (JSON.parse(archive.toString()) as GcMatch) : null;
+    }
+    // Verify data integrity
     if (
       data?.match_id == null ||
       data?.cluster == null ||
@@ -114,6 +120,9 @@ export class GcdataFetcher extends MatchFetcher<GcMatch> {
       cluster: data.match.cluster,
       replay_salt: data.match.replay_salt,
     };
+    // Cache the gcdata temporarily
+    await redis.setex('cache_gcdata:' + matchId, 3600, JSON.stringify(matchToInsert));
+
     // Update series id and type for pro match
     await db.raw(
       'UPDATE matches SET series_id = ?, series_type = ?, cluster = ?, replay_salt = ? WHERE match_id = ?',

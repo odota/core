@@ -14,9 +14,6 @@ export class ApiFetcher extends MatchFetcher<ApiMatch> {
   getData = async (matchId: number): Promise<ApiMatch | null> => {
     let data = null;
     const archive = await blobArchive.archiveGet(`${matchId}_api`);
-    if (archive) {
-      redisCount('blob_archive_read');
-    }
     data = archive ? (JSON.parse(archive.toString()) as ApiMatch) : null;
     return data;
   };
