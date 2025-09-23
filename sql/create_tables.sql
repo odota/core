@@ -467,6 +467,12 @@ CREATE TABLE IF NOT EXISTS rating_queue(
   radiant_win boolean
 );
 
+CREATE TABLE IF NOT EXISTS league_match(
+  PRIMARY KEY (leagueid, match_id),
+  leagueid int,
+  match_id bigint
+);
+
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'readonly') THEN

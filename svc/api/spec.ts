@@ -2066,7 +2066,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
       get: {
         operationId: generateOperationId('get', '/leagues/{league_id}/matches'),
         summary: 'GET /leagues/{league_id}/matches',
-        description: 'Get matches for a league',
+        description: 'Get matches for a league (excluding amateur leagues)',
         tags: ['leagues'],
         parameters: [{ $ref: '#/components/parameters/leagueIdPathParam' }],
         responses: {
@@ -2086,10 +2086,46 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           const { rows } = await db.raw(
             `SELECT match_id, radiant_win, start_time, duration, leagueid, radiant_score, dire_score, radiant_team_id, radiant_team_name, dire_team_id, dire_team_name, series_id, series_type
             FROM matches
-            WHERE matches.leagueid = ?`,
+            WHERE matches.leagueid = ?
+            ORDER BY match_id DESC`,
             [req.params.league_id],
           );
           return res.json(rows);
+        },
+      },
+    },
+    '/leagues/{league_id}/matchIds': {
+      get: {
+        operationId: generateOperationId('get', '/leagues/{league_id}/matchIds'),
+        summary: 'GET /leagues/{league_id}/matchIds',
+        description: 'Get match IDs for a league (including amateur leagues)',
+        tags: ['leagues'],
+        parameters: [{ $ref: '#/components/parameters/leagueIdPathParam' }],
+        responses: {
+          200: {
+            description: 'Success',
+            content: {
+              'application/json; charset=utf-8': {
+                schema: {
+                  type: 'array',
+                  items: {
+                    type: 'string',
+                  },
+                },
+              },
+            },
+          },
+        },
+        route: () => '/leagues/:league_id/matchIds',
+        func: async (req, res, next) => {
+          const { rows } = await db.raw(
+            `SELECT match_id
+            FROM league_match
+            WHERE matches.leagueid = ?
+            ORDER BY match_id DESC`,
+            [req.params.league_id],
+          );
+          return res.json(rows.map((r: any) => r.match_id));
         },
       },
     },

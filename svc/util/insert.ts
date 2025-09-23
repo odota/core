@@ -156,6 +156,11 @@ export async function insertMatch(
       // console.log('[UPSERTMATCHPOSTGRES]: skipping due to check');
       return;
     }
+    if (!isProTier) {
+      // Skip if not in a pro league (premium or professional tier)
+      console.log('[UPSERTMATCHPOSTGRES]: skipping due to tier');
+      return;
+    }
     // If parsed data, we want to make sure the match exists in DB
     // Otherwise we could end up with parsed data only rows for matches we skipped above
     // We might want to switch the upsert to UPDATE instead for parsed case
@@ -169,11 +174,6 @@ export async function insertMatch(
       if (!rows.length) {
         return;
       }
-    }
-    if (!isProLeague) {
-      // Skip if not in a pro league (premium or professional tier)
-      console.log('[UPSERTMATCHPOSTGRES]: skipping due to league');
-      return;
     }
     const trx = await db.transaction();
     try {
@@ -592,13 +592,13 @@ export async function insertMatch(
       }),
     );
     let hasTrackedPlayer = trackedScores.filter(Boolean).length > 0;
-    const doParse = hasTrackedPlayer || isProLeague;
+    const doParse = hasTrackedPlayer || isProTier;
     if (!doParse) {
       return null;
     }
     redisCount('auto_parse');
     let priority = 5;
-    if (isProLeague) {
+    if (isProTier) {
       priority = -1;
     }
     if (hasTrackedPlayer) {
@@ -628,7 +628,7 @@ export async function insertMatch(
   // Do this after removing anonymous account IDs
   const pgroup = options.pgroup ?? getPGroup(match as ApiMatch);
 
-  let isProLeague = false;
+  let isProTier = false;
   if ('leagueid' in match) {
     // Check if leagueid is premium/professional
     const result = match.leagueid
@@ -637,7 +637,12 @@ export async function insertMatch(
           [match.leagueid],
         )
       : null;
-    isProLeague = result?.rows?.length > 0;
+    isProTier = result?.rows?.length > 0;
+    // Index the matchid to the league
+  }
+
+  if (options.origin === 'scanner' && options.type === 'api' && 'leagueid' in match) {
+    await db.raw('INSERT INTO league_match(leagueid, match_id) VALUES(?, ?) ON CONFLICT DO NOTHING', [match.match_id, match.leagueid]);
   }
 
   let average_rank: number | undefined = undefined;
