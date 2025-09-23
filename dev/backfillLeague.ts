@@ -14,7 +14,7 @@ for (let i = 0; i < rows.length; i++) {
     while (nextPage) {
         const url = SteamAPIUrls.api_history({leagueid, matches_requested: 100, start_at_match_id });
         const data = await getSteamAPIDataWithRetry({ url });
-        for (let j = 0; j < data.result.matches; j++) {
+        for (let j = 0; j < data.result.matches.length; j++) {
             const match = data.result.matches[j];
             console.log(leagueid, match.match_id);
             await db.raw('INSERT INTO league_match(leagueid, match_id) VALUES(?, ?) ON CONFLICT DO NOTHING', [leagueid, match.match_id]);
