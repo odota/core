@@ -2121,7 +2121,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           const { rows } = await db.raw(
             `SELECT match_id
             FROM league_match
-            WHERE matches.leagueid = ?
+            WHERE league_match.leagueid = ?
             ORDER BY match_id DESC`,
             [req.params.league_id],
           );
