@@ -18,6 +18,6 @@ for (let i = 0; i < rows.length; i++) {
             await db.raw('INSERT INTO league_match(leagueid, match_id) VALUES(?, ?) ON CONFLICT DO NOTHING', [leagueid, data.result.matches[j].match_id]);
         }
         nextPage = data.result.results_remaining > 0;
-        start_at_match_id = data.result.matches.slice(-1)[0].match_id - 1;
+        start_at_match_id = data.result.matches.slice(-1)?.[0]?.match_id - 1;
     }
 }
