@@ -5,7 +5,8 @@
 import db from '../svc/store/db.ts';
 import { getSteamAPIDataWithRetry, SteamAPIUrls } from '../svc/util/utility.ts';
 
-const { rows } = await db.raw('select leagueid from leagues WHERE leagueid > 0 ORDER by leagueid ASC');
+// Backfill from steam API
+let { rows } = await db.raw('select leagueid from leagues WHERE leagueid > 177 ORDER by leagueid ASC');
 for (let i = 0; i < rows.length; i++) {
     const leagueid = rows[i].leagueid;
     // Get a page of matches
@@ -22,4 +23,12 @@ for (let i = 0; i < rows.length; i++) {
         nextPage = data.result.results_remaining > 0;
         start_at_match_id = data.result.matches.slice(-1)?.[0]?.match_id - 1;
     }
+}
+
+// Backfill from existing table
+let { rows: rows2 } = await db.raw('select leagueid, match_id from matches ORDER by match_id ASC');
+for (let j = 0; j < rows2.length; j++) {
+    const {leagueid, match_id } = rows2[j];
+    console.log(leagueid, match_id);
+    await db.raw('INSERT INTO league_match(leagueid, match_id) VALUES(?, ?) ON CONFLICT DO NOTHING', [leagueid, match_id]);
 }
