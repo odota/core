@@ -5,7 +5,7 @@
 import db from '../svc/store/db.ts';
 import { getSteamAPIDataWithRetry, SteamAPIUrls } from '../svc/util/utility.ts';
 
-const { rows } = await db.raw('select leagueid from leagues ORDER by leagueid ASC');
+const { rows } = await db.raw('select leagueid from leagues WHERE leagueid > 0 ORDER by leagueid ASC');
 for (let i = 0; i < rows.length; i++) {
     const leagueid = rows[i].leagueid;
     // Get a page of matches
@@ -15,7 +15,9 @@ for (let i = 0; i < rows.length; i++) {
         const url = SteamAPIUrls.api_history({leagueid, matches_requested: 100, start_at_match_id });
         const data = await getSteamAPIDataWithRetry({ url });
         for (let j = 0; j < data.result.matches; j++) {
-            await db.raw('INSERT INTO league_match(leagueid, match_id) VALUES(?, ?) ON CONFLICT DO NOTHING', [leagueid, data.result.matches[j].match_id]);
+            const match = data.result.matches[j];
+            console.log(leagueid, match.match_id);
+            await db.raw('INSERT INTO league_match(leagueid, match_id) VALUES(?, ?) ON CONFLICT DO NOTHING', [leagueid, match.match_id]);
         }
         nextPage = data.result.results_remaining > 0;
         start_at_match_id = data.result.matches.slice(-1)?.[0]?.match_id - 1;
