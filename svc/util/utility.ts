@@ -55,7 +55,7 @@ export const SteamAPIUrls = {
         ? `&matches_requested=${payload.matches_requested}`
         : ''
     }${payload.hero_id ? `&hero_id=${payload.hero_id}` : ''}${
-      payload.leagueid ? `&league_id=${payload.leagueid}` : ''
+      payload.leagueid != null ? `&league_id=${payload.leagueid}` : ''
     }${
       payload.start_at_match_id
         ? `&start_at_match_id=${payload.start_at_match_id}`
