@@ -44,7 +44,7 @@ export async function reconcileMatch(rows: HistoryType[]) {
     return;
   }
   // Update the league to match index (if available)
-  if ('leagueid' in match) {
+  if ('leagueid' in match && match.leagueid) {
     await db.raw('INSERT INTO league_match(leagueid, match_id) VALUES(?, ?) ON CONFLICT DO NOTHING', [match.leagueid, match.match_id]);
   }
   const pgroup = getPGroup(match);

@@ -629,7 +629,7 @@ export async function insertMatch(
   const pgroup = options.pgroup ?? getPGroup(match as ApiMatch);
 
   let isProTier = false;
-  if ('leagueid' in match) {
+  if ('leagueid' in match && match.leagueid) {
     // Check if leagueid is premium/professional
     const { rows } = await db.raw(
       `select leagueid from leagues where leagueid = ? and (tier = 'premium' OR tier = 'professional')`,
@@ -639,7 +639,7 @@ export async function insertMatch(
   }
 
   // Index the matchid to the league
-  if (options.origin === 'scanner' && options.type === 'api' && 'leagueid' in match) {
+  if (options.origin === 'scanner' && options.type === 'api' && 'leagueid' in match && match.leagueid) {
     await db.raw('INSERT INTO league_match(leagueid, match_id) VALUES(?, ?) ON CONFLICT DO NOTHING', [match.leagueid, match.match_id]);
   }
 
