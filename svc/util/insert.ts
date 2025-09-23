@@ -451,7 +451,7 @@ export async function insertMatch(
         updateRecords(match as ApiMatch),
         updateLastPlayed(match as ApiMatch),
         updateHeroSearch(match as ApiMatch),
-        updateHeroCounts(match as ApiMatch),
+        updateHeroCounts(match as ApiMatch, isProTier),
         updateMatchCounts(match as ApiMatch),
         updateBenchmarks(match as ApiMatch),
       ]);
@@ -631,16 +631,14 @@ export async function insertMatch(
   let isProTier = false;
   if ('leagueid' in match) {
     // Check if leagueid is premium/professional
-    const result = match.leagueid
-      ? await db.raw(
-          `select leagueid from leagues where leagueid = ? and (tier = 'premium' OR tier = 'professional')`,
-          [match.leagueid],
-        )
-      : null;
-    isProTier = result?.rows?.length > 0;
-    // Index the matchid to the league
+    const { rows } = await db.raw(
+      `select leagueid from leagues where leagueid = ? and (tier = 'premium' OR tier = 'professional')`,
+      [Number(match.leagueid)],
+    );
+    isProTier = rows?.length > 0;
   }
 
+  // Index the matchid to the league
   if (options.origin === 'scanner' && options.type === 'api' && 'leagueid' in match) {
     await db.raw('INSERT INTO league_match(leagueid, match_id) VALUES(?, ?) ON CONFLICT DO NOTHING', [match.match_id, match.leagueid]);
   }
@@ -928,7 +926,7 @@ async function updateHeroSearch(match: ApiMatch) {
   );
 }
 
-async function updateHeroCounts(match: ApiMatch) {
+async function updateHeroCounts(match: ApiMatch, isProTier: boolean) {
   // If match has leagueid, update pro picks and wins
   // If turbo, update picks and wins
   // Otherwise, update pub picks and wins if significant
@@ -936,7 +934,7 @@ async function updateHeroCounts(match: ApiMatch) {
   // If pub and we have a rank tier, also update the 1-8 rank pick/win
   let tier: string | null = null;
   let rank: number | null = null;
-  if (match.leagueid) {
+  if (isProTier) {
     tier = 'pro';
   } else if (match.game_mode === 23) {
     tier = 'turbo';
@@ -978,7 +976,7 @@ async function updateHeroCounts(match: ApiMatch) {
     }
   }
   // Do bans for pro
-  if (match.leagueid) {
+  if (isProTier) {
     match.picks_bans?.forEach((pb) => {
       if (pb.is_pick === false) {
         const heroId = pb.hero_id;
