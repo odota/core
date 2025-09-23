@@ -9,7 +9,7 @@ import {
   redisCount,
   redisCountDistinct,
 } from './utility.ts';
-import { gzipSync, gunzipSync } from 'zlib';
+import { zstdCompressSync, zstdDecompressSync } from 'zlib';
 import { cacheableCols } from '../api/playerFields.ts';
 import { promises as fs } from 'fs';
 import { playerArchive } from '../store/archive.ts';
@@ -156,8 +156,8 @@ async function readPlayerTemp(
   if (result) {
     redisCount('player_temp_hit');
     redisCountDistinct('distinct_player_temp', accountId.toString());
-    const zip = gunzipSync(result).toString();
-    const output = JSON.parse(zip);
+    const decomp = zstdDecompressSync(result).toString();
+    const output = JSON.parse(decomp);
     // Remove columns not asked for
     return output.map((m: any) => pick(m, project));
   } else {
@@ -201,11 +201,11 @@ export async function populateTemp(
   const all = await readPlayerCaches(accountId, Array.from(cacheableCols));
   if (all.length >= Number(config.PLAYER_CACHE_THRESHOLD)) {
     try {
-      const zip = gzipSync(JSON.stringify(all));
+      const comp = zstdCompressSync(JSON.stringify(all));
       redisCount('player_temp_write');
-      redisCount('player_temp_write_bytes', zip.length);
+      redisCount('player_temp_write_bytes', comp.length);
       await fs.mkdir('./cache', { recursive: true });
-      await fs.writeFile('./cache/' + accountId, zip);
+      await fs.writeFile('./cache/' + accountId, comp);
     } catch (e) {
       console.log(e);
       // We can ignore temp write exceptions
