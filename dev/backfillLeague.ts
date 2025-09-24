@@ -6,7 +6,7 @@ import db from '../svc/store/db.ts';
 import { getSteamAPIDataWithRetry, SteamAPIUrls } from '../svc/util/utility.ts';
 
 // Backfill from steam API
-let { rows } = await db.raw('select leagueid from leagues WHERE leagueid > 4875 ORDER by leagueid ASC');
+let { rows } = await db.raw('select leagueid from leagues WHERE leagueid > 0 ORDER by leagueid ASC');
 for (let i = 0; i < rows.length; i++) {
     const leagueid = rows[i].leagueid;
     // Get a page of matches
