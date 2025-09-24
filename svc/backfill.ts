@@ -57,6 +57,7 @@ runInLoop(async function backfill() {
         const result = await blobArchive.archivePut(
           match.match_id + '_api',
           Buffer.from(JSON.stringify(match)),
+          true,
         );
         if (!result) {
           throw new Error('failed to insert match ' + match.match_id);

@@ -11,6 +11,7 @@ import {
 } from '@aws-sdk/client-s3';
 import { redisCount } from '../util/utility.ts';
 import axios from 'axios';
+import redis from './redis.ts';
 
 async function stream2buffer(stream: any): Promise<Buffer> {
   return new Promise((resolve, reject) => {
@@ -21,16 +22,19 @@ async function stream2buffer(stream: any): Promise<Buffer> {
   });
 }
 
+type ArchiveType = 'match' | 'player' | 'blob';
 class Archive {
   private endpoint: string = '';
   private accessKeyId: string = '';
   private secretAccessKey: string = '';
   private bucket: string = '';
   private client: S3Client | null = null;
-  constructor(type: 'match' | 'player' | 'blob') {
+  private type: ArchiveType | null = null;
+  constructor(type: ArchiveType) {
     this.endpoint = config.ARCHIVE_S3_ENDPOINT;
     this.accessKeyId = config.ARCHIVE_S3_KEY_ID;
     this.secretAccessKey = config.ARCHIVE_S3_KEY_SECRET;
+    this.type = type;
     if (type === 'match') {
       this.bucket = config.MATCH_ARCHIVE_S3_BUCKET;
     } else if (type === 'player') {
@@ -54,6 +58,13 @@ class Archive {
   }
 
   public archiveGet = async (key: string) => {
+    if (this.type === 'blob') {
+      const cache = await redis?.get(`cache:${key}`);
+      if (cache) {
+        redisCount(`cache_${key.split('_')[1]}_hit` as MetricName);
+        return JSON.parse(cache);
+      }
+    }
     let buffer: Buffer | undefined;
     if (config.ARCHIVE_PUBLIC_URL) {
       // if the bucket is public, we can read via http request rather than using the s3 client
@@ -116,6 +127,7 @@ class Archive {
   public archivePut = async (
     key: string,
     blob: Buffer,
+    noCache = false,
   ): Promise<PutObjectCommandOutput | null> => {
     if (!this.client) {
       return null;
@@ -139,6 +151,10 @@ class Archive {
       const command = new PutObjectCommand(options);
       const result = await this.client.send(command);
       redisCount('archive_write_bytes', zip.length);
+      if (this.type === 'blob' && !noCache) {
+        // Cache the data for some time (could cache compressed blob for storage improvement?)
+        await redis?.setex(`cache:${key}`, 3600, blob);
+      }
       if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
         console.log(
           '[ARCHIVE] %s: original %s bytes, archived %s bytes',

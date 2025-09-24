@@ -15,16 +15,8 @@ export class GcdataFetcher extends MatchFetcher<GcMatch> {
   useSavedData = Boolean(config.DISABLE_REGCDATA);
   getData = async (matchId: number): Promise<GcMatch | null> => {
     let data = null;
-    // Read the memory cache to see if it's there
-    const cache = await redis.get('cache_gcdata:' + matchId);
-    if (cache) {
-      data = JSON.parse(cache);
-    }
-    // Read from blob archive
-    if (!data) {
-      const archive = await blobArchive.archiveGet(`${matchId}_gcdata`);
-      data = archive ? (JSON.parse(archive.toString()) as GcMatch) : null;
-    }
+    const archive = await blobArchive.archiveGet(`${matchId}_gcdata`);
+    data = archive ? (JSON.parse(archive.toString()) as GcMatch) : null;
     // Verify data integrity
     if (
       data?.match_id == null ||

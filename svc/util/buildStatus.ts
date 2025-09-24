@@ -143,6 +143,9 @@ export async function buildStatus() {
         // self_player_matches_last_day: async () => countDay('self_profile_view'),
 
         match_archive_read_last_day: async () => countDay('match_archive_read'),
+        cache_api_hit_last_day: async () => countDay('cache_api_hit'),
+        cache_gcdata_hit_last_day: async () => countDay('cache_gcdata_hit'),
+        cache_parsed_hit_last_day: async () => countDay('cache_parsed_hit'),
         archive_hit_last_day: async () => countDay('archive_hit'),
         archive_miss_last_day: async () => countDay('archive_miss'),
         archive_read_bytes_last_day: async () => countDay('archive_read_bytes'),
