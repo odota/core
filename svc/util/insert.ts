@@ -145,6 +145,57 @@ export async function insertMatch(
   origMatch: Readonly<InsertMatchInput>,
   options: InsertMatchOptions,
 ) {
+  // Make a copy of the match with some modifications (only applicable to api matches)
+  const match = transformMatch(origMatch);
+  // Use the passed pgroup if gcdata or parsed, otherwise build it
+  // Do this after removing anonymous account IDs
+  const pgroup = options.pgroup ?? getPGroup(match as ApiMatch);
+
+  let isProTier = false;
+  if ('leagueid' in match && match.leagueid) {
+    // Check if leagueid is premium/professional
+    const { rows } = await db.raw(
+      `select leagueid from leagues where leagueid = ? and (tier = 'premium' OR tier = 'professional')`,
+      [Number(match.leagueid)],
+    );
+    isProTier = rows?.length > 0;
+  }
+
+  // Index the matchid to the league
+  if (options.origin === 'scanner' && options.type === 'api' && 'leagueid' in match && match.leagueid) {
+    await db.raw('INSERT INTO league_match(leagueid, match_id) VALUES(?, ?) ON CONFLICT DO NOTHING', [match.leagueid, match.match_id]);
+  }
+
+  let average_rank: number | undefined = undefined;
+  // Only fetch the average_rank if this is a fresh match since otherwise it won't be accurate
+  if (options.origin === 'scanner' && options.type === 'api') {
+    const { avg, players } = await getMatchRankTier(match.players);
+    if (avg) {
+      average_rank = avg;
+    }
+    // average_rank should be stored in a new blob column too since it's not part of API data
+    // We could also store the ranks of the players here rather than looking up their current rank on view
+    // That's probably better anyway since it's more accurate to show their rank at the time of the match
+    // let ranksBlob = { match_id: match.match_id, average_rank, players };
+    // await upsertBlob('ranks', ranksBlob);
+  }
+
+  await upsertMatchPostgres(match);
+  await upsertPlayerCaches(match, average_rank, pgroup, options.type);
+  await upsertMatchBlobs(match);
+  await resetMatchCache(match);
+  await resetPlayerTemp(match);
+  await telemetry(match);
+  await updateCounts(match);
+  await upsertPlayers(match);
+  await queueMmr(match);
+  await queueGcData(match);
+  await queueRate(match);
+  await queueScenarios(match);
+  await postParsedMatch(match);
+  const parseJob = await queueParse(match);
+  return { parseJob, pgroup };
+
   async function upsertMatchPostgres(match: InsertMatchInput) {
     if (options.type !== 'api' && options.type !== 'parsed') {
       // Only if API or parse data
@@ -592,86 +643,35 @@ export async function insertMatch(
       }),
     );
     let hasTrackedPlayer = trackedScores.filter(Boolean).length > 0;
-    const doParse = hasTrackedPlayer || isProTier;
-    if (!doParse) {
-      return null;
-    }
-    redisCount('auto_parse');
-    let priority = 5;
-    if (isProTier) {
-      priority = -1;
-    }
-    if (hasTrackedPlayer) {
-      priority = -2;
-    }
-    // We might have to retry since it might be too soon for the replay
-    let attempts = 50;
-    const job = await addReliableJob(
-      {
-        name: 'parse',
-        data: {
-          match_id: match.match_id,
-          origin: options.origin,
+    const doParse = hasTrackedPlayer || ('leagueid' in match && match.leagueid);
+    if (doParse) {
+      redisCount('auto_parse');
+      let priority = 5;
+      if (isProTier) {
+        priority = -1;
+      }
+      if (hasTrackedPlayer) {
+        priority = -2;
+      }
+      // We might have to retry since it might be too soon for the replay
+      let attempts = 50;
+      const job = await addReliableJob(
+        {
+          name: 'parse',
+          data: {
+            match_id: match.match_id,
+            origin: options.origin,
+          },
         },
-      },
-      {
-        priority,
-        attempts,
-      },
-    );
-    return job;
-  }
-
-  // Make a copy of the match with some modifications (only applicable to api matches)
-  const match = transformMatch(origMatch);
-  // Use the passed pgroup if gcdata or parsed, otherwise build it
-  // Do this after removing anonymous account IDs
-  const pgroup = options.pgroup ?? getPGroup(match as ApiMatch);
-
-  let isProTier = false;
-  if ('leagueid' in match && match.leagueid) {
-    // Check if leagueid is premium/professional
-    const { rows } = await db.raw(
-      `select leagueid from leagues where leagueid = ? and (tier = 'premium' OR tier = 'professional')`,
-      [Number(match.leagueid)],
-    );
-    isProTier = rows?.length > 0;
-  }
-
-  // Index the matchid to the league
-  if (options.origin === 'scanner' && options.type === 'api' && 'leagueid' in match && match.leagueid) {
-    await db.raw('INSERT INTO league_match(leagueid, match_id) VALUES(?, ?) ON CONFLICT DO NOTHING', [match.leagueid, match.match_id]);
-  }
-
-  let average_rank: number | undefined = undefined;
-  // Only fetch the average_rank if this is a fresh match since otherwise it won't be accurate
-  if (options.origin === 'scanner' && options.type === 'api') {
-    const { avg, players } = await getMatchRankTier(match.players);
-    if (avg) {
-      average_rank = avg;
+        {
+          priority,
+          attempts,
+        },
+      );
+      return job;
     }
-    // average_rank should be stored in a new blob column too since it's not part of API data
-    // We could also store the ranks of the players here rather than looking up their current rank on view
-    // That's probably better anyway since it's more accurate to show their rank at the time of the match
-    // let ranksBlob = { match_id: match.match_id, average_rank, players };
-    // await upsertBlob('ranks', ranksBlob);
+    return null;
   }
-
-  await upsertMatchPostgres(match);
-  await upsertPlayerCaches(match, average_rank, pgroup, options.type);
-  await upsertMatchBlobs(match);
-  await resetMatchCache(match);
-  await resetPlayerTemp(match);
-  await telemetry(match);
-  await updateCounts(match);
-  await upsertPlayers(match);
-  await queueMmr(match);
-  await queueGcData(match);
-  await queueRate(match);
-  await queueScenarios(match);
-  await postParsedMatch(match);
-  const parseJob = await queueParse(match);
-  return { parseJob, pgroup };
 }
 
 export async function upsertPlayerCaches(
