@@ -17,11 +17,13 @@ export async function queueReconcile(
         .filter((p) => !Boolean(pgroup[p.player_slot]?.account_id))
         .map(async (p) => {
           if (p.account_id) {
-            await db.raw(
-              'INSERT INTO player_match_history(account_id, match_id, player_slot) VALUES (?, ?, ?) ON CONFLICT DO NOTHING',
+            const { rows } = await db.raw(
+              'INSERT INTO player_match_history(account_id, match_id, player_slot) VALUES (?, ?, ?) ON CONFLICT DO NOTHING RETURNING *',
               [p.account_id, gcMatch.match_id, p.player_slot],
             );
-            await redisCount(metricName);
+            if (rows.length > 0) {
+              await redisCount(metricName);
+            }
           }
         }),
     );
