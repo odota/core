@@ -243,8 +243,6 @@ export async function buildMatch(
   // Save in cache
   if (
     matchResult &&
-    'version' in matchResult &&
-    matchResult.version &&
     config.ENABLE_MATCH_CACHE
   ) {
     await redis.setex(
