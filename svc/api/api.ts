@@ -16,17 +16,18 @@ api.use('/players/:account_id{/:info}', async (req, res, next) => {
   }
   let filterCols: (keyof ParsedPlayerMatch)[] = [];
   const filter = new Map<string, (string | number)[]>();
-  // Enable significance filter by default, disable it if 0 is passed
-  filter.set('significant', [1]);
+  const queryCopy = {...req.query};
   if (req.query.significant === '0') {
-    filter.delete('significant');
+    delete queryCopy.significant;
+  } else {
+    queryCopy.significant = '1';
   }
-  Object.keys(req.query).forEach((key) => {
+  Object.keys(queryCopy).forEach((key) => {
     // numberify and arrayify everything in query
     // leave it as a string if not a number
     filter.set(
       key,
-      queryParamToArray(req.query[key]).map((e) =>
+      queryParamToArray(queryCopy[key]).map((e) =>
         Number.isNaN(Number(e)) ? e : Number(e),
       ),
     );
