@@ -346,7 +346,7 @@ app.options('/keys', cors());
 app.use('/keys', keys);
 
 // Admin endpoints middleware
-app.use('/admin*', (req, res, next) => {
+app.use('/admin/*splat', (req, res, next) => {
   if (req.user && admins.includes(Number(req.user.account_id))) {
     return next();
   }
