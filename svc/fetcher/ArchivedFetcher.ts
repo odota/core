@@ -8,8 +8,8 @@ export class ArchivedFetcher extends MatchFetcher<ParsedMatch> {
   getData = async (matchId: number): Promise<ParsedMatch | null> => {
     // Check if the parsed data is archived
     // Most matches won't be in the archive so it's more efficient not to always try
-    const isArchived = await this.checkAvailable(matchId);
-    if (!isArchived) {
+    const isAvailable = await this.checkAvailable(matchId);
+    if (!isAvailable) {
       return null;
     }
     const blob = await matchArchive.archiveGet(matchId.toString());

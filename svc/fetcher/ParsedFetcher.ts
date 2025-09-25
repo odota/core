@@ -10,6 +10,10 @@ export class ParsedFetcher extends MatchFetcher<ParsedData> {
   savedDataMetricName: MetricName = 'reparse';
   useSavedData = Boolean(config.DISABLE_REPARSE);
   getData = async (matchId: number): Promise<ParsedData | null> => {
+    const isAvailable = await this.checkAvailable(matchId);
+    if (!isAvailable) {
+      return null;
+    }
     let data = null;
     const archive = await blobArchive.archiveGet(`${matchId}_parsed`);
     data = archive ? (JSON.parse(archive.toString()) as ParsedData) : null;
