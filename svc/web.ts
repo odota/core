@@ -61,14 +61,10 @@ passport.use(
       apiKey,
     },
     async (identifier: string, profile: any, cb: ErrorCb) => {
-      try {
-        const player = profile._json;
-        player.last_login = new Date();
-        await upsertPlayer(db, player, true);
-        cb(null, player);
-      } catch (e) {
-        cb(e);
-      }
+      const player = profile._json;
+      player.last_login = new Date();
+      await upsertPlayer(db, player, true);
+      cb(null, player);
     },
   ),
 );
@@ -201,88 +197,73 @@ app.get('/ip', (req, res) => {
 });
 
 app.post('/register/:service/:host', async (req, res, next) => {
-  try {
-    // check secret matches
-    if (config.RETRIEVER_SECRET && config.RETRIEVER_SECRET !== req.query.key) {
-      return res.status(403).end();
-    }
-    // zadd the given host and current time
-    if (req.params.service && req.params.host) {
-      const size = Number(req.query.size);
-      const now = Date.now();
-      const keys = [];
-      if (size) {
-        for (let i = 0; i < size; i++) {
-          keys.push(now);
-          keys.push(req.params.host + '?' + i);
-        }
-      } else {
-        keys.push(now);
-        keys.push(req.params.host);
-      }
-      const result = await redis.zadd(
-        `registry:${req.params.service}`,
-        ...keys,
-      );
-      return res.send(result.toString());
-    }
-    return res.end();
-  } catch (e) {
-    next(e);
+  // check secret matches
+  if (config.RETRIEVER_SECRET && config.RETRIEVER_SECRET !== req.query.key) {
+    return res.status(403).end();
   }
+  // zadd the given host and current time
+  if (req.params.service && req.params.host) {
+    const size = Number(req.query.size);
+    const now = Date.now();
+    const keys = [];
+    if (size) {
+      for (let i = 0; i < size; i++) {
+        keys.push(now);
+        keys.push(req.params.host + '?' + i);
+      }
+    } else {
+      keys.push(now);
+      keys.push(req.params.host);
+    }
+    const result = await redis.zadd(`registry:${req.params.service}`, ...keys);
+    return res.send(result.toString());
+  }
+  return res.end();
 });
 
 // Compress everything after this
 app.use(compression());
 
 app.get('/retrieverData', async (req, res, next) => {
-  try {
-    // check secret matches
-    if (config.RETRIEVER_SECRET && config.RETRIEVER_SECRET !== req.query.key) {
-      return res.status(403).end();
-    }
-    const accountCount = Number(req.query.count) || 5;
-    if ((await redis.scard('retrieverDataSet')) < accountCount) {
-      // Refill the set if running out of logins
-      const resp = await axios.get<string>(config.STEAM_ACCOUNT_DATA, {
-        responseType: 'text',
-      });
-      const accountData = resp.data.split(/\r\n|\r|\n/g);
-      // Store in redis set
-      for (let i = 0; i < accountData.length; i++) {
-        const accountName = accountData[i].split('\t')[0];
-        const reqs = Number(await redis.hget('retrieverSteamIDs', accountName));
-        const success = Number(
-          await redis.hget('retrieverSuccessSteamIDs', accountName),
-        );
-        const ratio = success / reqs;
-        const isLowRatio = reqs > 25 && ratio <= 0;
-        // Don't add high usage logons or high fail logons
-        if (reqs < 150) {
-          await redis.sadd('retrieverDataSet', accountData[i]);
-        }
+  // check secret matches
+  if (config.RETRIEVER_SECRET && config.RETRIEVER_SECRET !== req.query.key) {
+    return res.status(403).end();
+  }
+  const accountCount = Number(req.query.count) || 5;
+  if ((await redis.scard('retrieverDataSet')) < accountCount) {
+    // Refill the set if running out of logins
+    const resp = await axios.get<string>(config.STEAM_ACCOUNT_DATA, {
+      responseType: 'text',
+    });
+    const accountData = resp.data.split(/\r\n|\r|\n/g);
+    // Store in redis set
+    for (let i = 0; i < accountData.length; i++) {
+      const accountName = accountData[i].split('\t')[0];
+      const reqs = Number(await redis.hget('retrieverSteamIDs', accountName));
+      const success = Number(
+        await redis.hget('retrieverSuccessSteamIDs', accountName),
+      );
+      const ratio = success / reqs;
+      const isLowRatio = reqs > 25 && ratio <= 0;
+      // Don't add high usage logons or high fail logons
+      if (reqs < 150) {
+        await redis.sadd('retrieverDataSet', accountData[i]);
       }
     }
-    // Pop random elements
-    const pop = await redis.spop('retrieverDataSet', accountCount);
-    const logins = pop.map((login) => {
-      const accountName = login.split('\t')[0];
-      const password = login.split('\t')[1];
-      return { accountName, password };
-    });
-    return res.json(logins);
-  } catch (e) {
-    next(e);
   }
+  // Pop random elements
+  const pop = await redis.spop('retrieverDataSet', accountCount);
+  const logins = pop.map((login) => {
+    const accountName = login.split('\t')[0];
+    const password = login.split('\t')[1];
+    return { accountName, password };
+  });
+  return res.json(logins);
 });
 
 app.get('/status', async (req, res, next) => {
-  try {
-    const status = await buildStatus();
-    return res.json(status);
-  } catch (e) {
-    next(e);
-  }
+  const status = await buildStatus();
+  return res.json(status);
 });
 
 app.get(
@@ -319,54 +300,44 @@ app.get('/logout', (req, res) => {
 });
 
 app.get('/subscribeSuccess', async (req, res, next) => {
-  try {
-    if (!req.query.session_id) {
-      return res.status(400).json({ error: 'no session ID' });
-    }
-    if (!req.user?.account_id) {
-      return res.status(400).json({ error: 'no account ID' });
-    }
-    // look up the checkout session id: https://stripe.com/docs/payments/checkout/custom-success-page
-    const session = await stripe.checkout.sessions.retrieve(
-      req.query.session_id as string,
-    );
-    const customer = await stripe.customers.retrieve(
-      session.customer as string,
-    );
-    const accountId = Number(req.user.account_id);
-    // associate the customer id with the steam account ID (req.user.account_id)
-    await db.raw(
-      'INSERT INTO subscriber(account_id, customer_id, status) VALUES (?, ?, ?) ON CONFLICT(account_id) DO UPDATE SET account_id = EXCLUDED.account_id, customer_id = EXCLUDED.customer_id, status = EXCLUDED.status',
-      [accountId, customer.id, 'active'],
-    );
-    // Send the user back to the subscribe page
-    return res.redirect(`${config.UI_HOST}/subscribe`);
-  } catch (e) {
-    next(e);
+  if (!req.query.session_id) {
+    return res.status(400).json({ error: 'no session ID' });
   }
+  if (!req.user?.account_id) {
+    return res.status(400).json({ error: 'no account ID' });
+  }
+  // look up the checkout session id: https://stripe.com/docs/payments/checkout/custom-success-page
+  const session = await stripe.checkout.sessions.retrieve(
+    req.query.session_id as string,
+  );
+  const customer = await stripe.customers.retrieve(session.customer as string);
+  const accountId = Number(req.user.account_id);
+  // associate the customer id with the steam account ID (req.user.account_id)
+  await db.raw(
+    'INSERT INTO subscriber(account_id, customer_id, status) VALUES (?, ?, ?) ON CONFLICT(account_id) DO UPDATE SET account_id = EXCLUDED.account_id, customer_id = EXCLUDED.customer_id, status = EXCLUDED.status',
+    [accountId, customer.id, 'active'],
+  );
+  // Send the user back to the subscribe page
+  return res.redirect(`${config.UI_HOST}/subscribe`);
 });
 
 app.post('/manageSub', async (req, res, next) => {
-  try {
-    if (!req.user?.account_id) {
-      return res.status(400).json({ error: 'no account ID' });
-    }
-    const result = await db.raw(
-      "SELECT customer_id FROM subscriber where account_id = ? AND status = 'active'",
-      [Number(req.user.account_id)],
-    );
-    const customer = result?.rows?.[0];
-    if (!customer) {
-      return res.status(400).json({ error: 'customer not found' });
-    }
-    const session = await stripe.billingPortal.sessions.create({
-      customer: customer.customer_id,
-      return_url: req.body?.return_url,
-    });
-    return res.json(session);
-  } catch (e) {
-    next(e);
+  if (!req.user?.account_id) {
+    return res.status(400).json({ error: 'no account ID' });
   }
+  const result = await db.raw(
+    "SELECT customer_id FROM subscriber where account_id = ? AND status = 'active'",
+    [Number(req.user.account_id)],
+  );
+  const customer = result?.rows?.[0];
+  if (!customer) {
+    return res.status(400).json({ error: 'customer not found' });
+  }
+  const session = await stripe.billingPortal.sessions.create({
+    customer: customer.customer_id,
+    return_url: req.body?.return_url,
+  });
+  return res.json(session);
 });
 
 // CORS Preflight for API keys
@@ -384,71 +355,66 @@ app.use('/admin*', (req, res, next) => {
   });
 });
 app.get('/admin/retrieverMetrics', async (req, res, next) => {
-  try {
-    const idReqs = await redis.hgetall('retrieverSteamIDs');
-    const ipReqs = await redis.hgetall('retrieverIPs');
-    const idSuccess = await redis.hgetall('retrieverSuccessSteamIDs');
-    const ipSuccess = await redis.hgetall('retrieverSuccessIPs');
-    const steamids = Object.keys(idReqs)
-      .map((key) => {
-        return {
-          key,
-          reqs: Number(idReqs[key]) || 0,
-          success: Number(idSuccess[key]) || 0,
-        };
-      })
-      .sort((a, b) => b.reqs - a.reqs);
-    const ips = Object.keys(ipReqs)
-      .map((key) => {
-        return {
-          key,
-          reqs: Number(ipReqs[key]) || 0,
-          success: Number(ipSuccess[key]) || 0,
-        };
-      })
-      .sort((a, b) => b.reqs - a.reqs);
-    const registryKeys = await redis.zrange('registry:retriever', 0, -1);
-    const registry = ips.filter((ip) => registryKeys.includes(ip.key));
-    const isGce = (e: (typeof steamids)[number]) =>
-      e.key.startsWith('35.') || e.key.startsWith('34.');
-    return res.json({
-      countReqs: ips.map((e) => e.reqs).reduce((a, b) => a + b, 0),
-      gceReqs: ips
-        .filter((e) => isGce(e))
-        .map((e) => e.reqs)
-        .reduce((a, b) => a + b, 0),
-      nonGceReqs: ips
-        .filter((e) => !isGce(e))
-        .map((e) => e.reqs)
-        .reduce((a, b) => a + b, 0),
-      countSuccess: ips.map((e) => e.success).reduce((a, b) => a + b, 0),
-      gceSuccess: ips
-        .filter((e) => isGce(e))
-        .map((e) => e.success)
-        .reduce((a, b) => a + b, 0),
-      nonGceSuccess: ips
-        .filter((e) => !isGce(e))
-        .map((e) => e.success)
-        .reduce((a, b) => a + b, 0),
-      numIps: ips.length,
-      gceIps: ips.filter((e) => isGce(e)).length,
-      nonGceIps: ips.filter((e) => !isGce(e)).length,
-      numSteamIds: steamids.length,
-      registry,
-      ips,
-      steamids,
-    });
-  } catch (e) {
-    return next(e);
-  }
+  const idReqs = await redis.hgetall('retrieverSteamIDs');
+  const ipReqs = await redis.hgetall('retrieverIPs');
+  const idSuccess = await redis.hgetall('retrieverSuccessSteamIDs');
+  const ipSuccess = await redis.hgetall('retrieverSuccessIPs');
+  const steamids = Object.keys(idReqs)
+    .map((key) => {
+      return {
+        key,
+        reqs: Number(idReqs[key]) || 0,
+        success: Number(idSuccess[key]) || 0,
+      };
+    })
+    .sort((a, b) => b.reqs - a.reqs);
+  const ips = Object.keys(ipReqs)
+    .map((key) => {
+      return {
+        key,
+        reqs: Number(ipReqs[key]) || 0,
+        success: Number(ipSuccess[key]) || 0,
+      };
+    })
+    .sort((a, b) => b.reqs - a.reqs);
+  const registryKeys = await redis.zrange('registry:retriever', 0, -1);
+  const registry = ips.filter((ip) => registryKeys.includes(ip.key));
+  const isGce = (e: (typeof steamids)[number]) =>
+    e.key.startsWith('35.') || e.key.startsWith('34.');
+  return res.json({
+    countReqs: ips.map((e) => e.reqs).reduce((a, b) => a + b, 0),
+    gceReqs: ips
+      .filter((e) => isGce(e))
+      .map((e) => e.reqs)
+      .reduce((a, b) => a + b, 0),
+    nonGceReqs: ips
+      .filter((e) => !isGce(e))
+      .map((e) => e.reqs)
+      .reduce((a, b) => a + b, 0),
+    countSuccess: ips.map((e) => e.success).reduce((a, b) => a + b, 0),
+    gceSuccess: ips
+      .filter((e) => isGce(e))
+      .map((e) => e.success)
+      .reduce((a, b) => a + b, 0),
+    nonGceSuccess: ips
+      .filter((e) => !isGce(e))
+      .map((e) => e.success)
+      .reduce((a, b) => a + b, 0),
+    numIps: ips.length,
+    gceIps: ips.filter((e) => isGce(e)).length,
+    nonGceIps: ips.filter((e) => !isGce(e)).length,
+    numSteamIds: steamids.length,
+    registry,
+    ips,
+    steamids,
+  });
 });
 app.get('/admin/apiMetrics', async (req, res, next) => {
-  try {
-    const startTime = moment.utc().startOf('month').format('YYYY-MM-DD');
-    const endTime = moment.utc().endOf('month').format('YYYY-MM-DD');
-    const [topUsersKey, numUsersKey] = await Promise.all([
-      db.raw(
-        `
+  const startTime = moment.utc().startOf('month').format('YYYY-MM-DD');
+  const endTime = moment.utc().endOf('month').format('YYYY-MM-DD');
+  const [topUsersKey, numUsersKey] = await Promise.all([
+    db.raw(
+      `
     SELECT
         account_id,
         ARRAY_AGG(DISTINCT api_key) as api_keys,
@@ -469,10 +435,10 @@ app.get('/admin/apiMetrics', async (req, res, next) => {
     ORDER BY usage_count DESC
     LIMIT 10
     `,
-        [startTime, endTime],
-      ),
-      db.raw(
-        `
+      [startTime, endTime],
+    ),
+    db.raw(
+      `
     SELECT
         COUNT(DISTINCT account_id)
     FROM api_key_usage
@@ -480,111 +446,104 @@ app.get('/admin/apiMetrics', async (req, res, next) => {
         timestamp >= ?
         AND timestamp <= ?
     `,
-        [startTime, endTime],
-      ),
-    ]);
-    return res.json({
-      topUsersKey: topUsersKey.rows,
-      numUsersKey: numUsersKey.rows?.[0]?.count,
-    });
-  } catch (e) {
-    return next(e);
-  }
+      [startTime, endTime],
+    ),
+  ]);
+  return res.json({
+    topUsersKey: topUsersKey.rows,
+    numUsersKey: numUsersKey.rows?.[0]?.count,
+  });
 });
 
 // Rate limiter and API key middleware
 // Everything after this is rate limited
 app.use(async (req, res, next) => {
-  try {
-    const timeStart = Date.now();
-    res.once('finish', () => onResFinish(req, res, timeStart));
-    const apiKey =
+  const timeStart = Date.now();
+  res.once('finish', () => onResFinish(req, res, timeStart));
+  const apiKey =
+    (req.headers.authorization &&
+      req.headers.authorization.replace('Bearer ', '')) ||
+    (req.query.api_key as string);
+  if (
+    apiKey &&
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      apiKey,
+    )
+  ) {
+    return res.status(400).json({ error: 'Invalid API key format' });
+  }
+  if (config.ENABLE_API_LIMIT && apiKey) {
+    const { rows } = await db.raw(
+      'select api_key from api_keys where api_key = ? and is_canceled IS NOT TRUE',
+      [apiKey],
+    );
+    res.locals.isAPIRequest = Boolean(rows.length > 0);
+  }
+  const { ip } = req;
+  let rateLimit: number | string = '';
+  if (res.locals.isAPIRequest) {
+    const requestAPIKey =
       (req.headers.authorization &&
         req.headers.authorization.replace('Bearer ', '')) ||
-      (req.query.api_key as string);
-    if (
-      apiKey &&
-      !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-        apiKey,
-      )
-    ) {
-      return res.status(400).json({ error: 'Invalid API key format' });
-    }
-    if (config.ENABLE_API_LIMIT && apiKey) {
-      const { rows } = await db.raw(
-        'select api_key from api_keys where api_key = ? and is_canceled IS NOT TRUE',
-        [apiKey],
-      );
-      res.locals.isAPIRequest = Boolean(rows.length > 0);
-    }
-    const { ip } = req;
-    let rateLimit: number | string = '';
-    if (res.locals.isAPIRequest) {
-      const requestAPIKey =
-        (req.headers.authorization &&
-          req.headers.authorization.replace('Bearer ', '')) ||
-        req.query.api_key;
-      res.locals.usageIdentifier = requestAPIKey;
-      rateLimit = config.API_KEY_PER_MIN_LIMIT;
-      // console.log('[KEY] %s visit %s, ip %s', requestAPIKey, req.originalUrl, ip);
-    } else {
-      res.locals.usageIdentifier = ip;
-      rateLimit = config.NO_API_KEY_PER_MIN_LIMIT;
-      // console.log('[USER] %s visit %s, ip %s', req.user ? req.user.account_id : 'anonymous', req.originalUrl, ip);
-    }
-    if (
-      config.ENABLE_API_LIMIT &&
-      !unlimitedPaths.includes(req.originalUrl.split('?')[0])
-    ) {
-      let rateCost = 1;
-      if (req.method === 'POST' && req.route?.path === '/request/:match_id') {
-        rateCost = 10;
-      }
-      const command = redis.multi();
-      command
-        .hincrby('rate_limit', res.locals.usageIdentifier, rateCost)
-        .expireat('rate_limit', getStartOfBlockMinutes(1, 1));
-      command
-        .hincrby('daily_rate_limit', res.locals.usageIdentifier, rateCost)
-        .expireat('daily_rate_limit', getEndOfDay());
-      const resp = await command.exec();
-      const incrValue = resp?.[0]?.[1];
-      const dailyIncrValue = resp?.[2]?.[1];
-      if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
-        // console.log(resp);
-        console.log(
-          '[WEB] %s, minute: %s, day: %s',
-          req.originalUrl,
-          incrValue,
-          dailyIncrValue,
-        );
-      }
-      const remMinute = Number(rateLimit) - Number(incrValue);
-      const remDay = Number(config.API_FREE_LIMIT) - Number(dailyIncrValue);
-      res.set({
-        'X-Rate-Limit-Remaining-Minute': remMinute,
-        'X-IP-Address': ip,
-      });
-      if (!res.locals.isAPIRequest) {
-        res.set({
-          'X-Rate-Limit-Remaining-Day': remDay,
-        });
-      }
-      if (remMinute < 0) {
-        return res.status(429).json({
-          error: 'minute rate limit exceeded',
-        });
-      }
-      if (!res.locals.isAPIRequest && remDay < 0) {
-        return res.status(429).json({
-          error: 'daily api limit exceeded',
-        });
-      }
-    }
-    return next();
-  } catch (e) {
-    next(e);
+      req.query.api_key;
+    res.locals.usageIdentifier = requestAPIKey;
+    rateLimit = config.API_KEY_PER_MIN_LIMIT;
+    // console.log('[KEY] %s visit %s, ip %s', requestAPIKey, req.originalUrl, ip);
+  } else {
+    res.locals.usageIdentifier = ip;
+    rateLimit = config.NO_API_KEY_PER_MIN_LIMIT;
+    // console.log('[USER] %s visit %s, ip %s', req.user ? req.user.account_id : 'anonymous', req.originalUrl, ip);
   }
+  if (
+    config.ENABLE_API_LIMIT &&
+    !unlimitedPaths.includes(req.originalUrl.split('?')[0])
+  ) {
+    let rateCost = 1;
+    if (req.method === 'POST' && req.route?.path === '/request/:match_id') {
+      rateCost = 10;
+    }
+    const command = redis.multi();
+    command
+      .hincrby('rate_limit', res.locals.usageIdentifier, rateCost)
+      .expireat('rate_limit', getStartOfBlockMinutes(1, 1));
+    command
+      .hincrby('daily_rate_limit', res.locals.usageIdentifier, rateCost)
+      .expireat('daily_rate_limit', getEndOfDay());
+    const resp = await command.exec();
+    const incrValue = resp?.[0]?.[1];
+    const dailyIncrValue = resp?.[2]?.[1];
+    if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
+      // console.log(resp);
+      console.log(
+        '[WEB] %s, minute: %s, day: %s',
+        req.originalUrl,
+        incrValue,
+        dailyIncrValue,
+      );
+    }
+    const remMinute = Number(rateLimit) - Number(incrValue);
+    const remDay = Number(config.API_FREE_LIMIT) - Number(dailyIncrValue);
+    res.set({
+      'X-Rate-Limit-Remaining-Minute': remMinute,
+      'X-IP-Address': ip,
+    });
+    if (!res.locals.isAPIRequest) {
+      res.set({
+        'X-Rate-Limit-Remaining-Day': remDay,
+      });
+    }
+    if (remMinute < 0) {
+      return res.status(429).json({
+        error: 'minute rate limit exceeded',
+      });
+    }
+    if (!res.locals.isAPIRequest && remDay < 0) {
+      return res.status(429).json({
+        error: 'daily api limit exceeded',
+      });
+    }
+  }
+  return next();
 });
 
 // API data endpoints

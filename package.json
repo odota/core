@@ -44,7 +44,7 @@
     "cors": "^2.8.5",
     "dotaconstants": "^10.6.0",
     "dotenv": "^16.4.7",
-    "express": "^4.21.2",
+    "express": "^5.1.0",
     "http-proxy": "^1.18.1",
     "ioredis": "^5.4.2",
     "json-bigint": "^1.0.0",

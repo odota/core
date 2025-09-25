@@ -2096,7 +2096,10 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
     },
     '/leagues/{league_id}/matchIds': {
       get: {
-        operationId: generateOperationId('get', '/leagues/{league_id}/matchIds'),
+        operationId: generateOperationId(
+          'get',
+          '/leagues/{league_id}/matchIds',
+        ),
         summary: 'GET /leagues/{league_id}/matchIds',
         description: 'Get match IDs for a league (including amateur leagues)',
         tags: ['leagues'],

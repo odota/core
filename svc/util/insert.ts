@@ -162,8 +162,16 @@ export async function insertMatch(
   }
 
   // Index the matchid to the league
-  if (options.origin === 'scanner' && options.type === 'api' && 'leagueid' in match && match.leagueid) {
-    await db.raw('INSERT INTO league_match(leagueid, match_id) VALUES(?, ?) ON CONFLICT DO NOTHING', [match.leagueid, match.match_id]);
+  if (
+    options.origin === 'scanner' &&
+    options.type === 'api' &&
+    'leagueid' in match &&
+    match.leagueid
+  ) {
+    await db.raw(
+      'INSERT INTO league_match(leagueid, match_id) VALUES(?, ?) ON CONFLICT DO NOTHING',
+      [match.leagueid, match.match_id],
+    );
   }
 
   let average_rank: number | undefined = undefined;

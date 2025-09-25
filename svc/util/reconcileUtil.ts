@@ -47,7 +47,10 @@ export async function reconcileMatch(rows: HistoryType[]) {
   }
   // Update the league to match index (if available)
   if ('leagueid' in match && match.leagueid) {
-    await db.raw('INSERT INTO league_match(leagueid, match_id) VALUES(?, ?) ON CONFLICT DO NOTHING', [match.leagueid, match.match_id]);
+    await db.raw(
+      'INSERT INTO league_match(leagueid, match_id) VALUES(?, ?) ON CONFLICT DO NOTHING',
+      [match.leagueid, match.match_id],
+    );
   }
   const pgroup = getPGroup(match);
   // If reconciling after fullhistory, the pgroup won't contain account_id info. Add it.
