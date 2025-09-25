@@ -59,10 +59,10 @@ class Archive {
 
   public archiveGet = async (key: string) => {
     if (this.type === 'blob') {
-      const cache = await redis?.getBuffer(`cache4:${key}`);
+      const cache = await redis?.getBuffer(`cache5:${key}`);
       if (cache) {
         redisCount(`cache_${key.split('_')[1]}_hit` as MetricName);
-        return cache;
+        return gunzipSync(cache);
       }
     }
     let buffer: Buffer | undefined;
@@ -152,8 +152,8 @@ class Archive {
       const result = await this.client.send(command);
       redisCount('archive_write_bytes', zip.length);
       if (this.type === 'blob' && !noCache) {
-        // Cache the data for some time (could cache compressed blob for storage improvement?)
-        await redis?.setex(`cache4:${key}`, 3600, blob);
+        // Cache the data for some time
+        await redis?.setex(`cache5:${key}`, 3600, zip);
       }
       if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
         console.log(
