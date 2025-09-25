@@ -52,7 +52,7 @@ runInLoop(async function backfill() {
   // write to blobstore, process the blob using same function as insertMatch
   try {
     const insertResult = await Promise.all(
-      resp.map(async (origMatch: ApiMatch) => {
+      resp.map(async (origMatch: ApiData) => {
         const match = transformMatch(origMatch);
         const result = await blobArchive.archivePut(
           match.match_id + '_api',

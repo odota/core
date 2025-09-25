@@ -206,7 +206,7 @@ interface NeutralItemHistory {
 }
 
 // Data to pass to insertMatch from GC
-interface GcMatch {
+interface GcData {
   match_id: number;
   cluster: number;
   replay_salt: number;
@@ -223,7 +223,7 @@ interface GcPlayer {
   account_id?: number;
 }
 
-interface ParserMatch {
+interface ParsedData {
   match_id: number;
   // Needed to determine whether to insert pro match data
   leagueid: number;
@@ -289,7 +289,7 @@ type GcDataJob = {
   pgroup: PGroup;
 };
 
-type CountsJob = ApiMatch;
+type CountsJob = ApiData;
 type ScenariosJob = string;
 type CacheJob = string;
 
@@ -522,7 +522,7 @@ type ParseExtraData = {
   origin?: DataOrigin;
   pgroup: PGroup;
   url: string;
-  gcMatch: GcMatch;
+  gcMatch: GcData;
 };
 
 type HistoryType = {
@@ -531,8 +531,8 @@ type HistoryType = {
   player_slot: number;
 };
 
-type ApiMatchResponse = typeof import('./test/data/details_api.json');
-type ApiMatch = ApiMatchResponse['result'] & {
+type ApiDataResponse = typeof import('./test/data/details_api.json');
+type ApiData = ApiDataResponse['result'] & {
   picks_bans?: {
     hero_id: number;
     order: number;
@@ -541,10 +541,10 @@ type ApiMatch = ApiMatchResponse['result'] & {
   radiant_team_id?: number;
   dire_team_id?: number;
 };
-type ApiPlayer = ApiMatch['players'][number] & {
+type ApiDataPlayer = ApiData['players'][number] & {
   ability_upgrades_arr?: number[];
 };
-type InsertMatchInput = ApiMatch | GcMatch | ParserMatch;
+type InsertMatchInput = ApiData | GcData | ParsedData;
 
 type PeersCount = Record<
   string,

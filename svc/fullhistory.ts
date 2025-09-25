@@ -58,7 +58,7 @@ async function processFullHistory(job: FullHistoryJob) {
   // const heroArray = config.NODE_ENV === 'test' ? ['0'] : Object.keys(heroes);
   // const heroId = '0';
   // use steamapi via specific player history and specific hero id (up to 500 games per hero)
-  const matchesToProcess: Record<string, ApiMatch> = {};
+  const matchesToProcess: Record<string, ApiData> = {};
   let isMatchDataDisabled = null;
   // make a request for every possible hero
   const url = SteamAPIUrls.api_history({

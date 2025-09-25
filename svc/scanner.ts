@@ -62,7 +62,7 @@ runInLoop(async function scanApi() {
   console.log('[API] match_seq_num:%s, matches:%s', seqNum, resp.length);
   console.time('insert');
   await Promise.all(
-    resp.map(async (match: ApiMatch) => {
+    resp.map(async (match: ApiData) => {
       // Optionally throttle inserts to prevent overload
       if (match.match_id % 100 >= Number(config.SCANNER_PERCENT)) {
         return;

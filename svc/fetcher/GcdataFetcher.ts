@@ -10,13 +10,13 @@ import { blobArchive } from '../store/archive.ts';
 import { MatchFetcher } from './base.ts';
 import config from '../../config.ts';
 
-export class GcdataFetcher extends MatchFetcher<GcMatch> {
+export class GcdataFetcher extends MatchFetcher<GcData> {
   savedDataMetricName: MetricName = 'regcdata';
   useSavedData = Boolean(config.DISABLE_REGCDATA);
-  getData = async (matchId: number): Promise<GcMatch | null> => {
+  getData = async (matchId: number): Promise<GcData | null> => {
     let data = null;
     const archive = await blobArchive.archiveGet(`${matchId}_gcdata`);
-    data = archive ? (JSON.parse(archive.toString()) as GcMatch) : null;
+    data = archive ? (JSON.parse(archive.toString()) as GcData) : null;
     // Verify data integrity
     if (
       data?.match_id == null ||
@@ -103,7 +103,7 @@ export class GcdataFetcher extends MatchFetcher<GcMatch> {
         ).length,
       }),
     );
-    const matchToInsert: GcMatch = {
+    const matchToInsert: GcData = {
       match_id: matchId,
       players,
       series_id: data.match.series_id,

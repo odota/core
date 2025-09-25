@@ -4,17 +4,17 @@ import { redisCount } from './utility.ts';
 export async function getMatchBlob(
   matchId: number,
   fetchers: {
-    apiFetcher: MatchFetcher<ApiMatch>;
-    gcFetcher: MatchFetcher<GcMatch>;
-    parsedFetcher: MatchFetcher<ParserMatch>;
+    apiFetcher: MatchFetcher<ApiData>;
+    gcFetcher: MatchFetcher<GcData>;
+    parsedFetcher: MatchFetcher<ParsedData>;
     archivedFetcher: MatchFetcher<ParsedMatch> | null;
   },
 ): Promise<[Match | ParsedMatch | null, GetMatchDataMetadata | null]> {
   let { apiFetcher, gcFetcher, parsedFetcher, archivedFetcher } = fetchers;
   let [api, gcdata, parsed, archived]: [
-    ApiMatch | null,
-    GcMatch | null,
-    ParserMatch | null,
+    ApiData | null,
+    GcData | null,
+    ParsedData | null,
     ParsedMatch | null | undefined,
   ] = await Promise.all([
     apiFetcher.getData(matchId),

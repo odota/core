@@ -287,7 +287,7 @@ type LobbyType = keyof typeof lobby_type;
 /**
  * Determines if a match is significant for aggregation purposes
  * */
-export function isSignificant(match: Match | ApiMatch) {
+export function isSignificant(match: Match | ApiData) {
   return Boolean(
     game_mode[match.game_mode as unknown as GameMode]?.balanced &&
       lobby_type[match.lobby_type as unknown as LobbyType]?.balanced &&
@@ -302,7 +302,7 @@ export function isSignificant(match: Match | ApiMatch) {
 /**
  * Determines if a match is a pro match
  * */
-export function isProMatch(match: ApiMatch) {
+export function isProMatch(match: ApiData) {
   return Boolean(
     isSignificant(match) &&
       match.leagueid &&
@@ -959,7 +959,7 @@ export function transformMatch(
   return {
     ...origMatch,
     players: origMatch.players.map((p) => {
-      const newP = { ...p } as Partial<ApiPlayer>;
+      const newP = { ...p } as Partial<ApiDataPlayer>;
       if (newP.account_id === getAnonymousAccountId()) {
         // don't insert anonymous account id
         delete newP.account_id;

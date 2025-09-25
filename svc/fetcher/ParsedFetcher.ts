@@ -6,13 +6,13 @@ import axios from 'axios';
 import { MatchFetcher } from './base.ts';
 import config from '../../config.ts';
 
-export class ParsedFetcher extends MatchFetcher<ParserMatch> {
+export class ParsedFetcher extends MatchFetcher<ParsedData> {
   savedDataMetricName: MetricName = 'reparse';
   useSavedData = Boolean(config.DISABLE_REPARSE);
-  getData = async (matchId: number): Promise<ParserMatch | null> => {
+  getData = async (matchId: number): Promise<ParsedData | null> => {
     let data = null;
     const archive = await blobArchive.archiveGet(`${matchId}_parsed`);
-    data = archive ? (JSON.parse(archive.toString()) as ParserMatch) : null;
+    data = archive ? (JSON.parse(archive.toString()) as ParsedData) : null;
     return data;
   };
   fetchData = async (
@@ -36,11 +36,11 @@ export class ParsedFetcher extends MatchFetcher<ParserMatch> {
     // process: 3278ms (node processors/createParsedDataBlob.mjs < output.log)
     const parseUrl = await getRandomParserUrl(`/blob?replay_url=${url}`);
     console.log('[PARSER]', parseUrl);
-    const resp = await axios.get<ParserMatch>(parseUrl, { timeout: 150000 });
+    const resp = await axios.get<ParsedData>(parseUrl, { timeout: 150000 });
     if (!resp.data) {
       return { data: null, error: 'Parse failed' };
     }
-    const result: ParserMatch = {
+    const result: ParsedData = {
       ...resp.data,
       match_id: matchId,
       leagueid,

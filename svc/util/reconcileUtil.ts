@@ -6,7 +6,7 @@ import { getPGroup } from './pgroup.ts';
 import { redisCount } from './utility.ts';
 
 export async function queueReconcile(
-  gcMatch: GcMatch | null,
+  gcMatch: GcData | null,
   pgroup: PGroup,
   metricName: MetricName,
 ) {

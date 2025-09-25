@@ -149,7 +149,7 @@ export async function insertMatch(
   const match = transformMatch(origMatch);
   // Use the passed pgroup if gcdata or parsed, otherwise build it
   // Do this after removing anonymous account IDs
-  const pgroup = options.pgroup ?? getPGroup(match as ApiMatch);
+  const pgroup = options.pgroup ?? getPGroup(match as ApiData);
 
   let isProTier = false;
   if ('leagueid' in match && match.leagueid) {
@@ -209,7 +209,7 @@ export async function insertMatch(
       // Only if API or parse data
       return;
     }
-    if (options.type === 'api' && !isProMatch(match as ApiMatch)) {
+    if (options.type === 'api' && !isProMatch(match as ApiData)) {
       // Check whether we care about this match for pro purposes
       // We need the basic match data to run the check, so only do it if type is api
       // console.log('[UPSERTMATCHPOSTGRES]: skipping due to check');
@@ -505,14 +505,14 @@ export async function insertMatch(
     // Update temporary match counts/hero rankings
     if (options.origin === 'scanner' && options.type === 'api') {
       await Promise.all([
-        updateHeroRankings(match as ApiMatch),
-        upsertMatchSample(match as ApiMatch),
-        updateRecords(match as ApiMatch),
-        updateLastPlayed(match as ApiMatch),
-        updateHeroSearch(match as ApiMatch),
-        updateHeroCounts(match as ApiMatch, isProTier),
-        updateMatchCounts(match as ApiMatch),
-        updateBenchmarks(match as ApiMatch),
+        updateHeroRankings(match as ApiData),
+        upsertMatchSample(match as ApiData),
+        updateRecords(match as ApiData),
+        updateLastPlayed(match as ApiData),
+        updateHeroSearch(match as ApiData),
+        updateHeroCounts(match as ApiData, isProTier),
+        updateMatchCounts(match as ApiData),
+        updateBenchmarks(match as ApiData),
       ]);
     }
   }
@@ -537,7 +537,7 @@ export async function insertMatch(
   }
   async function queueMmr(match: InsertMatchInput) {
     // Trigger an update for player rank_tier if ranked match
-    const arr = match.players.filter<ApiPlayer>((p): p is ApiPlayer => {
+    const arr = match.players.filter<ApiDataPlayer>((p): p is ApiDataPlayer => {
       return Boolean(
         options.origin === 'scanner' &&
           options.type === 'api' &&
@@ -762,7 +762,7 @@ export async function upsertPlayerCaches(
   );
 }
 
-async function updateHeroRankings(match: ApiMatch) {
+async function updateHeroRankings(match: ApiData) {
   if (!isSignificant(match)) {
     return;
   }
@@ -802,7 +802,7 @@ async function updateHeroRankings(match: ApiMatch) {
   );
 }
 
-async function upsertMatchSample(match: ApiMatch) {
+async function upsertMatchSample(match: ApiData) {
   if (
     isSignificant(match) &&
     match.match_id % 100 < Number(config.PUBLIC_SAMPLE_PERCENT)
@@ -829,14 +829,14 @@ async function upsertMatchSample(match: ApiMatch) {
   }
 }
 async function updateRecord(
-  field: keyof ApiMatch | keyof ApiPlayer,
-  match: ApiMatch,
-  player: ApiPlayer,
+  field: keyof ApiData | keyof ApiDataPlayer,
+  match: ApiData,
+  player: ApiDataPlayer,
 ) {
   redis.zadd(
     `records:${field}`,
-    (match[field as keyof ApiMatch] ||
-      player[field as keyof ApiPlayer]) as number,
+    (match[field as keyof ApiData] ||
+      player[field as keyof ApiDataPlayer]) as number,
     [match.match_id, match.start_time, player.hero_id].join(':'),
   );
   // Keep only 100 top scores
@@ -844,9 +844,9 @@ async function updateRecord(
   const expire = moment.utc().add(1, 'month').startOf('month').format('X');
   redis.expireat(`records:${field}`, expire);
 }
-async function updateRecords(match: ApiMatch) {
+async function updateRecords(match: ApiData) {
   if (isSignificant(match) && match.lobby_type === 7) {
-    updateRecord('duration', match, {} as ApiPlayer);
+    updateRecord('duration', match, {} as ApiDataPlayer);
     match.players.forEach((player) => {
       updateRecord('kills', match, player);
       updateRecord('deaths', match, player);
@@ -861,7 +861,7 @@ async function updateRecords(match: ApiMatch) {
     });
   }
 }
-async function updateLastPlayed(match: ApiMatch) {
+async function updateLastPlayed(match: ApiData) {
   const filteredPlayers = match.players.filter(
     (player) =>
       player.account_id && player.account_id !== getAnonymousAccountId(),
@@ -902,7 +902,7 @@ async function updateLastPlayed(match: ApiMatch) {
 /**
  * Update table storing heroes played in a game for lookup of games by heroes played
  * */
-async function updateHeroSearch(match: ApiMatch) {
+async function updateHeroSearch(match: ApiData) {
   const radiant = [];
   const dire = [];
   for (let i = 0; i < match.players.length; i += 1) {
@@ -934,7 +934,7 @@ async function updateHeroSearch(match: ApiMatch) {
   );
 }
 
-async function updateHeroCounts(match: ApiMatch, isProTier: boolean) {
+async function updateHeroCounts(match: ApiData, isProTier: boolean) {
   // If match has leagueid, update pro picks and wins
   // If turbo, update picks and wins
   // Otherwise, update pub picks and wins if significant
@@ -996,13 +996,13 @@ async function updateHeroCounts(match: ApiMatch, isProTier: boolean) {
   }
 }
 
-async function updateMatchCounts(match: ApiMatch) {
+async function updateMatchCounts(match: ApiData) {
   await redisCount(`${match.game_mode}_game_mode` as MetricName);
   await redisCount(`${match.lobby_type}_lobby_type` as MetricName);
   await redisCount(`${match.cluster}_cluster` as MetricName);
 }
 
-async function updateBenchmarks(match: ApiMatch) {
+async function updateBenchmarks(match: ApiData) {
   if (
     match.match_id % 100 < Number(config.BENCHMARKS_SAMPLE_PERCENT) &&
     isSignificant(match)

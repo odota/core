@@ -9,12 +9,12 @@ import { insertMatch } from '../util/insert.ts';
 import { config } from '../../config.ts';
 import db from '../store/db.ts';
 
-export class ApiFetcher extends MatchFetcher<ApiMatch> {
+export class ApiFetcher extends MatchFetcher<ApiData> {
   useSavedData = Boolean(config.DISABLE_REAPI);
-  getData = async (matchId: number): Promise<ApiMatch | null> => {
+  getData = async (matchId: number): Promise<ApiData | null> => {
     let data = null;
     const archive = await blobArchive.archiveGet(`${matchId}_api`);
-    data = archive ? (JSON.parse(archive.toString()) as ApiMatch) : null;
+    data = archive ? (JSON.parse(archive.toString()) as ApiData) : null;
     return data;
   };
   fetchData = async (
@@ -96,7 +96,7 @@ export class ApiFetcher extends MatchFetcher<ApiMatch> {
       url,
     });
     const match = body.result.matches.find(
-      (m: ApiMatch) => m.match_id === matchId,
+      (m: ApiData) => m.match_id === matchId,
     );
     if (!match) {
       redisCount('backfill_fail');
