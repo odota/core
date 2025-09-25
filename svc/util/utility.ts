@@ -939,10 +939,9 @@ export function pick(obj: any, keys: string[]) {
 
 export function queryParamToArray(
   input:
-    | string
-    | string[]
-    | QueryString.ParsedQs
-    | QueryString.ParsedQs[]
+    | string 
+    | QueryString.ParsedQs 
+    | (string | QueryString.ParsedQs)[]
     | undefined,
 ): string[] {
   if (Array.isArray(input)) {

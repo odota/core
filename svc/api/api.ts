@@ -10,7 +10,7 @@ import redis from '../store/redis.ts';
 //@ts-expect-error
 const api: Router = new Router();
 // Player endpoints middleware
-api.use('/players/:account_id/{:info}', async (req, res, next) => {
+api.use('/players/:account_id{/:info}', async (req, res, next) => {
   if (!Number.isInteger(Number(req.params.account_id))) {
     return res.status(400).json({ error: 'invalid account id' });
   }
@@ -75,7 +75,7 @@ api.use('/players/:account_id/{:info}', async (req, res, next) => {
   await redis.zremrangebyrank('visitedIds', '0', '-50001');
   return next();
 });
-api.use('/teams/:team_id/{:info}', (req, res, next) => {
+api.use('/teams/:team_id{/:info}', (req, res, next) => {
   if (!Number.isInteger(Number(req.params.team_id))) {
     return res.status(400).json({ error: 'invalid team id' });
   }
