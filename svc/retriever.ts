@@ -85,7 +85,7 @@ app.get('/stats', (req, res, next) => {
 });
 app.use((req, res, next) => {
   console.log(
-    'numReady: %s, matches: %s/%s, profiles: %s/%s, uptime: %s, matchRequestDelay: %s, query: %s',
+    'numReady: %s, matches: %s/%s, profiles: %s/%s, uptime: %s, matchRequestDelay: %s',
     Object.keys(steamObj).length,
     matchSuccesses,
     matchRequests,
@@ -93,7 +93,6 @@ app.use((req, res, next) => {
     profileRequests,
     getUptime(),
     matchRequestInterval,
-    req.query,
   );
   if (config.RETRIEVER_SECRET && config.RETRIEVER_SECRET !== req.query.key) {
     // reject request if it doesn't have key
