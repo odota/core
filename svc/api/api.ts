@@ -14,14 +14,13 @@ api.use('/players/:account_id{/:info}', async (req, res, next) => {
   if (!Number.isInteger(Number(req.params.account_id))) {
     return res.status(400).json({ error: 'invalid account id' });
   }
-  // Enable significance filter by default, disable it if 0 is passed
-  if (req.query.significant === '0') {
-    delete req.query.significant;
-  } else {
-    req.query.significant = '1';
-  }
   let filterCols: (keyof ParsedPlayerMatch)[] = [];
   const filter = new Map<string, (string | number)[]>();
+  // Enable significance filter by default, disable it if 0 is passed
+  filter.set('significant', [1]);
+  if (req.query.significant === '0') {
+    filter.delete('significant');
+  }
   Object.keys(req.query).forEach((key) => {
     // numberify and arrayify everything in query
     // leave it as a string if not a number
