@@ -1465,7 +1465,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
             },
           },
         },
-        route: () => '/health/:metric?',
+        route: () => '/health/{:metric}',
         func: async (req, res, next) => {
           const result = await redis.get('health:v2');
           if (!result) {
@@ -2652,7 +2652,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
             },
           },
         },
-        route: () => '/constants/:resource?',
+        route: () => '/constants/{:resource}',
         func: async (req, res, next) => {
           const { resource } = req.params;
           const resp = constants[resource as keyof typeof constants];
