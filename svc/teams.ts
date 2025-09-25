@@ -4,6 +4,7 @@ import db from './store/db.ts';
 import { upsert } from './util/insert.ts';
 import {
   SteamAPIUrls,
+  getSteamAPIData,
   getSteamAPIDataWithRetry,
   runInLoop,
 } from './util/utility.ts';
@@ -68,7 +69,8 @@ runInLoop(
           const ugcUrl = SteamAPIUrls.api_get_ugc_file_details({
             ugcid: logoUgc,
           });
-          const ugcBody = await getSteamAPIDataWithRetry({
+          // This may not exist for all teams so don't retry
+          const ugcBody = await getSteamAPIData({
             url: ugcUrl,
           });
           if (ugcBody && ugcBody.data) {
