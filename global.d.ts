@@ -1,5 +1,3 @@
-declare module 'simple-vdf';
-
 declare namespace Express {
   interface Locals {
     queryObj: QueryObj;
