@@ -153,7 +153,7 @@ class Archive {
       redisCount('archive_write_bytes', zip.length);
       if (this.type === 'blob' && !noCache) {
         // Cache the data for some time
-        await redis?.setex(`cache5:${key}`, 3600, zip);
+        await redis?.setex(`cache5:${key}`, config.BLOB_CACHE_SECONDS, zip);
       }
       if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
         console.log(

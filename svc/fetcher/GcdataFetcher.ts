@@ -112,8 +112,6 @@ export class GcdataFetcher extends MatchFetcher<GcData> {
       cluster: data.match.cluster,
       replay_salt: data.match.replay_salt,
     };
-    // Cache the gcdata temporarily
-    await redis.setex('cache_gcdata:' + matchId, 3600, JSON.stringify(matchToInsert));
 
     // Update series id and type for pro match
     await db.raw(
