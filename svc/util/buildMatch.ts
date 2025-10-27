@@ -241,10 +241,7 @@ export async function buildMatch(
   await addPlayerBenchmarks(matchResult);
 
   // Save in cache
-  if (
-    matchResult &&
-    config.ENABLE_MATCH_CACHE
-  ) {
+  if (matchResult && config.ENABLE_MATCH_CACHE) {
     await redis.setex(
       key,
       config.MATCH_CACHE_SECONDS,

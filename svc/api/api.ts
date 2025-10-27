@@ -16,7 +16,7 @@ api.use('/players/:account_id{/:info}', async (req, res, next) => {
   }
   let filterCols: (keyof ParsedPlayerMatch)[] = [];
   const filter = new Map<string, (string | number)[]>();
-  const queryCopy = {...req.query};
+  const queryCopy = { ...req.query };
   if (req.query.significant === '0') {
     delete queryCopy.significant;
   } else {

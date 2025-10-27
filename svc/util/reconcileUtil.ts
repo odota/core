@@ -73,14 +73,16 @@ export async function reconcileMatch(rows: HistoryType[]) {
     'reconcile',
   );
   if (result.every(Boolean)) {
+    const trx = await db.transaction();
     // Delete the rows since we successfully updated
     await Promise.all(
       rows.map(async (row) => {
-        return db.raw(
+        return trx.raw(
           'DELETE FROM player_match_history WHERE account_id = ? AND match_id = ?',
           [row.account_id, row.match_id],
         );
       }),
     );
+    await trx.commit();
   }
 }
