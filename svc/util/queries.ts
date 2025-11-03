@@ -379,6 +379,9 @@ export async function getMetadata(req: Request) {
       }
       return false;
     },
+    freeCallLimit: async () => Number(config.API_FREE_LIMIT),
+    freeRateLimit: async () => Number(config.NO_API_KEY_PER_MIN_LIMIT),
+    premRateLimit: async () => Number(config.API_KEY_PER_MIN_LIMIT),
   };
   // A bit convoluted to support proper typing and parallel, but testing this out
   return parallelPromise<{
