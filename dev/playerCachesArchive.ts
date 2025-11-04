@@ -1,4 +1,4 @@
-import fs from 'fs';
+import fs from 'node:fs';
 const { getPlayerMatchesWithMetadata } = await import(
   '../svc/util/buildPlayer.ts'
 );

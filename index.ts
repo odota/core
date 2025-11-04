@@ -1,8 +1,8 @@
 /**
  * Entry point for the application.
  * */
-import cp from 'child_process';
-import fs from 'fs';
+import cp from 'node:child_process';
+import fs from 'node:fs';
 
 async function start() {
   if (process.env.PROVIDER === 'gce' && !fs.existsSync('/usr/src/.env')) {

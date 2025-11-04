@@ -7,7 +7,7 @@ import {
   getApiHosts,
   runInLoop,
 } from './util/utility.ts';
-import fs from 'fs';
+import fs from 'node:fs';
 import redis from './store/redis.ts';
 
 // following need to be set

@@ -1,5 +1,5 @@
 // Processes a queue of full history/refresh requests for players
-import urllib from 'url';
+import urllib from 'node:url';
 import config from '../config.ts';
 import {
   redisCount,

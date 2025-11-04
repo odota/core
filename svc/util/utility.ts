@@ -1,6 +1,6 @@
 import type { AxiosRequestConfig } from 'axios';
 import { game_mode, lobby_type, patch } from 'dotaconstants';
-import urllib from 'url';
+import urllib from 'node:url';
 import moment from 'moment';
 import laneMappings from './laneMappings.ts';
 import config from '../../config.ts';

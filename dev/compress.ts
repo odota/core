@@ -1,10 +1,10 @@
-import fs from 'fs';
+import fs from 'node:fs';
 import {
   gzipSync,
   gunzipSync,
   zstdCompressSync,
   zstdDecompressSync,
-} from 'zlib';
+} from 'node:zlib';
 
 const file = fs.readFileSync('./json/b2_download_file_by_id');
 

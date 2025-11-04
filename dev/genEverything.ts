@@ -1,4 +1,4 @@
-import fs from 'fs';
+import fs from 'node:fs';
 
 const lines: string[] = [];
 fs.readdirSync('./svc').forEach((f) => {

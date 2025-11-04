@@ -1,5 +1,5 @@
 import axios from 'axios';
-import fs from 'fs';
+import fs from 'node:fs';
 
 // Fetch protos from https://github.com/SteamDatabase/GameTracking-Dota2/blob/master/Protobufs/dota_match_metadata.proto
 await updateProtos();

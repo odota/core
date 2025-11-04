@@ -3,7 +3,7 @@ import type {
   PutObjectCommandOutput,
 } from '@aws-sdk/client-s3';
 import config from '../../config.ts';
-import { gzipSync, gunzipSync } from 'zlib';
+import { gzipSync, gunzipSync } from 'node:zlib';
 import {
   S3Client,
   PutObjectCommand,

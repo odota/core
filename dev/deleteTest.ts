@@ -1,4 +1,4 @@
-import { promises as fs } from 'fs';
+import fs from 'node:fs/promises';
 
 async function start() {
   await fs.writeFile('./cache/test', 'asdf');

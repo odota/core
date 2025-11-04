@@ -1,4 +1,4 @@
-import crypto from 'crypto';
+import crypto from 'node:crypto';
 import cassandra from '../svc/store/cassandra.ts';
 import db from '../svc/store/db.ts';
 import { deserialize, randomInt, redisCount } from '../svc/util/utility.ts';

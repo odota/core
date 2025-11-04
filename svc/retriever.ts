@@ -6,7 +6,7 @@
 import SteamUser from 'steam-user';
 import express from 'express';
 import compression from 'compression';
-import os from 'os';
+import os from 'node:os';
 import config from '../config.ts';
 import ProtoBuf from 'protobufjs';
 

@@ -1,5 +1,5 @@
 // Processes a queue of jobs to collect stats on specific scenario data
-import util from 'util';
+import util from 'node:util';
 import { buildMatch } from './util/buildMatch.ts';
 import db from './store/db.ts';
 import {

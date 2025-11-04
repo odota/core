@@ -1,6 +1,6 @@
 import ProtoBuf from 'protobufjs';
-import { exec } from 'child_process';
-import { promisify } from 'util';
+import { exec } from 'node:child_process';
+import { promisify } from 'node:util';
 import { buildReplayUrl, redisCount } from '../util/utility.ts';
 import { MatchFetcher } from './base.ts';
 import { GcdataFetcher } from './GcdataFetcher.ts';

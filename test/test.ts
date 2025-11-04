@@ -14,7 +14,7 @@ import detailsApiPro from './data/details_api_pro.json' with { type: 'json' };
 import retrieverMatch from './data/retriever_match.json' with { type: 'json' };
 import detailsApi from './data/details_api.json' with { type: 'json' };
 import { Pool } from 'pg';
-import { readFileSync } from 'fs';
+import { readFileSync } from 'node:fs';
 import { Client } from 'cassandra-driver';
 import nock from 'nock';
 import swaggerParser from '@apidevtools/swagger-parser';

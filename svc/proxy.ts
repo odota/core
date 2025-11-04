@@ -1,10 +1,10 @@
 // Deployed in the cloud to proxy requests to the Steam API
 import httpProxy from 'http-proxy';
-import http from 'http';
+import http from 'node:http';
 import config from '../config.ts';
-import child_process from 'child_process';
+import child_process from 'node:child_process';
 import axios from 'axios';
-import os from 'os';
+import os from 'node:os';
 const { PORT, PROXY_PORT } = config;
 const port = PORT || PROXY_PORT;
 const proxy = httpProxy.createProxyServer({

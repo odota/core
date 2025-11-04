@@ -1,4 +1,4 @@
-import fs from 'fs';
+import fs from 'node:fs';
 const { metaFetcher } = await import('../svc/fetcher/allFetchers.ts');
 
 const message = await metaFetcher.getData(7468445438);

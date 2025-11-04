@@ -1,5 +1,5 @@
 // Computes rank/mmr distributions and stores in Redis
-import fs from 'fs';
+import fs from 'node:fs';
 import db from './store/db.ts';
 import redis from './store/redis.ts';
 import { runInLoop } from './util/utility.ts';
