@@ -6,8 +6,6 @@ import { reconcileMatch } from './util/reconcileUtil.ts';
 import { runInLoop } from './util/utility.ts';
 
 runInLoop(async function repair() {
-  // Disabled until backfill complete
-  return;
   const { rows } = await db.raw(
     'select match_id, retries from player_match_history WHERE retries >= 10 ORDER BY retries DESC NULLS LAST LIMIT 1',
   );
