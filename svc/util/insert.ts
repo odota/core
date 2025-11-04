@@ -150,6 +150,7 @@ export async function insertMatch(
   origMatch: Readonly<InsertMatchInput>,
   options: InsertMatchOptions,
 ) {
+  console.log('start', origMatch.match_id);
   const trx = await db.transaction();
   // Make a copy of the match with some modifications (only applicable to api matches)
   const match = transformMatch(origMatch);
@@ -208,6 +209,7 @@ export async function insertMatch(
   await postParsedMatch(match);
   const parseJob = await queueParse(match);
   await trx.commit();
+  console.log('end', origMatch.match_id);
   return { parseJob, pgroup };
 
   async function upsertMatchPostgres(match: InsertMatchInput) {
