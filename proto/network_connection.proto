@@ -3,6 +3,7 @@ import "google/protobuf/descriptor.proto";
 extend .google.protobuf.EnumValueOptions {
 	optional string network_connection_token = 50500;
 	optional string network_connection_detail_token = 50501;
+	optional bool allowed_from_client = 50502 [default = true];
 }
 
 enum ENetworkDisconnectionReason {
@@ -19,7 +20,7 @@ enum ENetworkDisconnectionReason {
 	NETWORK_DISCONNECT_STEAM_AUTHCANCELLED = 10 [(network_connection_token) = "#GameUI_Disconnect_SteamLogon"];
 	NETWORK_DISCONNECT_STEAM_AUTHALREADYUSED = 11 [(network_connection_token) = "#GameUI_Disconnect_SteamLogon"];
 	NETWORK_DISCONNECT_STEAM_AUTHINVALID = 12 [(network_connection_token) = "#GameUI_Disconnect_SteamLogon"];
-	NETWORK_DISCONNECT_STEAM_VACBANSTATE = 13 [(network_connection_token) = "#GameUI_Disconnect_SteamVAC"];
+	NETWORK_DISCONNECT_STEAM_VACBANSTATE = 13 [(network_connection_token) = "#GameUI_Disconnect_SteamVAC", (allowed_from_client) = false];
 	NETWORK_DISCONNECT_STEAM_LOGGED_IN_ELSEWHERE = 14 [(network_connection_token) = "#GameUI_Disconnect_SteamInUse"];
 	NETWORK_DISCONNECT_STEAM_VAC_CHECK_TIMEDOUT = 15 [(network_connection_token) = "#GameUI_Disconnect_SteamTimeOut"];
 	NETWORK_DISCONNECT_STEAM_DROPPED = 16 [(network_connection_token) = "#GameUI_Disconnect_SteamDropped"];
@@ -125,6 +126,6 @@ enum ENetworkDisconnectionReason {
 	NETWORK_DISCONNECT_KICKED_NOSTEAMLOGIN = 160 [(network_connection_token) = "#Player_DisconnectReason_NoSteamLogin"];
 	NETWORK_DISCONNECT_KICKED_NOSTEAMTICKET = 161 [(network_connection_token) = "#Player_DisconnectReason_NoSteamTicket"];
 	NETWORK_DISCONNECT_KICKED_INPUTAUTOMATION = 162 [(network_connection_token) = "#Player_DisconnectReason_InputAutomation", (network_connection_detail_token) = "#Player_DisconnectReason_InputAutomation_Detail"];
-	NETWORK_DISCONNECT_KICKED_VACNETABNORMALBEHAVIOR = 163 [(network_connection_token) = "#Player_DisconnectReason_VacNetAbnormalBehavior"];
+	NETWORK_DISCONNECT_KICKED_VACNETABNORMALBEHAVIOR = 163 [(network_connection_token) = "#Player_DisconnectReason_VacNetAbnormalBehavior", (allowed_from_client) = false];
 	NETWORK_DISCONNECT_KICKED_INSECURECLIENT = 164 [(network_connection_token) = "#Player_DisconnectReason_InsecureClient"];
 }

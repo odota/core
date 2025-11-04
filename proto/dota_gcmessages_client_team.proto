@@ -91,8 +91,6 @@ message CMsgDOTATeamInfo {
 	optional uint32 games_played_total = 19;
 	optional uint32 games_played_matchmaking = 20;
 	optional string url_logo = 24;
-	repeated uint32 registered_member_account_ids = 30;
-	optional uint32 coach_account_id = 36;
 	repeated .CMsgDOTATeamInfo.AuditEntry audit_entries = 31;
 	optional .ELeagueRegion region = 29 [default = LEAGUE_REGION_UNSET];
 	optional string abbreviation = 32;

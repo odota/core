@@ -174,6 +174,7 @@ message CMsgDotaScenario {
 		optional uint32 total_madstone = 154;
 		optional uint32 current_madstone = 155;
 		repeated .CMsgDotaScenario.HeroNeutralTier neutral_tiers = 156;
+		optional int32 refresher_charges_used = 157;
 	}
 
 	message Stock {

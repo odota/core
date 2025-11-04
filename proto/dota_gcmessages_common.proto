@@ -880,6 +880,7 @@ message CMsgDOTASeasonPredictions {
 		repeated .ELeaguePhase phases = 18;
 		optional .EEvent reward_event = 19 [default = EVENT_ID_NONE];
 		optional uint32 league_node_id = 20;
+		optional string reward_event_action = 21;
 	}
 
 	repeated .CMsgDOTASeasonPredictions.Prediction predictions = 1;
@@ -1914,6 +1915,9 @@ message CDotaMsgStructuredTooltipProperties {
 		kPureDamage = 8;
 		kCooldown = 9;
 		kDebuffPercentage = 10;
+		kDebuffValue = 11;
+		kBuffPercentage = 12;
+		kBuffValue = 13;
 	}
 
 	optional string ability_name_loc_token = 1;

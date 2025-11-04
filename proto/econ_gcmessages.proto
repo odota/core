@@ -81,6 +81,7 @@ enum EGCItemMsg {
 	k_EMsgGCToGCRefreshSOCache = 2549;
 	k_EMsgGCToGCGrantAccountRolledItems = 2554;
 	k_EMsgGCToGCGrantSelfMadeItemToAccount = 2555;
+	k_EMsgGCToGCUnlockCrate = 2556;
 	k_EMsgGCStatueCraft = 2561;
 	k_EMsgGCRedeemCode = 2562;
 	k_EMsgGCRedeemCodeResponse = 2563;
@@ -361,6 +362,12 @@ message CMsgGCToGCBetaDeleteItems {
 message CMsgGCToGCGrantSelfMadeItemToAccount {
 	optional uint32 item_def_index = 1;
 	optional uint32 accountid = 2;
+}
+
+message CMsgGCToGCUnlockCrate {
+	optional uint32 account_id = 1;
+	optional uint64 crate_item_id = 2;
+	optional uint64 key_item_id = 3;
 }
 
 message CMsgUseItem {

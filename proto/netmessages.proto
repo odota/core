@@ -272,6 +272,8 @@ message CMsgSource2NetworkFlowQuality {
 message CCLCMsg_Diagnostic {
 	optional .CMsgSource2SystemSpecs system_specs = 1;
 	optional .CMsgSource2VProfLiteReport vprof_report = 2;
+	optional .CMsgSource2NetworkFlowQuality downstream_flow = 3;
+	optional .CMsgSource2NetworkFlowQuality upstream_flow = 4;
 }
 
 message CSource2Metrics_MatchPerfSummary_Notification {
@@ -279,6 +281,8 @@ message CSource2Metrics_MatchPerfSummary_Notification {
 		optional .CMsgSource2SystemSpecs system_specs = 1;
 		optional .CMsgSource2VProfLiteReport profile = 2;
 		optional uint32 build_id = 3;
+		optional .CMsgSource2NetworkFlowQuality downstream_flow = 4;
+		optional .CMsgSource2NetworkFlowQuality upstream_flow = 5;
 		optional fixed64 steamid = 10;
 	}
 
@@ -454,6 +458,11 @@ message CSVCMsg_PacketEntities {
 		optional bytes data = 2;
 	}
 
+	message outofpvs_entity_updates_t {
+		optional int32 count = 1;
+		optional bytes data = 2;
+	}
+
 	optional int32 max_entries = 1;
 	optional int32 updated_entries = 2;
 	optional bool legacy_is_delta = 3;
@@ -474,6 +483,7 @@ message CSVCMsg_PacketEntities {
 	optional .CSVCMsg_PacketEntities.non_transmitted_entities_t non_transmitted_entities = 19;
 	optional uint32 cq_starved_command_ticks = 20;
 	optional uint32 cq_discarded_command_ticks = 21;
+	optional .CSVCMsg_PacketEntities.outofpvs_entity_updates_t outofpvs_entity_updates = 23;
 	optional bytes dev_padding = 999;
 }
 

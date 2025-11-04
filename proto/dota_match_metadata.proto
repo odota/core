@@ -277,6 +277,7 @@ message CDOTAMatchMetadata {
 	optional bytes custom_post_game_table = 11;
 	repeated .CDOTAMatchMetadata.Tip match_tips = 12;
 	repeated .CMsgTrackedStat match_tracked_stats = 13;
+	optional uint32 primary_event_id_for_display = 14;
 }
 
 message CDOTAMatchPrivateMetadata {

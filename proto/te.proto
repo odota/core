@@ -7,11 +7,8 @@ enum ETEProtobufIds {
 	TE_BeamEntsId = 403;
 	TE_BeamPointsId = 404;
 	TE_BeamRingId = 405;
-	TE_BSPDecalId = 407;
 	TE_BubblesId = 408;
 	TE_BubbleTrailId = 409;
-	TE_DecalId = 410;
-	TE_WorldDecalId = 411;
 	TE_EnergySplashId = 412;
 	TE_FizzId = 413;
 	TE_ShatterSurfaceId = 414;
@@ -24,8 +21,6 @@ enum ETEProtobufIds {
 	TE_LargeFunnelId = 421;
 	TE_SparksId = 422;
 	TE_PhysicsPropId = 423;
-	TE_PlayerDecalId = 424;
-	TE_ProjectedDecalId = 425;
 	TE_SmokeId = 426;
 }
 
@@ -75,14 +70,6 @@ message CMsgTEBeamRing {
 	optional uint32 endentity = 3;
 }
 
-message CMsgTEBSPDecal {
-	optional .CMsgVector origin = 1;
-	optional .CMsgVector normal = 2;
-	optional .CMsgVector saxis = 3;
-	optional int32 entity = 4 [default = -1];
-	optional uint32 index = 5;
-}
-
 message CMsgTEBubbles {
 	optional .CMsgVector mins = 1;
 	optional .CMsgVector maxs = 2;
@@ -97,14 +84,6 @@ message CMsgTEBubbleTrail {
 	optional float waterz = 3;
 	optional uint32 count = 4;
 	optional float speed = 5;
-}
-
-message CMsgTEDecal {
-	optional .CMsgVector origin = 1;
-	optional .CMsgVector start = 2;
-	optional int32 entity = 3 [default = -1];
-	optional uint32 hitbox = 4;
-	optional uint32 index = 5;
 }
 
 message CMsgEffectData {
@@ -234,26 +213,7 @@ message CMsgTEPhysicsProp {
 	optional int32 dmgtype = 13;
 }
 
-message CMsgTEPlayerDecal {
-	optional .CMsgVector origin = 1;
-	optional int32 player = 2 [default = -1];
-	optional int32 entity = 3 [default = -1];
-}
-
-message CMsgTEProjectedDecal {
-	optional .CMsgVector origin = 1;
-	optional .CMsgQAngle angles = 2;
-	optional uint32 index = 3;
-	optional float distance = 4;
-}
-
 message CMsgTESmoke {
 	optional .CMsgVector origin = 1;
 	optional float scale = 2;
-}
-
-message CMsgTEWorldDecal {
-	optional .CMsgVector origin = 1;
-	optional .CMsgVector normal = 2;
-	optional uint32 index = 3;
 }

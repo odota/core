@@ -304,6 +304,7 @@ message CSODOTALobby {
 	optional .DOTASelectionPriorityChoice series_current_non_priority_team_choice = 101 [default = k_DOTASelectionPriorityChoice_Invalid];
 	optional bool series_current_selection_priority_used_coin_toss = 102;
 	optional .EEvent current_primary_event = 103 [default = EVENT_ID_NONE];
+	optional .EEvent current_primary_event_for_display = 104 [default = EVENT_ID_NONE];
 	repeated int32 emergency_disabled_hero_ids = 105;
 	optional fixed64 custom_game_private_key = 106;
 	optional bool custom_game_penalties = 107;
