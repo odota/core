@@ -562,6 +562,7 @@ export async function insertMatch(
             );
           }),
         );
+        console.log('updateHeroRankings', match.match_id);
       }
 
       async function upsertMatchSample() {
@@ -591,7 +592,7 @@ export async function insertMatch(
           await upsert(trx, 'public_matches', newMatch, {
             match_id: newMatch.match_id,
           });
-          return;
+          console.log('updateMatchSample', match.match_id);
         }
       }
       async function updateRecord(
@@ -669,6 +670,7 @@ export async function insertMatch(
             ),
           ),
         );
+        console.log('updateLastPlayed', match.match_id);
       }
       /**
        * Update table storing heroes played in a game for lookup of games by heroes played
@@ -699,10 +701,11 @@ export async function insertMatch(
         const teamA = inverted ? dire : radiant;
         const teamB = inverted ? radiant : dire;
         const teamAWin = inverted ? !match.radiant_win : match.radiant_win;
-        return trx.raw(
+        await trx.raw(
           'INSERT INTO hero_search (match_id, teamA, teamB, teamAWin, start_time) VALUES (?, ?, ?, ?, ?) ON CONFLICT DO NOTHING',
           [match.match_id, teamA, teamB, teamAWin, match.start_time],
         );
+        console.log('updateHeroSearch', match.match_id);
       }
 
       async function updateHeroCounts(isProTier: boolean) {
