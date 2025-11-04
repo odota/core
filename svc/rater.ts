@@ -27,6 +27,11 @@ runInLoop(async function rate() {
   }
   // Get ratings of all players in the match, otherwise default value
   const accountIds = gcMatch.players.map((p) => p.account_id);
+  console.log(row.match_id, accountIds);
+  // if (!accountIds.every(id => Boolean)) {
+  //   // undefined account ID
+  //   return;
+  // }
   // console.log(accountIds);
   const { rows: existingRatings } = await db.raw<{
     rows: { account_id: number; computed_mmr: number }[];
