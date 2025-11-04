@@ -593,6 +593,7 @@ export async function insertMatch(
           });
         }
       }
+
       async function updateRecord(
         field: keyof ApiData | keyof ApiDataPlayer,
         player: ApiDataPlayer,
@@ -669,6 +670,7 @@ export async function insertMatch(
           ),
         );
       }
+
       /**
        * Update table storing heroes played in a game for lookup of games by heroes played
        * */
@@ -835,8 +837,8 @@ function updateMatchups(match) {
     redis.hincrby('matchups', key, 1);
 }
 */
-    }
   }
+
   async function upsertPlayers(match: InsertMatchInput) {
     // Player discovery
     // Add a placeholder player with just the ID
