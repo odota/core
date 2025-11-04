@@ -30,7 +30,7 @@ runQueue(
 
     if (data.rank_tier || data.leaderboard_rank) {
       data.account_id = job.account_id ?? null;
-      await insertPlayerRating(data);
+      await insertPlayerRating(db, data);
     }
     await new Promise((resolve) => setTimeout(resolve, 1));
   },

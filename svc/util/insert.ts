@@ -115,7 +115,7 @@ export async function bulkIndexPlayer(bulkActions: any[]) {
   }
 }
 
-export async function insertPlayerRating(row: PlayerRating) {
+export async function insertPlayerRating(db: Knex, row: PlayerRating) {
   if (row.rank_tier) {
     await upsert(
       db,
@@ -511,16 +511,16 @@ export async function insertMatch(
   async function updateCounts(match: ApiData, avg: number | undefined, num: number | undefined) {
     // Update temporary match counts/hero rankings
     if (options.origin === 'scanner' && options.type === 'api') {
-      await Promise.all([
-        updateHeroRankings(),
-        upsertMatchSample(),
-        updateRecords(),
-        updateLastPlayed(),
-        updateHeroSearch(),
-        updateHeroCounts(isProTier),
-        updateMatchCounts(),
-        updateBenchmarks(),
-      ]);
+      await updateHeroRankings();
+      console.log('updateHeroRankings', match.match_id);
+      await upsertMatchSample();
+      await updateRecords();
+      await updateLastPlayed();
+      await updateHeroSearch();
+      await updateHeroCounts(isProTier);
+      await updateMatchCounts();
+      await updateBenchmarks();
+    }
 
       async function updateHeroRankings() {
         if (!isSignificant(match)) {
@@ -562,7 +562,6 @@ export async function insertMatch(
             );
           }),
         );
-        console.log('updateHeroRankings', match.match_id);
       }
 
       async function upsertMatchSample() {
@@ -592,7 +591,6 @@ export async function insertMatch(
           await upsert(trx, 'public_matches', newMatch, {
             match_id: newMatch.match_id,
           });
-          console.log('updateMatchSample', match.match_id);
         }
       }
       async function updateRecord(
@@ -670,7 +668,6 @@ export async function insertMatch(
             ),
           ),
         );
-        console.log('updateLastPlayed', match.match_id);
       }
       /**
        * Update table storing heroes played in a game for lookup of games by heroes played
@@ -705,7 +702,6 @@ export async function insertMatch(
           'INSERT INTO hero_search (match_id, teamA, teamB, teamAWin, start_time) VALUES (?, ?, ?, ?, ?) ON CONFLICT DO NOTHING',
           [match.match_id, teamA, teamB, teamAWin, match.start_time],
         );
-        console.log('updateHeroSearch', match.match_id);
       }
 
       async function updateHeroCounts(isProTier: boolean) {
