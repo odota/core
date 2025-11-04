@@ -204,9 +204,9 @@ export async function insertMatch(
   await resetPlayerTemp(match);
   await telemetry(match);
   await updateCounts(match as ApiData, average_rank, num_rank_tier);
-  console.log('counts', match.match_id);
+  // console.log('counts', match.match_id);
   await upsertPlayers(match);
-  console.log('upsertPlayers', match.match_id);
+  // console.log('upsertPlayers', match.match_id);
   await queueMmr(match);
   await queueGcData(match);
   await queueRate(match);

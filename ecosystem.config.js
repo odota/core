@@ -2,7 +2,7 @@
  * PM2 configuration file
  */
 import 'dotenv/config';
-import os from 'os';
+import os from 'node:os';
 
 const dev = process.env.NODE_ENV === 'development';
 const prod = process.env.NODE_ENV === 'production';
@@ -86,7 +86,7 @@ let arr = [
     name: 'scanner',
     group: 'backend',
     env: {
-      POSTGRES_MAX_CONNECTIONS: '100',
+      POSTGRES_MAX_CONNECTIONS: '101',
     },
   },
   {
