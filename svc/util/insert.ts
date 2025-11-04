@@ -150,7 +150,7 @@ export async function insertMatch(
   origMatch: Readonly<InsertMatchInput>,
   options: InsertMatchOptions,
 ) {
-  console.log('start', origMatch.match_id);
+  // console.log('start', origMatch.match_id);
   const trx = await db.transaction();
   // Make a copy of the match with some modifications (only applicable to api matches)
   const match = transformMatch(origMatch);
@@ -182,11 +182,15 @@ export async function insertMatch(
   }
 
   let average_rank: number | undefined = undefined;
+  let num_rank_tier: number | undefined = undefined;
   // Only fetch the average_rank if this is a fresh match since otherwise it won't be accurate
   if (options.origin === 'scanner' && options.type === 'api') {
-    const { avg, players } = await getMatchRankTier(trx, match.players);
+    let { avg, num, players } = await getMatchRankTier(trx, match.players);
     if (avg) {
       average_rank = avg;
+    }
+    if (num) {
+      num_rank_tier = num;
     }
     // average_rank should be stored in a new blob column too since it's not part of API data
     // We could also store the ranks of the players here rather than looking up their current rank on view
@@ -194,16 +198,13 @@ export async function insertMatch(
     // let ranksBlob = { match_id: match.match_id, average_rank, players };
     // await upsertBlob('ranks', ranksBlob);
   }
-  console.log('mid', origMatch.match_id);
   await upsertMatchPostgres(match);
-  console.log('upsertMP', origMatch.match_id);
   await upsertPlayerCaches(match, average_rank, pgroup, options.type);
   await upsertMatchBlobs(match);
   await resetMatchCache(match);
   await resetPlayerTemp(match);
   await telemetry(match);
-  console.log('telemetry', origMatch.match_id);
-  await updateCounts(match as ApiData);
+  await updateCounts(match as ApiData, average_rank, num_rank_tier);
   console.log('counts', origMatch.match_id);
   await upsertPlayers(match);
   await queueMmr(match);
@@ -213,7 +214,7 @@ export async function insertMatch(
   await postParsedMatch(match);
   const parseJob = await queueParse(match);
   await trx.commit();
-  console.log('end', origMatch.match_id);
+  // console.log('end', origMatch.match_id);
   return { parseJob, pgroup };
 
   async function upsertMatchPostgres(match: InsertMatchInput) {
@@ -507,7 +508,7 @@ export async function insertMatch(
       );
     }
   }
-  async function updateCounts(match: ApiData) {
+  async function updateCounts(match: ApiData, avg: number | undefined, num: number | undefined) {
     // Update temporary match counts/hero rankings
     if (options.origin === 'scanner' && options.type === 'api') {
       await Promise.all([
@@ -525,7 +526,6 @@ export async function insertMatch(
         if (!isSignificant(match)) {
           return;
         }
-        const { avg } = await getMatchRankTier(trx, match.players);
         const matchScore =
           avg && !Number.isNaN(Number(avg)) ? avg * 100 : undefined;
         if (!matchScore) {
@@ -569,8 +569,7 @@ export async function insertMatch(
           isSignificant(match) &&
           match.match_id % 100 < Number(config.PUBLIC_SAMPLE_PERCENT)
         ) {
-          const { avg, num } = await getMatchRankTier(trx, match.players);
-          if (!avg || num < 1) {
+          if (!avg || !num) {
             return;
           }
           const matchMmrData = {
@@ -720,7 +719,6 @@ export async function insertMatch(
           tier = 'turbo';
         } else if (isSignificant(match)) {
           tier = 'pub';
-          let { avg } = await getMatchRankTier(trx, match.players);
           if (avg) {
             rank = Math.floor(avg / 10);
           }
