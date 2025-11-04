@@ -511,13 +511,9 @@ export async function insertMatch(
     // Update temporary match counts/hero rankings
     if (options.origin === 'scanner' && options.type === 'api') {
       await updateHeroRankings();
-      console.log('updateHeroRankings', match.match_id);
       await upsertMatchSample();
-      console.log('upsertMatchSample', match.match_id);
       await updateHeroSearch();
-      console.log('updateHeroSearch', match.match_id);
       await updateLastPlayed();
-      console.log('updateLastPlayed', match.match_id);
       await updateRecords();
       await updateHeroCounts(isProTier);
       await updateMatchCounts();
