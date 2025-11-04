@@ -1,10 +1,10 @@
 import moment from 'moment';
 import { patch } from 'dotaconstants';
 import util from 'node:util';
-import { promises as fs } from 'fs';
+import fs from 'node:fs/promises';
 import config from '../../config.ts';
 import { addJob, addReliableJob } from '../store/queue.ts';
-import db, { getPostgresColumns } from '../store/db.ts';
+import db from '../store/db.ts';
 import redis from '../store/redis.ts';
 import { es, INDEX } from '../store/elasticsearch.ts';
 import {
@@ -34,17 +34,23 @@ import { benchmarks } from './benchmarksUtil.ts';
 
 moment.relativeTimeThreshold('ss', 0);
 
+const columns: Record<string, any> = {};
+
 export async function upsert(
   db: Knex,
   table: string,
   insert: AnyDict,
   conflict: NumberDict,
 ) {
-  const columns = await getPostgresColumns(table);
+  if (!columns[table]) {
+    const result = await db(table).columnInfo();
+    columns[table] = result;
+  }
+  const tableColumns = columns[table];
   const row = { ...insert };
   // Remove extra properties
   Object.keys(row).forEach((key) => {
-    if (!columns[key]) {
+    if (!tableColumns[key]) {
       delete row[key];
     }
   });

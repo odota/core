@@ -20,13 +20,4 @@ export const db = knex({
   },
 });
 
-const columnInfo: Record<string, any> = {};
-export async function getPostgresColumns(table: string) {
-  if (!columnInfo[table]) {
-    const result = await db(table).columnInfo();
-    columnInfo[table] = result;
-  }
-  return columnInfo[table];
-}
-
 export default db;

@@ -2,7 +2,7 @@
 import db from './store/db.ts';
 import config from '../config.ts';
 import { epochWeek, runInLoop } from './util/utility.ts';
-import { promises as fs } from 'fs';
+import fs from 'node:fs/promises';
 import { isRecentVisitor, isRecentlyVisited } from './util/queries.ts';
 
 runInLoop(
