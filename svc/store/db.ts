@@ -9,7 +9,7 @@ export const db = knex({
   connection: config.POSTGRES_URL,
   pool: {
     min: 0,
-    max: 20,
+    max: Number(config.POSTGRES_MAX_CONNECTIONS),
     // afterCreate: (conn, done) => {
     //   // Set the minimum similarity for pg_trgm
     //   conn.query('SELECT set_limit(0.6);', (err) => {

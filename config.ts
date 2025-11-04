@@ -23,6 +23,7 @@ const defaults = {
   STEAM_API_HOST: 'api.steampowered.com', // comma separated list of hosts to fetch Steam API data from
   POSTGRES_URL: 'postgresql://postgres:postgres@localhost/yasp', // connection string for PostgreSQL
   READONLY_POSTGRES_URL: 'postgresql://readonly:readonly@localhost/yasp', // readonly connection string for PostgreSQL
+  POSTGRES_MAX_CONNECTIONS: '10', // Number of maximum connections in pool for postgres (per process)
   REDIS_URL: 'redis://127.0.0.1:6379/0', // connection string for Redis
   CASSANDRA_URL: 'cassandra://localhost/yasp', // connection string for Cassandra
   ELASTICSEARCH_URL: 'localhost:9200',

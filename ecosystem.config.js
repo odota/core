@@ -25,39 +25,12 @@ let arr = [
     },
   },
   {
-    name: 'backfill1',
-    name_override: 'backfill',
-    group: 'backend',
-    env: {
-      BACKFILL_START: 1000000000,
-      BACKFILL_STOP: 2000000000,
-    },
-  },
-  {
     name: 'backfill2',
     name_override: 'backfill',
     group: 'backend',
     env: {
       BACKFILL_START: 2000000000,
       BACKFILL_STOP: 3000000000,
-    },
-  },
-  {
-    name: 'backfill3',
-    name_override: 'backfill',
-    group: 'backend',
-    env: {
-      BACKFILL_START: 3000000000,
-      BACKFILL_STOP: 4000000000,
-    },
-  },
-  {
-    name: 'backfill4',
-    name_override: 'backfill',
-    group: 'backend',
-    env: {
-      BACKFILL_START: 4000000000,
-      BACKFILL_STOP: 5000000000,
     },
   },
   {
@@ -112,6 +85,9 @@ let arr = [
   {
     name: 'scanner',
     group: 'backend',
+    env: {
+      POSTGRES_MAX_CONNECTIONS: '100',
+    },
   },
   {
     // Secondary scanner that runs behind and picks up matches previously missing
