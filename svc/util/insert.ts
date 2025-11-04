@@ -240,18 +240,13 @@ export async function insertMatch(
         return;
       }
     }
-    try {
-      await upsertMatch();
-      await upsertPlayerMatches();
-      await upsertPicksBans();
-      await upsertMatchPatch();
-      await upsertTeamMatch();
-      await updateTeamRankings();
-    } catch (e) {
-      trx.rollback();
-      throw e;
-    }
-    await trx.commit();
+
+    await upsertMatch();
+    await upsertPlayerMatches();
+    await upsertPicksBans();
+    await upsertMatchPatch();
+    await upsertTeamMatch();
+    await updateTeamRankings();
 
     async function upsertMatch() {
       console.log('[UPSERTMATCHPOSTGRES]: match');
