@@ -514,9 +514,12 @@ export async function insertMatch(
       await updateHeroRankings();
       console.log('updateHeroRankings', match.match_id);
       await upsertMatchSample();
-      await updateRecords();
-      await updateLastPlayed();
+      console.log('upsertMatchSample', match.match_id);
       await updateHeroSearch();
+      console.log('updateHeroSearch', match.match_id);
+      await updateLastPlayed();
+      console.log('updateLastPlayed');
+      await updateRecords();
       await updateHeroCounts(isProTier);
       await updateMatchCounts();
       await updateBenchmarks();
