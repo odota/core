@@ -29,8 +29,12 @@ runInLoop(async function rate() {
   const accountIds = gcMatch.players.map((p) => p.account_id);
   // console.log(row.match_id, accountIds);
   if (!accountIds.every(Boolean)) {
-    // undefined account ID
+    // undefined account ID, delete the row
     redisCount('rater_skip');
+    await db.raw(
+      'DELETE FROM rating_queue WHERE match_seq_num = ?',
+      row.match_seq_num,
+    );
     return;
   }
   const { rows: existingRatings } = await db.raw<{
