@@ -196,11 +196,13 @@ export async function insertMatch(
   }
   console.log('mid', origMatch.match_id);
   await upsertMatchPostgres(match);
+  console.log('upsertMP', origMatch.match_id);
   await upsertPlayerCaches(match, average_rank, pgroup, options.type);
   await upsertMatchBlobs(match);
   await resetMatchCache(match);
   await resetPlayerTemp(match);
   await telemetry(match);
+  console.log('telemetry', origMatch.match_id);
   await updateCounts(match as ApiData);
   console.log('counts', origMatch.match_id);
   await upsertPlayers(match);
