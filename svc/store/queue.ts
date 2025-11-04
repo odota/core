@@ -125,7 +125,8 @@ export async function addReliableJob(
   // if (name === 'parse') {
   //   // Could queue the job for gcdata only in case parsing is held up
   // }
-  const { rows } = await db.raw<{
+  const dbToUse = options.trx ?? db;
+  const { rows } = await dbToUse.raw<{
     rows: ReliableQueueRow[];
   }>(
     `INSERT INTO queue(type, timestamp, attempts, data, next_attempt_time, priority)

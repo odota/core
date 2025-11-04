@@ -7,7 +7,6 @@ import { addJob, addReliableJob } from '../store/queue.ts';
 import db, { getPostgresColumns } from '../store/db.ts';
 import redis from '../store/redis.ts';
 import { es, INDEX } from '../store/elasticsearch.ts';
-import type knex from 'knex';
 import {
   getAnonymousAccountId,
   convert64to32,
@@ -36,7 +35,7 @@ import { benchmarks } from './benchmarksUtil.ts';
 moment.relativeTimeThreshold('ss', 0);
 
 export async function upsert(
-  db: knex.Knex,
+  db: Knex,
   table: string,
   insert: AnyDict,
   conflict: NumberDict,
@@ -68,7 +67,7 @@ export async function upsert(
 }
 
 export async function upsertPlayer(
-  db: knex.Knex,
+  db: Knex,
   player: Partial<User>,
   indexPlayer: boolean,
 ) {
@@ -145,6 +144,7 @@ export async function insertMatch(
   origMatch: Readonly<InsertMatchInput>,
   options: InsertMatchOptions,
 ) {
+  const trx = await db.transaction();
   // Make a copy of the match with some modifications (only applicable to api matches)
   const match = transformMatch(origMatch);
   // Use the passed pgroup if gcdata or parsed, otherwise build it
@@ -154,7 +154,7 @@ export async function insertMatch(
   let isProTier = false;
   if ('leagueid' in match && match.leagueid) {
     // Check if leagueid is premium/professional
-    const { rows } = await db.raw(
+    const { rows } = await trx.raw(
       `select leagueid from leagues where leagueid = ? and (tier = 'premium' OR tier = 'professional')`,
       [Number(match.leagueid)],
     );
@@ -168,7 +168,7 @@ export async function insertMatch(
     'leagueid' in match &&
     match.leagueid
   ) {
-    await db.raw(
+    await trx.raw(
       'INSERT INTO league_match(leagueid, match_id) VALUES(?, ?) ON CONFLICT DO NOTHING',
       [match.leagueid, match.match_id],
     );
@@ -187,7 +187,6 @@ export async function insertMatch(
     // let ranksBlob = { match_id: match.match_id, average_rank, players };
     // await upsertBlob('ranks', ranksBlob);
   }
-
   await upsertMatchPostgres(match);
   await upsertPlayerCaches(match, average_rank, pgroup, options.type);
   await upsertMatchBlobs(match);
@@ -202,6 +201,7 @@ export async function insertMatch(
   await queueScenarios(match);
   await postParsedMatch(match);
   const parseJob = await queueParse(match);
+  await trx.commit();
   return { parseJob, pgroup };
 
   async function upsertMatchPostgres(match: InsertMatchInput) {
@@ -226,7 +226,7 @@ export async function insertMatch(
     // That requires writing a new SQL query though
     // If we do that then we can put the NOT NULL constraint on hero_id
     if (options.type === 'parsed') {
-      const { rows } = await db.raw(
+      const { rows } = await trx.raw(
         'select match_id from matches where match_id = ?',
         [match.match_id],
       );
@@ -234,7 +234,6 @@ export async function insertMatch(
         return;
       }
     }
-    const trx = await db.transaction();
     try {
       await upsertMatch();
       await upsertPlayerMatches();
@@ -504,7 +503,6 @@ export async function insertMatch(
   async function updateCounts(match: ApiData) {
     // Update temporary match counts/hero rankings
     if (options.origin === 'scanner' && options.type === 'api') {
-      const trx = await db.transaction();
       await Promise.all([
         updateHeroRankings(),
         upsertMatchSample(),
@@ -515,7 +513,6 @@ export async function insertMatch(
         updateMatchCounts(),
         updateBenchmarks(),
       ]);
-      await trx.commit();
 
       async function updateHeroRankings() {
         if (!isSignificant(match)) {
@@ -814,7 +811,7 @@ function updateCompositions() {
   generateMatchups(match, 5, true).forEach((team) => {
     const key = team.split(':')[0];
     const win = Number(team.split(':')[1]);
-    db.raw(`INSERT INTO compositions (composition, games, wins)
+    trx.raw(`INSERT INTO compositions (composition, games, wins)
     VALUES (?, 1, ?)
     ON CONFLICT(composition)
     DO UPDATE SET games = compositions.games + 1, wins = compositions.wins + ?
@@ -826,7 +823,7 @@ function updateCompositions() {
 // Stores result of each matchup of subsets of heroes in this game
 function updateMatchups(match) {
   generateMatchups(match, 1).forEach((key) => {
-    db.raw(`INSERT INTO matchups (matchup, num)
+    trx.raw(`INSERT INTO matchups (matchup, num)
     VALUES (?, 1)
     ON CONFLICT(matchup)
     DO UPDATE SET num = matchups.num + 1
@@ -848,7 +845,7 @@ function updateMatchups(match) {
     await Promise.all(
       arr.map((p) =>
         // Avoid extraneous writes to player table by not using upsert function
-        db.raw(
+        trx.raw(
           'INSERT INTO players(account_id) VALUES(?) ON CONFLICT DO NOTHING',
           [p.account_id],
         ),
@@ -897,7 +894,9 @@ function updateMatchups(match) {
             pgroup,
           },
         },
-        {},
+        {
+          trx,
+        },
       );
     }
   }
@@ -912,7 +911,7 @@ function updateMatchups(match) {
       match.lobby_type === 7 &&
       match.match_id % 100 < Number(config.RATING_PERCENT)
     ) {
-      await db.raw(
+      await trx.raw(
         'INSERT INTO rating_queue(match_seq_num, match_id, radiant_win) VALUES(?, ?, ?) ON CONFLICT DO NOTHING',
         [match.match_seq_num, match.match_id, match.radiant_win],
       );
@@ -924,7 +923,9 @@ function updateMatchups(match) {
             pgroup,
           },
         },
-        {},
+        {
+          trx,
+        },
       );
     }
   }
@@ -946,7 +947,7 @@ function updateMatchups(match) {
   async function postParsedMatch(match: InsertMatchInput) {
     if (options.type === 'parsed') {
       // Mark this match parsed
-      await db.raw(
+      await trx.raw(
         'INSERT INTO parsed_matches(match_id) VALUES(?) ON CONFLICT DO NOTHING',
         [Number(match.match_id)],
       );
@@ -994,6 +995,7 @@ function updateMatchups(match) {
         {
           priority,
           attempts,
+          trx,
         },
       );
       return job;

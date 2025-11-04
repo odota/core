@@ -15,7 +15,6 @@ import retrieverMatch from './data/retriever_match.json' with { type: 'json' };
 import detailsApi from './data/details_api.json' with { type: 'json' };
 import { Pool } from 'pg';
 import { readFileSync } from 'fs';
-import url from 'url';
 import { Client } from 'cassandra-driver';
 import nock from 'nock';
 import swaggerParser from '@apidevtools/swagger-parser';
@@ -31,7 +30,7 @@ import { suite, test, before, beforeEach, after } from 'node:test';
 
 const { RETRIEVER_HOST, POSTGRES_URL, CASSANDRA_URL } = config;
 const initPostgresHost = POSTGRES_URL.replace('/yasp_test', '/postgres');
-const initCassandraHost = url.parse(CASSANDRA_URL).host as string;
+const initCassandraHost = new URL(CASSANDRA_URL).host;
 const testKey = '56bc4c35-586c-4f58-a55b-7a5247613872';
 let app: Express;
 

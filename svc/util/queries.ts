@@ -4,7 +4,6 @@ import { teamScenariosQueryParams, metadata } from './scenariosUtil.ts';
 import db from '../store/db.ts';
 import redis from '../store/redis.ts';
 import { benchmarks } from './benchmarksUtil.ts';
-import type knex from 'knex';
 import type { Request } from 'express';
 import {
   getStartOfBlockMinutes,
@@ -181,7 +180,6 @@ export async function getPlayerHeroRankings(accountId: string): Promise<any[]> {
   return result.rows;
 }
 export async function getPlayer(
-  db: knex.Knex,
   accountId: number,
 ): Promise<User | undefined> {
   const playerData = await db

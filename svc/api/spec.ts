@@ -261,7 +261,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
         route: () => '/players/:account_id',
         func: async (req, res, next) => {
           const accountId = Number(req.params.account_id);
-          const playerData = await getPlayer(db, accountId);
+          const playerData = await getPlayer(accountId);
           if (!playerData) {
             // 404 error
             return next();
