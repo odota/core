@@ -28,7 +28,7 @@ runInLoop(async function rate() {
   // Get ratings of all players in the match, otherwise default value
   const accountIds = gcMatch.players.map((p) => p.account_id);
   // console.log(row.match_id, accountIds);
-  if (!accountIds.every(id => Boolean)) {
+  if (!accountIds.every(Boolean)) {
     // undefined account ID
     redisCount('rater_skip');
     return;
