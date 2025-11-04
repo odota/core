@@ -177,7 +177,7 @@ export async function insertMatch(
   let average_rank: number | undefined = undefined;
   // Only fetch the average_rank if this is a fresh match since otherwise it won't be accurate
   if (options.origin === 'scanner' && options.type === 'api') {
-    const { avg, players } = await getMatchRankTier(match.players);
+    const { avg, players } = await getMatchRankTier(trx, match.players);
     if (avg) {
       average_rank = avg;
     }
@@ -518,7 +518,7 @@ export async function insertMatch(
         if (!isSignificant(match)) {
           return;
         }
-        const { avg } = await getMatchRankTier(match.players);
+        const { avg } = await getMatchRankTier(trx, match.players);
         const matchScore =
           avg && !Number.isNaN(Number(avg)) ? avg * 100 : undefined;
         if (!matchScore) {
@@ -562,7 +562,7 @@ export async function insertMatch(
           isSignificant(match) &&
           match.match_id % 100 < Number(config.PUBLIC_SAMPLE_PERCENT)
         ) {
-          const { avg, num } = await getMatchRankTier(match.players);
+          const { avg, num } = await getMatchRankTier(trx, match.players);
           if (!avg || num < 1) {
             return;
           }
@@ -713,7 +713,7 @@ export async function insertMatch(
           tier = 'turbo';
         } else if (isSignificant(match)) {
           tier = 'pub';
-          let { avg } = await getMatchRankTier(match.players);
+          let { avg } = await getMatchRankTier(trx, match.players);
           if (avg) {
             rank = Math.floor(avg / 10);
           }

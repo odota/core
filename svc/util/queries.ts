@@ -295,6 +295,7 @@ export async function getProPeers(
 }
 
 export async function getMatchRankTier(
+  db: Knex,
   players: { account_id?: number | null; player_slot: number }[],
 ) {
   const result = await Promise.all(
