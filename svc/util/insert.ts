@@ -150,7 +150,6 @@ export async function insertMatch(
   origMatch: Readonly<InsertMatchInput>,
   options: InsertMatchOptions,
 ) {
-  // console.log('start', origMatch.match_id);
   const trx = await db.transaction();
   // Make a copy of the match with some modifications (only applicable to api matches)
   const match = transformMatch(origMatch);
@@ -205,8 +204,9 @@ export async function insertMatch(
   await resetPlayerTemp(match);
   await telemetry(match);
   await updateCounts(match as ApiData, average_rank, num_rank_tier);
-  console.log('counts', origMatch.match_id);
+  console.log('counts', match.match_id);
   await upsertPlayers(match);
+  console.log('upsertPlayers', match.match_id);
   await queueMmr(match);
   await queueGcData(match);
   await queueRate(match);
@@ -214,7 +214,6 @@ export async function insertMatch(
   await postParsedMatch(match);
   const parseJob = await queueParse(match);
   await trx.commit();
-  // console.log('end', origMatch.match_id);
   return { parseJob, pgroup };
 
   async function upsertMatchPostgres(match: InsertMatchInput) {
@@ -518,7 +517,7 @@ export async function insertMatch(
       await updateHeroSearch();
       console.log('updateHeroSearch', match.match_id);
       await updateLastPlayed();
-      console.log('updateLastPlayed');
+      console.log('updateLastPlayed', match.match_id);
       await updateRecords();
       await updateHeroCounts(isProTier);
       await updateMatchCounts();
