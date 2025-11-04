@@ -194,6 +194,7 @@ export async function insertMatch(
     // let ranksBlob = { match_id: match.match_id, average_rank, players };
     // await upsertBlob('ranks', ranksBlob);
   }
+  console.log('mid', origMatch.match_id);
   await upsertMatchPostgres(match);
   await upsertPlayerCaches(match, average_rank, pgroup, options.type);
   await upsertMatchBlobs(match);
@@ -201,6 +202,7 @@ export async function insertMatch(
   await resetPlayerTemp(match);
   await telemetry(match);
   await updateCounts(match as ApiData);
+  console.log('counts', origMatch.match_id);
   await upsertPlayers(match);
   await queueMmr(match);
   await queueGcData(match);
