@@ -18,7 +18,6 @@ runInLoop(async function repair() {
       [row.match_id],
     );
     console.log(allRows);
-    // TODO enable when validated
-    // await reconcileMatch(allRows);
+    await reconcileMatch(allRows);
   }
-}, 10000);
+}, 1000);

@@ -12,12 +12,13 @@ export async function queueReconcile(
 ) {
   if (gcMatch) {
     // Log the players who were previously anonymous for reconciliation
+    const trx = await db.transaction();
     await Promise.all(
       gcMatch.players
-        .filter((p) => !Boolean(pgroup[p.player_slot]?.account_id))
+        // .filter((p) => !Boolean(pgroup[p.player_slot]?.account_id))
         .map(async (p) => {
           if (p.account_id) {
-            const { rows } = await db.raw(
+            const { rows } = await trx.raw(
               'INSERT INTO player_match_history(account_id, match_id, player_slot) VALUES (?, ?, ?) ON CONFLICT DO NOTHING RETURNING *',
               [p.account_id, gcMatch.match_id, p.player_slot],
             );
@@ -27,6 +28,7 @@ export async function queueReconcile(
           }
         }),
     );
+    await trx.commit();
   }
 }
 

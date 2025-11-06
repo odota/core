@@ -68,7 +68,7 @@ runInLoop(async function rate() {
   const ratingDiff1 = kFactor * (win1 - e1);
   const ratingDiff2 = kFactor * (win2 - e2);
   // Start transaction
-  await db.raw('BEGIN TRANSACTION');
+  const trx = await db.transaction();
   // Rate each player
   console.log('match %s, radiant_win: %s', row.match_id, row.radiant_win);
   for (let i = 0; i < gcMatch.players.length; i++) {
@@ -85,17 +85,17 @@ runInLoop(async function rate() {
       delta,
     );
     // Write ratings back to players
-    await db.raw(
+    await trx.raw(
       'INSERT INTO player_computed_mmr(account_id, computed_mmr) VALUES(?, ?) ON CONFLICT(account_id) DO UPDATE SET computed_mmr = EXCLUDED.computed_mmr',
       [p.account_id, newRating],
     );
   }
   // Delete row
-  await db.raw(
+  await trx.raw(
     'DELETE FROM rating_queue WHERE match_seq_num = ?',
     row.match_seq_num,
   );
   // Commit transaction
-  await db.raw('COMMIT');
+  await trx.commit();
   redisCount('rater');
 }, 0);
