@@ -76,7 +76,7 @@ export class ApiFetcher extends MatchFetcher<ApiData> {
     }
     let data = await this.getData(matchId);
     let pageBack = 0;
-    while (!data && pageBack <= 100) {
+    while (!data && pageBack <= 1000) {
       pageBack += 1;
       console.log('paging back %s for matchId %s', pageBack, matchId);
       data = await this.getData(matchId - pageBack);
@@ -87,10 +87,11 @@ export class ApiFetcher extends MatchFetcher<ApiData> {
       redisCount('backfill_fail');
       throw new Error('could not find preceding seqnum for match ' + matchId);
     }
-    const precedingSeqNum = data.match_seq_num;
+    // Note, match_id and match_seq_num aren't in the same order, so there's no guarantee that we'll find the match in the page
+    const earlierSeqNum = data.match_seq_num;
     const url = SteamAPIUrls.api_sequence({
-      start_at_match_seq_num: precedingSeqNum,
-      matches_requested: pageBack,
+      start_at_match_seq_num: earlierSeqNum,
+      matches_requested: 100,
     });
     const body = await getSteamAPIDataWithRetry({
       url,
