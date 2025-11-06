@@ -51,7 +51,7 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
     // The pgroup is used to update player_caches on insert.
     // Since currently gcdata and parse data have no knowledge of anonymity, we pass it from API data
     let { data: apiMatch, error: apiError } =
-      await apiFetcher.getOrFetchData(matchId, { seqNumBackfill: true });
+      await apiFetcher.getOrFetchData(matchId, { seqNumBackfill: false });
     if (apiError) {
       redisCount('request_api_fail');
       log('fail', 'API error: ' + apiError);
