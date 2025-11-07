@@ -132,7 +132,7 @@ export class ApiFetcher extends MatchFetcher<ApiData> {
     while (!match) {
       // Compare to the times from body.result.matches
       console.log('firstEndedAt: %s, lastEndedAt: %s, targetEndedAt: %s', new Date(firstEndedAt * 1000).toISOString(), new Date(lastEndedAt * 1000).toISOString(), new Date(targetEndedAt * 1000).toISOString());
-      if (Math.abs(earlierSeqNum - approxSeqNum) > 10000 && !match) {
+      if (Math.abs(earlierSeqNum - approxSeqNum) > 15000 && !match) {
         // Too far out of range
         // Try switching directions if we haven't
         // if (backward) {
