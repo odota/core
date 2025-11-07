@@ -121,21 +121,22 @@ export class ApiFetcher extends MatchFetcher<ApiData> {
         if (!retryable) {
           break;
         }
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
     }
     if (!targetEndedAt) {
       console.log('could not find %s targetEndedAt from retriever', matchId);
       return;
     }
-    let backward = true;
+    let backward = firstEndedAt < targetEndedAt;
     while (!match) {
       // Compare to the times from body.result.matches
       console.log('firstEndedAt: %s, lastEndedAt: %s, targetEndedAt: %s', new Date(firstEndedAt * 1000).toISOString(), new Date(lastEndedAt * 1000).toISOString(), new Date(targetEndedAt * 1000).toISOString());
-      if (Math.abs(earlierSeqNum - approxSeqNum) > 7500 && !match) {
+      if (Math.abs(earlierSeqNum - approxSeqNum) > 10000 && !match) {
         // Too far out of range
         // Try switching directions if we haven't
         // if (backward) {
-        //   backward = false;
+        //   backward = !backward;
         //   earlierSeqNum = approxSeqNum;
         //   continue;
         // }
