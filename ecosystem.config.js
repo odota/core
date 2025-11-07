@@ -25,15 +25,6 @@ let arr = [
     },
   },
   {
-    name: 'backfill2',
-    name_override: 'backfill',
-    group: 'backend',
-    env: {
-      BACKFILL_START: 2000000000,
-      BACKFILL_STOP: 3000000000,
-    },
-  },
-  {
     // Alternative way of getting matches if GetMatchHistoryBySequenceNum is broken
     name: 'backupscanner',
     group: 'disabled',
@@ -86,7 +77,7 @@ let arr = [
     name: 'scanner',
     group: 'backend',
     env: {
-      POSTGRES_MAX_CONNECTIONS: '300',
+      POSTGRES_MAX_CONNECTIONS: '110',
     },
   },
   {

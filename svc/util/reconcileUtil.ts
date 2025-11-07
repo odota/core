@@ -45,6 +45,7 @@ export async function reconcileMatch(rows: HistoryType[]) {
     // For more recent matches we're more likely to have data
     // Maybe we can mark the more recent matches with a flag
     // Or queue up recent matches from fullhistory and process them in order so fh requests show updates quicker
+    console.log('[RECONCILE] no API data for %s', rows[0].match_id);
     return;
   }
   // Update the league to match index (if available)

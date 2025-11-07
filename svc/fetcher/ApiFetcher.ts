@@ -80,12 +80,13 @@ export class ApiFetcher extends MatchFetcher<ApiData> {
       pageBack += 1;
       console.log('paging back %s for matchId %s', pageBack, matchId);
       data = await this.getData(matchId - pageBack);
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       redisCount('backfill_page_back');
     }
     if (!data) {
       redisCount('backfill_fail');
-      throw new Error('could not find preceding seqnum for match ' + matchId);
+      console.log('could not find approx seqnum for match ' + matchId);
+      return;
     }
     // Note, match_id and match_seq_num aren't in the same order, so there's no guarantee that we'll find the match in the page
     const earlierSeqNum = data.match_seq_num;
@@ -100,8 +101,12 @@ export class ApiFetcher extends MatchFetcher<ApiData> {
       (m: ApiData) => m.match_id === matchId,
     );
     if (!match) {
+      // Make a call to retriever and check the starttime + duration of the target match
+      // Compare to the first result from body.result.matches
+      // If the first result is after the target then we know we need to go back more
       redisCount('backfill_fail');
-      throw new Error('could not find in seqnum response match ' + matchId);
+      console.log('could not find in seqnum response match ' + matchId);
+      return;
     }
     redisCount('backfill_success');
     console.log(match);
