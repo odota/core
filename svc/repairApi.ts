@@ -20,4 +20,4 @@ runInLoop(async function repair() {
     console.log(allRows);
     await reconcileMatch(allRows);
   }
-}, 5000);
+}, 1000);

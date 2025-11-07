@@ -78,9 +78,6 @@ export class ApiFetcher extends MatchFetcher<ApiData> {
       return null;
     }
     let earlierSeqNum;
-    if (matchId === 7787025617) {
-      earlierSeqNum = 6555602043;
-    }
     let pageBack = 0;
     while (!earlierSeqNum && pageBack <= 1000) {
       console.log('looking back %s for matchId %s', pageBack, matchId);
