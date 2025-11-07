@@ -8,6 +8,9 @@ import { MatchFetcher } from './base.ts';
 import { insertMatch } from '../util/insert.ts';
 import { config } from '../../config.ts';
 import db from '../store/db.ts';
+import { GcdataFetcher } from './GcdataFetcher.ts';
+
+const gcFetcher = new GcdataFetcher();
 
 export class ApiFetcher extends MatchFetcher<ApiData> {
   useSavedData = Boolean(config.DISABLE_REAPI);
@@ -19,7 +22,7 @@ export class ApiFetcher extends MatchFetcher<ApiData> {
   };
   fetchData = async (
     matchId: number,
-    options?: { seqNumBackfill?: boolean },
+    options: { seqNumBackfill?: boolean },
   ) => {
     let match;
     try {
@@ -85,28 +88,63 @@ export class ApiFetcher extends MatchFetcher<ApiData> {
     }
     if (!data) {
       redisCount('backfill_fail');
-      console.log('could not find approx seqnum for match ' + matchId);
+      console.log('could not find approx seqnum for match %s', matchId);
       return;
     }
     // Note, match_id and match_seq_num aren't in the same order, so there's no guarantee that we'll find the match in the page
-    const earlierSeqNum = data.match_seq_num;
-    const url = SteamAPIUrls.api_sequence({
-      start_at_match_seq_num: earlierSeqNum,
-      matches_requested: 100,
-    });
-    const body = await getSteamAPIDataWithRetry({
-      url,
-    });
-    const match = body.result.matches.find(
-      (m: ApiData) => m.match_id === matchId,
-    );
+    async function getPageFindMatch(earlierSeqNum: number, matchId: number): Promise<[ApiData, number, number]> {
+      const url = SteamAPIUrls.api_sequence({
+        start_at_match_seq_num: earlierSeqNum,
+        matches_requested: 100,
+      });
+      const body = await getSteamAPIDataWithRetry({
+        url,
+      });
+      const match = body.result.matches.find(
+        (m: ApiData) => m.match_id === matchId,
+      );
+      const first = body.result.matches[0];
+      const last = body.result.matches[body.result.matches.length - 1];
+      return [match, first.start_time + first.duration, last.start_time + last.duration];
+    }
+    let earlierSeqNum = data.match_seq_num;
+    let [match, firstEndedAt, lastEndedAt] = await getPageFindMatch(earlierSeqNum, matchId);
+    let targetEndedAt;
     if (!match) {
-      // Make a call to retriever and check the starttime + duration of the target match
-      // Compare to the first result from body.result.matches
-      // If the first result is after the target then we know we need to go back more
-      redisCount('backfill_fail');
-      console.log('could not find in seqnum response match ' + matchId);
+      // Make a call to retriever and check the endedAt of the target match to help locate
+      // Fetcher may require retries, if retryable error
+      while (!targetEndedAt) {
+        const { retryable, endedAt } = await gcFetcher.fetchData(matchId, null);
+        targetEndedAt = endedAt;
+        if (!retryable) {
+          break;
+        }
+      }
+    }
+    if (!targetEndedAt) {
+      console.log('could not find %s targetEndedAt from retriever', matchId);
       return;
+    }
+    while (!match) {
+      // Compare to the times from body.result.matches
+      console.log('firstEndedAt: %s, lastEndedAt: %s, targetEndedAt: %s', new Date(firstEndedAt * 1000).toISOString(), new Date(lastEndedAt * 1000).toISOString(), new Date(targetEndedAt * 1000).toISOString());
+      if (targetEndedAt > firstEndedAt && targetEndedAt < lastEndedAt && !match) {
+        // Match should be in this range but it's not present
+        redisCount('backfill_fail');
+        console.log('could not find in seqnum response match %s', matchId);
+        return;
+      }
+      if (firstEndedAt > targetEndedAt) {
+        console.log('need to go back');
+        earlierSeqNum -= 100;
+      } else if (lastEndedAt < targetEndedAt) {
+        console.log('need to go forward');
+        earlierSeqNum += 100;
+      }
+      let result = await getPageFindMatch(earlierSeqNum, matchId);
+      match = result[0];
+      firstEndedAt = result[1];
+      lastEndedAt = result[2];
     }
     redisCount('backfill_success');
     console.log(match);

@@ -142,7 +142,7 @@ export async function addReliableJob(
     ],
   );
   const job = rows[0];
-  if (job) {
+  if (job && options.caller === 'web') {
     const message = c.magenta(
       `[${new Date().toISOString()}] [${
         options.caller ?? config.ROLE

@@ -205,7 +205,7 @@ export async function buildMatch(
         )
       : Promise.resolve(null),
     Boolean(options.meta)
-      ? metaFetcher.getOrFetchData(Number(matchId))
+      ? metaFetcher.getOrFetchData(Number(matchId), null)
       : Promise.resolve(null),
   ]);
   let matchResult: Match | ParsedMatch = {

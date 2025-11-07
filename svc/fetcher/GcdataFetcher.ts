@@ -27,7 +27,7 @@ export class GcdataFetcher extends MatchFetcher<GcData> {
     }
     return data;
   };
-  fetchData = async (matchId: number, extraData: GcExtraData) => {
+  fetchData = async (matchId: number, extraData: GcExtraData | null) => {
     const url = await getRandomRetrieverUrl(`/match/${matchId}`);
     let resp: AxiosResponse<typeof retrieverMatch>;
     try {
@@ -66,6 +66,13 @@ export class GcdataFetcher extends MatchFetcher<GcData> {
       // Really old matches have a 0 replay salt so if we don't have gamemode stop retrying
       return {
         error: 'extremely old GC response format without replay salt',
+        data: null,
+      };
+    }
+    if (data.result === 2) {
+      // Match not found, don't retry
+      return {
+        error: 'Match ID not found',
         data: null,
       };
     }
@@ -124,14 +131,17 @@ export class GcdataFetcher extends MatchFetcher<GcData> {
         matchId,
       ],
     );
-    // Put extra fields in matches/player_matches (do last since after this we won't fetch from GC again)
-    await insertMatch(matchToInsert, {
-      type: 'gcdata',
-      pgroup: extraData.pgroup,
-      origin: extraData.origin,
-      endedAt: data.match.starttime + data.match.duration,
-    });
-    return { data: matchToInsert, error: null };
+    const endedAt = data.match.starttime + data.match.duration;
+
+    if (extraData) {
+      await insertMatch(matchToInsert, {
+        type: 'gcdata',
+        pgroup: extraData.pgroup,
+        origin: extraData.origin,
+        endedAt,
+      });
+    }
+    return { data: matchToInsert, error: null, endedAt };
   };
   checkAvailable = async (matchId: number) => {
     throw new Error('not implemented');
