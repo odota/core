@@ -50,7 +50,7 @@ const defaults = {
   ENABLE_RANDOM_MMR_UPDATE: '', // set to request MMR/rank tier updates after ranked matches
   MAXIMUM_AGE_SCENARIOS_ROWS: '4', // maximum allowed age of scenarios rows in weeks
   ENABLE_API_LIMIT: '', // if truthy, API calls after exceeding API_FREE_LIMIT are blocked
-  API_FREE_LIMIT: '2000', // number of api requests per day before 429 is returned. If using an API key, calls over this are charged.
+  API_FREE_LIMIT: '3000', // number of api requests per day before 429 is returned. If using an API key, calls over this are charged.
   API_BILLING_UNIT: '100', // how many calls is equivalent to a unit of calls e.g. 100 calls per $0.01.
   API_KEY_PER_MIN_LIMIT: '300', // Rate limit per minute if using an API key
   NO_API_KEY_PER_MIN_LIMIT: '60', // Rate limit per minute if not using an API key
