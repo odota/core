@@ -128,7 +128,7 @@ export class ApiFetcher extends MatchFetcher<ApiData> {
       console.log('could not find %s targetEndedAt from retriever', matchId);
       return;
     }
-    let backward = firstEndedAt < targetEndedAt;
+    let backward = firstEndedAt > targetEndedAt;
     while (!match) {
       // Compare to the times from body.result.matches
       console.log('firstEndedAt: %s, lastEndedAt: %s, targetEndedAt: %s', new Date(firstEndedAt * 1000).toISOString(), new Date(lastEndedAt * 1000).toISOString(), new Date(targetEndedAt * 1000).toISOString());
