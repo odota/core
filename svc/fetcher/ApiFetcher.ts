@@ -105,10 +105,11 @@ export class ApiFetcher extends MatchFetcher<ApiData> {
       );
       const first = body.result.matches[0];
       const last = body.result.matches[body.result.matches.length - 1];
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 3000));
       return [match, first.start_time + first.duration, last.start_time + last.duration];
     }
     let earlierSeqNum = data.match_seq_num;
+    const approxSeqNum = earlierSeqNum;
     let [match, firstEndedAt, lastEndedAt] = await getPageFindMatch(earlierSeqNum, matchId);
     let targetEndedAt;
     if (!match) {
@@ -126,20 +127,27 @@ export class ApiFetcher extends MatchFetcher<ApiData> {
       console.log('could not find %s targetEndedAt from retriever', matchId);
       return;
     }
+    let backward = false;
     while (!match) {
       // Compare to the times from body.result.matches
       console.log('firstEndedAt: %s, lastEndedAt: %s, targetEndedAt: %s', new Date(firstEndedAt * 1000).toISOString(), new Date(lastEndedAt * 1000).toISOString(), new Date(targetEndedAt * 1000).toISOString());
-      if ((Math.abs(firstEndedAt - targetEndedAt) > 600 || Math.abs(lastEndedAt - targetEndedAt) > 600) && !match) {
+      if (Math.abs(firstEndedAt - targetEndedAt) > 600 && !match) {
         // Too far out of range
+        // Try switching directions if we haven't
+        if (!backward) {
+          backward = true;
+          earlierSeqNum = approxSeqNum;
+          continue;
+        }
         redisCount('backfill_fail');
         console.log('could not find in seqnum response match %s', matchId);
         return;
       }
-      if (lastEndedAt < targetEndedAt) {
-        console.log('need to go forward');
+      if (!backward) {
+        console.log('go forward');
         earlierSeqNum += 100;
       } else {
-        console.log('need to go back');
+        console.log('go back');
         earlierSeqNum -= 100;
       }
       let result = await getPageFindMatch(earlierSeqNum, matchId);
