@@ -105,6 +105,7 @@ export class ApiFetcher extends MatchFetcher<ApiData> {
       );
       const first = body.result.matches[0];
       const last = body.result.matches[body.result.matches.length - 1];
+      await new Promise(resolve => setTimeout(resolve, 2000));
       return [match, first.start_time + first.duration, last.start_time + last.duration];
     }
     let earlierSeqNum = data.match_seq_num;
@@ -134,14 +135,13 @@ export class ApiFetcher extends MatchFetcher<ApiData> {
         console.log('could not find in seqnum response match %s', matchId);
         return;
       }
-      if (firstEndedAt > targetEndedAt) {
-        console.log('need to go back');
-        earlierSeqNum -= 100;
-      } else if (lastEndedAt < targetEndedAt) {
+      if (lastEndedAt < targetEndedAt) {
         console.log('need to go forward');
         earlierSeqNum += 100;
+      } else {
+        console.log('need to go back');
+        earlierSeqNum -= 100;
       }
-      await new Promise(resolve => setTimeout(resolve, 1000));
       let result = await getPageFindMatch(earlierSeqNum, matchId);
       match = result[0];
       firstEndedAt = result[1];
