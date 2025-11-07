@@ -128,7 +128,7 @@ export class ApiFetcher extends MatchFetcher<ApiData> {
     while (!match) {
       // Compare to the times from body.result.matches
       console.log('firstEndedAt: %s, lastEndedAt: %s, targetEndedAt: %s', new Date(firstEndedAt * 1000).toISOString(), new Date(lastEndedAt * 1000).toISOString(), new Date(targetEndedAt * 1000).toISOString());
-      if ((Math.abs(firstEndedAt - targetEndedAt) > 300 || Math.abs(lastEndedAt - targetEndedAt) > 300) && !match) {
+      if ((Math.abs(firstEndedAt - targetEndedAt) > 600 || Math.abs(lastEndedAt - targetEndedAt) > 600) && !match) {
         // Too far out of range
         redisCount('backfill_fail');
         console.log('could not find in seqnum response match %s', matchId);
