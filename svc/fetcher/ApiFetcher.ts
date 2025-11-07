@@ -77,20 +77,24 @@ export class ApiFetcher extends MatchFetcher<ApiData> {
       redisCount('backfill_skip');
       return null;
     }
-    let data = await this.getData(matchId);
-    let pageBack = 0;
-    while (!data && pageBack <= 1000) {
-      pageBack += 1;
-      console.log('paging back %s for matchId %s', pageBack, matchId);
-      data = await this.getData(matchId - pageBack);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      redisCount('backfill_page_back');
+    let earlierSeqNum;
+    if (matchId === 7787025617) {
+      earlierSeqNum = 6555602043;
     }
-    if (!data) {
+    let pageBack = 0;
+    while (!earlierSeqNum && pageBack <= 1000) {
+      console.log('looking back %s for matchId %s', pageBack, matchId);
+      const data = await this.getData(matchId - pageBack);
+      earlierSeqNum = data?.match_seq_num;
+      pageBack += 1;
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+    if (!earlierSeqNum) {
       redisCount('backfill_fail');
       console.log('could not find approx seqnum for match %s', matchId);
       return;
     }
+    const approxSeqNum = earlierSeqNum;
     // Note, match_id and match_seq_num aren't in the same order, so there's no guarantee that we'll find the match in the page
     async function getPageFindMatch(earlierSeqNum: number, matchId: number): Promise<[ApiData, number, number]> {
       const url = SteamAPIUrls.api_sequence({
@@ -105,16 +109,15 @@ export class ApiFetcher extends MatchFetcher<ApiData> {
       );
       const first = body.result.matches[0];
       const last = body.result.matches[body.result.matches.length - 1];
+      redisCount('backfill_page_back');
       await new Promise(resolve => setTimeout(resolve, 3000));
       return [match, first.start_time + first.duration, last.start_time + last.duration];
     }
-    let earlierSeqNum = data.match_seq_num;
-    const approxSeqNum = earlierSeqNum;
     let [match, firstEndedAt, lastEndedAt] = await getPageFindMatch(earlierSeqNum, matchId);
-    let targetEndedAt;
     if (!match) {
-      // Make a call to retriever and check the endedAt of the target match to help locate
-      // Fetcher may require retries, if retryable error
+      let targetEndedAt;
+      // Make a call to retriever and check the endedAt of the target match to help locate by time
+      // Fetcher may require retries if retryable
       while (!targetEndedAt) {
         const { retryable, endedAt } = await gcFetcher.fetchData(matchId, null);
         targetEndedAt = endedAt;
@@ -123,38 +126,32 @@ export class ApiFetcher extends MatchFetcher<ApiData> {
         }
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
-    }
-    if (!targetEndedAt) {
-      console.log('could not find %s targetEndedAt from retriever', matchId);
-      return;
-    }
-    let backward = firstEndedAt > targetEndedAt;
-    while (!match) {
-      // Compare to the times from body.result.matches
-      console.log('firstEndedAt: %s, lastEndedAt: %s, targetEndedAt: %s', new Date(firstEndedAt * 1000).toISOString(), new Date(lastEndedAt * 1000).toISOString(), new Date(targetEndedAt * 1000).toISOString());
-      if (Math.abs(earlierSeqNum - approxSeqNum) > 15000 && !match) {
-        // Too far out of range
-        // Try switching directions if we haven't
-        // if (backward) {
-        //   backward = !backward;
-        //   earlierSeqNum = approxSeqNum;
-        //   continue;
-        // }
-        redisCount('backfill_fail');
-        console.log('could not find in seqnum response match %s', matchId);
+      if (!targetEndedAt) {
+        console.log('could not find %s targetEndedAt from retriever', matchId);
         return;
       }
-      if (backward) {
-        console.log('go back');
-        earlierSeqNum -= 100;
-      } else {
-        console.log('go forward');
-        earlierSeqNum += 100;
+      let backward = firstEndedAt > targetEndedAt;
+      while (!match) {
+        // Compare to the times from body.result.matches
+        console.log('firstEndedAt: %s, lastEndedAt: %s, targetEndedAt: %s', new Date(firstEndedAt * 1000).toISOString(), new Date(lastEndedAt * 1000).toISOString(), new Date(targetEndedAt * 1000).toISOString());
+        if (Math.abs(earlierSeqNum - approxSeqNum) > 15000 && !match) {
+          // Too far out of range
+          redisCount('backfill_fail');
+          console.log('could not find in seqnum response match %s', matchId);
+          return;
+        }
+        if (backward) {
+          console.log('go back');
+          earlierSeqNum -= 100;
+        } else {
+          console.log('go forward');
+          earlierSeqNum += 100;
+        }
+        let result = await getPageFindMatch(earlierSeqNum, matchId);
+        match = result[0];
+        firstEndedAt = result[1];
+        lastEndedAt = result[2];
       }
-      let result = await getPageFindMatch(earlierSeqNum, matchId);
-      match = result[0];
-      firstEndedAt = result[1];
-      lastEndedAt = result[2];
     }
     redisCount('backfill_success');
     console.log(match);
