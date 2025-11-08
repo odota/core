@@ -718,6 +718,9 @@ function makeUrlArray(input: string) {
   const output: string[] = [];
   const arr = input.split(',');
   arr.forEach((element) => {
+    if (!element) {
+      return;
+    }
     const parsedUrl = new URL('http://' + element);
     for (let i = 0; i < (Number(parsedUrl.searchParams.get('size')) || 1); i += 1) {
       output.push(parsedUrl.host as string);
