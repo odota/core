@@ -131,18 +131,20 @@ export class ApiFetcher extends MatchFetcher<ApiData> {
       while (!match) {
         // Compare to the times from body.result.matches
         console.log('firstEndedAt: %s, lastEndedAt: %s, targetEndedAt: %s', new Date(firstEndedAt * 1000).toISOString(), new Date(lastEndedAt * 1000).toISOString(), new Date(targetEndedAt * 1000).toISOString());
-        if (Math.abs(earlierSeqNum - approxSeqNum) > 15000 && !match) {
+        if (Math.abs(earlierSeqNum - approxSeqNum) > 20000 && !match) {
           // Too far out of range
           redisCount('backfill_fail');
           console.log('could not find in seqnum response match %s', matchId);
           return;
         }
+        let bigStep = Math.abs(firstEndedAt - targetEndedAt) > 600;
+        const stepSize = bigStep ? 1000 : 100;
         if (backward) {
-          console.log('go back');
-          earlierSeqNum -= 100;
+          console.log('go back %s', stepSize);
+          earlierSeqNum -= stepSize;
         } else {
-          console.log('go forward');
-          earlierSeqNum += 100;
+          console.log('go forward %s', stepSize);
+          earlierSeqNum += stepSize;
         }
         let result = await getPageFindMatch(earlierSeqNum, matchId);
         match = result[0];
