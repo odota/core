@@ -178,9 +178,7 @@ export async function getPlayerHeroRankings(accountId: string): Promise<any[]> {
   );
   return result.rows;
 }
-export async function getPlayer(
-  accountId: number,
-): Promise<User | undefined> {
+export async function getPlayer(accountId: number): Promise<User | undefined> {
   const playerData = await db
     .first<User>(
       'players.account_id',

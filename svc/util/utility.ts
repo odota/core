@@ -110,7 +110,10 @@ export async function getSteamAPIData(options: GetDataOptions): Promise<any> {
   const parsedUrl = new URL(url);
   // choose an api key to use
   const apiKeys = config.STEAM_API_KEY.split(',');
-  parsedUrl.searchParams.set('key', apiKeys[Math.floor(Math.random() * apiKeys.length)]);
+  parsedUrl.searchParams.set(
+    'key',
+    apiKeys[Math.floor(Math.random() * apiKeys.length)],
+  );
   if (options.proxy) {
     // choose one of the passed hosts
     parsedUrl.host =
@@ -722,7 +725,11 @@ function makeUrlArray(input: string) {
       return;
     }
     const parsedUrl = new URL('http://' + element);
-    for (let i = 0; i < (Number(parsedUrl.searchParams.get('size')) || 1); i += 1) {
+    for (
+      let i = 0;
+      i < (Number(parsedUrl.searchParams.get('size')) || 1);
+      i += 1
+    ) {
       output.push(parsedUrl.host as string);
     }
   });

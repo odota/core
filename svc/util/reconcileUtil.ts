@@ -34,7 +34,10 @@ export async function queueReconcile(
   }
 }
 
-export async function reconcileMatch(rows: HistoryType[], attemptRepair = false) {
+export async function reconcileMatch(
+  rows: HistoryType[],
+  attemptRepair = false,
+) {
   // validate that all rows have the same match ID
   const set = new Set(rows.map((r) => r.match_id));
   if (set.size > 1) {

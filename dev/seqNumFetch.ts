@@ -1,4 +1,6 @@
-const strFmt = (matchId: string) => `curl -X POST 'https://api.stratz.com/graphql' \
+const strFmt = (
+  matchId: string,
+) => `curl -X POST 'https://api.stratz.com/graphql' \
   -H 'Content-Type: application/json' \
   -H 'Authorization: Bearer '${process.env.STRATZ_TOKEN}' \
   -H 'user-agent: STRATZ-API' \
