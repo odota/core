@@ -859,6 +859,13 @@ function updateMatchups(match) {
                 account_id: p.account_id,
               },
             });
+            // Also queue a refresh of the user's rank/medal
+            await addJob({
+              name: 'mmrQueue',
+              data: {
+                account_id: p.account_id,
+              },
+            });
           }
         }
       }),
