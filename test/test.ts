@@ -67,7 +67,8 @@ before(async function globalSetup() {
     .get(/\/profile\/.*/)
     // fake mmr response up to 14 times for 7 non-anonymous players in test match inserted twice
     // add 1 more for refresh request
-    .times(15)
+    // add 10 more for player discovery requests
+    .times(25)
     .query(true)
     .reply(200, retrieverPlayer)
     // fake error to test handling
