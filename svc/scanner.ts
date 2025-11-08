@@ -116,5 +116,5 @@ runInLoop(async function scanApi() {
 
 async function getCurrentSeqNum(): Promise<number> {
   const result = await db.raw('select max(match_seq_num) from last_seq_num;');
-  return Number(result.rows[0].max) || 0;
+  return Number(result.rows[0]?.max) || 0;
 }

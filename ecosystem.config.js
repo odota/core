@@ -14,21 +14,27 @@ let arr = [
     name: 'proxy',
     group: 'proxy',
   },
-  // Load old matches into storage
   {
-    name: 'backfill0',
-    name_override: 'backfill',
+    name: 'autoprofiler',
     group: 'backend',
-    env: {
-      BACKFILL_START: 0,
-      BACKFILL_STOP: 1000000000,
-    },
   },
   {
-    // Alternative way of getting matches if GetMatchHistoryBySequenceNum is broken
-    name: 'backupscanner',
-    group: 'disabled',
+    name: 'autofullhistory',
+    group: 'backend',
   },
+  {
+    name: 'autommr',
+    group: 'backend',
+  },
+  // {
+  //   name: 'autoreconcile',
+  //   group: 'backend',
+  // },
+  // {
+  //   // Alternative way of getting matches if GetMatchHistoryBySequenceNum is broken
+  //   name: 'backupscanner',
+  //   group: 'disabled',
+  // },
   {
     name: 'web',
     group: 'backend',
@@ -66,10 +72,6 @@ let arr = [
     },
   },
   {
-    name: 'autoprofiler',
-    group: 'backend',
-  },
-  {
     name: 'profiler',
     group: 'backend',
   },
@@ -94,17 +96,9 @@ let arr = [
   //   group: 'backend',
   // },
   {
-    name: 'autofullhistory',
-    group: 'backend',
-  },
-  {
     name: 'monitor',
     group: 'backend',
   },
-  // {
-  //   name: 'autoreconcile',
-  //   group: 'backend',
-  // },
   {
     name: 'gcdata',
     group: 'backend',

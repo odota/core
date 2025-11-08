@@ -43,15 +43,19 @@ export async function reconcileMatch(
   if (set.size > 1) {
     throw new Error('multiple match IDs found in input to reconcileMatch');
   }
+  const first = rows[0];
+  if (!first) {
+    throw new Error('no rows in input to reconcileMatch');
+  }
   // optional: Verify each player/match combination doesn't exist in player_caches (or we have parsed data to update)
-  let [match] = await getMatchBlob(rows[0].match_id, allFetchers);
+  let [match] = await getMatchBlob(first.match_id, allFetchers);
   if (!match && attemptRepair) {
-    console.log('[RECONCILE] attempting repair for %s', rows[0].match_id);
-    await apiFetcher.getOrFetchData(rows[0].match_id, { seqNumBackfill: true });
-    [match] = await getMatchBlob(rows[0].match_id, allFetchers);
+    console.log('[RECONCILE] attempting repair for %s', first.match_id);
+    await apiFetcher.getOrFetchData(first.match_id, { seqNumBackfill: true });
+    [match] = await getMatchBlob(first.match_id, allFetchers);
   }
   if (!match) {
-    console.log('[RECONCILE] no API data for %s', rows[0].match_id);
+    console.log('[RECONCILE] no API data for %s', first.match_id);
     return;
   }
   // Update the league to match index (if available)

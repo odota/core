@@ -70,11 +70,16 @@ async function seqNumDelay() {
       apiKey,
   );
   const body = resp.data;
-  // get match_seq_num, compare with real seqnum
-  const currSeqNum = body.result.matches[0].match_seq_num;
-  const result = await db.raw('select max(match_seq_num) from last_seq_num;');
-  const numResult = Number(result.rows[0].max) || 0;
-  const metric = currSeqNum - numResult;
+  const currSeqNum = body.result.matches[0]?.match_seq_num;
+  const { rows } = await db.raw('select max(match_seq_num) from last_seq_num;');
+  const numResult = Number(rows[0]?.max) || 0;
+  let metric;
+  if (!currSeqNum || !numResult) {
+    metric = 0;
+  } else {
+    // get match_seq_num, compare with real seqnum
+    metric = currSeqNum - numResult;
+  }
   return {
     metric,
     threshold: 50000,
@@ -85,7 +90,7 @@ async function parseDelay() {
     "select count(*) from queue where type = 'parse'",
   );
   return {
-    metric: result.rows[0].count,
+    metric: result.rows[0]?.count,
     threshold: 10000,
   };
 }
@@ -94,7 +99,7 @@ async function gcDelay() {
     "select count(*) from queue where type = 'gcQueue'",
   );
   return {
-    metric: result.rows[0].count,
+    metric: result.rows[0]?.count,
     threshold: 100000,
   };
 }
@@ -103,7 +108,7 @@ async function fhDelay() {
     "select count(*) from queue where type = 'fhQueue'",
   );
   return {
-    metric: result.rows[0].count,
+    metric: result.rows[0]?.count,
     threshold: 100000,
   };
 }
@@ -138,14 +143,14 @@ async function profileDelay() {
 async function rateDelay() {
   const result = await db.raw('select count(*) from rating_queue');
   return {
-    metric: result.rows[0].count,
+    metric: result.rows[0]?.count,
     threshold: 100000,
   };
 }
 async function postgresUsage() {
   const result = await db.raw("select pg_database_size('yasp')");
   return {
-    metric: result.rows[0].pg_database_size,
+    metric: result.rows[0]?.pg_database_size,
     threshold: 4 * 10 ** 11,
   };
 }

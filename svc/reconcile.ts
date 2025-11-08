@@ -13,6 +13,11 @@ runInLoop(async function reconcile() {
   const { rows }: { rows: HistoryType[] } = await db.raw(
     'UPDATE player_match_history SET retries = coalesce(retries, 0) + 1 WHERE match_id = (SELECT match_id FROM player_match_history ORDER BY retries ASC NULLS FIRST LIMIT 1) RETURNING *',
   );
-  console.log(rows[0].match_id, rows[0].retries);
-  await reconcileMatch(rows, rows[0].retries >= 5);
-}, 50);
+  const first = rows[0];
+  if (!first) {
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    return;
+  }
+  console.log(first.match_id, first.retries);
+  await reconcileMatch(rows, first.retries >= 5);
+}, 0);

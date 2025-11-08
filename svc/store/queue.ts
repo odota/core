@@ -79,7 +79,7 @@ export async function runReliableQueue(
       `,
         [moment.utc().add(3, 'minute'), queueName],
       );
-      const job = result && result.rows && result.rows[0];
+      const job = result?.rows?.[0];
       if (job) {
         try {
           const success = await processor(job.data, {
