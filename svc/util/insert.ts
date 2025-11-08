@@ -846,7 +846,7 @@ function updateMatchups(match) {
     });
     await Promise.all(
       arr.map(async (p) => {
-        const rows = await trx.raw(
+        const { rows } = await trx.raw(
           'INSERT INTO players(account_id) VALUES(?) ON CONFLICT DO NOTHING RETURNING account_id',
           [p.account_id],
         );
