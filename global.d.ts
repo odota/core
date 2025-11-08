@@ -529,6 +529,7 @@ type HistoryType = {
   account_id: number;
   match_id: number;
   player_slot: number;
+  retries: number;
 };
 
 type ApiDataResponse = typeof import('./test/data/details_api.json');

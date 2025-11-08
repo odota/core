@@ -34,7 +34,7 @@ export async function queueReconcile(
   }
 }
 
-export async function reconcileMatch(rows: HistoryType[]) {
+export async function reconcileMatch(rows: HistoryType[], attemptRepair = false) {
   // validate that all rows have the same match ID
   const set = new Set(rows.map((r) => r.match_id));
   if (set.size > 1) {
@@ -42,8 +42,8 @@ export async function reconcileMatch(rows: HistoryType[]) {
   }
   // optional: Verify each player/match combination doesn't exist in player_caches (or we have parsed data to update)
   let [match] = await getMatchBlob(rows[0].match_id, allFetchers);
-  if (!match) {
-    console.log('[RECONCILE] attempting repair for %s');
+  if (!match && attemptRepair) {
+    console.log('[RECONCILE] attempting repair for %s', rows[0].match_id);
     await apiFetcher.getOrFetchData(rows[0].match_id, { seqNumBackfill: true });
     [match] = await getMatchBlob(rows[0].match_id, allFetchers);
   }

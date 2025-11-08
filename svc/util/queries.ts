@@ -168,7 +168,7 @@ export async function getPlayerHeroRankings(accountId: string): Promise<any[]> {
   SELECT
   hero_id,
   playerscore.score,
-  count(1) filter (where hr.score <= playerscore.score)::float/count(1) as percent_rank,
+  count(1) filter (where hr.score <= playerscore.score)::float/count(1) as percent_rank
   FROM (select * from hero_ranking TABLESAMPLE SYSTEM(0.1) REPEATABLE(1)) hr
   JOIN (select hero_id, score from hero_ranking hr2 WHERE account_id = ?) playerscore using (hero_id)
   GROUP BY hero_id, playerscore.score

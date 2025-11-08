@@ -7,7 +7,7 @@ import { runInLoop } from './util/utility.ts';
 
 runInLoop(async function repair() {
   const { rows } = await db.raw(
-    'select match_id, retries from player_match_history WHERE retries >= 10 ORDER BY retries DESC NULLS LAST LIMIT 1',
+    'select match_id, retries from player_match_history WHERE retries >= 5 ORDER BY retries DESC NULLS LAST LIMIT 1',
   );
   const row = rows[0];
   if (row) {
@@ -18,6 +18,6 @@ runInLoop(async function repair() {
       [row.match_id],
     );
     console.log(allRows);
-    await reconcileMatch(allRows);
+    await reconcileMatch(allRows, true);
   }
 }, 1000);
