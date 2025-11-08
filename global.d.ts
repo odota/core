@@ -495,7 +495,8 @@ type MetricName =
   | 'backfill_page_back'
   | 'cache_api_hit'
   | 'cache_gcdata_hit'
-  | 'cache_parsed_hit';
+  | 'cache_parsed_hit'
+  | 'player_discover';
 
 // Object to map player_slot to basic info
 type PGroup = {

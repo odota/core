@@ -204,9 +204,7 @@ export async function insertMatch(
   await resetPlayerTemp(match);
   await telemetry(match);
   await updateCounts(match as ApiData, average_rank, num_rank_tier);
-  // console.log('counts', match.match_id);
-  await upsertPlayers(match);
-  // console.log('upsertPlayers', match.match_id);
+  await discoverPlayers(match);
   await queueMmr(match);
   await queueGcData(match);
   await queueRate(match);
@@ -837,23 +835,33 @@ function updateMatchups(match) {
 */
   }
 
-  async function upsertPlayers(match: InsertMatchInput) {
+  async function discoverPlayers(match: InsertMatchInput) {
     // Player discovery
     // Add a placeholder player with just the ID
-    // We could also trigger profile update here but we probably don't need to update name after each match
-    // The profiler process will update profiles randomly
+    // Queue a profile update request
+    // The profiler process will update profiles randomly as well
     // We can also discover players from gcdata where they're not anonymous
     const arr = match.players.filter((p) => {
       return p.account_id && p.account_id !== getAnonymousAccountId();
     });
     await Promise.all(
-      arr.map((p) =>
-        // Avoid extraneous writes to player table by not using upsert function
-        trx.raw(
-          'INSERT INTO players(account_id) VALUES(?) ON CONFLICT DO NOTHING',
+      arr.map(async (p) => {
+        const rows = await trx.raw(
+          'INSERT INTO players(account_id) VALUES(?) ON CONFLICT DO NOTHING RETURNING account_id',
           [p.account_id],
-        ),
-      ),
+        );
+        if (rows.length) {
+          redisCount('player_discover');
+          if (p.account_id) {
+            await addJob({
+              name: 'profileQueue',
+              data: {
+                account_id: p.account_id,
+              },
+            });
+          }
+        }
+      }),
     );
   }
   async function queueMmr(match: InsertMatchInput) {

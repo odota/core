@@ -88,6 +88,7 @@ export async function buildStatus() {
         rated_matches_last_day: async () => countDay('rater'),
         rated_skip_last_day: async () => countDay('rater_skip'),
         profiler_last_day: async () => countDay('profiler'),
+        player_discover_last_day: async () => countDay('player_discover'),
         fullhistory_last_day: async () => countDay('fullhistory'),
         fullhistory_skips_last_day: async () => countDay('fullhistory_skip'),
         pmh_fullhistory_last_day: async () => countDay('pmh_fullhistory'),
