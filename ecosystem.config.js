@@ -169,10 +169,10 @@ let arr = [
     name: 'rater',
     group: 'backend',
   },
-  {
-    name: 'repair',
-    group: 'backend',
-  },
+  // {
+  //   name: 'repair',
+  //   group: 'backend',
+  // },
   {
     name: 'cycler',
     group: 'backend',
