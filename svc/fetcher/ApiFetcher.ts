@@ -75,7 +75,7 @@ export class ApiFetcher extends MatchFetcher<ApiData> {
     const limit = max - 10000;
     if (matchId > limit) {
       redisCount('backfill_skip');
-      return null;
+      return;
     }
     let earlierSeqNum;
     let pageBack = 0;

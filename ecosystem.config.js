@@ -170,7 +170,7 @@ let arr = [
     group: 'backend',
   },
   {
-    name: 'repairApi',
+    name: 'repair',
     group: 'backend',
   },
   {

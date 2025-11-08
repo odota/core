@@ -5,6 +5,8 @@ import { upsertPlayerCaches } from './insert.ts';
 import { getPGroup } from './pgroup.ts';
 import { redisCount } from './utility.ts';
 
+const apiFetcher = allFetchers.apiFetcher;
+
 export async function queueReconcile(
   gcMatch: GcData | null,
   pgroup: PGroup,
@@ -39,12 +41,13 @@ export async function reconcileMatch(rows: HistoryType[]) {
     throw new Error('multiple match IDs found in input to reconcileMatch');
   }
   // optional: Verify each player/match combination doesn't exist in player_caches (or we have parsed data to update)
-  const [match] = await getMatchBlob(rows[0].match_id, allFetchers);
+  let [match] = await getMatchBlob(rows[0].match_id, allFetchers);
   if (!match) {
-    // Note: unless we backfill, we have limited API data for old matches
-    // For more recent matches we're more likely to have data
-    // Maybe we can mark the more recent matches with a flag
-    // Or queue up recent matches from fullhistory and process them in order so fh requests show updates quicker
+    console.log('[RECONCILE] attempting repair for %s');
+    await apiFetcher.getOrFetchData(rows[0].match_id, { seqNumBackfill: true });
+    [match] = await getMatchBlob(rows[0].match_id, allFetchers);
+  }
+  if (!match) {
     console.log('[RECONCILE] no API data for %s', rows[0].match_id);
     return;
   }

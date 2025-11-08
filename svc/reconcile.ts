@@ -15,4 +15,4 @@ runInLoop(async function reconcile() {
   );
   console.log(rows[0].match_id);
   await reconcileMatch(rows);
-}, 100);
+}, 50);
