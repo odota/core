@@ -1,5 +1,4 @@
 // Processes a queue of full history/refresh requests for players
-import urllib from 'node:url';
 import config from '../config.ts';
 import {
   redisCount,
@@ -61,7 +60,7 @@ async function processFullHistory(job: FullHistoryJob) {
   const matchesToProcess: Record<string, ApiData> = {};
   let isMatchDataDisabled = null;
   // make a request for every possible hero
-  const url = SteamAPIUrls.api_history({
+  let url = SteamAPIUrls.api_history({
     account_id: player.account_id,
     matches_requested: 100,
   });
@@ -96,11 +95,12 @@ async function processFullHistory(job: FullHistoryJob) {
       return;
     }
     // paginate through to max 500 games if necessary with start_at_match_id=
-    const parse = urllib.parse(url, true);
-    parse.query.start_at_match_id = (startId - 1).toString();
-    parse.search = null;
-    url = urllib.format(parse);
-    return getApiMatchPage(player, url);
+    let newUrl = SteamAPIUrls.api_history({
+      account_id: player.account_id,
+      matches_requested: 100,
+      start_at_match_id: startId - 1,
+    });
+    return getApiMatchPage(player, newUrl);
   };
   // Fetches 1-5 pages of matches for the players and updates the match_ids object
   await getApiMatchPage(player, url);

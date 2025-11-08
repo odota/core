@@ -1,6 +1,5 @@
 import type { AxiosRequestConfig } from 'axios';
 import { game_mode, lobby_type, patch } from 'dotaconstants';
-import urllib from 'node:url';
 import moment from 'moment';
 import laneMappings from './laneMappings.ts';
 import config from '../../config.ts';
@@ -108,22 +107,21 @@ type GetDataOptions = {
 };
 export async function getSteamAPIData(options: GetDataOptions): Promise<any> {
   let url = options.url;
-  const parse = urllib.parse(url, true);
+  const parsedUrl = new URL(url);
   // choose an api key to use
   const apiKeys = config.STEAM_API_KEY.split(',');
-  parse.query.key = apiKeys[Math.floor(Math.random() * apiKeys.length)];
-  parse.search = null;
+  parsedUrl.searchParams.set('key', apiKeys[Math.floor(Math.random() * apiKeys.length)]);
   if (options.proxy) {
     // choose one of the passed hosts
-    parse.host =
+    parsedUrl.host =
       options.proxy[Math.floor(Math.random() * options.proxy.length)];
   }
-  if (parse.host === 'api.steampowered.com') {
+  if (parsedUrl.host === 'api.steampowered.com') {
     redisCount('steam_api_call');
   } else {
     redisCount('steam_proxy_call');
   }
-  const target = urllib.format(parse);
+  const target = parsedUrl.toString();
   const axiosOptions: AxiosRequestConfig = {
     timeout: options.timeout ?? 5000,
     headers: {
@@ -720,8 +718,8 @@ function makeUrlArray(input: string) {
   const output: string[] = [];
   const arr = input.split(',');
   arr.forEach((element) => {
-    const parsedUrl = urllib.parse(`http://${element}`, true);
-    for (let i = 0; i < (Number(parsedUrl.query.size) || 1); i += 1) {
+    const parsedUrl = new URL(element);
+    for (let i = 0; i < (Number(parsedUrl.searchParams.get('size')) || 1); i += 1) {
       output.push(parsedUrl.host as string);
     }
   });
