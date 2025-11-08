@@ -101,10 +101,10 @@ let arr = [
     name: 'monitor',
     group: 'backend',
   },
-  {
-    name: 'autoreconcile',
-    group: 'backend',
-  },
+  // {
+  //   name: 'autoreconcile',
+  //   group: 'backend',
+  // },
   {
     name: 'gcdata',
     group: 'backend',
