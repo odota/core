@@ -281,7 +281,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
             profile: playerData,
             rank_tier: rt?.rating ?? null,
             leaderboard_rank: lr?.rating ?? null,
-            computed_rating: cr?.computed_mmr ?? null,
+            computed_mmr: cr?.computed_mmr ?? null,
           };
           return res.json(result);
         },

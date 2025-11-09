@@ -15,7 +15,7 @@ export default {
         type: 'number',
         nullable: true,
       },
-      computed_rating: {
+      computed_mmr: {
         description: 'Rating estimate based on ranked matches',
         type: 'number',
         nullable: true,
