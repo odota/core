@@ -1,5 +1,5 @@
 /**
- * Deployed in the cloud to get data from the Steam GC.
+ * Gets data from the Steam GC.
  * Provides HTTP endpoints for other workers.
  * Approx limits: 100 per account per day, 500 per IP per day
  * */
@@ -13,12 +13,11 @@ import ProtoBuf from 'protobufjs';
 const app = express();
 const steamObj: Record<string, SteamUser> = {};
 
-const minUpTimeSeconds = 600;
-const numAccounts = 10;
+const minUpTimeSeconds = Number(config.RETRIEVER_MIN_UPTIME);
+const numAccounts = Number(config.RETRIEVER_NUM_ACCOUNTS);
 const matchesPerAccount = 100;
 const accountAttemptMax = 5;
-const matchRequestInterval =
-  1000 / ((matchesPerAccount * numAccounts) / minUpTimeSeconds);
+const matchRequestInterval = Math.max(1000 / numAccounts, minUpTimeSeconds / (numAccounts * matchesPerAccount) * 1000);
 const port = config.PORT || config.RETRIEVER_PORT;
 const noneReady = () =>
   Object.values(steamObj).filter((client) => client.steamID).length === 0;

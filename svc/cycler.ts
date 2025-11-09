@@ -3,9 +3,8 @@ import redis from './store/redis.ts';
 import axios from 'axios';
 import { runInLoop, shuffle } from './util/utility.ts';
 
-const { PARSER_PARALLELISM } = config;
 const projectId = config.GOOGLE_CLOUD_PROJECT_ID;
-const lifetime = 600;
+const lifetime = Number(config.RETRIEVER_MIN_UPTIME);
 const template = 'retriever-20250324';
 
 const zonesResponse = await axios.get(
@@ -19,10 +18,10 @@ runInLoop(async function cycler() {
   // Start with a base number for gcdata/rater reqs and add additional retrievers based on parser capacity
   // Each retriever handles about 1 req/sec so divide by the avg number of seconds per parse
   // const count = Math.ceil((await getCapacity()) / 12) + 5;
-  const count = 3;
+  const count = Number(config.CYCLER_COUNT);
   shuffle(zones);
   const zone = zones[0];
-  const config = {
+  const options = {
     name: 'retriever-' + process.hrtime.bigint(),
     scheduling: {
       automaticRestart: false,
@@ -37,7 +36,7 @@ runInLoop(async function cycler() {
   };
   const resp = await axios.post(
     `https://compute.googleapis.com/compute/v1/projects/${projectId}/zones/${zone}/instances?sourceInstanceTemplate=global/instanceTemplates/${template}`,
-    config,
+    options,
     { headers: { Authorization: 'Bearer ' + (await getToken()) } },
   );
   console.log(resp.data);
@@ -59,5 +58,5 @@ async function getCapacity() {
   if (config.USE_SERVICE_REGISTRY) {
     return redis.zcard('registry:parser');
   }
-  return Number(PARSER_PARALLELISM);
+  return Number(config.PARSER_PARALLELISM);
 }
