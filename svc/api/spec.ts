@@ -928,7 +928,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
       post: {
         operationId: generateOperationId('post', '/refresh'),
         summary: 'POST /players/{account_id}/refresh',
-        description: 'Refresh player match history (up to 500) and medal',
+        description: 'Refresh player match history (up to 500), medal (rank), and profile name',
         tags: ['players'],
         parameters: [{ $ref: '#/components/parameters/accountIdParam' }],
         responses: {
@@ -936,17 +936,14 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
             description: 'Success',
             content: {
               'application/json; charset=utf-8': {
-                schema: {
-                  title: 'PlayerRefreshResponse',
-                  type: 'object',
-                },
+                schema: {},
               },
             },
           },
         },
         route: () => '/players/:account_id/refresh',
         func: async (req, res, next) => {
-          const length = await addReliableJob(
+          await addReliableJob(
             {
               name: 'fhQueue',
               data: {
@@ -969,9 +966,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
               account_id: Number(req.params.account_id),
             },
           });
-          return res.json({
-            length,
-          });
+          return res.json({});
         },
       },
     },
