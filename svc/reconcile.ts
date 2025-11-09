@@ -9,7 +9,7 @@ import { reconcileMatch } from './util/reconcileUtil.ts';
 import { runInLoop } from './util/utility.ts';
 
 runInLoop(async function reconcile() {
-  const result = await db.raw('SELECT match_id FROM player_match_history ORDER BY retries ASC NULLS FIRST LIMIT 2');
+  const result = await db.raw('SELECT match_id FROM player_match_history ORDER BY retries ASC NULLS FIRST LIMIT 3');
   if (!result.rows.length) {
     await new Promise(resolve => setTimeout(resolve, 1000));
     return;
@@ -23,7 +23,12 @@ runInLoop(async function reconcile() {
       'UPDATE player_match_history SET retries = coalesce(retries, 0) + 1 WHERE match_id = ? RETURNING *',
       [matchId],
     );
+    if (!rows.length) {
+      // await new Promise(resolve => setTimeout(resolve, 1000));
+      return;
+    }
     console.log('%s: %s rows', matchId, rows.length);
-    await reconcileMatch(rows, rows[0]?.retries >= 5);
+    const shouldRepair = rows.every(row => row.retries >= 5);
+    await reconcileMatch(rows, shouldRepair);
   }));
 }, 0);

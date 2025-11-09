@@ -146,7 +146,7 @@ export class ApiFetcher extends MatchFetcher<ApiData> {
           new Date(lastEndedAt * 1000).toISOString(),
           new Date(targetEndedAt * 1000).toISOString(),
         );
-        if (Math.abs(earlierSeqNum - approxSeqNum) > 20000 && !match) {
+        if (Math.abs(earlierSeqNum - approxSeqNum) > 30000 && !match) {
           // Too far out of range
           redisCount('backfill_fail');
           console.log('could not find in seqnum response match %s', matchId);
