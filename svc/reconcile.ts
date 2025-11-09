@@ -9,15 +9,24 @@ import { reconcileMatch } from './util/reconcileUtil.ts';
 import { runInLoop } from './util/utility.ts';
 
 runInLoop(async function reconcile() {
-  // Fetch rows for a single match (could be multiple players to fill)
-  const { rows }: { rows: HistoryType[] } = await db.raw(
-    'UPDATE player_match_history SET retries = coalesce(retries, 0) + 1 WHERE match_id = (SELECT match_id FROM player_match_history ORDER BY retries ASC NULLS FIRST LIMIT 1) RETURNING *',
-  );
-  const first = rows[0];
-  if (!first) {
+  const result = await db.raw('SELECT match_id FROM player_match_history ORDER BY retries ASC NULLS FIRST LIMIT 3');
+  if (!result.rows.length) {
     await new Promise(resolve => setTimeout(resolve, 1000));
     return;
   }
-  console.log(first.match_id, first.retries);
-  await reconcileMatch(rows, first.retries >= 5);
+  // If there are multiple player rows for the match they could be the same ID
+  const dedupIds = [...new Set<number>(result.rows.map((r: any) => Number(r.match_id)))];
+  await Promise.all(dedupIds.map(async (matchId) => {
+    // Fetch rows for a single match (could be multiple players to fill)
+    const { rows }: { rows: HistoryType[] } = await db.raw(
+      'UPDATE player_match_history SET retries = coalesce(retries, 0) + 1 WHERE match_id = ? RETURNING *',
+      [matchId],
+    );
+    const first = rows[0];
+    if (!first) {
+      return;
+    }
+    console.log(first.match_id, first.retries);
+    await reconcileMatch(rows, first.retries >= 5);
+  }));
 }, 0);
