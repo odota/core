@@ -174,7 +174,7 @@ export async function buildMatch(
       match.players.map(async (p) => {
         const { rows } = await db.raw(
           `
-          SELECT personaname, name, last_login, rating, status
+          SELECT personaname, name, last_login, rating, status, computed_mmr
           FROM players
           LEFT JOIN notable_players USING(account_id)
           LEFT JOIN rank_tier USING(account_id)
