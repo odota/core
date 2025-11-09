@@ -9,7 +9,7 @@ import { reconcileMatch } from './util/reconcileUtil.ts';
 import { runInLoop } from './util/utility.ts';
 
 runInLoop(async function reconcile() {
-  const result = await db.raw('SELECT match_id FROM player_match_history ORDER BY retries ASC NULLS FIRST LIMIT 3');
+  const result = await db.raw('SELECT match_id FROM player_match_history ORDER BY retries ASC NULLS FIRST LIMIT 5');
   if (!result.rows.length) {
     await new Promise(resolve => setTimeout(resolve, 1000));
     return;
