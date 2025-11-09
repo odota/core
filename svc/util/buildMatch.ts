@@ -178,6 +178,7 @@ export async function buildMatch(
           FROM players
           LEFT JOIN notable_players USING(account_id)
           LEFT JOIN rank_tier USING(account_id)
+          LEFT JOIN player_computed_mmr USING(account_id)
           LEFT JOIN subscriber USING(account_id)
           WHERE players.account_id = ?
         `,
@@ -190,6 +191,7 @@ export async function buildMatch(
           name: row?.name,
           last_login: row?.last_login,
           rank_tier: row?.rating,
+          computed_mmr: row?.computed_mmr,
           is_subscriber: Boolean(row?.status),
         };
       }),

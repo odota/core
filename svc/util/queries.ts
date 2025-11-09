@@ -378,6 +378,13 @@ export async function getMetadata(req: Request) {
     freeCallLimit: async () => Number(config.API_FREE_LIMIT),
     freeRateLimit: async () => Number(config.NO_API_KEY_PER_MIN_LIMIT),
     premRateLimit: async () => Number(config.API_KEY_PER_MIN_LIMIT),
+    beta: async () => {
+      if (req.user?.account_id) {
+        const admins = config.ADMIN_ACCOUNT_IDS.split(',').map((e) => Number(e));
+        return admins.includes(Number(req.user?.account_id));
+      }
+      return false;
+    },
   };
   // A bit convoluted to support proper typing and parallel, but testing this out
   return parallelPromise<{
