@@ -456,7 +456,9 @@ CREATE INDEX IF NOT EXISTS player_match_history_retries_idx ON player_match_hist
 CREATE TABLE IF NOT EXISTS player_computed_mmr(
   PRIMARY KEY(account_id),
   account_id bigint,
-  computed_mmr real
+  computed_mmr real,
+  delta real,
+  match_id bigint
 );
 CREATE INDEX IF NOT EXISTS player_computed_mmr_computed_mmr_idx ON player_computed_mmr(computed_mmr);
 

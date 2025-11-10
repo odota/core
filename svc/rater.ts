@@ -86,8 +86,8 @@ runInLoop(async function rate() {
     );
     // Write ratings back to players
     await trx.raw(
-      'INSERT INTO player_computed_mmr(account_id, computed_mmr) VALUES(?, ?) ON CONFLICT(account_id) DO UPDATE SET computed_mmr = EXCLUDED.computed_mmr',
-      [p.account_id, newRating],
+      'INSERT INTO player_computed_mmr(account_id, computed_mmr, delta, match_id) VALUES(?, ?, ?, ?) ON CONFLICT(account_id) DO UPDATE SET computed_mmr = EXCLUDED.computed_mmr, delta = EXCLUDED.delta, match_id = EXCLUDED.match_id',
+      [p.account_id, newRating, delta, row.match_id],
     );
   }
   // Delete row
