@@ -3,7 +3,7 @@
 curl -sSL https://get.docker.com/ | sh
 
 sudo mkdir -p /var/lib/postgresql/data
-sudo mount -o discard,defaults /dev/disk/by-id/google-persistent-disk-1 /var/lib/postgresql/data
+sudo mount -o discard,defaults /dev/disk/by-id/google-disk-postgres-4 /var/lib/postgresql/data
 
 curl -H "Metadata-Flavor: Google" -L http://metadata.google.internal/computeMetadata/v1/project/attributes/postgresql > /var/lib/postgresql/data/pgdata/postgresql.conf
 curl -H "Metadata-Flavor: Google" -L http://metadata.google.internal/computeMetadata/v1/project/attributes/pg_hba > /var/lib/postgresql/data/pgdata/pg_hba.conf

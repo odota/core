@@ -5,7 +5,7 @@ import { runInLoop, shuffle } from './util/utility.ts';
 
 const projectId = config.GOOGLE_CLOUD_PROJECT_ID;
 const lifetime = Number(config.RETRIEVER_MIN_UPTIME);
-const template = 'retriever-20250324';
+const template = 'retriever-20251112';
 
 const zonesResponse = await axios.get(
   `https://compute.googleapis.com/compute/v1/projects/${projectId}/zones`,
