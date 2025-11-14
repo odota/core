@@ -174,7 +174,6 @@ CREATE TABLE IF NOT EXISTS players (
 );
 CREATE INDEX IF NOT EXISTS players_cheese_idx on players(cheese) WHERE cheese IS NOT NULL AND cheese > 0;
 CREATE INDEX IF NOT EXISTS players_personaname_idx_gin ON players USING GIN(personaname gin_trgm_ops);
-CREATE INDEX IF NOT EXISTS players_personaname_idx_gist ON players USING GIST(personaname gist_trgm_ops);
 CREATE INDEX IF NOT EXISTS players_full_history_time_idx ON players(full_history_time ASC NULLS FIRST);
 
 CREATE TABLE IF NOT EXISTS player_ratings (
