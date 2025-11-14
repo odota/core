@@ -74,7 +74,7 @@ const defaults = {
   SCANNER_OFFSET: '0', // Delay in match seq num value to run secondary scanner (to pick up missing matches)
   EXTERNAL: '', // Indicates that the service resides outside the registry and should report an external IP
   GOOGLE_CLOUD_PROJECT_ID: '', // Google Cloud project ID
-  CYCLER_COUNT: '5', // Number of retrievers to maintain in cycler
+  CYCLER_COUNT: '3', // Number of retrievers to maintain in cycler
   RETRIEVER_MIN_UPTIME: '400', // Number of seconds retrievers should stay up for before restarting
   RETRIEVER_NUM_ACCOUNTS: '10', // Max number of accounts to use with retriever
 };
