@@ -3,10 +3,10 @@ import { blobArchive } from '../store/archive.ts';
 import db from '../store/db.ts';
 import { insertMatch } from '../util/insert.ts';
 import axios from 'axios';
-import { MatchFetcher } from './base.ts';
+import { MatchFetcherBase } from './MatchFetcherBase.ts';
 import config from '../../config.ts';
 
-export class ParsedFetcher extends MatchFetcher<ParsedData> {
+export class ParsedFetcher extends MatchFetcherBase<ParsedData> {
   savedDataMetricName: MetricName = 'reparse';
   useSavedData = Boolean(config.DISABLE_REPARSE);
   getData = async (matchId: number): Promise<ParsedData | null> => {

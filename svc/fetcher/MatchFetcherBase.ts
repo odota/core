@@ -1,12 +1,24 @@
 import { redisCount } from '../util/utility.ts';
 
-export abstract class MatchFetcher<T> {
+export abstract class MatchFetcherBase<T> {
   // Name of the counter to increment when we find saved data when getOrFetching
   public savedDataMetricName: MetricName | undefined;
   // Whether to use saved data already in store when getOrFetching. Default to false to always fetch fresh data
   public useSavedData = false;
   // Read from the store without fetching
   public abstract getData(matchId: number): Promise<T | null>;
+  // Fetches the data from the remote store
+  public abstract fetchData(
+    matchId: number,
+    extraData: GcExtraData | ParseExtraData | ApiExtraData | null,
+  ): Promise<{
+    data: T | null;
+    error: string | null;
+    skipped?: boolean;
+    retryable?: boolean;
+  }>;
+  // Checks to see if the data is available
+  public abstract checkAvailable(matchId: number): Promise<boolean>;
   // Read from the store, fetch it from remote and save if needed
   public async getOrFetchData(
     matchId: number,
@@ -20,7 +32,7 @@ export abstract class MatchFetcher<T> {
     if (!matchId || !Number.isInteger(matchId) || matchId <= 0) {
       return {
         data: null,
-        error: '[APIDATA]: invalid match_id',
+        error: '[FETCHER]: invalid match_id',
         skipped: true,
       };
     }
@@ -69,17 +81,4 @@ export abstract class MatchFetcher<T> {
     }
     return { data, error };
   };
-  // Fetches the data from the remote store
-  public abstract fetchData(
-    matchId: number,
-    extraData: GcExtraData | ParseExtraData | ApiExtraData | null,
-  ): Promise<{
-    data: T | null;
-    error: string | null;
-    skipped?: boolean;
-    retryable?: boolean;
-  }>;
-  // Checks to see if the data is available
-  public abstract checkAvailable(matchId: number): Promise<boolean>;
-  // Each might also have an internal save function that's not in the interface
 }

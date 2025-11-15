@@ -1,10 +1,10 @@
 import { redisCount } from '../util/utility.ts';
 import { matchArchive } from '../store/archive.ts';
 import db from '../store/db.ts';
-import { MatchFetcher } from './base.ts';
+import { MatchFetcherBase } from './MatchFetcherBase.ts';
 import { doArchiveMatchFromBlobs } from '../util/archiveUtil.ts';
 
-export class ArchivedFetcher extends MatchFetcher<ParsedMatch> {
+export class ArchivedFetcher extends MatchFetcherBase<ParsedMatch> {
   getData = async (matchId: number): Promise<ParsedMatch | null> => {
     // Check if the parsed data is archived
     // Most matches won't be in the archive so it's more efficient not to always try

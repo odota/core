@@ -4,7 +4,7 @@ import {
   redisCount,
 } from '../util/utility.ts';
 import { blobArchive } from '../store/archive.ts';
-import { MatchFetcher } from './base.ts';
+import { MatchFetcherBase } from './MatchFetcherBase.ts';
 import { insertMatch } from '../util/insert.ts';
 import { config } from '../../config.ts';
 import db from '../store/db.ts';
@@ -12,7 +12,7 @@ import { GcdataFetcher } from './GcdataFetcher.ts';
 
 const gcFetcher = new GcdataFetcher();
 
-export class ApiFetcher extends MatchFetcher<ApiData> {
+export class ApiFetcher extends MatchFetcherBase<ApiData> {
   useSavedData = Boolean(config.DISABLE_REAPI);
   getData = async (matchId: number): Promise<ApiData | null> => {
     let data = null;

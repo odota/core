@@ -2,7 +2,7 @@ import ProtoBuf from 'protobufjs';
 import { exec } from 'node:child_process';
 import { promisify } from 'node:util';
 import { buildReplayUrl, redisCount } from '../util/utility.ts';
-import { MatchFetcher } from './base.ts';
+import { MatchFetcherBase } from './MatchFetcherBase.ts';
 import { GcdataFetcher } from './GcdataFetcher.ts';
 const execPromise = promisify(exec);
 
@@ -17,7 +17,7 @@ const builder = root.loadSync('./proto/dota_match_metadata.proto', {
 });
 const CDOTAMatchMetadataFile = builder.lookupType('CDOTAMatchMetadataFile');
 
-export class MetaFetcher extends MatchFetcher<Record<string, any>> {
+export class MetaFetcher extends MatchFetcherBase<Record<string, any>> {
   getData = async (matchId: number) => {
     const result = await this.fetchData(matchId);
     return result.data;

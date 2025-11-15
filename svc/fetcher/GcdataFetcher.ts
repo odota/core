@@ -7,10 +7,10 @@ import axios from 'axios';
 import retrieverMatch from '../../test/data/retriever_match.json' with { type: 'json' };
 import { insertMatch } from '../util/insert.ts';
 import { blobArchive } from '../store/archive.ts';
-import { MatchFetcher } from './base.ts';
+import { MatchFetcherBase } from './MatchFetcherBase.ts';
 import config from '../../config.ts';
 
-export class GcdataFetcher extends MatchFetcher<GcData> {
+export class GcdataFetcher extends MatchFetcherBase<GcData> {
   savedDataMetricName: MetricName = 'regcdata';
   useSavedData = Boolean(config.DISABLE_REGCDATA);
   getData = async (matchId: number): Promise<GcData | null> => {
