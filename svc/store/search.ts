@@ -11,13 +11,15 @@ export async function search(query: string) {
   // await db.raw('SELECT set_limit(0.5)');
   const personaNameMatch = await db.raw(
     `
-    SELECT account_id, avatarfull, personaname, last_match_time, (personaname <<<-> ?) as sml
+    SELECT account_id, avatarfull, personaname, last_match_time, similarity(?, personaname) as sml
     FROM players
-    ORDER BY sml, last_match_time DESC NULLS LAST
+    WHERE ? % personaname
+    ORDER BY sml DESC, last_match_time DESC NULLS LAST
     LIMIT 50;
     `,
-    [query],
+    [query, query],
   );
-  // Later versions of postgres have strict_word_similarity (<<<->) which may be more accurate
+  // Later versions of postgres have strict_word_similarity / <<% which may be more accurate
+  // Based on testing though this is still pretty slow compared to elasticsearch
   return [...accountIdMatch, ...personaNameMatch.rows];
 }
