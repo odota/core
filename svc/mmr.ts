@@ -14,7 +14,7 @@ runQueue(
     const url = await getRandomRetrieverUrl(`/profile/${accountId}`);
     console.log(url);
     const { data } = await axios.get(url, {
-      timeout: 5000,
+      timeout: 2000,
     });
     redisCount('retriever_player');
 
@@ -32,6 +32,6 @@ runQueue(
       data.account_id = job.account_id ?? null;
       await insertPlayerRating(db, data);
     }
-    await new Promise((resolve) => setTimeout(resolve, 1));
+    await new Promise((resolve) => setTimeout(resolve, 0));
   },
 );

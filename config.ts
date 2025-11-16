@@ -31,10 +31,10 @@ const defaults = {
   SESSION_SECRET: 'secret to encrypt cookies with', // string to encrypt cookies
   COOKIE_DOMAIN: '', // domain to use for the cookie.  Use e.g. '.opendota.com' to share cookie across subdomains
   UNTRACK_DAYS: '30', // The number of days a user is tracked for after every visit
-  MMR_PARALLELISM: '1', // Number of simultaneous MMR requests to make (per retriever)
-  PARSER_PARALLELISM: '1', // Number of simultaneous parse jobs to run (per parser)
+  MMR_PARALLELISM: '1', // Number of simultaneous MMR jobs to process
+  PARSER_PARALLELISM: '1', // Number of simultaneous parse jobs to process
   FULLHISTORY_PARALLELISM: '1', // Number of simultaneous fullhistory (player refresh) jobs to process
-  GCDATA_PARALLELISM: '1', // Number of simultaneous GC match details requests to make (per retriever)
+  GCDATA_PARALLELISM: '1', // Number of simultaneous GC match details jobs to process
   BENCHMARK_RETENTION_MINUTES: '60', // minutes in block to retain benchmark data for percentile
   GCDATA_PERCENT: '0', // percent of inserted matches to randomly queue for GC data
   RATING_PERCENT: '0', // percent of ranked matches to update player ratings with
@@ -74,9 +74,9 @@ const defaults = {
   SCANNER_OFFSET: '0', // Delay in match seq num value to run secondary scanner (to pick up missing matches)
   EXTERNAL: '', // Indicates that the service resides outside the registry and should report an external IP
   GOOGLE_CLOUD_PROJECT_ID: '', // Google Cloud project ID
-  CYCLER_COUNT: '3', // Number of retrievers to maintain in cycler
-  RETRIEVER_MIN_UPTIME: '400', // Number of seconds retrievers should stay up for before restarting
-  RETRIEVER_NUM_ACCOUNTS: '10', // Max number of accounts to use with retriever
+  CYCLER_COUNT: '1', // Number of retrievers to maintain in cycler
+  RETRIEVER_MIN_UPTIME: '500', // Number of seconds retrievers should stay up for before restarting
+  RETRIEVER_NUM_ACCOUNTS: '10', // Max number of accounts to use with retriever at once
 };
 if (process.env.NODE_TEST_CONTEXT) {
   console.log('[TEST MODE] setting config to test values');

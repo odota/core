@@ -152,12 +152,11 @@ app.get('/match/:match_id', (req, res, next) => {
   matchAttempts[rKey] = (matchAttempts[rKey] ?? 0) + 1;
   console.time('match:' + matchId);
   const timeout = setTimeout(() => {
-    // Respond after 3 seconds to send back header info
-    // Currently consumers are configured to fail after 4 seconds
+    // Respond to send back header info even if no response from GC
     // Use a 204 status code to avoid exception, we'll check the response body after and read headers
     console.timeEnd('match:' + matchId);
     res.status(204).end();
-  }, 3000);
+  }, 2500);
   client.sendToGC(
     DOTA_APPID,
     EDOTAGCMsg.values.k_EMsgGCMatchDetailsRequest,
