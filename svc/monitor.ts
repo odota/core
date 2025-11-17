@@ -156,15 +156,15 @@ async function postgresUsage() {
 }
 async function cassandraUsage() {
   const result = await cassandra.execute(
-    "select mean_partition_size, partitions_count from system.size_estimates where keyspace_name = 'yasp'",
+`
+SELECT sum(mebibytes) * 1048576 as size
+FROM system_views.disk_usage
+WHERE keyspace_name = 'yasp';
+`,
   );
-  let size = 0;
-  result.rows.forEach((r) => {
-    size += r.mean_partition_size * r.partitions_count;
-  });
   return {
-    metric: size,
-    threshold: 5 * 10 ** 12,
+    metric: result.rows[0]?.size,
+    threshold: 6.2 * 10 ** 12,
   };
 }
 async function redisUsage() {
