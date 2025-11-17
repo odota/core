@@ -1,1 +1,0 @@
-curl -X PUT -H "Content-Type: application/json" -d "@index.json" odota-elasticsearch:9200/dota

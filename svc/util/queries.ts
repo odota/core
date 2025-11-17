@@ -13,7 +13,6 @@ import {
   averageMedal,
   parallelPromise,
 } from './utility.ts';
-import { es, INDEX } from '../store/elasticsearch.ts';
 
 export async function getDistributions() {
   const result: AnyDict = {};
@@ -428,50 +427,20 @@ export async function search(query: string) {
     : [];
   // Set similarity threshold
   // await db.raw('SELECT set_limit(0.5)');
-  const personaNameMatch = await db.raw(
-    `
-    SELECT account_id, avatarfull, personaname, last_match_time, similarity(?, personaname) as sml
-    FROM players
-    WHERE ? % personaname
-    ORDER BY sml DESC, last_match_time DESC NULLS LAST
-    LIMIT 50;
-    `,
-    [query, query],
-  );
+  let rows = [];
+  if (query.length >= 3) {
+    const personaNameMatch = await db.raw(
+      `
+      SELECT account_id, avatarfull, personaname, last_match_time, similarity(?, personaname) as sml
+      FROM players
+      WHERE personaname ilike ?
+      ORDER BY sml DESC, last_match_time DESC NULLS LAST
+      LIMIT 50;
+      `,
+      [query, `%${query}%`],
+    );
+    rows = personaNameMatch.rows;
+  }
   // Later versions of postgres have strict_word_similarity / <<% which may be more accurate
-  // Based on testing though this is still pretty slow compared to elasticsearch
-  return [...accountIdMatch, ...personaNameMatch.rows];
-}
-
-export async function searchES(query: string) {
-  const accountIdMatch = Number.isInteger(Number(query))
-    ? await db
-        .select(['account_id', 'personaname', 'avatarfull'])
-        .from('players')
-        .where({ account_id: Number(query) })
-    : [];
-
-  const { body } = await es.search({
-    index: INDEX,
-    size: 50,
-    body: {
-      query: {
-        match: {
-          personaname: {
-            query,
-          },
-        },
-      },
-      sort: [{ _score: 'desc' }, { last_match_time: 'desc' }],
-    },
-  });
-  const esRows = body.hits.hits.map((e: any) => ({
-    account_id: Number(e._id),
-    personaname: e._source.personaname,
-    avatarfull: e._source.avatarfull,
-    last_match_time: e._source.last_match_time,
-    similarity: e._score,
-  }));
-
-  return [...accountIdMatch, ...esRows];
+  return [...accountIdMatch, ...rows];
 }

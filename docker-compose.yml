@@ -16,19 +16,6 @@ services:
   redis:
     image: redis:7
     container_name: odota-redis
-  elasticsearch:
-    image: elasticsearch:6.8.23
-    container_name: odota-elasticsearch
-    environment:
-      - cluster.name=docker-cluster
-      - bootstrap.memory_lock=true
-      - bootstrap.system_call_filter=false
-      - 'ES_JAVA_OPTS=-Xms256m -Xmx256m'
-      - discovery.type=single-node
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
   parser:
     image: odota/parser
     container_name: odota-parser
@@ -46,12 +33,10 @@ services:
       READONLY_POSTGRES_URL: postgresql://readonly:readonly@odota-postgres/yasp
       REDIS_URL: redis://odota-redis:6379/0
       CASSANDRA_URL: cassandra://odota-cassandra/yasp
-      ELASTICSEARCH_URL: odota-elasticsearch:9200
       ARCHIVE_S3_ENDPOINT: http://odota-minio:9000
     links:
       - postgres
       - redis
-      - elasticsearch
       - parser
       - minio
       - cassandra

@@ -1,10 +1,9 @@
 // Updates Steam profile data for players periodically
-import { upsertPlayer, bulkIndexPlayer } from './util/insert.ts';
+import { upsertPlayer } from './util/insert.ts';
 import db from './store/db.ts';
 import {
   getSteamAPIDataWithRetry,
   SteamAPIUrls,
-  convert64to32,
   runInLoop,
   redisCount,
 } from './util/utility.ts';
@@ -24,24 +23,6 @@ runInLoop(async function profile() {
   const results = body.response.players.filter(
     (player: User) => player.steamid,
   );
-  const bulkUpdate = results.reduce((acc: any, player: User) => {
-    acc.push(
-      {
-        update: {
-          _id: Number(convert64to32(player.steamid)),
-        },
-      },
-      {
-        doc: {
-          personaname: player.personaname,
-          avatarfull: player.avatarfull,
-        },
-        doc_as_upsert: true,
-      },
-    );
-    return acc;
-  }, []);
-  await bulkIndexPlayer(bulkUpdate);
   await Promise.all(
     results.map((player: User) => upsertPlayer(db, player, false)),
   );

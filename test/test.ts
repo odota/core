@@ -2,7 +2,6 @@ import type { Express } from 'express';
 import assert from 'node:assert';
 import supertest from 'supertest';
 import stripe from '../svc/store/stripe.ts';
-import { es } from '../svc/store/elasticsearch.ts';
 import redis from '../svc/store/redis.ts';
 import { CreateBucketCommand, S3Client } from '@aws-sdk/client-s3';
 import summariesApi from './data/summaries_api.json' with { type: 'json' };
@@ -82,7 +81,6 @@ before(async function globalSetup() {
     .reply(200, retrieverMatch);
 
   await initPostgres();
-  await initElasticsearch();
   await initRedis();
   await initCassandra();
   await initMinio();
@@ -91,39 +89,6 @@ before(async function globalSetup() {
   await startServices();
   // Wait one second to give mmr time to update
   await new Promise((resolve) => setTimeout(resolve, 1000));
-
-  async function initElasticsearch() {
-    console.log('Create Elasticsearch Mapping');
-    const mapping = JSON.parse(
-      readFileSync('./elasticsearch/index.json', { encoding: 'utf-8' }),
-    );
-    const exists = await es.indices.exists({
-      index: 'dota-test', // Check if index already exists, in which case, delete it
-    });
-    if (exists.body) {
-      await es.indices.delete({
-        index: 'dota-test',
-      });
-    }
-    await es.indices.create({
-      index: 'dota-test',
-    });
-    await es.indices.close({
-      index: 'dota-test',
-    });
-    await es.indices.putSettings({
-      index: 'dota-test',
-      body: mapping.settings,
-    });
-    await es.indices.putMapping({
-      index: 'dota-test',
-      type: 'player',
-      body: mapping.mappings.player,
-    });
-    await es.indices.open({
-      index: 'dota-test',
-    });
-  }
 
   async function initRedis() {
     console.log('wiping redis');

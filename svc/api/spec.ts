@@ -48,7 +48,6 @@ import {
   getItemTimings,
   isSubscriber,
   search,
-  searchES,
 } from '../util/queries.ts';
 import heroParams from './requests/heroParams.ts';
 import leagueParams from './requests/leagueParams.ts';
@@ -1354,12 +1353,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           if (typeof req.query.q !== 'string') {
             return res.status(400).json({ error: 'input is not a string' });
           }
-          let result = [];
-          if (req.query.pg) {
-            result = await search(req.query.q);
-          } else {
-            result = await searchES(req.query.q);
-          }
+          let result = await search(req.query.q);
           return res.json(result);
         },
       },

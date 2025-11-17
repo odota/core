@@ -6,7 +6,6 @@ import config from '../../config.ts';
 import { addJob, addReliableJob } from '../store/queue.ts';
 import db from '../store/db.ts';
 import redis from '../store/redis.ts';
-import { es, INDEX } from '../store/elasticsearch.ts';
 import {
   getAnonymousAccountId,
   convert64to32,
@@ -84,35 +83,9 @@ export async function upsertPlayer(
   if (!player.account_id || player.account_id === getAnonymousAccountId()) {
     return;
   }
-  if (indexPlayer) {
-    //@ts-expect-error
-    await es.update({
-      index: INDEX,
-      type: 'player',
-      id: player.account_id,
-      body: {
-        doc: {
-          personaname: player.personaname,
-          avatarfull: player.avatarfull,
-        },
-        doc_as_upsert: true,
-      },
-    });
-  }
   return upsert(db, 'players', player, {
     account_id: player.account_id,
   });
-}
-
-export async function bulkIndexPlayer(bulkActions: any[]) {
-  // Bulk call to ElasticSearch
-  if (bulkActions.length > 0) {
-    await es.bulk({
-      body: bulkActions,
-      index: INDEX,
-      type: 'player',
-    });
-  }
 }
 
 export async function insertPlayerRating(db: Knex, row: PlayerRating) {
@@ -634,23 +607,6 @@ export async function insertMatch(
           player.account_id && player.account_id !== getAnonymousAccountId(),
       );
       const lastMatchTime = new Date(match.start_time * 1000);
-      const bulkUpdate = filteredPlayers.reduce<any>((acc, player) => {
-        acc.push(
-          {
-            update: {
-              _id: player.account_id,
-            },
-          },
-          {
-            doc: {
-              last_match_time: lastMatchTime,
-            },
-            doc_as_upsert: true,
-          },
-        );
-        return acc;
-      }, []);
-      bulkIndexPlayer(bulkUpdate);
       await Promise.all(
         filteredPlayers.map((player) =>
           upsertPlayer(

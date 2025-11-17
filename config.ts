@@ -26,7 +26,6 @@ const defaults = {
   POSTGRES_MAX_CONNECTIONS: '3', // Number of maximum connections in pool for postgres (per process)
   REDIS_URL: 'redis://127.0.0.1:6379/0', // connection string for Redis
   CASSANDRA_URL: 'cassandra://localhost/yasp', // connection string for Cassandra
-  ELASTICSEARCH_URL: 'localhost:9200',
   RETRIEVER_SECRET: '', // string to use as shared secret with retriever/parser
   SESSION_SECRET: 'secret to encrypt cookies with', // string to encrypt cookies
   COOKIE_DOMAIN: '', // domain to use for the cookie.  Use e.g. '.opendota.com' to share cookie across subdomains
