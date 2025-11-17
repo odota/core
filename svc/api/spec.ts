@@ -3,8 +3,6 @@ import moment from 'moment';
 import { Client } from 'pg';
 import config from '../../config.ts';
 import { addJob, addReliableJob, getReliableJob } from '../store/queue.ts';
-import { search } from '../store/search.ts';
-import { searchES } from '../store/searchES.ts';
 import { buildMatch } from '../util/buildMatch.ts';
 import { getPlayerMatches } from '../util/buildPlayer.ts';
 import {
@@ -49,6 +47,8 @@ import {
   getTeamScenarios,
   getItemTimings,
   isSubscriber,
+  search,
+  searchES,
 } from '../util/queries.ts';
 import heroParams from './requests/heroParams.ts';
 import leagueParams from './requests/leagueParams.ts';
