@@ -40,6 +40,9 @@ let arr = [
     group: 'backend',
     exec_mode: prod ? 'cluster' : undefined,
     instances: prod ? 4 : undefined,
+    env: {
+      POSTGRES_MAX_CONNECTIONS: '10',
+    },
   },
   // One local instance of retriever for getting player profiles since this isn't rate limited
   {
