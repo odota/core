@@ -366,6 +366,9 @@ export async function getTeamScenarios(req: Request): Promise<any[]> {
   );
   return result.rows;
 }
+
+const admins = config.ADMIN_ACCOUNT_IDS.split(',').map((e) => Number(e));
+
 export async function getMetadata(req: Request) {
   const obj = {
     scenarios: async () => metadata,
@@ -381,7 +384,6 @@ export async function getMetadata(req: Request) {
     premRateLimit: async () => Number(config.API_KEY_PER_MIN_LIMIT),
     beta: async () => {
       if (req.user?.account_id) {
-        const admins = config.ADMIN_ACCOUNT_IDS.split(',').map((e) => Number(e));
         return admins.includes(Number(req.user?.account_id));
       }
       return false;
