@@ -433,11 +433,14 @@ export async function search(query: string) {
       `
       SELECT account_id, avatarfull, personaname, last_match_time, similarity(?, personaname) as sml
       FROM players
-      WHERE personaname ilike ?
+      WHERE personaname % ?
       ORDER BY sml DESC, last_match_time DESC NULLS LAST
       LIMIT 50;
       `,
-      [query, `%${query}%`],
+      // ilike search is faster, but won't return results for e.g. 'yasp triplea' for '[YASP.co] TripleA'
+      // WHERE personaname ilike ?
+      // [query, `%${query}%`],
+      [query, query],
     );
     rows = personaNameMatch.rows;
   }
