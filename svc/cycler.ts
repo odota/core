@@ -5,7 +5,7 @@ import { runInLoop, shuffle } from './util/utility.ts';
 
 const projectId = config.GOOGLE_CLOUD_PROJECT_ID;
 const lifetime = Number(config.RETRIEVER_MIN_UPTIME);
-const template = 'retriever-20251112';
+const template = config.GOOGLE_CLOUD_RETRIEVER_TEMPLATE;
 
 const zonesResponse = await axios.get(
   `https://compute.googleapis.com/compute/v1/projects/${projectId}/zones`,
@@ -13,14 +13,16 @@ const zonesResponse = await axios.get(
 );
 const zones = zonesResponse.data.items.map((zone: any) => zone.name);
 console.log(zones, zones.length);
+shuffle(zones);
+let i = 0;
 
 runInLoop(async function cycler() {
   // Start with a base number for gcdata/rater reqs and add additional retrievers based on parser capacity
   // Each retriever handles about 1 req/sec so divide by the avg number of seconds per parse
   // const count = Math.ceil((await getCapacity()) / 12) + 5;
   const count = Number(config.CYCLER_COUNT);
-  shuffle(zones);
-  const zone = zones[0];
+  const zone = zones[i];
+  i += 1;
   const options = {
     name: 'retriever-' + process.hrtime.bigint(),
     scheduling: {
