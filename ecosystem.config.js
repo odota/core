@@ -54,6 +54,9 @@ let arr = [
     // Requests and inserts replay parse data. Note this is different from parseServer which is in Java and runs externally
     name: 'parser',
     group: 'backend',
+    env: {
+      POSTGRES_MAX_CONNECTIONS: '50',
+    },
   },
   {
     name: 'fullhistory',
