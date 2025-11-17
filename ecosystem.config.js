@@ -82,7 +82,7 @@ let arr = [
     name: 'scanner',
     group: 'backend',
     env: {
-      POSTGRES_MAX_CONNECTIONS: '10',
+      POSTGRES_MAX_CONNECTIONS: '50',
     },
   },
   {
