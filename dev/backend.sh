@@ -3,7 +3,9 @@ sudo iptables -w -A INPUT -p tcp --dport 80 -j ACCEPT
 
 sudo mkdir -p /var/lib/redis
 sudo mount -o discard,defaults /dev/disk/by-id/google-disk-redis /var/lib/redis
-sudo docker run -d --name redis --restart=always --log-opt max-size=1g --net=host -v /var/lib/redis:/data redis:7 /usr/local/bin/redis-server
+# Disable --restart=always on redis if using stateful boot disk
+# Otherwise we may restart before mount and then overwrite saved data with empty
+sudo docker run -d --name redis --log-opt max-size=1g --net=host -v /var/lib/redis:/data redis:7 /usr/local/bin/redis-server
 sudo docker start redis
 
 sudo mkdir -p /var/lib/postgresql/data
