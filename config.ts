@@ -75,8 +75,8 @@ const defaults = {
   GOOGLE_CLOUD_PROJECT_ID: '', // Google Cloud project ID
   GOOGLE_CLOUD_RETRIEVER_TEMPLATE: 'retriever-20251117', // Template name of the retriever instance
   CYCLER_COUNT: '1', // Number of retrievers to maintain in cycler
-  RETRIEVER_MIN_UPTIME: '500', // Number of seconds retrievers should stay up for before restarting
-  RETRIEVER_NUM_ACCOUNTS: '10', // Max number of accounts to use with retriever at once
+  RETRIEVER_MIN_UPTIME: '300', // Number of seconds retrievers should stay up for before restarting
+  RETRIEVER_NUM_ACCOUNTS: '5', // Max number of accounts to use with retriever at once
 };
 if (process.env.NODE_TEST_CONTEXT) {
   console.log('[TEST MODE] setting config to test values');
