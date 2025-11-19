@@ -19,5 +19,8 @@ sudo mount -o discard,defaults /dev/disk/by-id/google-disk-cassandra-3 /var/lib/
 sudo docker run --name cassandra --log-opt max-size=1g -d --net=host -e CASSANDRA_NUM_TOKENS=256 -v /var/lib/cassandra:/var/lib/cassandra cassandra:5
 sudo docker start cassandra
 
+sudo docker run -d --name parseServer --restart=always --cpus=16 --net=host --log-opt max-size=1g -e SERVICE_REGISTRY_HOST=localhost -e RETRIEVER_SECRET=REPLACE_ME odota/parser
+sudo docker start parseServer
+
 sudo docker run -d --name backend --restart=always --net=host --log-opt max-size=1g -e PROVIDER=gce -e GROUP=backend -e FRONTEND_PORT=80 odota/core:latest sh -c "npm start"
 sudo docker start backend
