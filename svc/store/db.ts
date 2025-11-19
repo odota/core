@@ -4,7 +4,7 @@ import config from '../../config.ts';
 // remember: all values returned from the server are either NULL or a string
 pg.types.setTypeParser(20, (val) => (val === null ? null : parseInt(val, 10)));
 console.log(
-  'connecting %s with %s max connections',
+  '[POSTGRES] connecting %s with %s max connections',
   config.POSTGRES_URL,
   config.POSTGRES_MAX_CONNECTIONS,
 );

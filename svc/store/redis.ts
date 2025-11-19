@@ -3,7 +3,7 @@ import config from '../../config.ts';
 
 let redis: Redis | null = null;
 if (config.REDIS_URL) {
-  console.log('connecting %s', config.REDIS_URL);
+  console.log('[REDIS] connecting %s', config.REDIS_URL);
   redis = new Redis(config.REDIS_URL);
 }
 
