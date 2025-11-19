@@ -19,6 +19,7 @@ import {
   createMatchCopy,
   isSignificant,
   getStartOfBlockMinutes,
+  getEndOfWeek,
 } from './utility.ts';
 import {
   getMatchRankTier,
@@ -579,7 +580,7 @@ export async function insertMatch(
       );
       // Keep only 100 top scores
       redis.zremrangebyrank(`records:${field}`, '0', '-101');
-      const expire = moment.utc().add(1, 'month').startOf('month').format('X');
+      const expire = getEndOfWeek();
       redis.expireat(`records:${field}`, expire);
     }
 

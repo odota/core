@@ -373,8 +373,14 @@ export function getStartOfBlockMinutes(size: number, offset: number) {
 export function getEndOfMonth() {
   return moment.utc().endOf('month').unix();
 }
+export function getEndOfWeek() {
+  return moment.utc().endOf('week').unix();
+}
 export function getEndOfDay() {
   return moment.utc().endOf('day').unix();
+}
+export function getEndOfHour() {
+  return moment.utc().endOf('hour').unix();
 }
 /**
  * Finds the arithmetic mean of the input array

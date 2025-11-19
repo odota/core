@@ -20,7 +20,7 @@ import redis from './store/redis.ts';
 import config from '../config.ts';
 import {
   getEndOfDay,
-  getEndOfMonth,
+  getEndOfHour,
   getStartOfBlockMinutes,
   redisCount,
 } from './util/utility.ts';
@@ -122,12 +122,12 @@ const onResFinish = async (
   await redis.zincrby('api_paths', 1, req.method + ' ' + normPath);
   await redis.expireat(
     'api_paths',
-    moment.utc().startOf('hour').add(1, 'hour').format('X'),
+    getEndOfHour(),
   );
   await redis.zincrby('api_status', 1, res.statusCode);
   await redis.expireat(
     'api_status',
-    moment.utc().startOf('hour').add(1, 'hour').format('X'),
+    getEndOfHour(),
   );
   if (req.user && req.user.account_id) {
     await redis.zadd('visitors', moment.utc().format('X'), req.user.account_id);

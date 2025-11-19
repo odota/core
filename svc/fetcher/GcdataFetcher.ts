@@ -1,8 +1,7 @@
 import type { AxiosResponse } from 'axios';
-import moment from 'moment';
 import db from '../store/db.ts';
 import redis from '../store/redis.ts';
-import { getRandomRetrieverUrl, redisCount } from '../util/utility.ts';
+import { getEndOfDay, getRandomRetrieverUrl, redisCount } from '../util/utility.ts';
 import axios from 'axios';
 import retrieverMatch from '../../test/data/retriever_match.json' with { type: 'json' };
 import { insertMatch } from '../util/insert.ts';
@@ -51,12 +50,12 @@ export class GcdataFetcher extends MatchFetcherBase<GcData> {
     redis.hincrby('retrieverSteamIDs', steamid, 1);
     redis.expireat(
       'retrieverSteamIDs',
-      moment.utc().startOf('day').add(1, 'day').format('X'),
+      getEndOfDay(),
     );
     redis.hincrby('retrieverIPs', ip, 1);
     redis.expireat(
       'retrieverIPs',
-      moment.utc().startOf('day').add(1, 'day').format('X'),
+      getEndOfDay(),
     );
     if (headers['x-match-noretry']) {
       // Steam is blocking this match for community prediction, so return error to prevent retry
@@ -87,12 +86,12 @@ export class GcdataFetcher extends MatchFetcherBase<GcData> {
     redis.hincrby('retrieverSuccessSteamIDs', steamid, 1);
     redis.expireat(
       'retrieverSuccessSteamIDs',
-      moment.utc().startOf('day').add(1, 'day').format('X'),
+      getEndOfDay(),
     );
     redis.hincrby('retrieverSuccessIPs', ip, 1);
     redis.expireat(
       'retrieverSuccessIPs',
-      moment.utc().startOf('day').add(1, 'day').format('X'),
+      getEndOfDay(),
     );
     // Some old matches don't have players, e.g. 271601114
     // They still have a replay salt so we can continue

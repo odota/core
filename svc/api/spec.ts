@@ -7,7 +7,6 @@ import { buildMatch } from '../util/buildMatch.ts';
 import { getPlayerMatches } from '../util/buildPlayer.ts';
 import {
   countPeers,
-  getEndOfMonth,
   getPatchIndex,
   isRadiant,
   matchupToString,
