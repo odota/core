@@ -77,12 +77,9 @@ export class GcdataFetcher extends MatchFetcherBase<GcData> {
       };
     }
     if (
-      !data ||
-      !data.match ||
-      !data.match.players ||
-      !data.match.replay_salt
+      !data?.match?.replay_salt
     ) {
-      // Response doesn't have expected data, try again
+      // Response doesn't have replay data, try again
       return { error: 'invalid data', data: null, retryable: true };
     }
     // Count successful calls
@@ -97,14 +94,17 @@ export class GcdataFetcher extends MatchFetcherBase<GcData> {
       'retrieverSuccessIPs',
       moment.utc().startOf('day').add(1, 'day').format('X'),
     );
-    const players = data.match.players.map(
+    // Some old matches don't have players, e.g. 271601114
+    // They still have a replay salt so we can continue
+    const gcPlayers = data.match.players ?? [];
+    const players = gcPlayers.map(
       (p: any, i: number): GcPlayer => ({
         // NOTE: account ids are not anonymous in this call
         account_id: p.account_id,
         player_slot: p.player_slot,
         party_id: Number(p.party_id),
         permanent_buffs: p.permanent_buffs ?? [],
-        party_size: data.match.players.filter(
+        party_size: gcPlayers.filter(
           (matchPlayer: any) =>
             Number(matchPlayer.party_id) === Number(p.party_id),
         ).length,
