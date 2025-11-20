@@ -12,9 +12,7 @@
   },
   "type": "module",
   "dependencies": {
-    "compression": "^1.8.1",
     "dotenv": "^16.4.7",
-    "express": "^5.1.0",
     "protobufjs": "7.2.5",
     "steam-user": "^5.2.0"
   }

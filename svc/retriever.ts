@@ -4,20 +4,22 @@
  * Approx limits: 100 per account per day, 500 per IP per day
  * */
 import SteamUser from 'steam-user';
-import express from 'express';
-import compression from 'compression';
+import { createServer } from 'node:http';
 import os from 'node:os';
+import { gzipSync } from 'node:zlib';
 import config from '../config.ts';
 import ProtoBuf from 'protobufjs';
 
-const app = express();
 const steamObj: Record<string, SteamUser> = {};
 
 const minUpTimeSeconds = Number(config.RETRIEVER_MIN_UPTIME);
 const numAccounts = Number(config.RETRIEVER_NUM_ACCOUNTS);
 const matchesPerAccount = 100;
 const accountAttemptMax = 5;
-const matchRequestInterval = Math.max(1000 / numAccounts, minUpTimeSeconds / (numAccounts * matchesPerAccount) * 1000);
+const matchRequestInterval = Math.max(
+  1000 / numAccounts,
+  (minUpTimeSeconds / (numAccounts * matchesPerAccount)) * 1000,
+);
 const port = config.PORT || config.RETRIEVER_PORT;
 const noneReady = () =>
   Object.values(steamObj).filter((client) => client.steamID).length === 0;
@@ -75,14 +77,36 @@ setInterval(() => {
   }
 }, 5000);
 
-app.get('/healthz', (req, res, next) => {
-  return res.end('ok');
-});
-app.use(compression());
-app.get('/stats', (req, res, next) => {
-  return res.json(genStats());
-});
-app.use((req, res, next) => {
+const server = createServer((req, res) => {
+  if (!req.url) {
+    return;
+  }
+  const url = new URL('http://localhost' + req.url);
+  if (url.pathname === '/healthz') {
+    res.write('ok');
+    res.end();
+    return;
+  } else if (url.pathname === '/stats') {
+    res.write(JSON.stringify(genStats()));
+    res.end();
+    return;
+  }
+  if (
+    config.RETRIEVER_SECRET &&
+    config.RETRIEVER_SECRET !== url.searchParams.get('key')
+  ) {
+    // reject request if it doesn't have key
+    res.write('invalid key');
+    res.statusCode = 403;
+    res.end();
+    return;
+  }
+  if (noneReady()) {
+    res.write('not ready');
+    res.statusCode = 500;
+    res.end();
+    return;
+  }
   console.log(
     'numReady: %s, matches: %s/%s, profiles: %s/%s, uptime: %s, matchRequestDelay: %s',
     Object.keys(steamObj).length,
@@ -93,117 +117,126 @@ app.use((req, res, next) => {
     getUptime(),
     matchRequestInterval,
   );
-  if (config.RETRIEVER_SECRET && config.RETRIEVER_SECRET !== req.query.key) {
-    // reject request if it doesn't have key
-    return next('invalid key');
-  }
-  if (noneReady()) {
-    return next('not ready');
-  }
-  return next();
-});
-app.get('/profile/:account_id', (req, res, next) => {
-  const keys = Object.keys(steamObj);
-  const rKey = keys[Math.floor(Math.random() * keys.length)];
-  const accountId = req.params.account_id;
-  const client = steamObj[rKey];
-  profileRequests += 1;
-  client.sendToGC(
-    DOTA_APPID,
-    EDOTAGCMsg.values.k_EMsgClientToGCGetProfileCard,
-    {},
-    Buffer.from(
-      CMsgClientToGCGetProfileCard.encode({
-        account_id: Number(accountId),
-      }).finish(),
-    ),
-    (appid, msgType, payload) => {
-      // console.log(appid, msgType, payload);
-      profileSuccesses += 1;
-      const profileCard = CMsgDOTAProfileCard.decode(payload);
-      return res.json(profileCard);
-    },
-  );
-});
-app.get('/match/:match_id', (req, res, next) => {
-  // Don't allow requests coming in too fast
-  const curTime = Date.now();
-  if (
-    lastMatchRequestTime &&
-    curTime - lastMatchRequestTime < matchRequestInterval
-  ) {
-    return res.status(429).json({
-      error: 'too many requests',
-    });
-  }
-  lastMatchRequestTime = curTime;
-  const keys = Object.keys(steamObj);
-  // Round robin request to spread load evenly
-  const rKey = keys[matchRequests % keys.length];
-  const matchId = req.params.match_id;
-  const client = steamObj[rKey];
-  matchRequests += 1;
-  // If the selected client has multiple consecutive failures, skip the request
-  if (matchAttempts[rKey] >= accountAttemptMax) {
-    return res.status(500).end();
-  }
-  res.setHeader('x-match-request-steamid', rKey);
-  res.setHeader('x-match-request-ip', publicIP);
-  matchAttempts[rKey] = (matchAttempts[rKey] ?? 0) + 1;
-  console.time('match:' + matchId);
-  const timeout = setTimeout(() => {
-    // Respond to send back header info even if no response from GC
-    // Use a 204 status code to avoid exception, we'll check the response body after and read headers
-    console.timeEnd('match:' + matchId);
-    res.status(204).end();
-  }, 2500);
-  client.sendToGC(
-    DOTA_APPID,
-    EDOTAGCMsg.values.k_EMsgGCMatchDetailsRequest,
-    {},
-    Buffer.from(
-      CMsgGCMatchDetailsRequest.encode({ match_id: Number(matchId) }).finish(),
-    ),
-    (appid, msgType, payload) => {
-      clearTimeout(timeout);
-      // Check if we already sent the response to avoid double-sending on slow requests
-      if (!res.headersSent) {
-        console.timeEnd('match:' + matchId);
-        const matchData: any = CMsgGCMatchDetailsResponse.decode(payload);
-        if (matchData.result === 15) {
-          // Valve is blocking GC access to this match, probably a community prediction match
-          // Send back 204 success with a specific header that tells us not to retry
-          res.setHeader('x-match-noretry', matchData.result);
-          return res.status(204).end();
-        }
-        matchSuccesses += 1;
-        // Reset on success
-        delete matchAttempts[rKey];
-        return res.json(matchData);
-      }
-    },
-  );
-});
-app.get('/aliases/:steam_ids', (req, res, next) => {
-  // example: 76561198048632981
-  const keys = Object.keys(steamObj);
-  const rKey = keys[Math.floor(Math.random() * keys.length)];
-  const client = steamObj[rKey];
-  client.getAliases(req.params.steam_ids?.split(','), (err, aliases) => {
-    if (err) {
-      return next(err);
+  if (url.pathname.startsWith('/profile')) {
+    const accountId = url.pathname.split('/')[2];
+    const keys = Object.keys(steamObj);
+    const rKey = keys[Math.floor(Math.random() * keys.length)];
+    const client = steamObj[rKey];
+    profileRequests += 1;
+    client.sendToGC(
+      DOTA_APPID,
+      EDOTAGCMsg.values.k_EMsgClientToGCGetProfileCard,
+      {},
+      Buffer.from(
+        CMsgClientToGCGetProfileCard.encode({
+          account_id: Number(accountId),
+        }).finish(),
+      ),
+      (appid, msgType, payload) => {
+        // console.log(appid, msgType, payload);
+        profileSuccesses += 1;
+        const profileCard = CMsgDOTAProfileCard.decode(payload);
+        res.write(JSON.stringify(profileCard));
+        res.end();
+      },
+    );
+  } else if (url.pathname.startsWith('/match')) {
+    // Don't allow requests coming in too fast
+    const curTime = Date.now();
+    if (
+      lastMatchRequestTime &&
+      curTime - lastMatchRequestTime < matchRequestInterval
+    ) {
+      res.statusCode = 429;
+      res.write('too many requests');
+      res.end();
+      return;
     }
-    return res.json(aliases);
-  });
+    lastMatchRequestTime = curTime;
+    const keys = Object.keys(steamObj);
+    // Round robin request to spread load evenly
+    const rKey = keys[matchRequests % keys.length];
+    const matchId = url.pathname.split('/')[2];
+    const client = steamObj[rKey];
+    matchRequests += 1;
+    // If the selected client has multiple consecutive failures, skip the request
+    if (matchAttempts[rKey] >= accountAttemptMax) {
+      res.statusCode = 500;
+      res.write('too many attempts');
+      res.end();
+      return;
+    }
+    res.setHeader('x-match-request-steamid', rKey);
+    res.setHeader('x-match-request-ip', publicIP);
+    matchAttempts[rKey] = (matchAttempts[rKey] ?? 0) + 1;
+    console.time('match:' + matchId);
+    const timeout = setTimeout(() => {
+      // Respond to send back header info even if no response from GC
+      // Use a 204 status code to avoid exception, we'll check the response body after and read headers
+      console.timeEnd('match:' + matchId);
+      res.statusCode = 204;
+      res.end();
+    }, 2500);
+    client.sendToGC(
+      DOTA_APPID,
+      EDOTAGCMsg.values.k_EMsgGCMatchDetailsRequest,
+      {},
+      Buffer.from(
+        CMsgGCMatchDetailsRequest.encode({
+          match_id: Number(matchId),
+        }).finish(),
+      ),
+      (appid, msgType, payload) => {
+        clearTimeout(timeout);
+        // Check if we already sent the response to avoid double-sending on slow requests
+        if (!res.headersSent) {
+          console.timeEnd('match:' + matchId);
+          const matchData: any = CMsgGCMatchDetailsResponse.decode(payload);
+          if (matchData.result === 15) {
+            // Valve is blocking GC access to this match, probably a community prediction match
+            // Send back 204 success with a specific header that tells us not to retry
+            res.setHeader('x-match-noretry', matchData.result);
+            res.statusCode = 204;
+            res.end();
+            return;
+          }
+          matchSuccesses += 1;
+          // Reset on success
+          delete matchAttempts[rKey];
+          // Compress and send
+          res.setHeader('Content-Encoding', 'gzip');
+          res.write(gzipSync(JSON.stringify(matchData)));
+          res.end();
+          return;
+        }
+      },
+    );
+  } else if (url.pathname.startsWith('/aliases')) {
+    // example: 76561198048632981
+    const keys = Object.keys(steamObj);
+    const rKey = keys[Math.floor(Math.random() * keys.length)];
+    const client = steamObj[rKey];
+    client.getAliases(
+      url.pathname.split('/')[2]?.split(','),
+      (err, aliases) => {
+        if (err) {
+          res.statusCode = 500;
+          res.write(err);
+          res.end();
+          return;
+        }
+        res.write(JSON.stringify(aliases));
+        res.end();
+        return;
+      },
+    );
+  } else {
+    res.statusCode = 404;
+    res.write('not found');
+    res.end();
+    return;
+  }
 });
-
-async function start() {
-  init();
-  app.listen(port, () => {
-    console.log('[RETRIEVER] listening on %s', port);
-  });
-}
-start();
 
 async function init() {
   let logOns: { accountName: string; password: string }[] | null = null;
@@ -311,3 +344,8 @@ function genStats() {
   };
   return data;
 }
+
+init();
+server.listen(port, () => {
+  console.log('[RETRIEVER] listening on %s', port);
+});
