@@ -30,6 +30,9 @@ runInLoop(
     await db.raw(
       'DELETE from hero_search where match_id < (select max(match_id) - 200000000 from hero_search)',
     );
+    await db.raw(
+      'DELETE from last_seq_num where match_seq_num < (select max(match_seq_num) from last_seq_num)'
+    );
     let files: string[] = [];
     try {
       files = await fs.readdir('./cache');
