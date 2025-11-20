@@ -926,7 +926,8 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
       post: {
         operationId: generateOperationId('post', '/refresh'),
         summary: 'POST /players/{account_id}/refresh',
-        description: 'Refresh player match history (up to 500), medal (rank), and profile name',
+        description:
+          'Refresh player match history (up to 500), medal (rank), and profile name',
         tags: ['players'],
         parameters: [{ $ref: '#/components/parameters/accountIdParam' }],
         responses: {

@@ -119,15 +119,9 @@ const onResFinish = async (
   }
   const normPath = req.route?.path;
   await redis.zincrby('api_paths', 1, req.method + ' ' + normPath);
-  await redis.expireat(
-    'api_paths',
-    getEndOfHour(),
-  );
+  await redis.expireat('api_paths', getEndOfHour());
   await redis.zincrby('api_status', 1, res.statusCode);
-  await redis.expireat(
-    'api_status',
-    getEndOfHour(),
-  );
+  await redis.expireat('api_status', getEndOfHour());
   if (req.user && req.user.account_id) {
     await redis.zadd('visitors', moment.utc().format('X'), req.user.account_id);
     await redis.zremrangebyrank('visitors', '0', '-50001');

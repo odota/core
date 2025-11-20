@@ -532,15 +532,12 @@ export async function insertMatch(
       const lastMatchTime = new Date(match.start_time * 1000);
       await Promise.all(
         filteredPlayers.map((player) =>
-          upsertPlayer(
-            trx,
-            {
-              account_id: player.account_id,
-              last_match_time: lastMatchTime,
-              // If the player's ID is showing up then they aren't anonymous
-              fh_unavailable: false,
-            },
-          ),
+          upsertPlayer(trx, {
+            account_id: player.account_id,
+            last_match_time: lastMatchTime,
+            // If the player's ID is showing up then they aren't anonymous
+            fh_unavailable: false,
+          }),
         ),
       );
     }

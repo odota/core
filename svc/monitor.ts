@@ -156,7 +156,7 @@ async function postgresUsage() {
 }
 async function cassandraUsage() {
   const result = await cassandra.execute(
-`
+    `
 SELECT sum(mebibytes) * 1048576 as size
 FROM system_views.disk_usage
 WHERE keyspace_name = 'yasp';

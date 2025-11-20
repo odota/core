@@ -13,9 +13,7 @@ export const cassandra = new cassandraDriver.Client({
 
 setInterval(async () => {
   try {
-    await cassandra.execute(
-      'SELECT cql_version FROM system.local',
-    );
+    await cassandra.execute('SELECT cql_version FROM system.local');
   } catch (e) {
     console.log('[CASSANDRA] cassandra failed, restarting');
     process.exit(1);

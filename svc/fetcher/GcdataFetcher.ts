@@ -1,7 +1,11 @@
 import type { AxiosResponse } from 'axios';
 import db from '../store/db.ts';
 import redis from '../store/redis.ts';
-import { getEndOfDay, getRandomRetrieverUrl, redisCount } from '../util/utility.ts';
+import {
+  getEndOfDay,
+  getRandomRetrieverUrl,
+  redisCount,
+} from '../util/utility.ts';
 import axios from 'axios';
 import retrieverMatch from '../../test/data/retriever_match.json' with { type: 'json' };
 import { insertMatch } from '../util/insert.ts';
@@ -48,15 +52,9 @@ export class GcdataFetcher extends MatchFetcherBase<GcData> {
     const ip = headers['x-match-request-ip'];
     // Record the total steamids and ip counts from headers (sent with 204 response even if request timed out)
     redis.hincrby('retrieverSteamIDs', steamid, 1);
-    redis.expireat(
-      'retrieverSteamIDs',
-      getEndOfDay(),
-    );
+    redis.expireat('retrieverSteamIDs', getEndOfDay());
     redis.hincrby('retrieverIPs', ip, 1);
-    redis.expireat(
-      'retrieverIPs',
-      getEndOfDay(),
-    );
+    redis.expireat('retrieverIPs', getEndOfDay());
     if (headers['x-match-noretry']) {
       // Steam is blocking this match for community prediction, so return error to prevent retry
       return { error: 'x-match-noretry', data: null };
@@ -75,24 +73,16 @@ export class GcdataFetcher extends MatchFetcherBase<GcData> {
         data: null,
       };
     }
-    if (
-      !data?.match?.replay_salt
-    ) {
+    if (!data?.match?.replay_salt) {
       // Response doesn't have replay data, try again
       return { error: 'invalid data', data: null, retryable: true };
     }
     // Count successful calls
     redisCount('retriever');
     redis.hincrby('retrieverSuccessSteamIDs', steamid, 1);
-    redis.expireat(
-      'retrieverSuccessSteamIDs',
-      getEndOfDay(),
-    );
+    redis.expireat('retrieverSuccessSteamIDs', getEndOfDay());
     redis.hincrby('retrieverSuccessIPs', ip, 1);
-    redis.expireat(
-      'retrieverSuccessIPs',
-      getEndOfDay(),
-    );
+    redis.expireat('retrieverSuccessIPs', getEndOfDay());
     // Some old matches don't have players, e.g. 271601114
     // They still have a replay salt so we can continue
     const gcPlayers = data.match.players ?? [];

@@ -22,7 +22,5 @@ runInLoop(async function profile() {
   const results = body.response.players.filter(
     (player: User) => player.steamid,
   );
-  await Promise.all(
-    results.map((player: User) => upsertPlayer(db, player)),
-  );
+  await Promise.all(results.map((player: User) => upsertPlayer(db, player)));
 }, 2000);
