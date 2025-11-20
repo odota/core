@@ -1,7 +1,6 @@
 // Updates the list of pro players in the database
 import axios from 'axios';
-import db from './store/db.ts';
-import { upsert } from './util/insert.ts';
+import db, { upsert } from './store/db.ts';
 import { runInLoop } from './util/utility.ts';
 
 runInLoop(

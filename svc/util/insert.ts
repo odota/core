@@ -4,11 +4,10 @@ import util from 'node:util';
 import fs from 'node:fs/promises';
 import config from '../../config.ts';
 import { addJob, addReliableJob } from '../store/queue.ts';
-import db from '../store/db.ts';
+import db, { upsert, upsertPlayer } from '../store/db.ts';
 import redis from '../store/redis.ts';
 import {
   getAnonymousAccountId,
-  convert64to32,
   serialize,
   isProMatch,
   getLaneFromPosData,
@@ -33,83 +32,6 @@ import { computeMatchData } from './compute.ts';
 import { benchmarks } from './benchmarksUtil.ts';
 
 moment.relativeTimeThreshold('ss', 0);
-
-const columns: Record<string, any> = {};
-
-export async function upsert(
-  db: Knex,
-  table: string,
-  insert: AnyDict,
-  conflict: NumberDict,
-) {
-  if (!columns[table]) {
-    const result = await db(table).columnInfo();
-    columns[table] = result;
-  }
-  const tableColumns = columns[table];
-  const row = { ...insert };
-  // Remove extra properties
-  Object.keys(row).forEach((key) => {
-    if (!tableColumns[key]) {
-      delete row[key];
-    }
-  });
-  const values = Object.keys(row).map(() => '?');
-  const update = Object.keys(row).map((key) =>
-    util.format('%s=%s', key, `EXCLUDED.${key}`),
-  );
-  const query = util.format(
-    'INSERT INTO %s (%s) VALUES (%s) ON CONFLICT (%s) DO UPDATE SET %s',
-    table,
-    Object.keys(row).join(','),
-    values.join(','),
-    Object.keys(conflict).join(','),
-    update.join(','),
-  );
-  return db.raw(
-    query,
-    Object.keys(row).map((key) => row[key]),
-  );
-}
-
-export async function upsertPlayer(
-  db: Knex,
-  player: Partial<User>,
-  indexPlayer: boolean,
-) {
-  if (player.steamid) {
-    // this is a login, compute the account_id from steamid
-    player.account_id = Number(convert64to32(player.steamid));
-  }
-  if (!player.account_id || player.account_id === getAnonymousAccountId()) {
-    return;
-  }
-  return upsert(db, 'players', player, {
-    account_id: player.account_id,
-  });
-}
-
-export async function insertPlayerRating(db: Knex, row: PlayerRating) {
-  if (row.rank_tier) {
-    await upsert(
-      db,
-      'rank_tier',
-      { account_id: row.account_id, rating: row.rank_tier },
-      { account_id: row.account_id },
-    );
-  }
-  if (row.leaderboard_rank) {
-    await upsert(
-      db,
-      'leaderboard_rank',
-      {
-        account_id: row.account_id,
-        rating: row.leaderboard_rank,
-      },
-      { account_id: row.account_id },
-    );
-  }
-}
 
 /**
  * Inserts a piece of match data into storage
@@ -618,7 +540,6 @@ export async function insertMatch(
               // If the player's ID is showing up then they aren't anonymous
               fh_unavailable: false,
             },
-            false,
           ),
         ),
       );

@@ -1,6 +1,5 @@
 // Updates Steam profile data for players periodically
-import { upsertPlayer } from './util/insert.ts';
-import db from './store/db.ts';
+import db, { upsertPlayer } from './store/db.ts';
 import {
   getSteamAPIDataWithRetry,
   SteamAPIUrls,
@@ -24,6 +23,6 @@ runInLoop(async function profile() {
     (player: User) => player.steamid,
   );
   await Promise.all(
-    results.map((player: User) => upsertPlayer(db, player, false)),
+    results.map((player: User) => upsertPlayer(db, player)),
   );
 }, 2000);

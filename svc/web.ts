@@ -14,8 +14,7 @@ import { Redis } from 'ioredis';
 import { WebSocketServer, WebSocket } from 'ws';
 import keys from './api/keyManagement.ts';
 import api from './api/api.ts';
-import { upsertPlayer } from './util/insert.ts';
-import db from './store/db.ts';
+import db, { upsertPlayer } from './store/db.ts';
 import redis from './store/redis.ts';
 import config from '../config.ts';
 import {
@@ -63,7 +62,7 @@ passport.use(
     async (identifier: string, profile: any, cb: ErrorCb) => {
       const player = profile._json;
       player.last_login = new Date();
-      await upsertPlayer(db, player, true);
+      await upsertPlayer(db, player);
       cb(null, player);
     },
   ),

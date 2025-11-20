@@ -1,6 +1,5 @@
 import { patch } from 'dotaconstants';
-import db from '../svc/store/db.ts';
-import { upsert } from '../svc/util/insert.ts';
+import db, { upsert } from '../svc/store/db.ts';
 import { getPatchIndex } from '../svc/util/utility.ts';
 
 async function start() {

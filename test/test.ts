@@ -20,9 +20,9 @@ import swaggerParser from '@apidevtools/swagger-parser';
 import config from '../config.ts';
 import spec from '../svc/api/spec.ts';
 import { getPlayerMatches } from '../svc/util/buildPlayer.ts';
-import { insertMatch, upsertPlayer } from '../svc/util/insert.ts';
+import { insertMatch } from '../svc/util/insert.ts';
 import { buildMatch } from '../svc/util/buildMatch.ts';
-import db from '../svc/store/db.ts';
+import db, { upsertPlayer } from '../svc/store/db.ts';
 import cassandra from '../svc/store/cassandra.ts';
 import c from 'ansi-colors';
 import { suite, test, before, beforeEach, after } from 'node:test';
@@ -187,7 +187,7 @@ before(async function globalSetup() {
   async function loadPlayers() {
     console.log('loading players');
     await Promise.all(
-      summariesApi.response.players.map((p) => upsertPlayer(db, p, true)),
+      summariesApi.response.players.map((p) => upsertPlayer(db, p)),
     );
   }
 });

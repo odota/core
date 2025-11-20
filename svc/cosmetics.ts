@@ -1,7 +1,6 @@
 // Updates game cosmetic items in the database
 import vdfparser from 'vdf-parser';
-import db from './store/db.ts';
-import { upsert } from './util/insert.ts';
+import db, { upsert } from './store/db.ts';
 import { runInLoop } from './util/utility.ts';
 import axios from 'axios';
 

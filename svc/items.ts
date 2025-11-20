@@ -1,7 +1,6 @@
 // Updates game items in the database
 import { items } from 'dotaconstants';
-import db from './store/db.ts';
-import { upsert } from './util/insert.ts';
+import db, { upsert } from './store/db.ts';
 import {
   SteamAPIUrls,
   getSteamAPIDataWithRetry,

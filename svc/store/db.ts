@@ -1,6 +1,9 @@
 import pg from 'pg';
 import knex from 'knex';
 import config from '../../config.ts';
+import { convert64to32, getAnonymousAccountId } from '../util/utility.ts';
+import util from 'node:util';
+
 // remember: all values returned from the server are either NULL or a string
 pg.types.setTypeParser(20, (val) => (val === null ? null : parseInt(val, 10)));
 console.log(
@@ -8,6 +11,7 @@ console.log(
   config.POSTGRES_URL,
   config.POSTGRES_MAX_CONNECTIONS,
 );
+
 export const db = knex({
   client: 'pg',
   connection: config.POSTGRES_URL,
@@ -23,5 +27,80 @@ export const db = knex({
     // },
   },
 });
+
+const columns: Record<string, any> = {};
+export async function upsert(
+  db: Knex,
+  table: string,
+  insert: AnyDict,
+  conflict: NumberDict,
+) {
+  if (!columns[table]) {
+    const result = await db(table).columnInfo();
+    columns[table] = result;
+  }
+  const tableColumns = columns[table];
+  const row = { ...insert };
+  // Remove extra properties
+  Object.keys(row).forEach((key) => {
+    if (!tableColumns[key]) {
+      delete row[key];
+    }
+  });
+  const values = Object.keys(row).map(() => '?');
+  const update = Object.keys(row).map((key) =>
+    util.format('%s=%s', key, `EXCLUDED.${key}`),
+  );
+  const query = util.format(
+    'INSERT INTO %s (%s) VALUES (%s) ON CONFLICT (%s) DO UPDATE SET %s',
+    table,
+    Object.keys(row).join(','),
+    values.join(','),
+    Object.keys(conflict).join(','),
+    update.join(','),
+  );
+  return db.raw(
+    query,
+    Object.keys(row).map((key) => row[key]),
+  );
+}
+
+export async function upsertPlayer(
+  db: Knex,
+  player: Partial<User>,
+) {
+  if (player.steamid) {
+    // this is a login, compute the account_id from steamid
+    player.account_id = Number(convert64to32(player.steamid));
+  }
+  if (!player.account_id || player.account_id === getAnonymousAccountId()) {
+    return;
+  }
+  return upsert(db, 'players', player, {
+    account_id: player.account_id,
+  });
+}
+
+export async function insertPlayerRating(db: Knex, row: PlayerRating) {
+  if (row.rank_tier) {
+    await upsert(
+      db,
+      'rank_tier',
+      { account_id: row.account_id, rating: row.rank_tier },
+      { account_id: row.account_id },
+    );
+  }
+  if (row.leaderboard_rank) {
+    await upsert(
+      db,
+      'leaderboard_rank',
+      {
+        account_id: row.account_id,
+        rating: row.leaderboard_rank,
+      },
+      { account_id: row.account_id },
+    );
+  }
+}
 
 export default db;
