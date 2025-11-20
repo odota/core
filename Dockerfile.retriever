@@ -2,7 +2,7 @@ FROM node:24-alpine
 
 ENV NPM_CONFIG_LOGLEVEL warn
 
-RUN apk add --no-cache git
+#RUN apk add --no-cache git
 
 COPY proto /usr/src/proto
 COPY svc/retriever.ts /usr/src/svc/retriever.ts
@@ -12,7 +12,7 @@ COPY package.retriever.json /usr/src/package.json
 WORKDIR /usr/src
 RUN npm install
 
-RUN apk del git
+#RUN apk del git
 
 ENV PATH /usr/src/node_modules/.bin:$PATH
 
