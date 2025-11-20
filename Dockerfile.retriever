@@ -2,9 +2,7 @@ FROM node:24-alpine
 
 ENV NPM_CONFIG_LOGLEVEL warn
 
-# COPY . /usr/src
-# WORKDIR /usr/src
-# RUN npm run build
+RUN apk add --no-cache git
 
 COPY proto /usr/src/proto
 COPY svc/retriever.ts /usr/src/svc/retriever.ts
