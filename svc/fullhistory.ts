@@ -20,19 +20,6 @@ runReliableQueue(
   // async () => redis.zcard('registry:proxy') * 5,
 );
 
-async function updatePlayer(player: FullHistoryJob) {
-  // done with this player, update
-  await db('players')
-    .update({
-      full_history_time: new Date(),
-      fh_unavailable: player.fh_unavailable,
-    })
-    .where({
-      account_id: player.account_id,
-    });
-  redisCount('fullhistory');
-}
-
 async function processFullHistory(job: FullHistoryJob) {
   const player = job;
   if (
@@ -48,9 +35,9 @@ async function processFullHistory(job: FullHistoryJob) {
     (await redis.get('fh_queue:' + player.account_id))
   ) {
     redisCount('fullhistory_skip');
+    console.log('[FULLHISTORY] skipping %s', player.account_id);
     return true;
   }
-  await redis.setex('fh_queue:' + player.account_id, 30 * 60, '1');
 
   console.time('doFullHistory: ' + player.account_id.toString());
   // As of December 2021 filtering by hero ID doesn't work
@@ -59,53 +46,43 @@ async function processFullHistory(job: FullHistoryJob) {
   // use steamapi via specific player history and specific hero id (up to 500 games per hero)
   const matchesToProcess: Record<string, ApiData> = {};
   let isMatchDataDisabled = null;
-  // make a request for every possible hero
   let url = SteamAPIUrls.api_history({
     account_id: player.account_id,
     matches_requested: 100,
   });
-  const getApiMatchPage = async (
-    player: FullHistoryJob,
-    url: string,
-  ): Promise<void> => {
+  // Fetch 1-5 pages of matches for the player
+  while (true) {
     let body = await getSteamAPIDataWithRetry({ url });
-
-    // check for specific error code if user had a private account, if so, update player and don't retry
+    // check for specific error code if user had a private account
     if (body?.result?.status === 15) {
       console.log('player %s disabled match history', player.account_id);
       isMatchDataDisabled = true;
-      return;
+      break;
+    } else if (body?.result?.matches) {
+      isMatchDataDisabled = false;
     }
-
-    // response for match history for single player
     const resp = body.result.matches;
-    let startId = 0;
+    let nextId = 0;
     resp.forEach((match: any) => {
-      // add match ids on each page to match_ids
       const matchId = match.match_id;
       matchesToProcess[matchId] = match;
-      startId = match.match_id;
+      nextId = match.match_id;
     });
     const rem = body.result.results_remaining;
-
     if (rem === 0 || resp.length === 0) {
       // Stop here if we only want one page/100 matches (short history)
       // As of March 2025 high level matches are removed from results but still counted in results_remaining
       // no more pages
-      return;
+      break;
     }
     // paginate through to max 500 games if necessary with start_at_match_id=
-    let newUrl = SteamAPIUrls.api_history({
+    url = SteamAPIUrls.api_history({
       account_id: player.account_id,
       matches_requested: 100,
-      start_at_match_id: startId - 1,
+      start_at_match_id: nextId - 1,
     });
-    return getApiMatchPage(player, newUrl);
-  };
-  // Fetches 1-5 pages of matches for the players and updates the match_ids object
-  await getApiMatchPage(player, url);
+  }
   if (Object.keys(matchesToProcess).length > 0) {
-    isMatchDataDisabled = false;
     // check what matches the player is already associated with
     const docs =
       (await getPlayerMatches(player.account_id, {
@@ -156,6 +133,20 @@ async function processFullHistory(job: FullHistoryJob) {
     player.fh_unavailable = isMatchDataDisabled;
   }
   await updatePlayer(player);
+  await redis.setex('fh_queue:' + player.account_id, 30 * 60, '1');
   console.timeEnd('doFullHistory: ' + player.account_id.toString());
   return true;
+}
+
+async function updatePlayer(player: FullHistoryJob) {
+  // done with this player, update
+  await db('players')
+    .update({
+      full_history_time: new Date(),
+      fh_unavailable: player.fh_unavailable,
+    })
+    .where({
+      account_id: player.account_id,
+    });
+  redisCount('fullhistory');
 }

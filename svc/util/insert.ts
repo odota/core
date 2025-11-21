@@ -100,7 +100,13 @@ export async function insertMatch(
     await resetMatchCache();
     await resetPlayerTemp();
     await telemetry();
-    await updateCounts(trx, match as ApiData, average_rank, num_rank_tier, isProTier);
+    await updateCounts(
+      trx,
+      match as ApiData,
+      average_rank,
+      num_rank_tier,
+      isProTier,
+    );
     await discoverPlayers(trx);
     await queueMmr();
     await queueGcData(trx);
@@ -858,9 +864,7 @@ function updateMatchups(match) {
       );
     }
   }
-  async function queueParse(
-    trx: knex.Knex.Transaction,
-  ) {
+  async function queueParse(trx: knex.Knex.Transaction) {
     if (options.skipParse) {
       return null;
     }

@@ -188,11 +188,7 @@ export async function getSteamAPIData(options: GetDataOptions): Promise<any> {
     }
     if (body.result.error || body.result.status === 2) {
       // this is invalid data but we can retry, so throw an exception and let the caller handle
-      console.log(
-        '[INVALID] (retryable) %s, %s',
-        target,
-        JSON.stringify(body),
-      );
+      console.log('[INVALID] (retryable) %s, %s', target, JSON.stringify(body));
       throw new Error('invalid data (retryable)');
     }
   }
