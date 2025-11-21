@@ -146,7 +146,7 @@ export async function buildStatus() {
       return parallelPromise<Record<string, number>>(counts);
     },
     api_paths: async (): Promise<Record<string, number>> => {
-      const result = getRedisCountDayHash('api_paths');
+      const result = await getRedisCountDayHash('api_paths');
       const sorted = Object.entries(result).sort((a, b) => b[1] - a[1]);
       const final: Record<string, number> = {};
       sorted.forEach(([k, v]) => {
@@ -155,7 +155,7 @@ export async function buildStatus() {
       return final;
     },
     api_status: async (): Promise<Record<string, number>> => {
-      const result = getRedisCountDayHash('api_status');
+      const result = await getRedisCountDayHash('api_status');
       // Sorting won't do anything here because JS always puts numeric keys in numeric order
       return result;
     },
