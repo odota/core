@@ -65,6 +65,31 @@ async function countDayDistinct(prefix: MetricName) {
   return redis.pfcount(...keyArr);
 }
 
+async function countDayHash(prefix: string): Promise<Record<string, number>> {
+  const result: Record<string, number> = {};
+  for (let i = 0; i < 24; i += 1) {
+    const key = 
+      `${prefix}:${moment
+        .utc()
+        .startOf('hour')
+        .subtract(i, 'hour')
+        .format('X')}`;
+    const hash = await redis.hgetall(key);
+    for (let key in hash) {
+      if (!result[key]) {
+        result[key] = 0;
+      }
+      result[key] += Number(hash[key]);
+    }
+  }
+  const sorted = Object.entries(result).sort((a, b) => b[1] - a[1]);
+  const final: Record<string, number> = {};
+  sorted.forEach(([k, v]) => {
+    final[k] = v;
+  });
+  return final;
+}
+
 export async function buildStatus() {
   const obj = {
     // Health uses a custom shape, everything else is a Record<string, number>
@@ -193,34 +218,10 @@ export async function buildStatus() {
       return parallelPromise<Record<string, number>>(counts);
     },
     api_paths: async (): Promise<Record<string, number>> => {
-      const results = await redis.zrevrangebyscore(
-        'api_paths',
-        'inf',
-        '-inf',
-        'WITHSCORES',
-      );
-      const response: Record<string, number> = {};
-      results?.forEach((result, i) => {
-        if (i % 2 === 0) {
-          response[result.split('.')[0]] = Number(results[i + 1]);
-        }
-      });
-      return response;
+      return countDayHash('api_paths');
     },
     api_status: async (): Promise<Record<string, number>> => {
-      const results = await redis.zrevrangebyscore(
-        'api_status',
-        'inf',
-        '-inf',
-        'WITHSCORES',
-      );
-      const response: Record<string, number> = {};
-      results?.forEach((result, i) => {
-        if (i % 2 === 0) {
-          response[result.split('.')[0]] = Number(results[i + 1]);
-        }
-      });
-      return response;
+      return countDayHash('api_status');
     },
     load_times: async (): Promise<Record<string, number>> => {
       const arr = await redis.lrange('load_times', 0, -1);

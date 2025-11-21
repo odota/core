@@ -22,6 +22,7 @@ import {
   getEndOfHour,
   getStartOfBlockMinutes,
   redisCount,
+  redisCountHash,
 } from './util/utility.ts';
 import stripe from './store/stripe.ts';
 import axios from 'axios';
@@ -118,10 +119,8 @@ const onResFinish = async (
     redisCount('api_hits_ui');
   }
   const normPath = req.route?.path;
-  await redis.zincrby('api_paths', 1, req.method + ' ' + normPath);
-  await redis.expireat('api_paths', getEndOfHour());
-  await redis.zincrby('api_status', 1, res.statusCode);
-  await redis.expireat('api_status', getEndOfHour());
+  await redisCountHash('api_paths', req.method + ' ' + normPath);
+  await redisCountHash('api_status', String(res.statusCode));
   if (req.user && req.user.account_id) {
     await redis.zadd('visitors', moment.utc().format('X'), req.user.account_id);
     await redis.zremrangebyrank('visitors', '0', '-50001');

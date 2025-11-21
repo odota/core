@@ -842,6 +842,18 @@ export async function redisCountDistinct(prefix: MetricName, value: string) {
   );
 }
 
+export async function redisCountHash(prefix: string, field: string, incrBy = 1) {
+  if (!redis) {
+    return;
+  }
+  const key = `${prefix}:${moment.utc().startOf('hour').format('X')}`;
+  await redis.hincrby(key, field, incrBy);
+  await redis.expireat(
+    key,
+    moment.utc().startOf('hour').add(1, 'day').format('X'),
+  );
+}
+
 /**
  * Runs an async function on a loop, waiting the delay between each iteration
  * @param func
