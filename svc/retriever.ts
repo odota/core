@@ -3,7 +3,7 @@
  * Provides HTTP endpoints for other workers.
  * Approx limits: 100 per account per day, 500 per IP per day
  * */
-import SteamUser from 'steam-user';
+import SteamUser from 'steam-user-odota';
 import { createServer } from 'node:http';
 import os from 'node:os';
 import { gzipSync } from 'node:zlib';

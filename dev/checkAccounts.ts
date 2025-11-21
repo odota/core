@@ -1,5 +1,5 @@
 import fs from 'node:fs';
-import SteamUser from 'steam-user';
+import SteamUser from 'steam-user-odota';
 const accountData = fs.readFileSync('./STEAM_ACCOUNT_DATA.txt', 'utf8');
 const accountArray = accountData.split(/\r\n|\r|\n/g);
 

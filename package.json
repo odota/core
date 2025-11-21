@@ -55,7 +55,7 @@
     "pg-query-stream": "^4.10.3",
     "pm2": "^6.0.13",
     "protobufjs": "7.2.5",
-    "steam-user": "^5.2.3",
+    "steam-user-odota": "^5.2.6",
     "stripe": "^9.16.0",
     "vdf-parser": "^1.2.1",
     "ws": "^8.18.3"
@@ -75,7 +75,6 @@
     "@types/passport-steam": "^1.0.6",
     "@types/pg": "^8.15.6",
     "@types/qs": "^6.14.0",
-    "@types/steam-user": "^5.1.0",
     "@types/supertest": "^6.0.3",
     "@types/ws": "^8.18.1",
     "eslint": "^9.39.1",
