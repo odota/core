@@ -11,14 +11,14 @@ export const cassandra = new cassandraDriver.Client({
   keyspace: new URL(spl[0]).pathname.substring(1),
 });
 
-setInterval(async () => {
-  try {
-    await cassandra.execute('SELECT cql_version FROM system.local');
-  } catch (e) {
-    console.log('[CASSANDRA] cassandra failed, restarting');
-    process.exit(1);
-  }
-}, 60000);
+// setInterval(async () => {
+//   try {
+//     await cassandra.execute('SELECT cql_version FROM system.local');
+//   } catch (e) {
+//     console.log('[CASSANDRA] cassandra failed, restarting');
+//     process.exit(1);
+//   }
+// }, 60000);
 
 const cassandraColumnInfo: Record<string, Record<string, boolean>> = {};
 export async function getCassandraColumns(table: string) {

@@ -58,7 +58,7 @@ let arr = [
     name: 'parser',
     group: 'backend',
     env: {
-      POSTGRES_MAX_CONNECTIONS: '120',
+      POSTGRES_MAX_CONNECTIONS: '10',
     },
   },
   {
@@ -85,7 +85,7 @@ let arr = [
     name: 'scanner',
     group: 'backend',
     env: {
-      POSTGRES_MAX_CONNECTIONS: '100',
+      POSTGRES_MAX_CONNECTIONS: '10',
     },
   },
   {

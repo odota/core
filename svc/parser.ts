@@ -17,7 +17,7 @@ import redis from './store/redis.ts';
 import { apiFetcher, gcFetcher, parsedFetcher } from './fetcher/allFetchers.ts';
 import { getPGroup } from './util/pgroup.ts';
 import moment from 'moment';
-import { queueReconcile } from './util/reconcileUtil.ts';
+import db from './store/db.ts';
 
 runReliableQueue(
   'parse',
@@ -173,5 +173,30 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
     } else if (type === 'skip') {
       redisCount('parser_skip');
     }
+  }
+}
+
+export async function queueReconcile(
+  gcMatch: GcData | null,
+  pgroup: PGroup,
+  metricName: MetricName,
+) {
+  if (gcMatch) {
+    // Log the players who were previously anonymous for reconciliation
+    await Promise.all(
+      gcMatch.players
+        // .filter((p) => !Boolean(pgroup[p.player_slot]?.account_id))
+        .map(async (p) => {
+          if (p.account_id) {
+            const { rows } = await db.raw(
+              'INSERT INTO player_match_history(account_id, match_id, player_slot) VALUES (?, ?, ?) ON CONFLICT DO NOTHING RETURNING *',
+              [p.account_id, gcMatch.match_id, p.player_slot],
+            );
+            if (rows.length > 0) {
+              await redisCount(metricName);
+            }
+          }
+        }),
+    );
   }
 }

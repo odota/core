@@ -30,6 +30,7 @@ import { blobArchive } from '../store/archive.ts';
 import cassandra, { getCassandraColumns } from '../store/cassandra.ts';
 import { computeMatchData } from './compute.ts';
 import { benchmarks } from './benchmarksUtil.ts';
+import type knex from 'knex';
 
 moment.relativeTimeThreshold('ss', 0);
 
@@ -46,71 +47,79 @@ export async function insertMatch(
   origMatch: Readonly<InsertMatchInput>,
   options: InsertMatchOptions,
 ) {
-  const trx = await db.transaction();
   // Make a copy of the match with some modifications (only applicable to api matches)
   const match = transformMatch(origMatch);
   // Use the passed pgroup if gcdata or parsed, otherwise build it
   // Do this after removing anonymous account IDs
   const pgroup = options.pgroup ?? getPGroup(match as ApiData);
+  const trx = await db.transaction();
+  try {
+    let isProTier = false;
+    if ('leagueid' in match && match.leagueid) {
+      // Check if leagueid is premium/professional
+      const { rows } = await trx.raw(
+        `select leagueid from leagues where leagueid = ? and (tier = 'premium' OR tier = 'professional')`,
+        [Number(match.leagueid)],
+      );
+      isProTier = rows?.length > 0;
+    }
 
-  let isProTier = false;
-  if ('leagueid' in match && match.leagueid) {
-    // Check if leagueid is premium/professional
-    const { rows } = await trx.raw(
-      `select leagueid from leagues where leagueid = ? and (tier = 'premium' OR tier = 'professional')`,
-      [Number(match.leagueid)],
-    );
-    isProTier = rows?.length > 0;
+    // Index the matchid to the league
+    if (
+      options.origin === 'scanner' &&
+      options.type === 'api' &&
+      'leagueid' in match &&
+      match.leagueid
+    ) {
+      await trx.raw(
+        'INSERT INTO league_match(leagueid, match_id) VALUES(?, ?) ON CONFLICT DO NOTHING',
+        [match.leagueid, match.match_id],
+      );
+    }
+
+    let average_rank: number | undefined = undefined;
+    let num_rank_tier: number | undefined = undefined;
+    // Only fetch the average_rank if this is a fresh match since otherwise it won't be accurate
+    if (options.origin === 'scanner' && options.type === 'api') {
+      let { avg, num, players } = await getMatchRankTier(trx, match.players);
+      if (avg) {
+        average_rank = avg;
+      }
+      if (num) {
+        num_rank_tier = num;
+      }
+      // average_rank should be stored in a new blob column too since it's not part of API data
+      // We could also store the ranks of the players here rather than looking up their current rank on view
+      // That's probably better anyway since it's more accurate to show their rank at the time of the match
+      // let ranksBlob = { match_id: match.match_id, average_rank, players };
+      // await upsertBlob('ranks', ranksBlob);
+    }
+    await upsertMatchPostgres(trx, isProTier);
+    await upsertPlayerCaches(match, average_rank, pgroup, options.type);
+    await upsertMatchBlobs();
+    await resetMatchCache();
+    await resetPlayerTemp();
+    await telemetry();
+    await updateCounts(trx, match as ApiData, average_rank, num_rank_tier, isProTier);
+    await discoverPlayers(trx);
+    await queueMmr();
+    await queueGcData(trx);
+    await queueRate(trx);
+    await queueScenarios();
+    await postParsedMatch(trx);
+    const parseJob = await queueParse(trx);
+    await trx.commit();
+    return { parseJob, pgroup };
+  } catch (e) {
+    console.warn('[INSERTMATCH] rolling back transaction...');
+    await trx.rollback();
+    throw e;
   }
 
-  // Index the matchid to the league
-  if (
-    options.origin === 'scanner' &&
-    options.type === 'api' &&
-    'leagueid' in match &&
-    match.leagueid
+  async function upsertMatchPostgres(
+    trx: knex.Knex.Transaction,
+    isProTier: boolean,
   ) {
-    await trx.raw(
-      'INSERT INTO league_match(leagueid, match_id) VALUES(?, ?) ON CONFLICT DO NOTHING',
-      [match.leagueid, match.match_id],
-    );
-  }
-
-  let average_rank: number | undefined = undefined;
-  let num_rank_tier: number | undefined = undefined;
-  // Only fetch the average_rank if this is a fresh match since otherwise it won't be accurate
-  if (options.origin === 'scanner' && options.type === 'api') {
-    let { avg, num, players } = await getMatchRankTier(trx, match.players);
-    if (avg) {
-      average_rank = avg;
-    }
-    if (num) {
-      num_rank_tier = num;
-    }
-    // average_rank should be stored in a new blob column too since it's not part of API data
-    // We could also store the ranks of the players here rather than looking up their current rank on view
-    // That's probably better anyway since it's more accurate to show their rank at the time of the match
-    // let ranksBlob = { match_id: match.match_id, average_rank, players };
-    // await upsertBlob('ranks', ranksBlob);
-  }
-  await upsertMatchPostgres(match);
-  await upsertPlayerCaches(match, average_rank, pgroup, options.type);
-  await upsertMatchBlobs(match);
-  await resetMatchCache(match);
-  await resetPlayerTemp(match);
-  await telemetry(match);
-  await updateCounts(match as ApiData, average_rank, num_rank_tier);
-  await discoverPlayers(match);
-  await queueMmr(match);
-  await queueGcData(match);
-  await queueRate(match);
-  await queueScenarios(match);
-  await postParsedMatch(match);
-  const parseJob = await queueParse(match);
-  await trx.commit();
-  return { parseJob, pgroup };
-
-  async function upsertMatchPostgres(match: InsertMatchInput) {
     if (options.type !== 'api' && options.type !== 'parsed') {
       // Only if API or parse data
       return;
@@ -297,7 +306,7 @@ export async function insertMatch(
       }
     }
   }
-  async function upsertMatchBlobs(match: InsertMatchInput) {
+  async function upsertMatchBlobs() {
     // The table holds data for each possible stage of ingestion, api/gcdata/replay/meta etc.
     // We store a match blob in the row for each stage
     // in buildMatch we can assemble the data from all these pieces
@@ -328,7 +337,7 @@ export async function insertMatch(
     }
   }
 
-  async function telemetry(match: InsertMatchInput) {
+  async function telemetry() {
     // Publish to log stream
     const endedAt =
       options.endedAt ??
@@ -370,12 +379,12 @@ export async function insertMatch(
       // });
     }
   }
-  async function resetMatchCache(match: InsertMatchInput) {
+  async function resetMatchCache() {
     if (config.ENABLE_MATCH_CACHE) {
       await redis.del(`match:${match.match_id}`);
     }
   }
-  async function resetPlayerTemp(match: InsertMatchInput) {
+  async function resetPlayerTemp() {
     if (config.ENABLE_PLAYER_CACHE) {
       await Promise.allSettled(
         match.players.map(async (p) => {
@@ -402,9 +411,11 @@ export async function insertMatch(
     }
   }
   async function updateCounts(
+    trx: knex.Knex.Transaction,
     match: ApiData,
     avg: number | undefined,
     num: number | undefined,
+    isProTier: boolean,
   ) {
     // Update temporary match counts/hero rankings
     if (options.origin === 'scanner' && options.type === 'api') {
@@ -710,7 +721,7 @@ function updateMatchups(match) {
 */
   }
 
-  async function discoverPlayers(match: InsertMatchInput) {
+  async function discoverPlayers(trx: knex.Knex.Transaction) {
     // Player discovery
     // Add a placeholder player with just the ID
     // Queue a profile update request
@@ -746,7 +757,7 @@ function updateMatchups(match) {
       }),
     );
   }
-  async function queueMmr(match: InsertMatchInput) {
+  async function queueMmr() {
     // Trigger an update for player rank_tier if ranked match
     const arr = match.players.filter<ApiDataPlayer>((p): p is ApiDataPlayer => {
       return Boolean(
@@ -770,7 +781,7 @@ function updateMatchups(match) {
       ),
     );
   }
-  async function queueGcData(match: InsertMatchInput) {
+  async function queueGcData(trx: knex.Knex.Transaction) {
     // Trigger a request for gcdata
     if (
       options.origin === 'scanner' &&
@@ -795,7 +806,7 @@ function updateMatchups(match) {
     }
   }
 
-  async function queueRate(match: InsertMatchInput) {
+  async function queueRate(trx: knex.Knex.Transaction) {
     // Decide whether to rate the match
     // Rate a percentage of ranked matches
     if (
@@ -824,7 +835,7 @@ function updateMatchups(match) {
     }
   }
 
-  async function queueScenarios(match: InsertMatchInput) {
+  async function queueScenarios() {
     // Decide if we want to do scenarios (requires parsed match)
     // Only if it originated from scanner to avoid triggering on requests
     if (
@@ -838,7 +849,7 @@ function updateMatchups(match) {
       });
     }
   }
-  async function postParsedMatch(match: InsertMatchInput) {
+  async function postParsedMatch(trx: knex.Knex.Transaction) {
     if (options.type === 'parsed') {
       // Mark this match parsed
       await trx.raw(
@@ -847,7 +858,9 @@ function updateMatchups(match) {
       );
     }
   }
-  async function queueParse(match: InsertMatchInput) {
+  async function queueParse(
+    trx: knex.Knex.Transaction,
+  ) {
     if (options.skipParse) {
       return null;
     }
@@ -866,11 +879,12 @@ function updateMatchups(match) {
       }),
     );
     let hasTrackedPlayer = trackedScores.filter(Boolean).length > 0;
-    const doParse = hasTrackedPlayer || ('leagueid' in match && match.leagueid);
+    const isLeagueMatch = Boolean('leagueid' in match && match.leagueid);
+    const doParse = hasTrackedPlayer || isLeagueMatch;
     if (doParse) {
       redisCount('auto_parse');
       let priority = 5;
-      if (isProTier) {
+      if (isLeagueMatch) {
         priority = -1;
       }
       if (hasTrackedPlayer) {
