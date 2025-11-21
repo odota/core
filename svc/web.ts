@@ -374,18 +374,18 @@ app.get('/admin/retrieverMetrics', async (req, res, next) => {
     e.key.startsWith('35.') || e.key.startsWith('34.');
   return res.json({
     countReqs: ips.map((e) => e.reqs).reduce((a, b) => a + b, 0),
+    countSuccess: ips.map((e) => e.success).reduce((a, b) => a + b, 0),
     gceReqs: ips
       .filter((e) => isGce(e))
       .map((e) => e.reqs)
       .reduce((a, b) => a + b, 0),
+      gceSuccess: ips
+        .filter((e) => isGce(e))
+        .map((e) => e.success)
+        .reduce((a, b) => a + b, 0),
     nonGceReqs: ips
       .filter((e) => !isGce(e))
       .map((e) => e.reqs)
-      .reduce((a, b) => a + b, 0),
-    countSuccess: ips.map((e) => e.success).reduce((a, b) => a + b, 0),
-    gceSuccess: ips
-      .filter((e) => isGce(e))
-      .map((e) => e.success)
       .reduce((a, b) => a + b, 0),
     nonGceSuccess: ips
       .filter((e) => !isGce(e))
