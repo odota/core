@@ -108,7 +108,7 @@ Object.keys(spec.paths).forEach((path) => {
       });
     } else {
       // If the function is missing, log a warning message with the problematic route path and verb
-      console.warn(
+      console.error(
         `Missing callback function for route ${routePath} using ${verb.toUpperCase()}`,
       );
     }

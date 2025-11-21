@@ -22,7 +22,7 @@ async function processScenarios(matchID: string) {
     return;
   }
   if (!validateMatchProperties(match)) {
-    console.warn(
+    console.log(
       `Skipping scenario checks for match ${matchID}. Invalid match object.`,
     );
     return;

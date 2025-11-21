@@ -145,7 +145,7 @@ export async function getSteamAPIData(options: GetDataOptions): Promise<any> {
     console.timeEnd(target);
     if (axios.isAxiosError(err)) {
       const statusCode = err.response?.status;
-      console.warn('[EXCEPTION] %s, %s', statusCode, target);
+      console.log('[EXCEPTION] %s, %s', statusCode, target);
       if (statusCode === 429) {
         redisCount('steam_429');
       } else if (statusCode === 403) {
@@ -179,7 +179,7 @@ export async function getSteamAPIData(options: GetDataOptions): Promise<any> {
     ) {
       // private match history or attempting to get practice match/invalid id, don't retry
       // These shouldn't be retried, so just return the response directly but we might want to incllude some metadata to tell the user it's not retryable
-      console.warn(
+      console.log(
         '[INVALID] (non-retryable) %s, %s',
         target,
         JSON.stringify(body),
@@ -188,7 +188,7 @@ export async function getSteamAPIData(options: GetDataOptions): Promise<any> {
     }
     if (body.result.error || body.result.status === 2) {
       // this is invalid data but we can retry, so throw an exception and let the caller handle
-      console.warn(
+      console.log(
         '[INVALID] (retryable) %s, %s',
         target,
         JSON.stringify(body),

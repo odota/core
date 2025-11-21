@@ -257,7 +257,7 @@ async function init() {
           logOns = await resp.json();
         }
       } catch (e) {
-        console.warn(e);
+        console.error(e);
         await new Promise((resolve) => setTimeout(resolve, 1000));
       }
     }

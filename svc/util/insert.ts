@@ -111,7 +111,7 @@ export async function insertMatch(
     await trx.commit();
     return { parseJob, pgroup };
   } catch (e) {
-    console.warn('[INSERTMATCH] rolling back transaction...');
+    console.log('[INSERTMATCH] rolling back transaction...');
     await trx.rollback();
     throw e;
   }
