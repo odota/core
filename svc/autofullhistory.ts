@@ -21,4 +21,4 @@ runInLoop(async function autoFh() {
       ),
     ),
   );
-}, 1000);
+}, 500);

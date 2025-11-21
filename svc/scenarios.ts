@@ -6,7 +6,7 @@ import {
   scenarioChecks,
   validateMatchProperties,
 } from './util/scenariosUtil.ts';
-import { epochWeek } from './util/utility.ts';
+import { epochWeek, redisCount } from './util/utility.ts';
 import { runQueue } from './store/queue.ts';
 
 type ScenariosKey = keyof typeof scenarioChecks;
@@ -17,6 +17,7 @@ runQueue('scenariosQueue', 1, processScenarios);
 async function processScenarios(matchID: string) {
   console.log('[SCENARIOS] match: %s', matchID);
   // NOTE: Using buildMatch is unnecessarily expensive here since it also looks up player names etc.
+  // But we do it to have calculated fields present
   const match = await buildMatch(Number(matchID), {});
   if (!match || !('version' in match)) {
     return;
@@ -27,6 +28,7 @@ async function processScenarios(matchID: string) {
     );
     return;
   }
+  redisCount('scenario');
   const currentWeek = epochWeek();
   Object.keys(scenarioChecks).forEach((table) => {
     scenarioChecks[table as ScenariosKey].forEach(async (scenarioCheck) => {

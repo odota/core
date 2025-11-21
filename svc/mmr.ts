@@ -12,9 +12,18 @@ runQueue(
     const accountId = job.account_id;
     const url = await getRandomRetrieverUrl(`/profile/${accountId}`);
     console.log(url);
-    const { data } = await axios.get(url, {
-      timeout: 2000,
-    });
+    let data;
+    while (!data) {
+      try {
+        const result = await axios.get(url, {
+          timeout: 2000,
+        });
+        data = result.data;
+      } catch (e) {
+        console.log('[MMR] Error fetching data for %s, retrying...', accountId);
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+    }
     redisCount('retriever_player');
 
     // Update player's Dota Plus status if changed
@@ -31,6 +40,5 @@ runQueue(
       data.account_id = job.account_id ?? null;
       await insertPlayerRating(db, data);
     }
-    await new Promise((resolve) => setTimeout(resolve, 0));
   },
 );

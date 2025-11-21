@@ -27,18 +27,10 @@ export async function runQueue(
       const job = await consumer.blpop(queueName, '0');
       if (job) {
         const jobData = JSON.parse(job[1]);
-        try {
-          await processor(jobData);
-        } catch (e) {
-          // We failed in the unreliable queue, so we won't reprocess the job
-          // Log the error
-          console.error(e);
-          // If parallelism is 1, we can crash and get restarted
-          // If parallelism is > 1, we don't want to interrupt other jobs so just continue
-          if (parallelism === 1) {
-            process.exit(1);
-          }
-        }
+        // Note: If we fail here we will crash the process and possibly interrupt other parallel workers
+        // Handle errors in the processor to mitigate this
+        // The job will not be retried since this is an unreliable queue
+        await processor(jobData);
       }
     }
   };

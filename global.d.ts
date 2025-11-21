@@ -496,7 +496,8 @@ type MetricName =
   | 'cache_api_hit'
   | 'cache_gcdata_hit'
   | 'cache_parsed_hit'
-  | 'player_discover';
+  | 'player_discover'
+  | 'scenario';
 
 // Object to map player_slot to basic info
 type PGroup = {
