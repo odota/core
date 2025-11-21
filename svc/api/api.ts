@@ -84,7 +84,7 @@ api.use('/teams/:team_id{/:info}', (req, res, next) => {
 api.use('/request/:id', (req, res, next) => {
   // This can be a match ID (POST) or job ID (GET), but same validation
   if (!Number.isInteger(Number(req.params.id)) || Number(req.params.id) <= 0) {
-    return res.status(400).json({ error: 'invalid id' });
+    return res.status(400).json({ error: 'invalid job or match id' });
   }
   return next();
 });

@@ -1242,7 +1242,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
         func: async (req, res) => {
           const input = req.query.sql;
           if (typeof input !== 'string') {
-            return res.status(400).json({ error: 'input is not a string' });
+            return res.status(400).json({ error: 'sql is not a string' });
           }
           const client = new Client({
             connectionString: config.READONLY_POSTGRES_URL,
@@ -1347,11 +1347,8 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
         },
         route: () => '/search',
         func: async (req, res, next) => {
-          if (!req.query.q) {
-            return res.status(400).json([]);
-          }
           if (typeof req.query.q !== 'string') {
-            return res.status(400).json({ error: 'input is not a string' });
+            return res.status(400).json({ error: 'q is not a string' });
           }
           let result = await search(req.query.q);
           return res.json(result);
@@ -1390,7 +1387,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
         route: () => '/rankings',
         func: async (req, res, next) => {
           if (typeof req.query.hero_id !== 'string') {
-            return res.status(400).json({ error: 'input is not a string' });
+            return res.status(400).json({ error: 'hero_id is not a string' });
           }
           return res.json(await getHeroRankings(req.query.hero_id));
         },
@@ -1428,7 +1425,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
         route: () => '/benchmarks',
         func: async (req, res, next) => {
           if (typeof req.query.hero_id !== 'string') {
-            return res.status(400).json({ error: 'input is not a string' });
+            return res.status(400).json({ error: 'hero_id is not a string' });
           }
           const result = await getHeroBenchmarks(req.query.hero_id);
           return res.json(result);
