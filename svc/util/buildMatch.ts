@@ -147,9 +147,9 @@ export async function buildMatch(
   }
 
   // track distribution of matches requested
-  const bucket = Math.floor(matchId / 1000000000);
-  redisCount((bucket + '_match_req') as MetricName);
-  redisCount('build_match');
+  // const bucket = Math.floor(matchId / 1000000000);
+  // redisCount((bucket + '_match_req') as MetricName);
+  // redisCount('build_match');
 
   // Check for cache
   const key = `match:${matchId}`;
