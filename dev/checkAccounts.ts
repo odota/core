@@ -4,8 +4,8 @@ const accountData = fs.readFileSync('./STEAM_ACCOUNT_DATA.txt', 'utf8');
 const accountArray = accountData.split(/\r\n|\r|\n/g);
 
 for (let i = Number(process.argv[2]) || 0; i < accountArray.length; i++) {
-  const user = accountArray[i].split('\t')[0];
-  const pass = accountArray[i].split('\t')[1];
+  const user = accountArray[i].split(':')[0];
+  const pass = accountArray[i].split(':')[1];
   const logOnDetails = {
     accountName: user,
     password: pass,

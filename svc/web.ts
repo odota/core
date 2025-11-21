@@ -226,14 +226,16 @@ app.get('/retrieverData', async (req, res, next) => {
     });
     const accountData = resp.data.split(/\r\n|\r|\n/g);
     // Store in redis set
+    const idReqs = await getRedisCountDayHash('retrieverSteamIDs');
     for (let i = 0; i < accountData.length; i++) {
-      const accountName = accountData[i].split('\t')[0];
-      const reqs = Number(await redis.hget('retrieverSteamIDs', accountName));
-      const success = Number(
-        await redis.hget('retrieverSuccessSteamIDs', accountName),
-      );
-      const ratio = success / reqs;
-      const isLowRatio = reqs > 25 && ratio <= 0;
+      const accountName = accountData[i].split(/:|\t/)[0];
+      const reqs = idReqs[accountName];
+      // const reqs = Number(await redis.hget('retrieverSteamIDs', accountName));
+      // const success = Number(
+      //   await redis.hget('retrieverSuccessSteamIDs', accountName),
+      // );
+      // const ratio = success / reqs;
+      // const isLowRatio = reqs > 25 && ratio <= 0;
       // Don't add high usage logons or high fail logons
       if (reqs < 200) {
         await redis.sadd('retrieverDataSet', accountData[i]);
@@ -243,8 +245,8 @@ app.get('/retrieverData', async (req, res, next) => {
   // Pop random elements
   const pop = await redis.spop('retrieverDataSet', accountCount);
   const logins = pop.map((login) => {
-    const accountName = login.split('\t')[0];
-    const password = login.split('\t')[1];
+    const accountName = login.split(/:|\t/)[0];
+    const password = login.split(/:|\t/)[1];
     return { accountName, password };
   });
   return res.json(logins);
