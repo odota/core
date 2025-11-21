@@ -5,10 +5,8 @@ import {
   buildReplayUrl,
   getStartOfBlockMinutes,
   isContributor,
-  redisCount,
-  redisCountDistinct,
 } from './utility.ts';
-import redis from '../store/redis.ts';
+import redis, { redisCount } from '../store/redis.ts';
 import db from '../store/db.ts';
 import { benchmarks } from './benchmarksUtil.ts';
 import * as allFetchers from '../fetcher/allFetchers.ts';

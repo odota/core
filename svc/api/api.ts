@@ -3,9 +3,9 @@ import { filterDeps } from '../util/filter.ts';
 import spec from './spec.ts';
 import db from '../store/db.ts';
 import { alwaysCols } from './playerFields.ts';
-import { queryParamToArray, redisCount } from '../util/utility.ts';
+import { queryParamToArray } from '../util/utility.ts';
 import moment from 'moment';
-import redis from '../store/redis.ts';
+import redis, { redisCount } from '../store/redis.ts';
 
 //@ts-expect-error
 const api: Router = new Router();

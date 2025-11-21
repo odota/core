@@ -1,7 +1,7 @@
 // Processes a queue of auto player cache requests
 import { populateTemp } from './util/buildPlayer.ts';
 import { runQueue } from './store/queue.ts';
-import { redisCount, redisCountDistinct } from './util/utility.ts';
+import { redisCount, redisCountDistinct } from './store/redis.ts';
 
 runQueue('cacheQueue', 10, async (job: CacheJob) => {
   const accountId = job;

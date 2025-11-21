@@ -4,9 +4,8 @@ import {
   getSteamAPIDataWithRetry,
   SteamAPIUrls,
   runInLoop,
-  redisCount,
 } from './util/utility.ts';
-import redis from './store/redis.ts';
+import redis, { redisCount } from './store/redis.ts';
 
 runInLoop(async function profile() {
   const resp = await redis.lpop('profileQueue', 100);

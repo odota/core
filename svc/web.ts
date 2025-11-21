@@ -15,14 +15,11 @@ import { WebSocketServer, WebSocket } from 'ws';
 import keys from './api/keyManagement.ts';
 import api from './api/api.ts';
 import db, { upsertPlayer } from './store/db.ts';
-import redis from './store/redis.ts';
+import redis, { getRedisCountDayHash, redisCount, redisCountHash } from './store/redis.ts';
 import config from '../config.ts';
 import {
   getEndOfDay,
-  getEndOfHour,
   getStartOfBlockMinutes,
-  redisCount,
-  redisCountHash,
 } from './util/utility.ts';
 import stripe from './store/stripe.ts';
 import axios from 'axios';
@@ -347,16 +344,16 @@ app.use('/admin/*splat', (req, res, next) => {
   });
 });
 app.get('/admin/retrieverMetrics', async (req, res, next) => {
-  const idReqs = await redis.hgetall('retrieverSteamIDs');
-  const ipReqs = await redis.hgetall('retrieverIPs');
-  const idSuccess = await redis.hgetall('retrieverSuccessSteamIDs');
-  const ipSuccess = await redis.hgetall('retrieverSuccessIPs');
+  const idReqs = await getRedisCountDayHash('retrieverSteamIDs');
+  const ipReqs = await getRedisCountDayHash('retrieverIPs');
+  const idSuccess = await getRedisCountDayHash('retrieverSuccessSteamIDs');
+  const ipSuccess = await getRedisCountDayHash('retrieverSuccessIPs');
   const steamids = Object.keys(idReqs)
     .map((key) => {
       return {
         key,
-        reqs: Number(idReqs[key]) || 0,
-        success: Number(idSuccess[key]) || 0,
+        reqs: idReqs[key] || 0,
+        success: idSuccess[key] || 0,
       };
     })
     .sort((a, b) => b.reqs - a.reqs);
@@ -364,8 +361,8 @@ app.get('/admin/retrieverMetrics', async (req, res, next) => {
     .map((key) => {
       return {
         key,
-        reqs: Number(ipReqs[key]) || 0,
-        success: Number(ipSuccess[key]) || 0,
+        reqs: ipReqs[key] || 0,
+        success: ipSuccess[key] || 0,
       };
     })
     .sort((a, b) => b.reqs - a.reqs);

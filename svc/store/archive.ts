@@ -9,9 +9,8 @@ import {
   PutObjectCommand,
   GetObjectCommand,
 } from '@aws-sdk/client-s3';
-import { redisCount } from '../util/utility.ts';
 import axios from 'axios';
-import redis from './redis.ts';
+import redis, { redisCount } from './redis.ts';
 
 async function stream2buffer(stream: any): Promise<Buffer> {
   return new Promise((resolve, reject) => {

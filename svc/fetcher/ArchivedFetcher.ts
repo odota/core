@@ -1,8 +1,8 @@
-import { redisCount } from '../util/utility.ts';
 import { matchArchive } from '../store/archive.ts';
 import db from '../store/db.ts';
 import { MatchFetcherBase } from './MatchFetcherBase.ts';
 import { doArchiveMatchFromBlobs } from '../util/archiveUtil.ts';
+import { redisCount } from '../store/redis.ts';
 
 export class ArchivedFetcher extends MatchFetcherBase<ParsedMatch> {
   getData = async (matchId: number): Promise<ParsedMatch | null> => {

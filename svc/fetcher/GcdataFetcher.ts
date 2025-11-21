@@ -1,10 +1,7 @@
 import type { AxiosResponse } from 'axios';
 import db from '../store/db.ts';
-import redis from '../store/redis.ts';
 import {
-  getEndOfDay,
   getRandomRetrieverUrl,
-  redisCount,
 } from '../util/utility.ts';
 import axios from 'axios';
 import retrieverMatch from '../../test/data/retriever_match.json' with { type: 'json' };
@@ -12,6 +9,7 @@ import { insertMatch } from '../util/insert.ts';
 import { blobArchive } from '../store/archive.ts';
 import { MatchFetcherBase } from './MatchFetcherBase.ts';
 import config from '../../config.ts';
+import { redisCount, redisCountHash } from '../store/redis.ts';
 
 export class GcdataFetcher extends MatchFetcherBase<GcData> {
   savedDataMetricName: MetricName = 'regcdata';
@@ -51,10 +49,8 @@ export class GcdataFetcher extends MatchFetcherBase<GcData> {
     const steamid = headers['x-match-request-steamid'];
     const ip = headers['x-match-request-ip'];
     // Record the total steamids and ip counts from headers (sent with 204 response even if request timed out)
-    redis.hincrby('retrieverSteamIDs', steamid, 1);
-    redis.expireat('retrieverSteamIDs', getEndOfDay());
-    redis.hincrby('retrieverIPs', ip, 1);
-    redis.expireat('retrieverIPs', getEndOfDay());
+    redisCountHash('retrieverSteamIDs', steamid);
+    redisCountHash('retrieverIPs', ip);
     if (headers['x-match-noretry']) {
       // Steam is blocking this match for community prediction, so return error to prevent retry
       return { error: 'x-match-noretry', data: null };
@@ -79,10 +75,8 @@ export class GcdataFetcher extends MatchFetcherBase<GcData> {
     }
     // Count successful calls
     redisCount('retriever');
-    redis.hincrby('retrieverSuccessSteamIDs', steamid, 1);
-    redis.expireat('retrieverSuccessSteamIDs', getEndOfDay());
-    redis.hincrby('retrieverSuccessIPs', ip, 1);
-    redis.expireat('retrieverSuccessIPs', getEndOfDay());
+    redisCountHash('retrieverSuccessSteamIDs', steamid);
+    redisCountHash('retrieverSuccessIPs', ip);
     // Some old matches don't have players, e.g. 271601114
     // They still have a replay salt so we can continue
     const gcPlayers = data.match.players ?? [];

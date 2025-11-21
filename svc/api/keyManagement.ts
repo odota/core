@@ -4,7 +4,7 @@ import moment from 'moment';
 import stripe from '../store/stripe.ts';
 import db from '../store/db.ts';
 import config from '../../config.ts';
-import { redisCount } from '../util/utility.ts';
+import { redisCount } from '../store/redis.ts';
 
 const stripeAPIPlan = config.STRIPE_API_PLAN;
 const keys = express.Router();

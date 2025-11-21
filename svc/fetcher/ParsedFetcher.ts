@@ -1,4 +1,4 @@
-import { getRandomParserUrl, redisCount } from '../util/utility.ts';
+import { getRandomParserUrl } from '../util/utility.ts';
 import { blobArchive } from '../store/archive.ts';
 import db from '../store/db.ts';
 import { insertMatch } from '../util/insert.ts';

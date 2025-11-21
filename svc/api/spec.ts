@@ -12,8 +12,6 @@ import {
   matchupToString,
   mergeObjects,
   queryParamToArray,
-  redisCount,
-  redisCountDistinct,
 } from '../util/utility.ts';
 import {
   matchesCols,
@@ -28,7 +26,7 @@ import {
   recentMatchesCols,
 } from './playerFields.ts';
 import db from '../store/db.ts';
-import redis from '../store/redis.ts';
+import redis, { redisCount, redisCountDistinct } from '../store/redis.ts';
 import packageJson from '../../package.json' with { type: 'json' };
 import generateOperationId from './generateOperationId.ts';
 import {

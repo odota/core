@@ -6,7 +6,7 @@ import config from '../../config.ts';
 import contributors from '../../CONTRIBUTORS.ts';
 import type QueryString from 'qs';
 import axios from 'axios';
-import redis from '../store/redis.ts';
+import redis, { redisCount } from '../store/redis.ts';
 
 /**
  * Tokenizes an input string.
@@ -812,46 +812,6 @@ export async function getApiHosts(): Promise<string[]> {
     }
   }
   return config.STEAM_API_HOST.split(',');
-}
-
-/**
- * Increments an hourly Redis counter for the metric
- * @param prefix The counter name
- */
-export async function redisCount(prefix: MetricName, incrBy = 1) {
-  if (!redis) {
-    return;
-  }
-  const key = `${prefix}:v2:${moment.utc().startOf('hour').format('X')}`;
-  await redis.incrby(key, incrBy);
-  await redis.expireat(
-    key,
-    moment.utc().startOf('hour').add(1, 'day').format('X'),
-  );
-}
-
-export async function redisCountDistinct(prefix: MetricName, value: string) {
-  if (!redis) {
-    return;
-  }
-  const key = `${prefix}:v2:${moment.utc().startOf('hour').format('X')}`;
-  await redis.pfadd(key, value);
-  await redis.expireat(
-    key,
-    moment.utc().startOf('hour').add(1, 'day').format('X'),
-  );
-}
-
-export async function redisCountHash(prefix: string, field: string, incrBy = 1) {
-  if (!redis) {
-    return;
-  }
-  const key = `${prefix}:${moment.utc().startOf('hour').format('X')}`;
-  await redis.hincrby(key, field, incrBy);
-  await redis.expireat(
-    key,
-    moment.utc().startOf('hour').add(1, 'day').format('X'),
-  );
 }
 
 /**

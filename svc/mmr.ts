@@ -2,8 +2,9 @@
 import { runQueue } from './store/queue.ts';
 import db, { insertPlayerRating } from './store/db.ts';
 import config from '../config.ts';
-import { redisCount, getRandomRetrieverUrl } from './util/utility.ts';
+import { getRandomRetrieverUrl } from './util/utility.ts';
 import axios from 'axios';
+import { redisCount } from './store/redis.ts';
 
 runQueue(
   'mmrQueue',

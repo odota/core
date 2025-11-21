@@ -6,8 +6,9 @@ import {
   scenarioChecks,
   validateMatchProperties,
 } from './util/scenariosUtil.ts';
-import { epochWeek, redisCount } from './util/utility.ts';
+import { epochWeek } from './util/utility.ts';
 import { runQueue } from './store/queue.ts';
+import { redisCount } from './store/redis.ts';
 
 type ScenariosKey = keyof typeof scenarioChecks;
 

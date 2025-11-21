@@ -1,9 +1,10 @@
 import ProtoBuf from 'protobufjs';
 import { exec } from 'node:child_process';
 import { promisify } from 'node:util';
-import { buildReplayUrl, redisCount } from '../util/utility.ts';
+import { buildReplayUrl } from '../util/utility.ts';
 import { MatchFetcherBase } from './MatchFetcherBase.ts';
 import { GcdataFetcher } from './GcdataFetcher.ts';
+import { redisCount } from '../store/redis.ts';
 const execPromise = promisify(exec);
 
 const gcFetcher = new GcdataFetcher();

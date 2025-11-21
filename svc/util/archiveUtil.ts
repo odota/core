@@ -5,11 +5,12 @@ import { Client } from 'pg';
 import db from '../store/db.ts';
 import type { PutObjectCommandOutput } from '@aws-sdk/client-s3';
 import { getFullPlayerMatchesWithMetadata } from './buildPlayer.ts';
-import { isDataComplete, randomInt, redisCount } from './utility.ts';
+import { isDataComplete, randomInt } from './utility.ts';
 import { getMatchBlob } from './getMatchBlob.ts';
 import { ApiFetcher } from '../fetcher/ApiFetcher.ts';
 import { ParsedFetcher } from '../fetcher/ParsedFetcher.ts';
 import { GcdataFetcher } from '../fetcher/GcdataFetcher.ts';
+import { redisCount } from '../store/redis.ts';
 
 // Don't include archive when archiving
 const fetchers = {

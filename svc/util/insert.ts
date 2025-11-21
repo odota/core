@@ -5,7 +5,7 @@ import fs from 'node:fs/promises';
 import config from '../../config.ts';
 import { addJob, addReliableJob } from '../store/queue.ts';
 import db, { upsert, upsertPlayer } from '../store/db.ts';
-import redis from '../store/redis.ts';
+import redis, { redisCount } from '../store/redis.ts';
 import {
   getAnonymousAccountId,
   serialize,
@@ -13,7 +13,6 @@ import {
   getLaneFromPosData,
   isRadiant,
   getPatchIndex,
-  redisCount,
   transformMatch,
   createMatchCopy,
   isSignificant,
@@ -354,7 +353,7 @@ export async function insertMatch(
     const message = `[${new Date().toISOString()}] [${name}] [insert: ${
       options.type
     }] [ended: ${moment.unix(endedAt ?? 0).fromNow()}] ${match.match_id}`;
-    redis.publish(options.type, message);
+    redis?.publish(options.type, message);
     if (options.type === 'parsed') {
       redisCount('parser');
     }
@@ -387,7 +386,7 @@ export async function insertMatch(
   }
   async function resetMatchCache() {
     if (config.ENABLE_MATCH_CACHE) {
-      await redis.del(`match:${match.match_id}`);
+      await redis?.del(`match:${match.match_id}`);
     }
   }
   async function resetPlayerTemp() {

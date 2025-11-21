@@ -11,9 +11,8 @@ import c from 'ansi-colors';
 import {
   buildReplayUrl,
   getParserCapacity,
-  redisCount,
 } from './util/utility.ts';
-import redis from './store/redis.ts';
+import redis, { redisCount } from './store/redis.ts';
 import { apiFetcher, gcFetcher, parsedFetcher } from './fetcher/allFetchers.ts';
 import { getPGroup } from './util/pgroup.ts';
 import moment from 'moment';

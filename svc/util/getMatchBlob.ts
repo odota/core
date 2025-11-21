@@ -1,5 +1,5 @@
 import { MatchFetcherBase } from '../fetcher/MatchFetcherBase.ts';
-import { redisCount } from './utility.ts';
+import { redisCount } from '../store/redis.ts';
 
 export async function getMatchBlob(
   matchId: number,
