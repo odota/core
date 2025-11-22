@@ -5,7 +5,7 @@ import { runInLoop } from './util/utility.ts';
 
 runInLoop(async function autoFh() {
   const { rows } = await db.raw(
-    'SELECT account_id from players ORDER BY full_history_time ASC NULLS FIRST LIMIT 10',
+    'SELECT account_id from players ORDER BY full_history_time ASC NULLS FIRST LIMIT 1',
   );
   console.log(rows);
   await Promise.all(
@@ -21,4 +21,4 @@ runInLoop(async function autoFh() {
       ),
     ),
   );
-}, 5000);
+}, 500);
