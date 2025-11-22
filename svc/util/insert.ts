@@ -18,6 +18,7 @@ import {
   isSignificant,
   getStartOfBlockMinutes,
   getEndOfWeek,
+  isTurbo,
 } from './utility.ts';
 import {
   getMatchRankTier,
@@ -588,7 +589,7 @@ export async function insertMatch(
       let rank: number | null = null;
       if (isProTier) {
         tier = 'pro';
-      } else if (match.game_mode === 23) {
+      } else if (isTurbo(match)) {
         tier = 'turbo';
       } else if (isSignificant(match)) {
         tier = 'pub';
@@ -646,9 +647,10 @@ export async function insertMatch(
     }
 
     async function updateBenchmarks() {
+      const turbo = isTurbo(match);
       if (
         match.match_id % 100 < Number(config.BENCHMARKS_SAMPLE_PERCENT) &&
-        isSignificant(match)
+        (isSignificant(match) || turbo)
       ) {
         for (let i = 0; i < match.players.length; i += 1) {
           const p = match.players[i];
@@ -669,6 +671,7 @@ export async function insertMatch(
                   ),
                   key,
                   p.hero_id,
+                  turbo ? 'turbo' : '',
                 ].join(':');
                 redis.zadd(rkey, metric, match.match_id);
                 // expire at time two epochs later (after prev/current cycle)

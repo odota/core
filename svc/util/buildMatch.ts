@@ -5,6 +5,7 @@ import {
   buildReplayUrl,
   getStartOfBlockMinutes,
   isContributor,
+  isTurbo,
 } from './utility.ts';
 import redis, { redisCount } from '../store/redis.ts';
 import db from '../store/db.ts';
@@ -93,6 +94,7 @@ async function getProMatchInfo(matchId: number): Promise<{
  * Adds benchmark data to the players in a match
  * */
 export async function getPlayerBenchmarks(m: Match) {
+  const turbo = isTurbo(m);
   return Promise.all(
     m.players.map(async (p) => {
       const result: Record<string, { raw?: number; pct?: number }> = {};
@@ -108,12 +110,14 @@ export async function getPlayerBenchmarks(m: Match) {
           ),
           metric,
           p.hero_id,
+          turbo ? 'turbo' : '',
         ].join(':');
         const backupKey = [
           'benchmarks',
           getStartOfBlockMinutes(Number(config.BENCHMARK_RETENTION_MINUTES), 0),
           metric,
           p.hero_id,
+          turbo ? 'turbo' : '',
         ].join(':');
         const raw = benchmarks[metric](m, p);
         result[metric] = {

@@ -315,6 +315,11 @@ export function isProMatch(match: ApiData) {
       match.players.every((player) => player.hero_id > 0),
   );
 }
+
+export function isTurbo(match: ApiData | Match) {
+  return match.game_mode === 23;
+}
+
 /**
  * Finds the max of the input array
  * */
