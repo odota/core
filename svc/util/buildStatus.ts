@@ -57,7 +57,7 @@ export async function buildStatus(isAdmin: boolean) {
   const obj: Record<string, () => Promise<Record<string, number | Metric>>> = {
     health: async () => {
       const result = await redis.get('health:v2');
-      return result ?? {};
+      return JSON.parse(result ?? '{}');
     },
     counts: async () => {
       const counts = {
