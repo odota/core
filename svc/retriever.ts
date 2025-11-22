@@ -82,12 +82,23 @@ const server = createServer((req, res) => {
     return;
   }
   const url = new URL('http://localhost' + req.url);
-  if (url.pathname === '/healthz') {
-    res.write('ok');
+  if (url.pathname === '/') {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    const data = {
+      matchRequests,
+      matchSuccesses,
+      // profileRequests,
+      // profileSuccesses,
+      uptime: getUptime(),
+      osUptime: getOSUptime(),
+      hostname: os.hostname(),
+      numReadyAccounts: Object.keys(steamObj).length,
+    };
+    res.write(JSON.stringify(data));
     res.end();
     return;
-  } else if (url.pathname === '/stats') {
-    res.write(JSON.stringify(genStats()));
+  } else if (url.pathname === '/healthz') {
+    res.write('ok');
     res.end();
     return;
   }
@@ -330,19 +341,6 @@ function getUptime() {
 }
 function getOSUptime() {
   return os.uptime();
-}
-function genStats() {
-  const data = {
-    matchRequests,
-    matchSuccesses,
-    profileRequests,
-    profileSuccesses,
-    uptime: getUptime(),
-    osUptime: getOSUptime(),
-    hostname: os.hostname(),
-    numReadyAccounts: Object.keys(steamObj).length,
-  };
-  return data;
 }
 
 init();
