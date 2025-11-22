@@ -254,21 +254,18 @@ async function init() {
   if (config.SERVICE_REGISTRY_HOST) {
     // Fetch logons from remote
     while (!logOns?.length) {
-      try {
-        const logOnUrl =
-          'https://' +
-          config.SERVICE_REGISTRY_HOST +
-          '/retrieverData?key=' +
-          config.RETRIEVER_SECRET +
-          '&count=' +
-          numAccounts;
-        console.log('logOnUrl: %s', logOnUrl);
-        const resp = await fetch(logOnUrl);
-        if (resp.ok) {
-          logOns = await resp.json();
-        }
-      } catch (e) {
-        console.error(e);
+      const logOnUrl =
+        'https://' +
+        config.SERVICE_REGISTRY_HOST +
+        '/retrieverData?key=' +
+        config.RETRIEVER_SECRET +
+        '&count=' +
+        numAccounts;
+      console.log('logOnUrl: %s', logOnUrl);
+      const resp = await fetch(logOnUrl);
+      if (resp.ok) {
+        logOns = await resp.json();
+      } else {
         await new Promise((resolve) => setTimeout(resolve, 1000));
       }
     }

@@ -29,10 +29,12 @@ const isGce = (e: { key: string }) =>
   e.key.startsWith('35.') || e.key.startsWith('34.');
 
 export async function buildStatus(isAdmin: boolean) {
-  const idReqs = await getRedisCountDayHash('retrieverSteamIDs');
-  const ipReqs = await getRedisCountDayHash('retrieverIPs');
-  const idSuccess = await getRedisCountDayHash('retrieverSuccessSteamIDs');
-  const ipSuccess = await getRedisCountDayHash('retrieverSuccessIPs');
+  const [idReqs, ipReqs, idSuccess, ipSuccess] = await Promise.all([
+    getRedisCountDayHash('retrieverSteamIDs'),
+    getRedisCountDayHash('retrieverIPs'),
+    getRedisCountDayHash('retrieverSuccessSteamIDs'),
+    getRedisCountDayHash('retrieverSuccessIPs'),
+  ]);
   const steamids = Object.keys(idReqs)
     .map((key) => {
       return {
@@ -51,8 +53,6 @@ export async function buildStatus(isAdmin: boolean) {
       };
     })
     .sort((a, b) => b.reqs - a.reqs);
-  const registryKeys = await redis.zrange('registry:retriever', 0, -1);
-  const registry = ips.filter((ip) => registryKeys.includes(ip.key));
 
   const obj: Record<string, () => Promise<Record<string, number | Metric>>> = {
     health: async () => {
@@ -226,41 +226,6 @@ export async function buildStatus(isAdmin: boolean) {
       });
       return final;
     },
-    game_mode: async () => {
-      const result: Record<string, number> = {};
-      const keys = Object.keys(game_mode);
-      for (let i = 0; i < keys.length; i++) {
-        const key = keys[i] as keyof typeof game_mode;
-        result[game_mode[key]?.name] = Number(
-          await getRedisCountDay(`${key}_game_mode` as MetricName),
-        );
-      }
-      return result;
-    },
-    lobby_type: async () => {
-      const result: Record<string, number> = {};
-      const keys = Object.keys(lobby_type);
-      for (let i = 0; i < keys.length; i++) {
-        const key = keys[i] as keyof typeof lobby_type;
-        result[lobby_type[key]?.name] = Number(
-          await getRedisCountDay(`${key}_lobby_type` as MetricName),
-        );
-      }
-      return result;
-    },
-    region: async () => {
-      const result: Record<string, number> = {};
-      const clusters = Object.entries(cluster);
-      for (let i = 0; i < clusters.length; i++) {
-        const [cluster, reg] = clusters[i];
-        const regName =
-          region[reg as unknown as keyof typeof region] ?? cluster;
-        result[regName] =
-          (result[regName] ?? 0) +
-          Number(await getRedisCountDay(`${cluster}_cluster` as MetricName));
-      }
-      return result;
-    },
     retrieverCounts: async () => {
       if (isAdmin) {
         return {
@@ -293,11 +258,22 @@ export async function buildStatus(isAdmin: boolean) {
     retrieverRegistry: async () => {
       let retrieverRegistry: Record<string, Metric> = {};
       if (isAdmin) {
-        registry.forEach((r) => {
-          retrieverRegistry[r.key] = {
-            metric: r.success,
-            limit: r.reqs,
-          };
+        const registryKeys = await redis.zrange('registry:retriever', 0, -1);
+        const rows = await Promise.all(
+          registryKeys.map(async (k) => {
+            const resp = await fetch('http://' + k);
+            const json = await resp.json();
+            const found = ips.find((ip) => ip.key === k);
+            return {
+              key: k,
+              metric: found?.success,
+              limit: found?.reqs,
+              ...json,
+            };
+          }),
+        );
+        rows.forEach((r) => {
+          retrieverRegistry[r.key] = r;
         });
       }
       return retrieverRegistry;
@@ -359,6 +335,41 @@ export async function buildStatus(isAdmin: boolean) {
         });
       }
       return apiMetrics;
+    },
+    game_mode: async () => {
+      const result: Record<string, number> = {};
+      const keys = Object.keys(game_mode);
+      for (let i = 0; i < keys.length; i++) {
+        const key = keys[i] as keyof typeof game_mode;
+        result[game_mode[key]?.name] = Number(
+          await getRedisCountDay(`${key}_game_mode` as MetricName),
+        );
+      }
+      return result;
+    },
+    lobby_type: async () => {
+      const result: Record<string, number> = {};
+      const keys = Object.keys(lobby_type);
+      for (let i = 0; i < keys.length; i++) {
+        const key = keys[i] as keyof typeof lobby_type;
+        result[lobby_type[key]?.name] = Number(
+          await getRedisCountDay(`${key}_lobby_type` as MetricName),
+        );
+      }
+      return result;
+    },
+    region: async () => {
+      const result: Record<string, number> = {};
+      const clusters = Object.entries(cluster);
+      for (let i = 0; i < clusters.length; i++) {
+        const [cluster, reg] = clusters[i];
+        const regName =
+          region[reg as unknown as keyof typeof region] ?? cluster;
+        result[regName] =
+          (result[regName] ?? 0) +
+          Number(await getRedisCountDay(`${cluster}_cluster` as MetricName));
+      }
+      return result;
     },
   };
   return parallelPromise<{

@@ -14,7 +14,11 @@ async function start() {
         },
       },
     );
-    fs.writeFileSync('/usr/src/.env', await resp.text());
+    if (resp.ok) {
+      fs.writeFileSync('/usr/src/.env', await resp.text());
+    } else {
+      process.exit(1);
+    }
   }
   if (process.env.ROLE) {
     // if role variable is set just run that script
