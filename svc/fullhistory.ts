@@ -31,11 +31,11 @@ async function processFullHistory(job: FullHistoryJob, metadata: JobMetadata) {
     (await redis.get('fh_queue:' + player.account_id))
   ) {
     redisCount('fullhistory_skip');
-    console.log('[FULLHISTORY %s] skipping %s', metadata.i, player.account_id);
+    console.log('[FULLHISTORY#%s] skipping %s', metadata.i, player.account_id);
     return true;
   }
 
-  console.time(metadata.i + ':doFullHistory:' + player.account_id.toString());
+  console.time(`doFullHistory#${metadata.i}:` + player.account_id.toString());
   // As of December 2021 filtering by hero ID doesn't work
   // const heroArray = config.NODE_ENV === 'test' ? ['0'] : Object.keys(heroes);
   // const heroId = '0';
@@ -130,7 +130,7 @@ async function processFullHistory(job: FullHistoryJob, metadata: JobMetadata) {
   }
   await updatePlayer(player);
   await redis.setex('fh_queue:' + player.account_id, 30 * 60, '1');
-  console.timeEnd(metadata.i + ':doFullHistory:' + player.account_id.toString());
+  console.timeEnd(`doFullHistory#${metadata.i}:` + player.account_id.toString());
   return true;
 }
 
