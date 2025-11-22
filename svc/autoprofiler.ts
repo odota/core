@@ -6,7 +6,7 @@ import { addJob } from './store/queue.ts';
 runInLoop(async function autoProfile() {
   // To optimize the api call we need to do 100 players at a time
   const { rows } = await db.raw(
-    'SELECT account_id from players ORDER BY profile_time ASC LIMIT 100',
+    'SELECT account_id from players ORDER BY profile_time ASC NULLS FIRST LIMIT 100',
   );
   console.log(rows);
   await Promise.all(

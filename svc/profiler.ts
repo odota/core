@@ -12,7 +12,6 @@ runInLoop(async function profile() {
   if (!resp || !resp.length) {
     return;
   }
-  redisCount('profiler', resp.length);
   const jobs = resp.map((item) => JSON.parse(item) as ProfileJob);
   const url = SteamAPIUrls.api_summaries({
     players: jobs,
@@ -26,4 +25,5 @@ runInLoop(async function profile() {
     player.profile_time = now;
     return upsertPlayer(db, player)
   }));
+  redisCount('profiler', resp.length);
 }, 2000);

@@ -59,7 +59,6 @@ export async function upsert(
     Object.keys(conflict).join(','),
     update.join(','),
   );
-  console.log(query);
   return db.raw(
     query,
     Object.keys(row).map((key) => row[key]),

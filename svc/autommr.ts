@@ -5,7 +5,7 @@ import { addJob } from './store/queue.ts';
 
 runInLoop(async function autoMmr() {
   const { rows } = await db.raw(
-    'SELECT account_id from players ORDER BY rank_tier_time ASC LIMIT 20',
+    'SELECT account_id from players ORDER BY rank_tier_time ASC NULLS FIRST LIMIT 20',
   );
   console.log(rows);
   await Promise.all(rows.map(async (row: any) => {
