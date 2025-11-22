@@ -7,6 +7,7 @@ runInLoop(async function autoMmr() {
   const { rows } = await db.raw(
     'SELECT account_id from players ORDER BY rank_tier_time ASC LIMIT 20',
   );
+  console.log(rows);
   await Promise.all(rows.map(async (row: any) => {
     await addJob({
       name: 'mmrQueue',

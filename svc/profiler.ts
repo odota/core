@@ -24,6 +24,7 @@ runInLoop(async function profile() {
   const now = new Date();
   await Promise.all(results.map((player: User) => {
     player.profile_time = now;
+    console.log(player);
     return upsertPlayer(db, player)
   }));
 }, 2000);
