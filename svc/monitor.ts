@@ -4,7 +4,7 @@ import config from '../config.ts';
 import redis from './store/redis.ts';
 import db from './store/db.ts';
 import cassandra from './store/cassandra.ts';
-import { runInLoop } from './util/utility.ts';
+import { getSteamAPIData, runInLoop, SteamAPIUrls } from './util/utility.ts';
 const apiKey = config.STEAM_API_KEY.split(',')[0];
 
 const health = {
@@ -46,24 +46,9 @@ runInLoop(async function monitor() {
   await redis.expire('health:v2', 900);
 }, 10000);
 
-async function steamApi() {
-  const resp = await axios.get(
-    'http://api.steampowered.com/IDOTA2Match_570/GetMatchHistory/V001/?key=' +
-      apiKey,
-  );
-  const body = resp.data;
-  const fail = body.result.status !== 1;
-  return {
-    metric: Number(fail),
-    limit: 1,
-  };
-}
 async function seqNumDelay() {
-  const resp = await axios.get(
-    'http://api.steampowered.com/IDOTA2Match_570/GetMatchHistory/V001/?key=' +
-      apiKey,
-  );
-  const body = resp.data;
+  const url = SteamAPIUrls.api_history({});
+  const body = await getSteamAPIData({ url });
   const currSeqNum = body.result.matches[0]?.match_seq_num;
   const { rows } = await db.raw('select max(match_seq_num) from last_seq_num;');
   const numResult = Number(rows[0]?.max) || 0;

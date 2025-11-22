@@ -217,6 +217,15 @@ export async function buildStatus(isAdmin: boolean) {
       const arr = await redis.lrange('load_times', 0, -1);
       return generatePercentiles(arr ?? []);
     },
+    steam_api_paths: async () => {
+      const result = await getRedisCountDayHash('steam_api_paths');
+      const sorted = Object.entries(result).sort((a, b) => b[1] - a[1]);
+      const final: Record<string, number> = {};
+      sorted.forEach(([k, v]) => {
+        final[k] = v;
+      });
+      return final;
+    },
     game_mode: async () => {
       const result: Record<string, number> = {};
       const keys = Object.keys(game_mode);

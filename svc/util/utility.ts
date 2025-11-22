@@ -6,7 +6,7 @@ import config from '../../config.ts';
 import contributors from '../../CONTRIBUTORS.ts';
 import type QueryString from 'qs';
 import axios from 'axios';
-import redis, { redisCount } from '../store/redis.ts';
+import redis, { redisCount, redisCountHash } from '../store/redis.ts';
 
 /**
  * Tokenizes an input string.
@@ -105,11 +105,12 @@ type GetDataOptions = {
   raw?: boolean;
   proxy?: boolean;
 };
+const apiKeys = config.STEAM_API_KEY.split(',');
 export async function getSteamAPIData(options: GetDataOptions): Promise<any> {
   let url = options.url;
   const parsedUrl = new URL(url);
+  redisCountHash('steam_api_paths', parsedUrl.pathname);
   // choose an api key to use
-  const apiKeys = config.STEAM_API_KEY.split(',');
   parsedUrl.searchParams.set(
     'key',
     apiKeys[Math.floor(Math.random() * apiKeys.length)],
