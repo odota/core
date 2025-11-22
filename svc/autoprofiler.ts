@@ -17,4 +17,4 @@ runInLoop(async function autoProfile() {
       });
     }),
   );
-}, 10000);
+}, 5000);

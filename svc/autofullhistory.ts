@@ -4,12 +4,12 @@ import { addReliableJob } from './store/queue.ts';
 import { runInLoop } from './util/utility.ts';
 
 runInLoop(async function autoFh() {
-  const result = await db.raw(
-    'SELECT account_id from players ORDER BY full_history_time ASC NULLS FIRST LIMIT 1',
+  const { rows } = await db.raw(
+    'SELECT account_id from players ORDER BY full_history_time ASC NULLS FIRST LIMIT 10',
   );
-  console.log(result.rows);
+  console.log(rows);
   await Promise.all(
-    result.rows.map((row: any) =>
+    rows.map((row: any) =>
       addReliableJob(
         {
           name: 'fhQueue',
@@ -21,4 +21,4 @@ runInLoop(async function autoFh() {
       ),
     ),
   );
-}, 500);
+}, 5000);
