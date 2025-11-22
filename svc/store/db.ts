@@ -44,6 +44,7 @@ export async function upsert(
   // Remove extra properties
   Object.keys(row).forEach((key) => {
     if (!tableColumns[key]) {
+      console.log(key);
       delete row[key];
     }
   });
@@ -67,7 +68,7 @@ export async function upsert(
 
 export async function upsertPlayer(db: Knex, player: Partial<User>) {
   if (player.steamid) {
-    // this is a login, compute the account_id from steamid
+    // convert steamid to accountid
     player.account_id = Number(convert64to32(player.steamid));
   }
   if (!player.account_id || player.account_id === getAnonymousAccountId()) {
