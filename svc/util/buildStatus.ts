@@ -286,8 +286,8 @@ export async function buildStatus(isAdmin: boolean) {
       if (isAdmin) {
         registry.forEach((r) => {
           retrieverRegistry[r.key] = {
-            metric: r.reqs,
-            limit: r.success,
+            metric: r.success,
+            limit: r.reqs,
           };
         });
       }
@@ -298,8 +298,8 @@ export async function buildStatus(isAdmin: boolean) {
       if (isAdmin) {
         ips.forEach((ip) => {
           retrieverIPs[ip.key] = {
-            metric: ip.reqs,
-            limit: ip.success,
+            metric: ip.success,
+            limit: ip.reqs,
           };
         });
       }
@@ -310,8 +310,8 @@ export async function buildStatus(isAdmin: boolean) {
       if (isAdmin) {
         steamids.forEach((steamid) => {
           retrieverSteamIDs[steamid.key] = {
-            metric: steamid.reqs,
-            limit: steamid.success,
+            metric: steamid.success,
+            limit: steamid.reqs,
           };
         });
       }
