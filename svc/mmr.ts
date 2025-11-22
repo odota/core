@@ -22,7 +22,7 @@ runQueue(
         data = result.data;
       } catch (e) {
         console.log('[MMR] Error fetching data for %s, retrying...', accountId);
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise((resolve) => setTimeout(resolve, 500));
       }
     }
     redisCount('retriever_player');

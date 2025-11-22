@@ -8,10 +8,7 @@
 import config from '../config.ts';
 import { runReliableQueue } from './store/queue.ts';
 import c from 'ansi-colors';
-import {
-  buildReplayUrl,
-  getParserCapacity,
-} from './util/utility.ts';
+import { buildReplayUrl, getParserCapacity } from './util/utility.ts';
 import redis, { redisCount } from './store/redis.ts';
 import { apiFetcher, gcFetcher, parsedFetcher } from './fetcher/allFetchers.ts';
 import { getPGroup } from './util/pgroup.ts';

@@ -1,8 +1,6 @@
 import type { AxiosResponse } from 'axios';
 import db from '../store/db.ts';
-import {
-  getRandomRetrieverUrl,
-} from '../util/utility.ts';
+import { getRandomRetrieverUrl } from '../util/utility.ts';
 import axios from 'axios';
 import retrieverMatch from '../../test/data/retriever_match.json' with { type: 'json' };
 import { insertMatch } from '../util/insert.ts';

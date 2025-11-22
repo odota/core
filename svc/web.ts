@@ -15,12 +15,13 @@ import { WebSocketServer, WebSocket } from 'ws';
 import keys from './api/keyManagement.ts';
 import api from './api/api.ts';
 import db, { upsertPlayer } from './store/db.ts';
-import redis, { getRedisCountDayHash, redisCount, redisCountHash } from './store/redis.ts';
+import redis, {
+  getRedisCountDayHash,
+  redisCount,
+  redisCountHash,
+} from './store/redis.ts';
 import config from '../config.ts';
-import {
-  getEndOfDay,
-  getStartOfBlockMinutes,
-} from './util/utility.ts';
+import { getEndOfDay, getStartOfBlockMinutes } from './util/utility.ts';
 import stripe from './store/stripe.ts';
 import axios from 'axios';
 import { buildStatus } from './util/buildStatus.ts';
@@ -253,7 +254,10 @@ app.get('/retrieverData', async (req, res, next) => {
 });
 
 app.get('/status', async (req, res, next) => {
-  const status = await buildStatus();
+  const isAdmin = Boolean(
+    req.user && admins.includes(Number(req.user.account_id)),
+  );
+  const status = await buildStatus(isAdmin);
   return res.json(status);
 });
 
@@ -335,116 +339,6 @@ app.post('/manageSub', async (req, res, next) => {
 // NB: make sure UI_HOST is set e.g. http://localhost:3000 otherwise CSRF check above will stop preflight from working
 app.options('/keys', cors());
 app.use('/keys', keys);
-
-// Admin endpoints middleware
-app.use('/admin/*splat', (req, res, next) => {
-  if (req.user && admins.includes(Number(req.user.account_id))) {
-    return next();
-  }
-  return res.status(403).json({
-    error: 'Access Denied',
-  });
-});
-app.get('/admin/retrieverMetrics', async (req, res, next) => {
-  const idReqs = await getRedisCountDayHash('retrieverSteamIDs');
-  const ipReqs = await getRedisCountDayHash('retrieverIPs');
-  const idSuccess = await getRedisCountDayHash('retrieverSuccessSteamIDs');
-  const ipSuccess = await getRedisCountDayHash('retrieverSuccessIPs');
-  const steamids = Object.keys(idReqs)
-    .map((key) => {
-      return {
-        key,
-        reqs: idReqs[key] || 0,
-        success: idSuccess[key] || 0,
-      };
-    })
-    .sort((a, b) => b.reqs - a.reqs);
-  const ips = Object.keys(ipReqs)
-    .map((key) => {
-      return {
-        key,
-        reqs: ipReqs[key] || 0,
-        success: ipSuccess[key] || 0,
-      };
-    })
-    .sort((a, b) => b.reqs - a.reqs);
-  const registryKeys = await redis.zrange('registry:retriever', 0, -1);
-  const registry = ips.filter((ip) => registryKeys.includes(ip.key));
-  const isGce = (e: (typeof steamids)[number]) =>
-    e.key.startsWith('35.') || e.key.startsWith('34.');
-  return res.json({
-    countReqs: ips.map((e) => e.reqs).reduce((a, b) => a + b, 0),
-    countSuccess: ips.map((e) => e.success).reduce((a, b) => a + b, 0),
-    gceReqs: ips
-      .filter((e) => isGce(e))
-      .map((e) => e.reqs)
-      .reduce((a, b) => a + b, 0),
-      gceSuccess: ips
-        .filter((e) => isGce(e))
-        .map((e) => e.success)
-        .reduce((a, b) => a + b, 0),
-    nonGceReqs: ips
-      .filter((e) => !isGce(e))
-      .map((e) => e.reqs)
-      .reduce((a, b) => a + b, 0),
-    nonGceSuccess: ips
-      .filter((e) => !isGce(e))
-      .map((e) => e.success)
-      .reduce((a, b) => a + b, 0),
-    numIps: ips.length,
-    gceIps: ips.filter((e) => isGce(e)).length,
-    nonGceIps: ips.filter((e) => !isGce(e)).length,
-    numSteamIds: steamids.length,
-    registry,
-    ips,
-    steamids,
-  });
-});
-app.get('/admin/apiMetrics', async (req, res, next) => {
-  const startTime = moment.utc().startOf('month').format('YYYY-MM-DD');
-  const endTime = moment.utc().endOf('month').format('YYYY-MM-DD');
-  const [topUsersKey, numUsersKey] = await Promise.all([
-    db.raw(
-      `
-    SELECT
-        account_id,
-        ARRAY_AGG(DISTINCT api_key) as api_keys,
-        SUM(usage) as usage_count
-    FROM (
-        SELECT
-        account_id,
-        api_key,
-        ip,
-        MAX(usage_count) as usage
-        FROM api_key_usage
-        WHERE
-        timestamp >= ?
-        AND timestamp <= ?
-        GROUP BY account_id, api_key, ip
-    ) as t1
-    GROUP BY account_id
-    ORDER BY usage_count DESC
-    LIMIT 10
-    `,
-      [startTime, endTime],
-    ),
-    db.raw(
-      `
-    SELECT
-        COUNT(DISTINCT account_id)
-    FROM api_key_usage
-    WHERE
-        timestamp >= ?
-        AND timestamp <= ?
-    `,
-      [startTime, endTime],
-    ),
-  ]);
-  return res.json({
-    topUsersKey: topUsersKey.rows,
-    numUsersKey: numUsersKey.rows?.[0]?.count,
-  });
-});
 
 // Rate limiter and API key middleware
 // Everything after this is rate limited

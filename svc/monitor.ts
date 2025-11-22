@@ -23,12 +23,6 @@ const health = {
   rateDelay,
 };
 
-type Metric = {
-  metric: number;
-  threshold: number;
-  timestamp?: number;
-};
-
 runInLoop(async function monitor() {
   const result: Record<string, Metric> = {};
   const arr = Object.entries(health);
@@ -36,7 +30,7 @@ runInLoop(async function monitor() {
     const [key, value] = arr[i];
     let final: Metric = {
       metric: 1,
-      threshold: 1,
+      limit: 1,
       timestamp: Math.floor(Date.now() / 1000),
     };
     try {
@@ -61,7 +55,7 @@ async function steamApi() {
   const fail = body.result.status !== 1;
   return {
     metric: Number(fail),
-    threshold: 1,
+    limit: 1,
   };
 }
 async function seqNumDelay() {
@@ -82,7 +76,7 @@ async function seqNumDelay() {
   }
   return {
     metric,
-    threshold: 50000,
+    limit: 50000,
   };
 }
 async function parseDelay() {
@@ -91,7 +85,7 @@ async function parseDelay() {
   );
   return {
     metric: result.rows[0]?.count,
-    threshold: 10000,
+    limit: 10000,
   };
 }
 async function gcDelay() {
@@ -100,7 +94,7 @@ async function gcDelay() {
   );
   return {
     metric: result.rows[0]?.count,
-    threshold: 100000,
+    limit: 100000,
   };
 }
 async function fhDelay() {
@@ -109,49 +103,49 @@ async function fhDelay() {
   );
   return {
     metric: result.rows[0]?.count,
-    threshold: 100000,
+    limit: 100000,
   };
 }
 async function mmrDelay() {
   const result = await redis.llen('mmrQueue');
   return {
     metric: result,
-    threshold: 100000,
+    limit: 100000,
   };
 }
 async function cacheDelay() {
   const result = await redis.llen('cacheQueue');
   return {
     metric: result,
-    threshold: 100000,
+    limit: 100000,
   };
 }
 async function scenariosDelay() {
   const result = await redis.llen('scenariosQueue');
   return {
     metric: result,
-    threshold: 100000,
+    limit: 100000,
   };
 }
 async function profileDelay() {
   const result = await redis.llen('profileQueue');
   return {
     metric: result,
-    threshold: 100000,
+    limit: 100000,
   };
 }
 async function rateDelay() {
   const result = await db.raw('select count(*) from rating_queue');
   return {
     metric: result.rows[0]?.count,
-    threshold: 100000,
+    limit: 100000,
   };
 }
 async function postgresUsage() {
   const result = await db.raw("select pg_database_size('yasp')");
   return {
     metric: result.rows[0]?.pg_database_size,
-    threshold: 4 * 10 ** 11,
+    limit: 4 * 10 ** 11,
   };
 }
 async function cassandraUsage() {
@@ -164,7 +158,7 @@ WHERE keyspace_name = 'yasp';
   );
   return {
     metric: result.rows[0]?.size,
-    threshold: 6.2 * 10 ** 12,
+    limit: 6.2 * 10 ** 12,
   };
 }
 async function redisUsage() {
@@ -174,6 +168,6 @@ async function redisUsage() {
     .find((line: string) => line.startsWith('used_memory'));
   return {
     metric: Number(line?.split(':')[1]),
-    threshold: 4 * 10 ** 9,
+    limit: 4 * 10 ** 9,
   };
 }

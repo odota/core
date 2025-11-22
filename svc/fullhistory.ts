@@ -1,9 +1,6 @@
 // Processes a queue of full history/refresh requests for players
 import config from '../config.ts';
-import {
-  getSteamAPIDataWithRetry,
-  SteamAPIUrls,
-} from './util/utility.ts';
+import { getSteamAPIDataWithRetry, SteamAPIUrls } from './util/utility.ts';
 import db from './store/db.ts';
 import { runReliableQueue } from './store/queue.ts';
 import { getPlayerMatches } from './util/buildPlayer.ts';

@@ -1459,8 +1459,8 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           if (!req.params.metric) {
             return res.json(data);
           }
-          const single = data[req.params.metric];
-          const healthy = single?.metric < single?.threshold;
+          const single: Metric = data[req.params.metric];
+          const healthy = single?.metric < single?.limit;
           return res.status(healthy ? 200 : 500).json(single);
         },
       },

@@ -1,4 +1,4 @@
-import { redisCount } from "../store/redis.ts";
+import { redisCount } from '../store/redis.ts';
 
 export abstract class MatchFetcherBase<T> {
   // Name of the counter to increment when we find saved data when getOrFetching

@@ -1,7 +1,4 @@
-import {
-  SteamAPIUrls,
-  getSteamAPIDataWithRetry,
-} from '../util/utility.ts';
+import { SteamAPIUrls, getSteamAPIDataWithRetry } from '../util/utility.ts';
 import { blobArchive } from '../store/archive.ts';
 import { MatchFetcherBase } from './MatchFetcherBase.ts';
 import { insertMatch } from '../util/insert.ts';

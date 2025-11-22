@@ -508,6 +508,12 @@ type PGroup = {
   };
 };
 
+type Metric = {
+  metric: number;
+  limit: number;
+  timestamp?: number;
+};
+
 type ApiExtraData = {
   seqNumBackfill?: boolean;
 };
