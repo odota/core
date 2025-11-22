@@ -11,7 +11,7 @@ moment.relativeTimeThreshold('ss', 0);
 export async function runQueue(
   queueName: QueueName,
   parallelism: number,
-  processor: (job: any) => Promise<void>,
+  processor: (job: any, i: number) => Promise<void>,
   getCapacity?: () => Promise<number>,
 ) {
   const executor = async (i: number) => {
@@ -30,7 +30,7 @@ export async function runQueue(
         // Note: If we fail here we will crash the process and possibly interrupt other parallel workers
         // Handle errors in the processor to mitigate this
         // The job will not be retried since this is an unreliable queue
-        await processor(jobData);
+        await processor(jobData, i);
       }
     }
   };
@@ -78,6 +78,7 @@ export async function runReliableQueue(
             priority: job.priority,
             attempts: job.attempts,
             timestamp: job.timestamp,
+            i,
           });
           // If the processor returns true, it's successful and we should delete the job and then commit
           if (success || job.attempts <= 0) {

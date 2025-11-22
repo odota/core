@@ -9,7 +9,7 @@ import { redisCount } from './store/redis.ts';
 runQueue(
   'mmrQueue',
   Number(config.MMR_PARALLELISM) || 1,
-  async (job: MmrJob) => {
+  async (job: MmrJob, i: number) => {
     const accountId = job.account_id;
     const url = await getRandomRetrieverUrl(`/profile/${accountId}`);
     console.log(url);

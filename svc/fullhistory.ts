@@ -16,7 +16,7 @@ runReliableQueue(
   // async () => redis.zcard('registry:proxy') * 5,
 );
 
-async function processFullHistory(job: FullHistoryJob) {
+async function processFullHistory(job: FullHistoryJob, metadata: JobMetadata) {
   const player = job;
   if (
     Number(player.account_id) === 0 ||
@@ -31,11 +31,11 @@ async function processFullHistory(job: FullHistoryJob) {
     (await redis.get('fh_queue:' + player.account_id))
   ) {
     redisCount('fullhistory_skip');
-    console.log('[FULLHISTORY] skipping %s', player.account_id);
+    console.log('[FULLHISTORY %s] skipping %s', metadata.i, player.account_id);
     return true;
   }
 
-  console.time('doFullHistory: ' + player.account_id.toString());
+  console.time(metadata.i + ':doFullHistory:' + player.account_id.toString());
   // As of December 2021 filtering by hero ID doesn't work
   // const heroArray = config.NODE_ENV === 'test' ? ['0'] : Object.keys(heroes);
   // const heroId = '0';
@@ -130,7 +130,7 @@ async function processFullHistory(job: FullHistoryJob) {
   }
   await updatePlayer(player);
   await redis.setex('fh_queue:' + player.account_id, 30 * 60, '1');
-  console.timeEnd('doFullHistory: ' + player.account_id.toString());
+  console.timeEnd(metadata.i + ':doFullHistory:' + player.account_id.toString());
   return true;
 }
 

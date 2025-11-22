@@ -15,7 +15,7 @@ type ScenariosKey = keyof typeof scenarioChecks;
 runQueue('scenariosQueue', 1, processScenarios);
 
 // Processors generally get back job objects but this one uses a string
-async function processScenarios(matchID: string) {
+async function processScenarios(matchID: string, i: number) {
   console.log('[SCENARIOS] match: %s', matchID);
   // NOTE: Using buildMatch is unnecessarily expensive here since it also looks up player names etc.
   // But we do it to have calculated fields present
