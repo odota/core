@@ -9,7 +9,7 @@ runInLoop(async function autoProfile() {
   // Alternatively we could also trigger updates from match insert to target active players
   // Or trigger update when refresh call is made
   const result = await db.raw(
-    'SELECT account_id from players TABLESAMPLE SYSTEM_ROWS(100)',
+    'SELECT account_id from players ORDER BY profile_time ASC LIMIT 100',
   );
   // Queue the rows
   await Promise.all(
@@ -20,4 +20,4 @@ runInLoop(async function autoProfile() {
       });
     }),
   );
-}, 15000);
+}, 10000);

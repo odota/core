@@ -41,5 +41,6 @@ runQueue(
       data.account_id = job.account_id ?? null;
       await insertPlayerRating(db, data);
     }
+    await db.raw('UPDATE players SET rank_tier_time = ? WHERE account_id = ?', [new Date(), data.account_id]);
   },
 );

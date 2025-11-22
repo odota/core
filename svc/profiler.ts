@@ -21,5 +21,9 @@ runInLoop(async function profile() {
   const results = body.response.players.filter(
     (player: User) => player.steamid,
   );
-  await Promise.all(results.map((player: User) => upsertPlayer(db, player)));
+  const now = new Date();
+  await Promise.all(results.map((player: User) => {
+    player.profile_time = now;
+    return upsertPlayer(db, player)
+  }));
 }, 2000);

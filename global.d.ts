@@ -255,6 +255,7 @@ type User = {
   personaname: string;
   avatarfull: string;
   last_match_time: Date;
+  profile_time: Date;
 
   // Computed fields
   is_contributor: boolean;

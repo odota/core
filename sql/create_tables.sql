@@ -1,5 +1,4 @@
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
-CREATE EXTENSION IF NOT EXISTS tsm_system_rows;
 
 CREATE TABLE IF NOT EXISTS matches (
   match_id bigint PRIMARY KEY,
@@ -158,7 +157,9 @@ CREATE TABLE IF NOT EXISTS players (
   cheese integer DEFAULT 0,
   fh_unavailable boolean,
   loccountrycode varchar(2),
-  last_match_time timestamp with time zone
+  last_match_time timestamp with time zone,
+  profile_time timestamp with time zone,
+  rank_tier_time timestamp with time zone,
   /*
     "communityvisibilitystate" : 3,
     "lastlogoff" : 1426020853,
@@ -176,6 +177,8 @@ CREATE INDEX IF NOT EXISTS players_cheese_idx on players(cheese) WHERE cheese IS
 --only GIST indexes support ordering by similarity
 CREATE INDEX IF NOT EXISTS players_personaname_idx_gist ON players USING GIST(personaname gist_trgm_ops);
 CREATE INDEX IF NOT EXISTS players_full_history_time_idx ON players(full_history_time ASC NULLS FIRST);
+CREATE INDEX IF NOT EXISTS players_profile_time_idx ON players(profile_time ASC NULLS FIRST);
+CREATE INDEX IF NOT EXISTS players_rank_tier_time_idx ON players(rank_tier_time ASC NULLS FIRST);
 
 CREATE TABLE IF NOT EXISTS player_ratings (
   PRIMARY KEY(account_id, time),
