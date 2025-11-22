@@ -29,6 +29,7 @@ let matchSuccesses = 0;
 let profileRequests = 0;
 let profileSuccesses = 0;
 const matchAttempts: Record<string, number> = {};
+const failedLogin: Record<string, string> = {};
 const DOTA_APPID = 570;
 let publicIP = '';
 
@@ -93,6 +94,7 @@ const server = createServer((req, res) => {
       osUptime: getOSUptime(),
       hostname: os.hostname(),
       numReadyAccounts: Object.keys(steamObj).length,
+      failedLogin,
     };
     res.write(JSON.stringify(data));
     res.end();
@@ -320,8 +322,14 @@ async function init() {
             }
             // We can also handle other GC responses here if not using callbacks
           });
+          client.on('steamGuard', (domain, callback) => {
+            console.log("Steam Guard code needed from email ending in " + domain);
+            failedLogin[logOnDetails.accountName] = 'steamGuard';
+            // callback(code);
+          });
           client.on('error', (err: any) => {
             console.error(err);
+            failedLogin[logOnDetails.accountName] = SteamUser.EResult[err.eresult];
             reject(err);
           });
           client.logOn(logOnDetails);
