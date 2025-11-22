@@ -187,7 +187,7 @@ const server = createServer((req, res) => {
       console.timeEnd('match:' + matchId);
       res.statusCode = 204;
       res.end();
-    }, 2500);
+    }, 3000);
     client.sendToGC(
       DOTA_APPID,
       EDOTAGCMsg.values.k_EMsgGCMatchDetailsRequest,

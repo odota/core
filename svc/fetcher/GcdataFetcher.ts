@@ -31,7 +31,7 @@ export class GcdataFetcher extends MatchFetcherBase<GcData> {
     let resp: AxiosResponse<typeof retrieverMatch>;
     try {
       resp = await axios.get<typeof retrieverMatch>(url, {
-        timeout: 3000,
+        timeout: 4000,
       });
     } catch (e) {
       // Non-2xx status (e.g. 429 too many requests or 500 server error)

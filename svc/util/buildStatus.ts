@@ -261,8 +261,13 @@ export async function buildStatus(isAdmin: boolean) {
         const registryKeys = await redis.zrange('registry:retriever', 0, -1);
         const rows = await Promise.all(
           registryKeys.map(async (k) => {
-            const resp = await fetch('http://' + k);
-            const json = await resp.json();
+            let json;
+            try {
+              const resp = await fetch('http://' + k);
+              json = await resp.json();
+            } catch (e) {
+              console.log(e);
+            }
             const found = ips.find((ip) => ip.key === k);
             return {
               key: k,
