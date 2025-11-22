@@ -1,34 +1,28 @@
 // Updates game items in the database
 import { items } from 'dotaconstants';
 import db, { upsert } from './store/db.ts';
-import {
-  SteamAPIUrls,
-  getSteamAPIDataWithRetry,
-  runInLoop,
-} from './util/utility.ts';
+import { runInLoop } from './util/utility.ts';
+import axios from 'axios';
 
 runInLoop(
   async function doItems() {
-    const url = SteamAPIUrls.api_items({
-      language: 'english',
-    });
-    const body = await getSteamAPIDataWithRetry({ url });
-    if (!body || !body.result || !body.result.data) {
-      throw new Error('invalid body');
+    const url = `https://www.dota2.com/datafeed/itemlist?language=english`;
+    const resp = await axios.get(url);
+    const arr: any[] = resp.data?.result?.data?.itemabilities;
+    if (!arr) {
+      throw new Error('invalid response');
     }
-    await Promise.all(
-      body.result.data.itemabilities.map((item: any) => {
-        item.localized_name = item.name_english_loc;
-        item.cost =
-          items?.[item.name.replace(/^item_/, '') as keyof typeof items]
-            ?.cost || 0;
-        item.recipe = item.name.includes('recipe') ? 1 : 0;
-        // NOTE: properties secret_shop and side_shop are no longer present
-        upsert(db, 'items', item, {
-          id: item.id,
-        });
-      }),
-    );
+    for (let item of arr) {
+      item.localized_name = item.name_english_loc;
+      item.cost =
+        items?.[item.name.replace(/^item_/, '') as keyof typeof items]?.cost ||
+        0;
+      item.recipe = item.name.includes('recipe') ? 1 : 0;
+      // NOTE: properties secret_shop and side_shop are no longer present
+      await upsert(db, 'items', item, {
+        id: item.id,
+      });
+    }
   },
   60 * 60 * 1000,
 );

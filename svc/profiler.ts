@@ -21,9 +21,9 @@ runInLoop(async function profile() {
     (player: User) => player.steamid,
   );
   const now = new Date();
-  await Promise.all(results.map((player: User) => {
+  for (let player of results) {
     player.profile_time = now;
-    return upsertPlayer(db, player)
-  }));
+    await upsertPlayer(db, player);
+  }
   redisCount('profiler', resp.length);
 }, 2000);

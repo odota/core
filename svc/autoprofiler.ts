@@ -9,12 +9,10 @@ runInLoop(async function autoProfile() {
     'SELECT account_id from players ORDER BY profile_time ASC NULLS FIRST LIMIT 100',
   );
   console.log(rows);
-  await Promise.all(
-    rows.map(async (row: any) => {
-      await addJob({
-        name: 'profileQueue',
-        data: { account_id: row.account_id },
-      });
-    }),
-  );
+  for (let row of rows) {
+    await addJob({
+      name: 'profileQueue',
+      data: { account_id: row.account_id },
+    });
+  }
 }, 5000);

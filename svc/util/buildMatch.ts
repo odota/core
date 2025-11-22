@@ -92,13 +92,13 @@ async function getProMatchInfo(matchId: number): Promise<{
 /**
  * Adds benchmark data to the players in a match
  * */
-export async function addPlayerBenchmarks(m: Match) {
+export async function getPlayerBenchmarks(m: Match) {
   return Promise.all(
     m.players.map(async (p) => {
-      p.benchmarks = {};
+      const result: Record<string, { raw?: number; pct?: number }> = {};
       for (let i = 0; i < Object.keys(benchmarks).length; i++) {
         const metric = Object.keys(benchmarks)[i];
-        p.benchmarks[metric] = {};
+        result[metric] = {};
         // Use data from previous epoch
         let key = [
           'benchmarks',
@@ -116,7 +116,7 @@ export async function addPlayerBenchmarks(m: Match) {
           p.hero_id,
         ].join(':');
         const raw = benchmarks[metric](m, p);
-        p.benchmarks[metric] = {
+        result[metric] = {
           raw,
         };
         const exists = await redis.exists(key);
@@ -128,12 +128,62 @@ export async function addPlayerBenchmarks(m: Match) {
         if (raw !== undefined && raw !== null && !Number.isNaN(Number(raw))) {
           const count = await redis.zcount(key, '0', raw);
           const pct = count / card;
-          p.benchmarks[metric].pct = pct;
+          result[metric].pct = pct;
         }
       }
-      return p;
+      return result;
     }),
   );
+}
+
+async function getPlayerDetails(match: Match | ParsedMatch) {
+  return Promise.all(
+    // Get names, last login for players from DB
+    match.players.map(async (p) => {
+      const { rows } = await db.raw(
+        `
+        SELECT personaname, name, last_login, rating, status, computed_mmr
+        FROM players
+        LEFT JOIN notable_players USING(account_id)
+        LEFT JOIN rank_tier USING(account_id)
+        LEFT JOIN player_computed_mmr USING(account_id)
+        LEFT JOIN subscriber USING(account_id)
+        WHERE players.account_id = ?
+      `,
+        [p.account_id ?? null],
+      );
+      const row = rows[0];
+      return {
+        ...p,
+        personaname: row?.personaname,
+        name: row?.name,
+        last_login: row?.last_login,
+        rank_tier: row?.rating,
+        computed_mmr: row?.computed_mmr,
+        is_subscriber: Boolean(row?.status),
+      };
+    }),
+  );
+}
+
+async function getCosmetics(match: Match | ParsedMatch) {
+  if ('cosmetics' in match && match.cosmetics) {
+    return Promise.all(
+      Object.keys(match.cosmetics).map((itemId) =>
+        db.first().from('cosmetics').where({
+          item_id: itemId,
+        }),
+      ),
+    );
+  }
+  return null;
+}
+
+async function getMeta(matchId: number | undefined) {
+  if (matchId) {
+    return metaFetcher.getOrFetchData(matchId, null);
+  }
+  return null;
 }
 
 export async function buildMatch(
@@ -166,54 +216,20 @@ export async function buildMatch(
     return null;
   }
   match.od_data = odData;
-  const [players, prodata, cosmetics, metadata] = await Promise.all([
-    Promise.all(
-      // Get names, last login for players from DB
-      match.players.map(async (p) => {
-        const { rows } = await db.raw(
-          `
-          SELECT personaname, name, last_login, rating, status, computed_mmr
-          FROM players
-          LEFT JOIN notable_players USING(account_id)
-          LEFT JOIN rank_tier USING(account_id)
-          LEFT JOIN player_computed_mmr USING(account_id)
-          LEFT JOIN subscriber USING(account_id)
-          WHERE players.account_id = ?
-        `,
-          [p.account_id ?? null],
-        );
-        const row = rows[0];
-        return {
-          ...p,
-          personaname: row?.personaname,
-          name: row?.name,
-          last_login: row?.last_login,
-          rank_tier: row?.rating,
-          computed_mmr: row?.computed_mmr,
-          is_subscriber: Boolean(row?.status),
-        };
-      }),
-    ),
-    getProMatchInfo(matchId),
-    'cosmetics' in match && match.cosmetics
-      ? Promise.all(
-          Object.keys(match.cosmetics).map((itemId) =>
-            db.first().from('cosmetics').where({
-              item_id: itemId,
-            }),
-          ),
-        )
-      : Promise.resolve(null),
-    Boolean(options.meta)
-      ? metaFetcher.getOrFetchData(Number(matchId), null)
-      : Promise.resolve(null),
-  ]);
+  const [players, prodata, cosmetics, metadata, playerBenchmarks] =
+    await Promise.all([
+      getPlayerDetails(match),
+      getProMatchInfo(matchId),
+      getCosmetics(match),
+      getMeta(options.meta ? matchId : undefined),
+      getPlayerBenchmarks(match),
+    ]);
   let matchResult: Match | ParsedMatch = {
     ...match,
     ...prodata,
     metadata,
     players: players
-      .map((p) => extendPlayerData(p, match!))
+      .map((p) => extendPlayerData(p, match))
       .map((p) => {
         if (!cosmetics) {
           return p;
@@ -232,13 +248,15 @@ export async function buildMatch(
           ...p,
           cosmetics: playerCosmetics,
         };
+      })
+      .map((p, i) => {
+        return { ...p, benchmarks: playerBenchmarks[i] };
       }),
     replay_url: match.replay_salt
       ? buildReplayUrl(match.match_id, match.cluster, match.replay_salt)
       : undefined,
   };
   computeMatchData(matchResult as ParsedPlayerMatch);
-  await addPlayerBenchmarks(matchResult);
 
   // Save in cache
   if (matchResult && config.ENABLE_MATCH_CACHE) {

@@ -10,13 +10,11 @@ runInLoop(
     const resp = await axios.get(url);
     const apiPros = resp.data.player_infos;
     console.log('[PROPLAYERS]', apiPros.length, 'players');
-    await Promise.all(
-      apiPros.map((p: ProPlayer) =>
-        upsert(db, 'notable_players', p, {
-          account_id: p.account_id,
-        }),
-      ),
-    );
+    for (let p of apiPros) {
+      await upsert(db, 'notable_players', p, {
+        account_id: p.account_id,
+      });
+    }
   },
   30 * 60 * 1000,
 );

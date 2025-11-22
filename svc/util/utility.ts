@@ -71,8 +71,6 @@ export const SteamAPIUrls = {
     `${apiUrl}/IDOTA2Match_570/GetMatchHistoryBySequenceNum/V001/?key=${apiKey}&start_at_match_seq_num=${payload.start_at_match_seq_num}&matches_requested=${payload.matches_requested}`,
   api_heroes: (payload: { language: string }) =>
     `${apiUrl}/IEconDOTA2_570/GetHeroes/v0001/?key=${apiKey}&language=${payload.language}`,
-  api_items: (payload: { language: string }) =>
-    `https://www.dota2.com/datafeed/itemlist?language=${payload.language}`,
   api_live: () =>
     `${apiUrl}/IDOTA2Match_570/GetLiveLeagueGames/v0001/?key=${apiKey}`,
   api_teams: (payload: { team_id: number }) =>

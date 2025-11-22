@@ -40,9 +40,6 @@ let arr = [
     group: 'backend',
     exec_mode: prod ? 'cluster' : undefined,
     instances: prod ? 4 : undefined,
-    env: {
-      POSTGRES_MAX_CONNECTIONS: '10',
-    },
   },
   // One local instance of retriever for getting player profiles since this isn't rate limited
   {
@@ -57,9 +54,6 @@ let arr = [
     // Requests and inserts replay parse data. Note this is different from parseServer which is in Java and runs externally
     name: 'parser',
     group: 'backend',
-    env: {
-      POSTGRES_MAX_CONNECTIONS: '10',
-    },
   },
   {
     name: 'fullhistory',
@@ -84,9 +78,6 @@ let arr = [
   {
     name: 'scanner',
     group: 'backend',
-    env: {
-      POSTGRES_MAX_CONNECTIONS: '10',
-    },
   },
   {
     // Secondary scanner that runs behind and picks up matches previously missing

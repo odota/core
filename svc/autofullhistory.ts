@@ -8,17 +8,15 @@ runInLoop(async function autoFh() {
     'SELECT account_id from players ORDER BY full_history_time ASC NULLS FIRST LIMIT 5',
   );
   console.log(rows);
-  await Promise.all(
-    rows.map((row: any) =>
-      addReliableJob(
-        {
-          name: 'fhQueue',
-          data: {
-            account_id: row.account_id,
-          },
+  for (let row of rows) {
+    await addReliableJob(
+      {
+        name: 'fhQueue',
+        data: {
+          account_id: row.account_id,
         },
-        {},
-      ),
-    ),
-  );
+      },
+      {},
+    );
+  }
 }, 5000);

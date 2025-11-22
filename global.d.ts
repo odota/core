@@ -339,7 +339,12 @@ type ReliableQueueRow = {
   priority: number;
 };
 
-type JobMetadata = { attempts: number; timestamp: Date; priority: number; i: number; };
+type JobMetadata = {
+  attempts: number;
+  timestamp: Date;
+  priority: number;
+  i: number;
+};
 
 type Knex = import('knex').Knex;
 type ReliableQueueOptions = {

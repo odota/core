@@ -137,7 +137,7 @@ export async function insertMatch(
     }
     if (!isProTier) {
       // Skip if not in a pro league (premium or professional tier)
-      console.log('[UPSERTMATCHPOSTGRES]: skipping due to tier');
+      console.log('[UPSERTMATCHPOSTGRES]: skipping league match due to tier');
       return;
     }
     // If parsed data, we want to make sure the match exists in DB
@@ -155,160 +155,145 @@ export async function insertMatch(
       }
     }
 
-    await upsertMatch();
-    await upsertPlayerMatches();
-    await upsertPicksBans();
-    await upsertMatchPatch();
-    await upsertTeamMatch();
-    await updateTeamRankings();
+    // matches
+    await upsert(trx, 'matches', match, {
+      match_id: match.match_id,
+    });
 
-    async function upsertMatch() {
-      console.log('[UPSERTMATCHPOSTGRES]: match');
-      await upsert(trx, 'matches', match, {
+    // player_matches
+    await Promise.all(
+      match.players.map((p) => {
+        const pm = { ...p, match_id: match.match_id } as ParsedPlayerMatch;
+        // Add lane data
+        if (pm.lane_pos) {
+          const laneData = getLaneFromPosData(pm.lane_pos, isRadiant(pm));
+          pm.lane = laneData.lane ?? null;
+          pm.lane_role = laneData.lane_role ?? null;
+          pm.is_roaming = laneData.is_roaming ?? null;
+        }
+        return upsert(trx, 'player_matches', pm, {
+          match_id: pm.match_id,
+          player_slot: pm.player_slot,
+        });
+      }),
+    );
+
+    // picks_bans
+    if ('picks_bans' in match && match.picks_bans) {
+      await Promise.all(
+        match.picks_bans.map((p) => {
+          // order is a reserved keyword in postgres
+          return upsert(
+            trx,
+            'picks_bans',
+            { ...p, ord: p.order, match_id: match.match_id },
+            {
+              match_id: 1,
+              ord: 1,
+            },
+          );
+        }),
+      );
+    }
+
+    // match_patch
+    if ('start_time' in match && match.start_time) {
+      await upsert(
+        trx,
+        'match_patch',
+        {
+          match_id: match.match_id,
+          patch: patch[getPatchIndex(match.start_time)].name,
+        },
+        {
+          match_id: match.match_id,
+        },
+      );
+    }
+
+    // team_match
+    const teamMatch = [];
+    if ('radiant_team_id' in match && match.radiant_team_id) {
+      teamMatch.push({
+        team_id: match.radiant_team_id,
         match_id: match.match_id,
+        radiant: true,
       });
     }
-    async function upsertPlayerMatches() {
-      await Promise.all(
-        match.players.map((p) => {
-          const pm = { ...p, match_id: match.match_id } as ParsedPlayerMatch;
-          // Add lane data
-          if (pm.lane_pos) {
-            const laneData = getLaneFromPosData(pm.lane_pos, isRadiant(pm));
-            pm.lane = laneData.lane ?? null;
-            pm.lane_role = laneData.lane_role ?? null;
-            pm.is_roaming = laneData.is_roaming ?? null;
-          }
-          console.log(
-            '[UPSERTMATCHPOSTGRES]: player_match',
-            pm.match_id,
-            pm.player_slot,
-            pm.hero_id,
-          );
-          return upsert(trx, 'player_matches', pm, {
-            match_id: pm.match_id,
-            player_slot: pm.player_slot,
-          });
-        }),
-      );
+    if ('dire_team_id' in match && match.dire_team_id) {
+      teamMatch.push({
+        team_id: match.dire_team_id,
+        match_id: match.match_id,
+        radiant: false,
+      });
     }
-    async function upsertPicksBans() {
-      if ('picks_bans' in match && match.picks_bans) {
-        await Promise.all(
-          match.picks_bans.map((p) => {
-            // order is a reserved keyword in postgres
-            return upsert(
-              trx,
-              'picks_bans',
-              { ...p, ord: p.order, match_id: match.match_id },
-              {
-                match_id: 1,
-                ord: 1,
-              },
-            );
-          }),
-        );
-      }
-    }
-    async function upsertMatchPatch() {
-      if ('start_time' in match && match.start_time) {
-        await upsert(
-          trx,
-          'match_patch',
-          {
-            match_id: match.match_id,
-            patch: patch[getPatchIndex(match.start_time)].name,
-          },
-          {
-            match_id: match.match_id,
-          },
-        );
-      }
-    }
-    async function upsertTeamMatch() {
-      const arr = [];
-      if ('radiant_team_id' in match && match.radiant_team_id) {
-        arr.push({
-          team_id: match.radiant_team_id,
-          match_id: match.match_id,
-          radiant: true,
+    await Promise.all(
+      teamMatch.map((tm) => {
+        return upsert(trx, 'team_match', tm, {
+          team_id: tm.team_id,
+          match_id: tm.match_id,
         });
-      }
-      if ('dire_team_id' in match && match.dire_team_id) {
-        arr.push({
-          team_id: match.dire_team_id,
-          match_id: match.match_id,
-          radiant: false,
-        });
-      }
-      await Promise.all(
-        arr.map((tm) => {
-          return upsert(trx, 'team_match', tm, {
-            team_id: tm.team_id,
-            match_id: tm.match_id,
-          });
-        }),
+      }),
+    );
+
+    // Team ratings
+    if (
+      options.origin === 'scanner' &&
+      options.type === 'api' &&
+      'radiant_team_id' in match &&
+      'dire_team_id' in match &&
+      match.radiant_win !== undefined
+    ) {
+      const team1 = match.radiant_team_id;
+      const team2 = match.dire_team_id;
+      const team1Win = Number(match.radiant_win);
+      const kFactor = 32;
+      const data1 = await trx
+        .select('rating')
+        .from('team_rating')
+        .where({ team_id: team1 });
+      const data2 = await trx
+        .select('rating')
+        .from('team_rating')
+        .where({ team_id: team2 });
+      const currRating1 = Number(
+        (data1 && data1[0] && data1[0].rating) || 1000,
       );
-    }
-    async function updateTeamRankings() {
-      if (
-        options.origin === 'scanner' &&
-        options.type === 'api' &&
-        'radiant_team_id' in match &&
-        'dire_team_id' in match &&
-        match.radiant_win !== undefined
-      ) {
-        const team1 = match.radiant_team_id;
-        const team2 = match.dire_team_id;
-        const team1Win = Number(match.radiant_win);
-        const kFactor = 32;
-        const data1 = await trx
-          .select('rating')
-          .from('team_rating')
-          .where({ team_id: team1 });
-        const data2 = await trx
-          .select('rating')
-          .from('team_rating')
-          .where({ team_id: team2 });
-        const currRating1 = Number(
-          (data1 && data1[0] && data1[0].rating) || 1000,
-        );
-        const currRating2 = Number(
-          (data2 && data2[0] && data2[0].rating) || 1000,
-        );
-        const r1 = 10 ** (currRating1 / 400);
-        const r2 = 10 ** (currRating2 / 400);
-        const e1 = r1 / (r1 + r2);
-        const e2 = r2 / (r1 + r2);
-        const win1 = team1Win;
-        const win2 = Number(!team1Win);
-        const ratingDiff1 = kFactor * (win1 - e1);
-        const ratingDiff2 = kFactor * (win2 - e2);
-        const query = `INSERT INTO team_rating(team_id, rating, wins, losses, last_match_time) VALUES(?, ?, ?, ?, ?)
+      const currRating2 = Number(
+        (data2 && data2[0] && data2[0].rating) || 1000,
+      );
+      const r1 = 10 ** (currRating1 / 400);
+      const r2 = 10 ** (currRating2 / 400);
+      const e1 = r1 / (r1 + r2);
+      const e2 = r2 / (r1 + r2);
+      const win1 = team1Win;
+      const win2 = Number(!team1Win);
+      const ratingDiff1 = kFactor * (win1 - e1);
+      const ratingDiff2 = kFactor * (win2 - e2);
+      const query = `INSERT INTO team_rating(team_id, rating, wins, losses, last_match_time) VALUES(?, ?, ?, ?, ?)
           ON CONFLICT(team_id) DO UPDATE SET team_id=team_rating.team_id, rating=team_rating.rating + ?, wins=team_rating.wins + ?, losses=team_rating.losses + ?, last_match_time=?`;
-        await trx.raw(query, [
-          team1,
-          currRating1 + ratingDiff1,
-          win1,
-          Number(!win1),
-          match.start_time,
-          ratingDiff1,
-          win1,
-          Number(!win1),
-          match.start_time,
-        ]);
-        await trx.raw(query, [
-          team2,
-          currRating2 + ratingDiff2,
-          win2,
-          Number(!win2),
-          match.start_time,
-          ratingDiff2,
-          win2,
-          Number(!win2),
-          match.start_time,
-        ]);
-      }
+      await trx.raw(query, [
+        team1,
+        currRating1 + ratingDiff1,
+        win1,
+        Number(!win1),
+        match.start_time,
+        ratingDiff1,
+        win1,
+        Number(!win1),
+        match.start_time,
+      ]);
+      await trx.raw(query, [
+        team2,
+        currRating2 + ratingDiff2,
+        win2,
+        Number(!win2),
+        match.start_time,
+        ratingDiff2,
+        win2,
+        Number(!win2),
+        match.start_time,
+      ]);
     }
   }
   async function upsertMatchBlobs() {

@@ -8,10 +8,10 @@ runInLoop(async function autoMmr() {
     'SELECT account_id from players ORDER BY rank_tier_time ASC NULLS FIRST LIMIT 50',
   );
   console.log(rows);
-  await Promise.all(rows.map(async (row: any) => {
+  for (let row of rows) {
     await addJob({
       name: 'mmrQueue',
       data: { account_id: row.account_id },
     });
-  }));
+  }
 }, 5000);

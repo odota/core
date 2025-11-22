@@ -130,7 +130,9 @@ async function processFullHistory(job: FullHistoryJob, metadata: JobMetadata) {
   }
   await updatePlayer(player);
   await redis.setex('fh_queue:' + player.account_id, 30 * 60, '1');
-  console.timeEnd(`doFullHistory#${metadata.i}:` + player.account_id.toString());
+  console.timeEnd(
+    `doFullHistory#${metadata.i}:` + player.account_id.toString(),
+  );
   return true;
 }
 
