@@ -11,7 +11,7 @@ import {
 runInLoop(
   async function doTeams() {
     const result = await db.raw(
-      'select distinct team_id from team_match TABLESAMPLE BERNOULLI(1)',
+      'select distinct team_id from team_match TABLESAMPLE BERNOULLI(0.1)',
     );
     const result2 = await db.raw(
       'select team_id from (select distinct team_id from team_match) ids where team_id not in (select team_id from teams)',
