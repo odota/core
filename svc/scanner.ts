@@ -8,6 +8,8 @@ import {
   runInLoop,
 } from './util/utility.ts';
 import db from './store/db.ts';
+import { cacheTrackedPlayers } from './util/queries.ts';
+
 const PAGE_SIZE = 100;
 // This endpoint is limited to something like 1 request every 5 seconds
 const SCANNER_WAIT = 5000;
@@ -28,6 +30,11 @@ if (config.NODE_ENV === 'development') {
       [numResult],
     );
   }
+}
+// Make sure we have tracked players loaded
+const trackedExists = await redis.exists('tracked');
+if (!trackedExists) {
+  await cacheTrackedPlayers();
 }
 runInLoop(async function scanApi() {
   // If primary (offset 0) or first secondary iteration, read value from storage

@@ -13,6 +13,8 @@ import {
   averageMedal,
   parallelPromise,
 } from './utility.ts';
+import contributors from '../../CONTRIBUTORS.ts';
+import moment from 'moment';
 
 export async function getDistributions() {
   const result: AnyDict = {};
@@ -445,4 +447,29 @@ export async function search(query: string) {
   }
   // Later versions of postgres have strict_word_similarity / <<% which may be more accurate
   return [...accountIdMatch, ...rows];
+}
+
+export async function cacheTrackedPlayers() {
+  const subs = await db
+    .select<{ account_id: string }[]>(['account_id'])
+    .from('subscriber')
+    .where('status', '=', 'active');
+  const subIds = subs.map((sub) => sub.account_id);
+  const contribs = Object.keys(contributors);
+  console.log(
+    '[TRACKED] %s subscribers, %s contributors',
+    subIds.length,
+    contribs.length,
+  );
+  const tracked: string[] = [...subIds, ...contribs];
+  const command = redis.multi();
+  command.del('tracked');
+  // Refresh tracked players with expire date in the future
+  // At one point we tracked players based on visits to OpenDota and updated expire based on that
+  await Promise.all(
+    tracked.map((id) =>
+      command.zadd('tracked', moment.utc().add(1, 'day').format('X'), id),
+    ),
+  );
+  await command.exec();
 }

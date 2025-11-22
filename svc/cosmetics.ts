@@ -17,7 +17,10 @@ runInLoop(
     const icons = iconsResp.data;
     const itemData = vdfparser.parse<any>(items);
 
-    async function processItem(itemId: string) {
+    const ids = Object.keys(itemData.items_game.items);
+    console.log('%s cosmetics to process', ids.length);
+    for (let i = 0; i < ids.length; i++) {
+      const itemId = ids[i];
       const item = itemData.items_game.items[itemId];
       item.item_id = Number(itemId);
       const hero =
@@ -40,12 +43,6 @@ runInLoop(
       await upsert(db, 'cosmetics', item, {
         item_id: item.item_id,
       });
-    }
-
-    const ids = Object.keys(itemData.items_game.items);
-    console.log('%s cosmetics to process', ids.length);
-    for (let i = 0; i < ids.length; i++) {
-      await processItem(ids[i]);
     }
   },
   12 * 60 * 60 * 1000,
