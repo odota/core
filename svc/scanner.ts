@@ -4,12 +4,10 @@ import redis, { redisCount } from './store/redis.ts';
 import { insertMatch } from './util/insert.ts';
 import {
   SteamAPIUrls,
-  getApiHosts,
   getSteamAPIDataWithRetry,
   runInLoop,
 } from './util/utility.ts';
 import db from './store/db.ts';
-const API_KEYS = config.STEAM_API_KEY.split(',');
 const PAGE_SIZE = 100;
 // This endpoint is limited to something like 1 request every 5 seconds
 const SCANNER_WAIT = 5000;
@@ -47,14 +45,13 @@ runInLoop(async function scanApi() {
     }
   }
   // const start = Date.now();
-  const apiHosts = await getApiHosts();
   const url = SteamAPIUrls.api_sequence({
     start_at_match_seq_num: seqNum,
     matches_requested: PAGE_SIZE,
   });
   let data = await getSteamAPIDataWithRetry({
     url,
-    proxy: apiHosts,
+    proxy: true,
   });
   const resp =
     data && data.result && data.result.matches ? data.result.matches : [];

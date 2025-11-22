@@ -48,7 +48,7 @@ async function processFullHistory(job: FullHistoryJob) {
   });
   // Fetch 1-5 pages of matches for the player
   while (true) {
-    let body = await getSteamAPIDataWithRetry({ url });
+    let body = await getSteamAPIDataWithRetry({ url, proxy: true });
     // check for specific error code if user had a private account
     if (body?.result?.status === 15) {
       console.log('player %s disabled match history', player.account_id);

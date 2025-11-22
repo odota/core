@@ -4,7 +4,6 @@ import {
   SteamAPIUrls,
   getSteamAPIDataWithRetry,
   transformMatch,
-  getApiHosts,
   runInLoop,
 } from './util/utility.ts';
 import fs from 'node:fs';
@@ -21,7 +20,6 @@ const stop = Number(process.env.BACKFILL_STOP) || 6200000000;
 
 runInLoop(async function backfill() {
   // This endpoint is limited to something like 1 request every 5 seconds
-  const apiHosts = await getApiHosts();
   // get progress from redis if available, if not, fallback to file
   let seqNum;
   if (redis) {
@@ -43,8 +41,7 @@ runInLoop(async function backfill() {
   let data = null;
   data = await getSteamAPIDataWithRetry({
     url,
-    // We could rotate through proxies here to ensure consistent load
-    proxy: apiHosts,
+    proxy: true,
   });
   const resp =
     data && data.result && data.result.matches ? data.result.matches : [];

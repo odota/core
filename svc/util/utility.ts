@@ -103,7 +103,7 @@ type GetDataOptions = {
   timeout?: number;
   // Don't parse the response as JSON
   raw?: boolean;
-  proxy?: string[];
+  proxy?: boolean;
 };
 export async function getSteamAPIData(options: GetDataOptions): Promise<any> {
   let url = options.url;
@@ -115,9 +115,10 @@ export async function getSteamAPIData(options: GetDataOptions): Promise<any> {
     apiKeys[Math.floor(Math.random() * apiKeys.length)],
   );
   if (options.proxy) {
-    // choose one of the passed hosts
-    parsedUrl.host =
-      options.proxy[Math.floor(Math.random() * options.proxy.length)];
+    const apiHosts = await getApiHosts();
+    // add the proxy hosts and select
+    const hosts = ['api.steampowered.com', ...apiHosts];
+    parsedUrl.host = hosts[Math.floor(Math.random() * hosts.length)];
   }
   if (parsedUrl.host === 'api.steampowered.com') {
     redisCount('steam_api_call');
@@ -798,7 +799,9 @@ async function getRegistryUrl(service: string, path: string) {
  * Return an array of hostnames to use for Steam API requests
  * @returns
  */
+const staticHosts = config.STEAM_API_HOST.split(',');
 export async function getApiHosts(): Promise<string[]> {
+  let additional: string[] = [];
   if (config.USE_SERVICE_REGISTRY) {
     // Purge values older than 10 seconds (stale heartbeat)
     await redis.zremrangebyscore(
@@ -806,12 +809,9 @@ export async function getApiHosts(): Promise<string[]> {
       '-inf',
       Date.now() - 10000,
     );
-    const hosts = await redis.zrange('registry:proxy', 0, -1);
-    if (hosts.length) {
-      return hosts;
-    }
+    additional = await redis.zrange('registry:proxy', 0, -1);
   }
-  return config.STEAM_API_HOST.split(',');
+  return [...staticHosts, ...additional];
 }
 
 /**

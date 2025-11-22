@@ -1,11 +1,11 @@
-// Randomly requests history refreshes for users to fill in missing matches and update privacy setting
+// Requests history refreshes for users to fill in missing matches and update privacy setting
 import db from './store/db.ts';
 import { addReliableJob } from './store/queue.ts';
 import { runInLoop } from './util/utility.ts';
 
 runInLoop(async function autoFh() {
   const { rows } = await db.raw(
-    'SELECT account_id from players ORDER BY full_history_time ASC NULLS FIRST LIMIT 1',
+    'SELECT account_id from players ORDER BY full_history_time ASC NULLS FIRST LIMIT 5',
   );
   console.log(rows);
   await Promise.all(
@@ -21,4 +21,4 @@ runInLoop(async function autoFh() {
       ),
     ),
   );
-}, 500);
+}, 5000);

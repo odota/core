@@ -1,4 +1,3 @@
-// Updates Steam profile data for players periodically
 import db from './store/db.ts';
 import { runInLoop, randomInt } from './util/utility.ts';
 import { addReliableJob } from './store/queue.ts';
