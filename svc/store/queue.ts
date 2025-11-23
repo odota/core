@@ -32,6 +32,7 @@ export async function runQueue(
         // The job will not be retried since this is an unreliable queue
         await processor(jobData, i);
       }
+      await redis.setex('lastRun:' + config.ROLE, 3600, Date.now());
     }
   };
   for (let i = 0; i < parallelism; i++) {
@@ -80,14 +81,13 @@ export async function runReliableQueue(
             timestamp: job.timestamp,
             i,
           });
-          // If the processor returns true, it's successful and we should delete the job and then commit
+          // If the processor returns true or out of attempts, it's successful and we should delete the job and then commit
+          // Otherwise, it's an expected failure and we should commit the transaction to consume an attempt
           if (success || job.attempts <= 0) {
             await consumer.query('DELETE FROM queue WHERE id = $1', [job.id]);
-            await consumer.query('COMMIT');
-          } else {
-            // If the processor returns false, it's an expected failure and we should commit the transaction to consume an attempt
-            await consumer.query('COMMIT');
           }
+          await consumer.query('COMMIT');
+          await redis.setex('lastRun:' + config.ROLE, 3600, Date.now());
         } catch (e) {
           // If the processor crashes unexpectedly, we should rollback the transaction to not consume an attempt
           await consumer.query('ROLLBACK');

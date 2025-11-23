@@ -125,6 +125,7 @@ const onResFinish = async (
   }
   await redis.lpush('load_times', elapsed);
   await redis.ltrim('load_times', 0, 9999);
+  await redis.setex('lastRun:' + config.ROLE, 3600, Date.now());
 };
 
 // Dummy User ID for testing

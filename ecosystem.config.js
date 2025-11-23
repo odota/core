@@ -51,6 +51,7 @@ let arr = [
   {
     name: 'retriever',
     group: 'backend',
+    health_exempt: true,
     env: {
       // Clear registry host since we don't need to register local service
       SERVICE_REGISTRY_HOST: '',

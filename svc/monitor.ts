@@ -1,13 +1,11 @@
 // Runs health checks periodically and writes result to Redis
-import axios from 'axios';
-import config from '../config.ts';
 import redis from './store/redis.ts';
 import db from './store/db.ts';
 import cassandra from './store/cassandra.ts';
 import { getSteamAPIData, runInLoop, SteamAPIUrls } from './util/utility.ts';
-const apiKey = config.STEAM_API_KEY.split(',')[0];
+import { apps } from '../ecosystem.config.js';
 
-const health = {
+const health: Record<string, () => Promise<Metric>> = {
   // steamApi,
   postgresUsage,
   redisUsage,
@@ -22,6 +20,25 @@ const health = {
   profileDelay,
   rateDelay,
 };
+
+// Get list of backend processes
+apps.forEach((app) => {
+  // Add a check for each's health status
+  if (!app.health_exempt) {
+    health[app.name] = async () => {
+      const now = Date.now();
+      // processes refresh keys as they run with the timestamp of the success time
+      // expire of 1 hour
+      const health = await redis.get('lastRun:' + app.name);
+      const limit = 3600;
+      const metric = health ? limit : Math.floor((now - Number(health)) / 1000);
+      return {
+        metric,
+        limit,
+      };
+    };
+  }
+});
 
 runInLoop(async function monitor() {
   const result: Record<string, Metric> = {};

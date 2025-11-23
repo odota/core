@@ -5,6 +5,7 @@
     "strict": true,
     "resolveJsonModule": true,
     "noEmit": true,
+    "allowJs": true,
     "allowImportingTsExtensions": true,
     "erasableSyntaxOnly": true,
     "verbatimModuleSyntax": true

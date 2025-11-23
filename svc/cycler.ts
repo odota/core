@@ -14,8 +14,16 @@ let i = 0;
 
 runInLoop(async function cycler() {
   // Reload the config on each run
-  const { CYCLER_COUNT, RETRIEVER_MIN_UPTIME, GOOGLE_CLOUD_RETRIEVER_TEMPLATE } = await fetchConfig(true);
-  if (!config.GOOGLE_CLOUD_PROJECT_ID || !GOOGLE_CLOUD_RETRIEVER_TEMPLATE || !RETRIEVER_MIN_UPTIME) {
+  const {
+    CYCLER_COUNT,
+    RETRIEVER_MIN_UPTIME,
+    GOOGLE_CLOUD_RETRIEVER_TEMPLATE,
+  } = await fetchConfig(true);
+  if (
+    !config.GOOGLE_CLOUD_PROJECT_ID ||
+    !GOOGLE_CLOUD_RETRIEVER_TEMPLATE ||
+    !RETRIEVER_MIN_UPTIME
+  ) {
     throw new Error('[CYCLER] missing required GCE config');
   }
   const lifetime = Number(RETRIEVER_MIN_UPTIME);

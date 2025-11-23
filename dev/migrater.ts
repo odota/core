@@ -1,6 +1,6 @@
 import config from '../config.ts';
-import cassandra, { getCassandraColumns } from './store/cassandra.ts';
-import redis from './store/redis.ts';
+import cassandra, { getCassandraColumns } from '../svc/store/cassandra.ts';
+import redis from '../svc/store/redis.ts';
 
 // const SCYLLA_URL = '';
 // const scylla = new scyllaDriver.Client({
