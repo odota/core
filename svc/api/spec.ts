@@ -1437,9 +1437,10 @@ You can use the API without a key, but registering for a key allows increased ra
           if (!result) {
             return res.json(result);
           }
-          const data = JSON.parse(result);
+          const data: Record<string, Metric> = JSON.parse(result);
           if (!req.params.metric) {
-            return res.json(data);
+            const allHealthy = Object.values(data).every((single) => single.metric < single.limit);
+            return res.status(allHealthy ? 200 : 500).json(data);
           }
           const single: Metric = data[req.params.metric];
           const healthy = single?.metric < single?.limit;

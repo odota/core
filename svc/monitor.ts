@@ -148,7 +148,7 @@ async function postgresUsage() {
   const result = await db.raw("select pg_database_size('yasp')");
   return {
     metric: result.rows[0]?.pg_database_size,
-    limit: 4 * 10 ** 11,
+    limit: 3.5 * 10 ** 11,
   };
 }
 async function cassandraUsage() {
@@ -161,7 +161,7 @@ WHERE keyspace_name = 'yasp';
   );
   return {
     metric: result.rows[0]?.size,
-    limit: 6.2 * 10 ** 12,
+    limit: 6 * 10 ** 12,
   };
 }
 async function redisUsage() {
@@ -171,6 +171,6 @@ async function redisUsage() {
     .find((line: string) => line.startsWith('used_memory'));
   return {
     metric: Number(line?.split(':')[1]),
-    limit: 4 * 10 ** 9,
+    limit: 2 * 10 ** 9,
   };
 }
