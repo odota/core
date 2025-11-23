@@ -829,7 +829,7 @@ export async function runInLoop(func: () => Promise<void>, delay: number) {
     console.time(func.name);
     await func();
     console.timeEnd(func.name);
-    await redis.setex('lastRun:' + config.ROLE, 3600, Date.now());
+    await redis.setex('lastRun:' + config.APP_NAME, 3600, Date.now());
     await new Promise((resolve) => setTimeout(resolve, delay));
   }
 }

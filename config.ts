@@ -106,6 +106,7 @@ const defaults = {
   CYCLER_COUNT: '1', // Number of retrievers to maintain in cycler
   RETRIEVER_MIN_UPTIME: '300', // Number of seconds retrievers should stay up for before restarting
   RETRIEVER_NUM_ACCOUNTS: '5', // Max number of accounts to use with retriever at once
+  APP_NAME: '', // Name of the process/service (set by PM2/ecosystem.config.js)
 };
 
 if (process.env.NODE_TEST_CONTEXT) {

@@ -89,7 +89,8 @@ let arr = [
   {
     // Secondary scanner that runs behind and picks up matches previously missing
     name: 'scanner2',
-    name_override: 'scanner',
+    // Sets ROLE since this defaults to using name
+    role_override: 'scanner',
     group: 'backend',
     env: {
       SCANNER_OFFSET: '50000',
@@ -183,7 +184,6 @@ arr = arr.filter(
 );
 
 export const apps = arr.map((app) => {
-  const script = 'index.ts';
   return {
     ...app,
     watch: dev ? true : false,
@@ -191,11 +191,12 @@ export const apps = arr.map((app) => {
     log_date_format: 'YYYY-MM-DDTHH:mm:ss',
     exec_mode: app.exec_mode ?? 'fork',
     instances: app.instances ?? 1,
-    script: app.script ?? script,
+    script: 'index.ts',
     interpreter: 'node',
     env: {
       ...app.env,
-      ROLE: app.name_override ?? app.name,
+      ROLE: app.role_override ?? app.name,
+      APP_NAME: app.name,
     },
   };
 });
