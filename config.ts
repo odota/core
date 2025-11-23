@@ -107,23 +107,3 @@ export const config = {
   ...process.env,
 };
 export default config;
-
-export async function fetchConfig() {
-  if (config.PROVIDER === 'gce') {
-    const resp = await fetch(
-      'http://metadata.google.internal/computeMetadata/v1/project/attributes/env',
-      {
-        headers: {
-          'Metadata-Flavor': 'Google',
-        },
-      },
-    );
-    if (resp.ok) {
-      fs.writeFileSync('/usr/src/.env', await resp.text());
-      loadEnvFile();
-    } else {
-      throw new Error('failed to load config');
-    }
-  }
-  return process.env;
-}

@@ -1,7 +1,9 @@
-import config, { fetchConfig } from '../config.ts';
+import config from '../config.ts';
 import redis from './store/redis.ts';
 import axios from 'axios';
 import { runInLoop, shuffle } from './util/utility.ts';
+import { loadEnvFile } from 'node:process';
+import fs from 'fs';
 
 const projectId = config.GOOGLE_CLOUD_PROJECT_ID;
 const lifetime = Number(config.RETRIEVER_MIN_UPTIME);
@@ -17,8 +19,23 @@ shuffle(zones);
 let i = 0;
 
 runInLoop(async function cycler() {
-  const { CYCLER_COUNT } = await fetchConfig();
-  const count = Number(CYCLER_COUNT);
+  if (config.PROVIDER === 'gce') {
+    const respEnv = await fetch(
+      'http://metadata.google.internal/computeMetadata/v1/project/attributes/env',
+      {
+        headers: {
+          'Metadata-Flavor': 'Google',
+        },
+      },
+    );
+    if (respEnv.ok) {
+      fs.writeFileSync('/usr/src/.env', await respEnv.text());
+    } else {
+      throw new Error('failed to load config');
+    }
+    loadEnvFile();
+  }
+  const count = Number(process.env.CYCLER_COUNT);
   // Start with a base number for gcdata/rater reqs and add additional retrievers based on parser capacity
   // Each retriever handles about 1 req/sec so divide by the avg number of seconds per parse
   // const count = Math.ceil((await getCapacity()) / 12) + 5;
