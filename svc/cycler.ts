@@ -3,12 +3,8 @@ import redis from './store/redis.ts';
 import axios from 'axios';
 import { runInLoop, shuffle } from './util/utility.ts';
 
-const projectId = config.GOOGLE_CLOUD_PROJECT_ID;
-const lifetime = Number(config.RETRIEVER_MIN_UPTIME);
-const template = config.GOOGLE_CLOUD_RETRIEVER_TEMPLATE;
-
 const zonesResponse = await axios.get(
-  `https://compute.googleapis.com/compute/v1/projects/${projectId}/zones`,
+  `https://compute.googleapis.com/compute/v1/projects/${config.GOOGLE_CLOUD_PROJECT_ID}/zones`,
   { headers: { Authorization: 'Bearer ' + (await getToken()) } },
 );
 const zones = zonesResponse.data.items.map((zone: any) => zone.name);
@@ -18,7 +14,11 @@ let i = 0;
 
 runInLoop(async function cycler() {
   // Reload the config on each run
-  const { CYCLER_COUNT } = await fetchConfig(true);
+  const { CYCLER_COUNT, RETRIEVER_MIN_UPTIME, GOOGLE_CLOUD_RETRIEVER_TEMPLATE } = await fetchConfig(true);
+  if (!config.GOOGLE_CLOUD_PROJECT_ID || !GOOGLE_CLOUD_RETRIEVER_TEMPLATE || !RETRIEVER_MIN_UPTIME) {
+    throw new Error('[CYCLER] missing required GCE config');
+  }
+  const lifetime = Number(RETRIEVER_MIN_UPTIME);
   const count = Number(CYCLER_COUNT);
   // Start with a base number for gcdata/rater reqs and add additional retrievers based on parser capacity
   // Each retriever handles about 1 req/sec so divide by the avg number of seconds per parse
@@ -36,17 +36,23 @@ runInLoop(async function cycler() {
       onHostMaintenance: 'TERMINATE',
       provisioningModel: 'SPOT',
     },
-    zone: `projects/${projectId}/zones/` + zone,
+    zone: `projects/${config.GOOGLE_CLOUD_PROJECT_ID}/zones/` + zone,
   };
-  const resp = await axios.post(
-    `https://compute.googleapis.com/compute/v1/projects/${projectId}/zones/${zone}/instances?sourceInstanceTemplate=global/instanceTemplates/${template}`,
-    options,
-    { headers: { Authorization: 'Bearer ' + (await getToken()) } },
-  );
-  console.log(resp.data);
-  await new Promise((resolve) =>
-    setTimeout(resolve, (lifetime * 0.95 * 1000) / count),
-  );
+  try {
+    const resp = await axios.post(
+      `https://compute.googleapis.com/compute/v1/projects/${config.GOOGLE_CLOUD_PROJECT_ID}/zones/${zone}/instances?sourceInstanceTemplate=global/instanceTemplates/${GOOGLE_CLOUD_RETRIEVER_TEMPLATE}`,
+      options,
+      { headers: { Authorization: 'Bearer ' + (await getToken()) } },
+    );
+    console.log(resp.data);
+    await new Promise((resolve) =>
+      setTimeout(resolve, (lifetime * 0.95 * 1000) / count),
+    );
+  } catch (e) {
+    // Try the next one
+    console.log(e);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
 }, 0);
 
 async function getToken() {
