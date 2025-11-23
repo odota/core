@@ -31,7 +31,7 @@ apps.forEach((app) => {
       // expire of 1 hour
       const health = await redis.get('lastRun:' + app.name);
       const limit = 3600;
-      const metric = health ? limit : Math.floor((now - Number(health)) / 1000);
+      const metric = health ? Math.floor((now - Number(health)) / 1000) : limit;
       return {
         metric,
         limit,
