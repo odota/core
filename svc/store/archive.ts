@@ -50,16 +50,21 @@ class Archive {
     if (config.ARCHIVE_PUBLIC_URL) {
       // if the bucket is public, we can read via http request rather than using the s3 client
       const url = `${config.ARCHIVE_PUBLIC_URL}/${this.bucket}/${key}`;
-      const resp = await fetch(url);
-      if (resp.status === 404) {
-        // expected if key not valid
-        redisCount('archive_miss');
-        return null;
-      } else if (!resp.ok) {
+      try {
+        const resp = await fetch(url, { signal: AbortSignal.timeout(5000) });
+        if (resp.status === 404) {
+          // expected if key not valid
+          redisCount('archive_miss');
+          return null;
+        }
+        if (!resp.ok) {
+          throw new Error(`[ARCHIVE] fetch was not ok (${resp.status})`);
+        }
+        buffer = Buffer.from(await resp.arrayBuffer());
+      } catch (e) {
         redisCount('archive_get_error');
-        throw new Error('archive get error: ' + resp.status);
+        throw e;
       }
-      buffer = Buffer.from(await resp.arrayBuffer());
     } else {
       if (!this.client) {
         throw new Error('[ARCHIVE] s3 client not available');
