@@ -230,7 +230,7 @@ app.get('/retrieverData', async (req, res, next) => {
     const idReqs = await getRedisCountDayHash('retrieverSteamIDs');
     for (let i = 0; i < accountData.length; i++) {
       const accountName = accountData[i].split(/:|\t/)[0];
-      const reqs = idReqs[accountName];
+      const reqs = idReqs[accountName] || 0;
       // const reqs = Number(await redis.hget('retrieverSteamIDs', accountName));
       // const success = Number(
       //   await redis.hget('retrieverSuccessSteamIDs', accountName),
