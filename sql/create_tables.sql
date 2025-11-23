@@ -159,20 +159,20 @@ CREATE TABLE IF NOT EXISTS players (
   loccountrycode varchar(2),
   last_match_time timestamp with time zone,
   profile_time timestamp with time zone,
-  rank_tier_time timestamp with time zone,
-  /*
-    "communityvisibilitystate" : 3,
-    "lastlogoff" : 1426020853,
-    "loccityid" : 44807,
-    "locstatecode" : "16",
-    "personastate" : 0,
-    "personastateflags" : 0,
-    "primaryclanid" : "103582791433775490",
-    "profilestate" : 1,
-    "realname" : "Alper",
-    "timecreated" : 1332289262,
-  */
+  rank_tier_time timestamp with time zone
 );
+/*
+  "communityvisibilitystate" : 3,
+  "lastlogoff" : 1426020853,
+  "loccityid" : 44807,
+  "locstatecode" : "16",
+  "personastate" : 0,
+  "personastateflags" : 0,
+  "primaryclanid" : "103582791433775490",
+  "profilestate" : 1,
+  "realname" : "Alper",
+  "timecreated" : 1332289262,
+*/
 CREATE INDEX IF NOT EXISTS players_cheese_idx on players(cheese) WHERE cheese IS NOT NULL AND cheese > 0;
 --only GIST indexes support ordering by similarity
 CREATE INDEX IF NOT EXISTS players_personaname_idx_gist ON players USING GIST(personaname gist_trgm_ops);
