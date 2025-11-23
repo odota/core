@@ -4,7 +4,11 @@
 import { loadEnvFile } from 'node:process';
 import os from 'node:os';
 
-loadEnvFile();
+try {
+  loadEnvFile();
+} catch (e) {
+  console.log(e);
+}
 
 const dev = process.env.NODE_ENV === 'development';
 const prod = process.env.NODE_ENV === 'production';

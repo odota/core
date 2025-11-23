@@ -3,7 +3,12 @@
  * */
 import { loadEnvFile } from 'node:process';
 import fs from 'node:fs';
-loadEnvFile();
+
+try {
+  loadEnvFile();
+} catch (e) {
+  console.log(e);
+}
 
 const defaults = {
   STEAM_API_KEY: '', // for API reqs, in worker
