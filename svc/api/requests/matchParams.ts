@@ -21,7 +21,7 @@ export default {
     name: 'min_rank',
     in: 'query',
     description:
-      'Minimum rank for the matches. Ranks are represented by integers (10-15: Herald, 20-25: Guardian, 30-35: Crusader, 40-45: Archon, 50-55: Legend, 60-65: Ancient, 70-75: Divine, 80-85: Immortal). Each increment represents an additional star.',
+      'Minimum rank for the matches. Ranks are represented by integers (10-15: Herald, 20-25: Guardian, 30-35: Crusader, 40-45: Archon, 50-55: Legend, 60-65: Ancient, 70-75: Divine, 80: Immortal). Each increment represents an additional star.',
     required: false,
     schema: {
       type: 'integer',
@@ -31,25 +31,7 @@ export default {
     name: 'max_rank',
     in: 'query',
     description:
-      'Maximum rank for the matches. Ranks are represented by integers (10-15: Herald, 20-25: Guardian, 30-35: Crusader, 40-45: Archon, 50-55: Legend, 60-65: Ancient, 70-75: Divine, 80-85: Immortal). Each increment represents an additional star.',
-    required: false,
-    schema: {
-      type: 'integer',
-    },
-  },
-  mmrAscendingParam: {
-    name: 'mmr_ascending',
-    in: 'query',
-    description: 'Order by average rank ascending',
-    required: false,
-    schema: {
-      type: 'integer',
-    },
-  },
-  mmrDescendingParam: {
-    name: 'mmr_descending',
-    in: 'query',
-    description: 'Order by average rank descending',
+      'Maximum rank for the matches. Ranks are represented by integers (10-15: Herald, 20-25: Guardian, 30-35: Crusader, 40-45: Archon, 50-55: Legend, 60-65: Ancient, 70-75: Divine, 80: Immortal). Each increment represents an additional star.',
     required: false,
     schema: {
       type: 'integer',

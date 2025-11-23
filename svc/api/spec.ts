@@ -1131,37 +1131,20 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
         },
         route: () => '/publicMatches',
         func: async (req, res, next) => {
-          const currMax =
-            (await db('public_matches').max('match_id').first())?.max || 0;
-          const lessThan = Number(req.query.less_than_match_id) || currMax;
-          let moreThan = lessThan - 1000000;
-          let order = '';
-          if (req.query.mmr_ascending) {
-            order = 'ORDER BY avg_rank_tier ASC NULLS LAST';
-          } else if (req.query.mmr_descending) {
-            order = 'ORDER BY avg_rank_tier DESC NULLS LAST';
-          } else {
-            order = 'ORDER BY match_id DESC';
-            moreThan = 0;
-          }
-          const minRank = req.query.min_rank
-            ? `AND avg_rank_tier >= ${req.query.min_rank}`
-            : '';
-          const maxRank = req.query.max_rank
-            ? `AND avg_rank_tier <= ${req.query.max_rank}`
-            : '';
+          const lessThan =
+            Number(req.query.less_than_match_id) || Number.MAX_SAFE_INTEGER;
+          const minRank = Number(req.query.min_rank) || 0;
+          const maxRank = Number(req.query.max_rank) || Number.MAX_SAFE_INTEGER;
           const { rows } = await db.raw(
-            `
+          `
           SELECT * FROM public_matches
-          WHERE TRUE
-          AND match_id > ?
-          AND match_id < ?
-          ${minRank}
-          ${maxRank}
-          ${order}
+          WHERE match_id < ?
+          AND avg_rank_tier >= ?
+          AND avg_rank_tier <= ?
+          ORDER BY match_id DESC
           LIMIT 100
           `,
-            [moreThan, lessThan],
+            [lessThan, minRank, maxRank],
           );
           return res.json(rows);
         },

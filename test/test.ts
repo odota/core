@@ -26,6 +26,7 @@ import cassandra from '../svc/store/cassandra.ts';
 import c from 'ansi-colors';
 import { suite, test, before, beforeEach, after } from 'node:test';
 import { S3Client } from '@bradenmacdonald/s3-lite-client';
+import { averageMedal } from '../svc/util/utility.ts';
 
 const { RETRIEVER_HOST, POSTGRES_URL, CASSANDRA_URL } = config;
 const initPostgresHost = POSTGRES_URL.replace('/yasp_test', '/postgres');
@@ -192,6 +193,14 @@ async function loadPlayers() {
   );
 }
 
+suite(c.blue('AVERAGE MEDAL'), async () => {
+  test('should calculate average medal correctly', () => {
+    const test1 = [14, 15, 21];
+    assert.equal(averageMedal(test1), 15);
+    const test2 = [80, 80, 80];
+    assert.equal(averageMedal(test2), 80);
+  });
+});
 
 suite(c.blue('API MANAGEMENT'), async () => {
   let previousKey: string;
@@ -417,8 +426,8 @@ suite('TESTS', async () => {
   });
 });
 
-suite(c.blue('PLAYERS'), async() => {
-    let playerData: any = null;
+suite(c.blue('PLAYERS'), async () => {
+  let playerData: any = null;
   before(async () => {
     const res = await supertest(app).get('/api/players/120269134');
     playerData = res.body;
@@ -439,7 +448,7 @@ suite(c.blue('PLAYERS'), async() => {
   });
 });
 
-suite(c.blue('PRIVACY'), async() => {
+suite(c.blue('PRIVACY'), async () => {
   test('privacy setting should return one row due to default privacy setting', async () => {
     await db.raw(
       'UPDATE players SET fh_unavailable = NULL WHERE account_id = ?',
@@ -476,7 +485,7 @@ suite(c.blue('PRIVACY'), async() => {
   });
 });
 
-suite(c.blue('API ROUTES'), async() => {
+suite(c.blue('API ROUTES'), async () => {
   test('api routes visit all routes in spec', async () => {
     const tests: string[][] = [];
     console.log('getting API spec and setting up tests');
