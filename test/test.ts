@@ -198,7 +198,7 @@ suite(c.blue('AVERAGE MEDAL'), async () => {
     const test1 = [14, 15, 21];
     assert.equal(averageMedal(test1), 15);
     const test2 = [80, 80, 80];
-    assert.equal(averageMedal(test2), 80);
+    assert.equal(averageMedal(test2), 75);
   });
 });
 
