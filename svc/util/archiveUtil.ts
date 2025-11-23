@@ -3,7 +3,6 @@ import { matchArchive, playerArchive } from '../store/archive.ts';
 import QueryStream from 'pg-query-stream';
 import { Client } from 'pg';
 import db from '../store/db.ts';
-import type { PutObjectCommandOutput } from '@aws-sdk/client-s3';
 import { getFullPlayerMatchesWithMetadata } from './buildPlayer.ts';
 import { isDataComplete, randomInt } from './utility.ts';
 import { getMatchBlob } from './getMatchBlob.ts';
@@ -95,11 +94,9 @@ export async function getCurrentMaxArchiveID() {
   return limit;
 }
 
-async function doArchivePlayerMatches(
-  accountId: number,
-): Promise<PutObjectCommandOutput | null> {
+async function doArchivePlayerMatches(accountId: number): Promise<void> {
   if (!playerArchive) {
-    return null;
+    return;
   }
   // Fetch our combined list of archive and current, selecting all fields
   const full = await getFullPlayerMatchesWithMetadata(accountId);
@@ -116,13 +113,14 @@ async function doArchivePlayerMatches(
   // TODO (howard) Make sure the new list is longer than the old list
   // Make sure we're archiving at least 1 match
   if (!toArchive.length) {
-    return null;
+    return;
   }
   // Put the blob
-  return playerArchive.archivePut(
+  await playerArchive.archivePut(
     accountId.toString(),
     Buffer.from(JSON.stringify(toArchive)),
   );
+  return;
   // TODO (howard) delete the archived values from player_caches
   // TODO (howard) keep the 20 highest match IDs for recentMatches
   // TODO (howard) mark the user archived so we don't need to query archive on every request

@@ -1,25 +1,11 @@
-import type {
-  PutObjectCommandInput,
-  PutObjectCommandOutput,
-} from '@aws-sdk/client-s3';
 import config from '../../config.ts';
 import { gzipSync, gunzipSync } from 'node:zlib';
+import redis, { redisCount } from './redis.ts';
 import {
   S3Client,
-  PutObjectCommand,
-  GetObjectCommand,
-} from '@aws-sdk/client-s3';
-import axios from 'axios';
-import redis, { redisCount } from './redis.ts';
-
-async function stream2buffer(stream: any): Promise<Buffer> {
-  return new Promise((resolve, reject) => {
-    const _buf: any[] = [];
-    stream.on('data', (chunk: any) => _buf.push(chunk));
-    stream.on('end', () => resolve(Buffer.concat(_buf)));
-    stream.on('error', (err: any) => reject(err));
-  });
-}
+  type S3UploadedObjectInfo,
+  type S3Errors,
+} from '@bradenmacdonald/s3-lite-client';
 
 type ArchiveType = 'match' | 'player' | 'blob';
 class Archive {
@@ -42,17 +28,13 @@ class Archive {
       this.bucket = config.BLOB_ARCHIVE_S3_BUCKET;
     }
     this.client = new S3Client({
-      region: 'us-east-1',
-      credentials: {
-        accessKeyId: this.accessKeyId,
-        secretAccessKey: this.secretAccessKey,
-      },
-      // expect the endpoint to have http prefix, if not, prepend https
-      endpoint: this.endpoint,
+      endPoint: this.endpoint,
+      region: 'local',
+      bucket: this.bucket,
+      accessKey: this.accessKeyId,
+      secretKey: this.secretAccessKey,
       // put the bucket name in the path rather than the domain to avoid DNS issues with minio
-      forcePathStyle: true,
-      // any other options are passed to new AWS.S3()
-      // See: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Config.html#constructor-property
+      // forcePathStyle: true,
     });
   }
 
@@ -68,40 +50,26 @@ class Archive {
     if (config.ARCHIVE_PUBLIC_URL) {
       // if the bucket is public, we can read via http request rather than using the s3 client
       const url = `${config.ARCHIVE_PUBLIC_URL}/${this.bucket}/${key}`;
-      try {
-        const resp = await axios.get<Buffer>(url, {
-          timeout: 5000,
-          responseType: 'arraybuffer',
-        });
-        buffer = resp.data;
-      } catch (e) {
-        if (axios.isAxiosError(e)) {
-          if (e.response?.status === 404) {
-            // expected if key not valid
-            redisCount('archive_miss');
-            return null;
-          }
-        }
+      const resp = await fetch(url);
+      if (resp.status === 404) {
+        // expected if key not valid
+        redisCount('archive_miss');
+        return null;
+      } else if (!resp.ok) {
         redisCount('archive_get_error');
-        throw e;
+        throw new Error('archive get error: ' + resp.status);
       }
+      buffer = Buffer.from(await resp.arrayBuffer());
     } else {
       if (!this.client) {
-        return null;
+        throw new Error('[ARCHIVE] s3 client not available');
       }
       try {
-        const data = await this.client.send(
-          new GetObjectCommand({
-            Bucket: this.bucket,
-            Key: key,
-          }),
-        );
-        if (!data.Body) {
-          return null;
-        }
-        buffer = await stream2buffer(data.Body);
-      } catch (e: any) {
-        if (e.Code === 'NoSuchKey') {
+        const data = await this.client.getObject(key);
+        buffer = Buffer.from(await data.arrayBuffer());
+      } catch (e: unknown) {
+        const error = e as S3Errors.ServerError;
+        if (error.statusCode === 404) {
           // expected response if key not valid
           redisCount('archive_miss');
           return null;
@@ -127,44 +95,26 @@ class Archive {
     key: string,
     blob: Buffer,
     noCache = false,
-  ): Promise<PutObjectCommandOutput | null> => {
+  ): Promise<S3UploadedObjectInfo | null> => {
     if (!this.client) {
-      return null;
+      throw new Error('[ARCHIVE] s3 client not available');
     }
     if (blob.length < 50) {
       throw new Error(
         '[ARCHIVE] Tried to archive small blob so something is probably wrong',
       );
     }
+    const zip = gzipSync(blob);
+    let result;
     try {
-      const zip = gzipSync(blob);
-      const options: PutObjectCommandInput = {
-        Bucket: this.bucket,
-        Key: key,
-        Body: zip,
-      };
       // if (ifNotExists) {
       //   // May not be implemented by some s3 providers
       //   options.IfNoneMatch = '*';
       // }
-      const command = new PutObjectCommand(options);
-      const result = await this.client.send(command);
-      redisCount('archive_write_bytes', zip.length);
-      if (this.type === 'blob' && !noCache) {
-        // Cache the data for some time
-        await redis?.setex(`cache5:${key}`, config.BLOB_CACHE_SECONDS, zip);
-      }
-      if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
-        console.log(
-          '[ARCHIVE] %s: original %s bytes, archived %s bytes',
-          key,
-          blob.length,
-          zip.length,
-        );
-      }
-      return result;
-    } catch (e: any) {
-      console.error('[ARCHIVE] put error:', e.Code || e);
+      result = await this.client.putObject(key, zip);
+    } catch (e: unknown) {
+      const error = e as S3Errors.ServerError;
+      console.error('[ARCHIVE] put error (%s): %s', error.code, error.message);
       // if (ifNotExists && e.Code === 'PreconditionFailed') {
       //   // Expected error if ifNotExists was passed
       //   return { message: 'already exists' };
@@ -172,6 +122,21 @@ class Archive {
       redisCount('archive_put_error');
       throw e;
     }
+
+    redisCount('archive_write_bytes', zip.length);
+    if (this.type === 'blob' && !noCache) {
+      // Cache the data for some time
+      await redis?.setex(`cache5:${key}`, config.BLOB_CACHE_SECONDS, zip);
+    }
+    if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
+      console.log(
+        '[ARCHIVE] %s: original %s bytes, archived %s bytes',
+        key,
+        blob.length,
+        zip.length,
+      );
+    }
+    return result;
   };
 }
 

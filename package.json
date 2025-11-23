@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "start": "node index.ts",
-    "test": "node --test test/test.ts",
+    "test": "node --test --test-concurrency 1 test/test.ts",
     "build": "npm install && npm run typecheck",
     "typecheck": "tsc --project tsconfig.json",
     "lint": "eslint .",
@@ -33,7 +33,7 @@
     "url": "http://github.com/odota/core"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.879.0",
+    "@bradenmacdonald/s3-lite-client": "npm:@jsr/bradenmacdonald__s3-lite-client@^0.9.4",
     "ansi-colors": "^4.1.3",
     "axios": "^1.13.2",
     "body-parser": "^1.20.3",
@@ -76,7 +76,7 @@
     "@types/qs": "^6.14.0",
     "@types/supertest": "^6.0.3",
     "@types/ws": "^8.18.1",
-    "nock": "^14.0.10",
+    "nock": "^13.5.6",
     "supertest": "^7.1.4",
     "typescript": "^5.9.3"
   }
