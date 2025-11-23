@@ -329,7 +329,7 @@ async function init() {
           });
           client.on('error', (err: any) => {
             console.error(err);
-            failedLogin[logOnDetails.accountName] = SteamUser.EResult[err.eresult];
+            failedLogin[logOnDetails.accountName] = err.eresult;
             reject(err);
           });
           client.logOn(logOnDetails);
