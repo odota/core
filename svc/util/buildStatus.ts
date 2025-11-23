@@ -8,6 +8,7 @@ import redis, {
 } from '../store/redis.ts';
 import { parallelPromise } from './utility.ts';
 import { game_mode, lobby_type, region, cluster } from 'dotaconstants';
+import axios from 'axios';
 
 function generatePercentiles(arr: string[]) {
   // sort the list
@@ -263,8 +264,8 @@ export async function buildStatus(isAdmin: boolean) {
           registryKeys.map(async (k) => {
             let json;
             try {
-              const resp = await fetch('http://' + k);
-              json = await resp.json();
+              const resp = await axios.get('http://' + k, { timeout: 1000 });
+              json = resp.data;
             } catch (e) {
               console.log(e);
             }
