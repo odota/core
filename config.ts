@@ -1,7 +1,9 @@
 /**
  * File managing configuration for the application
  * */
-import 'dotenv/config';
+import { loadEnvFile } from 'node:process';
+import fs from 'node:fs';
+loadEnvFile();
 
 const defaults = {
   STEAM_API_KEY: '', // for API reqs, in worker
@@ -78,6 +80,7 @@ const defaults = {
   RETRIEVER_MIN_UPTIME: '300', // Number of seconds retrievers should stay up for before restarting
   RETRIEVER_NUM_ACCOUNTS: '5', // Max number of accounts to use with retriever at once
 };
+
 if (process.env.NODE_TEST_CONTEXT) {
   console.log('[TEST MODE] setting config to test values');
   process.env.PORT = ''; // use service defaults
@@ -99,3 +102,23 @@ export const config = {
   ...process.env,
 };
 export default config;
+
+export async function fetchConfig() {
+  if (config.PROVIDER === 'gce') {
+    const resp = await fetch(
+      'http://metadata.google.internal/computeMetadata/v1/project/attributes/env',
+      {
+        headers: {
+          'Metadata-Flavor': 'Google',
+        },
+      },
+    );
+    if (resp.ok) {
+      fs.writeFileSync('/usr/src/.env', await resp.text());
+      loadEnvFile();
+    } else {
+      throw new Error('failed to load config');
+    }
+  }
+  return process.env;
+}

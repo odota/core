@@ -1,4 +1,4 @@
-import config from '../config.ts';
+import config, { fetchConfig } from '../config.ts';
 import redis from './store/redis.ts';
 import axios from 'axios';
 import { runInLoop, shuffle } from './util/utility.ts';
@@ -17,10 +17,11 @@ shuffle(zones);
 let i = 0;
 
 runInLoop(async function cycler() {
+  const { CYCLER_COUNT } = await fetchConfig();
+  const count = Number(CYCLER_COUNT);
   // Start with a base number for gcdata/rater reqs and add additional retrievers based on parser capacity
   // Each retriever handles about 1 req/sec so divide by the avg number of seconds per parse
   // const count = Math.ceil((await getCapacity()) / 12) + 5;
-  const count = Number(config.CYCLER_COUNT);
   const zone = zones[i];
   i += 1;
   const options = {

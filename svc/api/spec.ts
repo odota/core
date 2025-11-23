@@ -1132,9 +1132,10 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           const lessThan =
             Number(req.query.less_than_match_id) || Number.MAX_SAFE_INTEGER;
           const minRank = Math.min(Number(req.query.min_rank), 75) || 0;
-          const maxRank = Math.max(Number(req.query.max_rank), 15) || Number.MAX_SAFE_INTEGER;
+          const maxRank =
+            Math.max(Number(req.query.max_rank), 15) || Number.MAX_SAFE_INTEGER;
           const { rows } = await db.raw(
-          `
+            `
           SELECT * FROM public_matches
           WHERE match_id < ?
           AND avg_rank_tier >= ?

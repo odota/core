@@ -12,7 +12,6 @@
   },
   "type": "module",
   "dependencies": {
-    "dotenv": "^16.4.7",
     "protobufjs": "7.2.5",
     "steam-user-odota": "^5.2.11"
   }
