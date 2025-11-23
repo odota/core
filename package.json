@@ -55,7 +55,7 @@
     "pg-query-stream": "^4.10.3",
     "pm2": "^6.0.13",
     "protobufjs": "7.2.5",
-    "steam-user-odota": "^5.2.8",
+    "steam-user-odota": "^5.2.11",
     "stripe": "^9.16.0",
     "vdf-parser": "^1.2.1",
     "ws": "^8.18.3"
