@@ -287,12 +287,18 @@ async function init() {
       (logOnDetails) =>
         new Promise<void>((resolve, reject) => {
           const client = new SteamUser();
+          let relogTimeout: NodeJS.Timeout | undefined;
           client.on('loggedOn', () => {
-            console.log('[STEAM] Logged on %s', logOnDetails.accountName);
+            console.log('%s: loggedOn', logOnDetails.accountName);
             // Get our public IP from Steam
             publicIP = client.publicIP;
             // Launch Dota 2
-            client.gamesPlayed(DOTA_APPID);
+            client.gamesPlayed(DOTA_APPID, true);
+            relogTimeout = setTimeout(() => {
+              // Relog if we don't successfully finish connecting
+              console.log('%s: relogging', logOnDetails.accountName);
+              client.relog();
+            }, 5000);
           });
           client.on('appLaunched', (appid) => {
             client.sendToGC(
@@ -305,17 +311,19 @@ async function init() {
           client.on('receivedFromGC', (appid, msgType, payload) => {
             // We'll get Hello response here
             console.log(
-              `Received message ${msgType} from GC ${appid} with ${payload.length} bytes`,
+              `${logOnDetails.accountName}: Received message ${msgType} from GC ${appid} with ${payload.length} bytes`,
             );
             if (msgType === EGCBaseClientMsg.values.k_EMsgGCClientWelcome) {
               if (!client.steamID) {
-                reject('client not connected');
+                console.log('%s: client not connected', logOnDetails.accountName);
+                reject();
                 return;
               }
+              clearTimeout(relogTimeout);
               console.log(
-                'ready: %s (%s)',
+                '%s: ready',
                 logOnDetails.accountName,
-                client.steamID.toString(),
+                // client.steamID.toString(),
               );
               steamObj[logOnDetails.accountName] = client;
               resolve();
@@ -329,7 +337,7 @@ async function init() {
           });
           client.on('error', (err: any) => {
             console.error(err);
-            failedLogin[logOnDetails.accountName] = err.eresult;
+            failedLogin[logOnDetails.accountName] = SteamUser.EResult[err.eresult];
             reject(err);
           });
           client.logOn(logOnDetails);
