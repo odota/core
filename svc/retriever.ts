@@ -250,101 +250,95 @@ const server = createServer((req, res) => {
     return;
   }
 });
+server.listen(port, () => {
+  console.log('[RETRIEVER] listening on %s', port);
+});
 
-async function init() {
-  let logOns: { accountName: string; password: string }[] | null = null;
-  if (config.SERVICE_REGISTRY_HOST) {
-    // Fetch logons from remote
-    while (!logOns?.length) {
-      const logOnUrl =
-        'https://' +
-        config.SERVICE_REGISTRY_HOST +
-        '/retrieverData?key=' +
-        config.RETRIEVER_SECRET +
-        '&count=' +
-        numAccounts;
-      console.log('logOnUrl: %s', logOnUrl);
-      const resp = await fetch(logOnUrl);
-      if (resp.ok) {
-        logOns = await resp.json();
-      } else {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-      }
+let logOns: { accountName: string; password: string }[] | null = null;
+if (config.SERVICE_REGISTRY_HOST) {
+  // Fetch logons from remote
+  while (!logOns?.length) {
+    const logOnUrl =
+      'https://' +
+      config.SERVICE_REGISTRY_HOST +
+      '/retrieverData?key=' +
+      config.RETRIEVER_SECRET +
+      '&count=' +
+      numAccounts;
+    console.log('logOnUrl: %s', logOnUrl);
+    const resp = await fetch(logOnUrl);
+    if (resp.ok) {
+      logOns = await resp.json();
+    } else {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     }
-  } else {
-    // Generate logons from config
-    let users = config.STEAM_USER.split(',');
-    let passes = config.STEAM_PASS.split(',');
-    logOns = users.map((u, i) => ({
-      accountName: u,
-      password: passes[i],
-    }));
   }
-  // Some logins may fail, and sometimes the Steam CM never returns a response
-  // So don't await init and we'll just make sure we have at least one working with noneReady
-  await Promise.allSettled(
-    logOns.map(
-      (logOnDetails) =>
-        new Promise<void>((resolve, reject) => {
-          const client = new SteamUser();
-          let relogTimeout: NodeJS.Timeout | undefined;
-          client.on('loggedOn', () => {
-            console.log('%s: loggedOn', logOnDetails.accountName);
-            // Get our public IP from Steam
-            publicIP = client.publicIP;
-            // Launch Dota 2
-            client.gamesPlayed(DOTA_APPID, true);
-            relogTimeout = setTimeout(() => {
-              // Relog if we don't successfully finish connecting
-              console.log('%s: relogging', logOnDetails.accountName);
-              client.relog();
-            }, 5000);
-          });
-          client.on('appLaunched', (appid) => {
-            client.sendToGC(
-              appid,
-              EGCBaseClientMsg.values.k_EMsgGCClientHello,
-              {},
-              Buffer.alloc(0),
-            );
-          });
-          client.on('receivedFromGC', (appid, msgType, payload) => {
-            // We'll get Hello response here
-            console.log(
-              `${logOnDetails.accountName}: Received message ${msgType} from GC ${appid} with ${payload.length} bytes`,
-            );
-            if (msgType === EGCBaseClientMsg.values.k_EMsgGCClientWelcome) {
-              if (!client.steamID) {
-                console.log('%s: client not connected', logOnDetails.accountName);
-                reject();
-                return;
-              }
-              clearTimeout(relogTimeout);
-              console.log(
-                '%s: ready',
-                logOnDetails.accountName,
-                // client.steamID.toString(),
-              );
-              steamObj[logOnDetails.accountName] = client;
-              resolve();
-            }
-            // We can also handle other GC responses here if not using callbacks
-          });
-          client.on('steamGuard', (domain, callback) => {
-            console.log("Steam Guard code needed from email ending in " + domain);
-            failedLogin[logOnDetails.accountName] = 'steamGuard';
-            // callback(code);
-          });
-          client.on('error', (err: any) => {
-            console.error(err);
-            failedLogin[logOnDetails.accountName] = SteamUser.EResult[err.eresult];
-            reject(err);
-          });
-          client.logOn(logOnDetails);
-        }),
-    ),
-  );
+} else {
+  // Generate logons from config
+  let users = config.STEAM_USER.split(',');
+  let passes = config.STEAM_PASS.split(',');
+  logOns = users.map((u, i) => ({
+    accountName: u,
+    password: passes[i],
+  }));
 }
+// Some logins may fail, and sometimes the Steam CM never returns a response
+// So don't block on successful login and we'll just make sure we have at least one working with noneReady
+logOns.forEach((logOnDetails) => {
+  const client = new SteamUser();
+  let relogTimeout: NodeJS.Timeout | undefined;
+  client.on('loggedOn', () => {
+    console.log('%s: loggedOn', logOnDetails.accountName);
+    // Get our public IP from Steam
+    publicIP = client.publicIP;
+    // Launch Dota 2
+    client.gamesPlayed(DOTA_APPID, true);
+    relogTimeout = setTimeout(() => {
+      // Relog if we don't successfully finish connecting
+      console.log('%s: relogging', logOnDetails.accountName);
+      client.relog();
+    }, 5000);
+  });
+  client.on('appLaunched', (appid) => {
+    client.sendToGC(
+      appid,
+      EGCBaseClientMsg.values.k_EMsgGCClientHello,
+      {},
+      Buffer.alloc(0),
+    );
+  });
+  client.on('receivedFromGC', (appid, msgType, payload) => {
+    // We'll get Hello response here
+    console.log(
+      `${logOnDetails.accountName}: Received message ${msgType} from GC ${appid} with ${payload.length} bytes`,
+    );
+    if (msgType === EGCBaseClientMsg.values.k_EMsgGCClientWelcome) {
+      if (!client.steamID) {
+        console.log('%s: client not connected', logOnDetails.accountName);
+        return;
+      }
+      clearTimeout(relogTimeout);
+      console.log(
+        '%s: ready',
+        logOnDetails.accountName,
+        // client.steamID.toString(),
+      );
+      steamObj[logOnDetails.accountName] = client;
+    }
+    // We can also handle other GC responses here if not using callbacks
+  });
+  client.on('steamGuard', (domain, callback) => {
+    console.log('Steam Guard code needed from email ending in ' + domain);
+    failedLogin[logOnDetails.accountName] = 'steamGuard';
+    // callback(code);
+  });
+  client.on('error', (err: any) => {
+    console.error(err);
+    failedLogin[logOnDetails.accountName] = SteamUser.EResult[err.eresult];
+  });
+  client.logOn(logOnDetails);
+});
+
 function selfDestruct() {
   console.log('shutting down');
   process.exit(0);
@@ -355,8 +349,3 @@ function getUptime() {
 function getOSUptime() {
   return os.uptime();
 }
-
-init();
-server.listen(port, () => {
-  console.log('[RETRIEVER] listening on %s', port);
-});
