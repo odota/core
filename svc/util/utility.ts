@@ -826,13 +826,14 @@ export async function getApiHosts(): Promise<string[]> {
 export async function runInLoop(func: () => Promise<void>, delay: number) {
   while (true) {
     console.log('running %s', func.name);
-    console.time(func.name);
+    const start = Date.now();
     await func();
-    console.timeEnd(func.name);
+    const end = Date.now();
+    console.log('%s: %dms', func.name, end - start);
     await redis.setex(
       'lastRun:' + config.APP_NAME,
       config.HEALTH_TIMEOUT,
-      Date.now(),
+      end - start,
     );
     await new Promise((resolve) => setTimeout(resolve, delay));
   }

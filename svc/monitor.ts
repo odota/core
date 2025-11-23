@@ -28,11 +28,12 @@ apps.forEach((app) => {
   if (!app.health_exempt) {
     health[app.name] = async () => {
       const now = Date.now();
-      // processes refresh keys as they run with the timestamp of the success time
-      // expire of 1 hour
-      const health = await redis.get('lastRun:' + app.name);
-      const limit = Number(config.HEALTH_TIMEOUT);
-      const metric = health ? Math.floor((now - Number(health)) / 1000) : limit;
+      // processes refresh keys as they run
+      // Store the duration of the run
+      // Set expire to HEALTH_TIMEOUT, so can use TTL to find the timestamp
+      const run = await redis.get('lastRun:' + app.name);
+      const limit = Number(config.HEALTH_TIMEOUT) * 1000;
+      const metric = run ? Number(run) : limit;
       return {
         metric,
         limit,

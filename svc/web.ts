@@ -128,7 +128,7 @@ const onResFinish = async (
   await redis.setex(
     'lastRun:' + config.APP_NAME,
     config.HEALTH_TIMEOUT,
-    Date.now(),
+    elapsed,
   );
 };
 

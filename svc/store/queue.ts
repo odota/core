@@ -24,6 +24,7 @@ export async function runQueue(
         await new Promise((resolve) => setTimeout(resolve, 3000));
         continue;
       }
+      const start = Date.now();
       const job = await consumer.blpop(queueName, '0');
       if (job) {
         const jobData = JSON.parse(job[1]);
@@ -32,10 +33,11 @@ export async function runQueue(
         // The job will not be retried since this is an unreliable queue
         await processor(jobData, i);
       }
+      const end = Date.now();
       await redis.setex(
         'lastRun:' + config.APP_NAME,
         config.HEALTH_TIMEOUT,
-        Date.now(),
+        end - start,
       );
     }
   };
@@ -59,6 +61,7 @@ export async function runReliableQueue(
         await new Promise((resolve) => setTimeout(resolve, 3000));
         continue;
       }
+      const start = Date.now();
       await consumer.query('BEGIN TRANSACTION');
       const result = await consumer.query(
         `
@@ -91,10 +94,11 @@ export async function runReliableQueue(
             await consumer.query('DELETE FROM queue WHERE id = $1', [job.id]);
           }
           await consumer.query('COMMIT');
+          const end = Date.now();
           await redis.setex(
             'lastRun:' + config.APP_NAME,
             config.HEALTH_TIMEOUT,
-            Date.now(),
+            end - start,
           );
         } catch (e) {
           // If the processor crashes unexpectedly, we should rollback the transaction to not consume an attempt
