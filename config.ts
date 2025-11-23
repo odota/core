@@ -107,6 +107,7 @@ const defaults = {
   RETRIEVER_MIN_UPTIME: '300', // Number of seconds retrievers should stay up for before restarting
   RETRIEVER_NUM_ACCOUNTS: '5', // Max number of accounts to use with retriever at once
   APP_NAME: '', // Name of the process/service (set by PM2/ecosystem.config.js)
+  HEALTH_TIMEOUT: '21600', // Number of seconds before a process is considered unhealthy
 };
 
 if (process.env.NODE_TEST_CONTEXT) {

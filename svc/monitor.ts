@@ -4,6 +4,7 @@ import db from './store/db.ts';
 import cassandra from './store/cassandra.ts';
 import { getSteamAPIData, runInLoop, SteamAPIUrls } from './util/utility.ts';
 import { apps } from '../ecosystem.config.js';
+import { config } from '../config.ts';
 
 const health: Record<string, () => Promise<Metric>> = {
   // steamApi,
@@ -30,7 +31,7 @@ apps.forEach((app) => {
       // processes refresh keys as they run with the timestamp of the success time
       // expire of 1 hour
       const health = await redis.get('lastRun:' + app.name);
-      const limit = 3600;
+      const limit = Number(config.HEALTH_TIMEOUT);
       const metric = health ? Math.floor((now - Number(health)) / 1000) : limit;
       return {
         metric,

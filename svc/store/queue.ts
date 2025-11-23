@@ -32,7 +32,11 @@ export async function runQueue(
         // The job will not be retried since this is an unreliable queue
         await processor(jobData, i);
       }
-      await redis.setex('lastRun:' + config.APP_NAME, 3600, Date.now());
+      await redis.setex(
+        'lastRun:' + config.APP_NAME,
+        config.HEALTH_TIMEOUT,
+        Date.now(),
+      );
     }
   };
   for (let i = 0; i < parallelism; i++) {
@@ -87,7 +91,11 @@ export async function runReliableQueue(
             await consumer.query('DELETE FROM queue WHERE id = $1', [job.id]);
           }
           await consumer.query('COMMIT');
-          await redis.setex('lastRun:' + config.APP_NAME, 3600, Date.now());
+          await redis.setex(
+            'lastRun:' + config.APP_NAME,
+            config.HEALTH_TIMEOUT,
+            Date.now(),
+          );
         } catch (e) {
           // If the processor crashes unexpectedly, we should rollback the transaction to not consume an attempt
           await consumer.query('ROLLBACK');
