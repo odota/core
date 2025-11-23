@@ -1131,8 +1131,8 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
         func: async (req, res, next) => {
           const lessThan =
             Number(req.query.less_than_match_id) || Number.MAX_SAFE_INTEGER;
-          const minRank = Number(req.query.min_rank) || 0;
-          const maxRank = Number(req.query.max_rank) || Number.MAX_SAFE_INTEGER;
+          const minRank = Math.min(Number(req.query.min_rank), 75) || 0;
+          const maxRank = Math.max(Number(req.query.max_rank), 15) || Number.MAX_SAFE_INTEGER;
           const { rows } = await db.raw(
           `
           SELECT * FROM public_matches
