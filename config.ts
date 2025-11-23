@@ -4,10 +4,32 @@
 import { loadEnvFile } from 'node:process';
 import fs from 'node:fs';
 
-try {
-  loadEnvFile();
-} catch (e) {
-  console.log(e);
+await fetchConfig();
+
+export async function fetchConfig(force?: boolean) {
+  if (force || !fs.existsSync('/usr/src/.env')) {
+    if (process.env.PROVIDER === 'gce') {
+      const resp = await fetch(
+        'http://metadata.google.internal/computeMetadata/v1/project/attributes/env',
+        {
+          headers: {
+            'Metadata-Flavor': 'Google',
+          },
+        },
+      );
+      if (resp.ok) {
+        fs.writeFileSync('/usr/src/.env', await resp.text());
+      } else {
+        throw new Error('failed to load config');
+      }
+    }
+  }
+  try {
+    loadEnvFile();
+  } catch (e) {
+    console.log(e);
+  }
+  return process.env;
 }
 
 const defaults = {
@@ -107,3 +129,4 @@ export const config = {
   ...process.env,
 };
 export default config;
+
