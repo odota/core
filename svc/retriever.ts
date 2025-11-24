@@ -182,11 +182,10 @@ const server = createServer((req, res) => {
     res.setHeader('x-match-request-steamid', rKey);
     res.setHeader('x-match-request-ip', publicIP);
     matchAttempts[rKey] = (matchAttempts[rKey] ?? 0) + 1;
-    console.time('match:' + matchId);
+    const start = Date.now();
     const timeout = setTimeout(() => {
       // Respond to send back header info even if no response from GC
       // Use a 204 status code to avoid exception, we'll check the response body after and read headers
-      console.timeEnd('match:' + matchId);
       res.statusCode = 204;
       res.end();
     }, 3000);
@@ -203,7 +202,8 @@ const server = createServer((req, res) => {
         clearTimeout(timeout);
         // Check if we already sent the response to avoid double-sending on slow requests
         if (!res.headersSent) {
-          console.timeEnd('match:' + matchId);
+          const end = Date.now();
+          console.log('match %s: %dms', matchId, end - start);
           const matchData: any = CMsgGCMatchDetailsResponse.decode(payload);
           if (matchData.result === 15) {
             // Valve is blocking GC access to this match, probably a community prediction match
