@@ -25,7 +25,7 @@ function buildTeamScenario(
     {
       scenario,
       is_radiant: isRadiant,
-      region: match.region,
+      region: match.region ?? 0,
       wins: match.radiant_win === isRadiant,
     },
   ];
