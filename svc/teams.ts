@@ -7,11 +7,12 @@ import {
   getSteamAPIDataWithRetry,
   runInLoop,
 } from './util/utility.ts';
+import JSONbig from 'json-bigint';
 
 runInLoop(
   async function doTeams() {
     const result = await db.raw(
-      'select distinct team_id from team_match TABLESAMPLE BERNOULLI(0.1)',
+      'select distinct team_id from team_match TABLESAMPLE BERNOULLI(0.05)',
     );
     const result2 = await db.raw(
       'select team_id from (select distinct team_id from team_match) ids where team_id not in (select team_id from teams)',
@@ -33,24 +34,16 @@ runInLoop(
       const url = SteamAPIUrls.api_team_info_by_team_id({
         start_at_team_id: m.team_id,
       });
-      let body = await getSteamAPIDataWithRetry({
+      let raw = await getSteamAPIDataWithRetry({
         url,
         raw: true,
       });
-      const raw = body;
-      body = JSON.parse(body);
+      const body = JSONbig.parse(raw);
       if (!body.result || !body.result.teams) {
         continue;
       }
       let t = body.result.teams[0];
       t.team_id = m.team_id;
-      // The logo value is a 64 bit integer which is too large to represent in JSON
-      // so need to read the raw response value
-      // JSON.parse will return an incorrect value in the logo field
-      // Maybe can use JSONbig here?
-      const logoRegex = /^"logo":(.*),$/m;
-      const match = logoRegex.exec(raw);
-      const logoUgc = match?.[1];
       // Steam's CDN sometimes has better versions of team logos available
       try {
         const cdnUrl = `https://steamcdn-a.akamaihd.net/apps/dota2/images/team_logos/${m.team_id}.png`;
@@ -63,6 +56,9 @@ runInLoop(
         console.log('failed to get image from cdn');
       }
       if (!t.logo_url) {
+        // The logo value is a 64 bit integer which is too large to represent in JSON
+        // So we use JSONbig to parse it
+        const logoUgc = t.logo;
         // Try getting image from ugc
         try {
           const ugcUrl = SteamAPIUrls.api_get_ugc_file_details({
@@ -86,5 +82,5 @@ runInLoop(
       });
     }
   },
-  60 * 60 * 1000,
+  30 * 60 * 1000,
 );

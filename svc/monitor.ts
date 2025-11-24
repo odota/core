@@ -31,8 +31,8 @@ apps.forEach((app) => {
       // Store the duration of the run
       // Set expire to HEALTH_TIMEOUT, so can use TTL to find the timestamp
       const run = await redis.get('lastRun:' + app.name);
-      const limit = Number(config.HEALTH_TIMEOUT) * 1000;
-      const metric = run ? Number(run) : limit;
+      const limit = Number(config.HEALTH_TIMEOUT);
+      const metric = run ? Math.floor(Number(run) / 1000) : limit;
       return {
         metric,
         limit,
