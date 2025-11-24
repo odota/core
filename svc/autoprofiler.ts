@@ -15,4 +15,4 @@ runInLoop(async function autoProfile() {
       data: { account_id: row.account_id },
     });
   }
-}, 5000);
+}, 10000);

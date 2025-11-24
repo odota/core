@@ -5,7 +5,7 @@ import { addJob } from './store/queue.ts';
 
 runInLoop(async function autoMmr() {
   const { rows } = await db.raw(
-    'SELECT account_id from players ORDER BY rank_tier_time ASC NULLS FIRST LIMIT 50',
+    'SELECT account_id from players ORDER BY rank_tier_time ASC NULLS FIRST LIMIT 10',
   );
   console.log(rows);
   for (let row of rows) {
@@ -14,4 +14,4 @@ runInLoop(async function autoMmr() {
       data: { account_id: row.account_id },
     });
   }
-}, 5000);
+}, 1000);
