@@ -78,167 +78,170 @@ setInterval(() => {
   }
 }, 5000);
 
-const server = createServer((req, res) => {
-  if (!req.url) {
-    return;
-  }
-  const url = new URL('http://localhost' + req.url);
-  if (url.pathname === '/') {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    const data = {
-      matchRequests,
-      matchSuccesses,
-      // profileRequests,
-      // profileSuccesses,
-      uptime: getUptime(),
-      osUptime: getOSUptime(),
-      hostname: os.hostname(),
-      numReadyAccounts: Object.keys(steamObj).length,
-      failedLogin,
-    };
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(data));
-    return;
-  } else if (url.pathname === '/healthz') {
-    res.end('ok');
-    return;
-  }
-  if (
-    config.RETRIEVER_SECRET &&
-    config.RETRIEVER_SECRET !== url.searchParams.get('key')
-  ) {
-    // reject request if it doesn't have key
-    res.statusCode = 403;
-    res.end('invalid key');
-    return;
-  }
-  if (noneReady()) {
-    res.statusCode = 500;
-    res.end('not ready');
-    return;
-  }
-  console.log(
-    'numReady: %s, matches: %s/%s, profiles: %s/%s, uptime: %s, matchRequestDelay: %s',
-    Object.keys(steamObj).length,
-    matchSuccesses,
-    matchRequests,
-    profileSuccesses,
-    profileRequests,
-    getUptime(),
-    matchRequestInterval,
-  );
-  if (url.pathname.startsWith('/profile')) {
-    const accountId = url.pathname.split('/')[2];
-    const keys = Object.keys(steamObj);
-    const rKey = keys[Math.floor(Math.random() * keys.length)];
-    const client = steamObj[rKey];
-    profileRequests += 1;
-    client.sendToGC(
-      DOTA_APPID,
-      EDOTAGCMsg.values.k_EMsgClientToGCGetProfileCard,
-      {},
-      Buffer.from(
-        CMsgClientToGCGetProfileCard.encode({
-          account_id: Number(accountId),
-        }).finish(),
-      ),
-      (appid, msgType, payload) => {
-        // console.log(appid, msgType, payload);
-        profileSuccesses += 1;
-        const profileCard = CMsgDOTAProfileCard.decode(payload);
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify(profileCard));
-      },
-    );
-  } else if (url.pathname.startsWith('/match')) {
-    // Don't allow requests coming in too fast
-    const curTime = Date.now();
+const server = createServer(async (req, res) => {
+  try {
+    const url = new URL('http://localhost' + (req.url || '/'));
+    if (url.pathname === '/') {
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      const data = {
+        matchRequests,
+        matchSuccesses,
+        // profileRequests,
+        // profileSuccesses,
+        uptime: getUptime(),
+        osUptime: getOSUptime(),
+        hostname: os.hostname(),
+        numReadyAccounts: Object.keys(steamObj).length,
+        failedLogin,
+      };
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify(data));
+      return;
+    } else if (url.pathname === '/healthz') {
+      res.end('ok');
+      return;
+    }
     if (
-      lastMatchRequestTime &&
-      curTime - lastMatchRequestTime < matchRequestInterval
+      config.RETRIEVER_SECRET &&
+      config.RETRIEVER_SECRET !== url.searchParams.get('key')
     ) {
-      res.statusCode = 429;
-      res.end('too many requests');
+      // reject request if it doesn't have key
+      res.statusCode = 403;
+      res.end('invalid key');
       return;
     }
-    lastMatchRequestTime = curTime;
-    const keys = Object.keys(steamObj);
-    // Round robin request to spread load evenly
-    const rKey = keys[matchRequests % keys.length];
-    const matchId = url.pathname.split('/')[2];
-    const client = steamObj[rKey];
-    matchRequests += 1;
-    // If the selected client has multiple consecutive failures, skip the request
-    if (matchAttempts[rKey] >= accountAttemptMax) {
+    if (noneReady()) {
       res.statusCode = 500;
-      res.end('too many attempts');
+      res.end('not ready');
       return;
     }
-    res.setHeader('x-match-request-steamid', rKey);
-    res.setHeader('x-match-request-ip', publicIP);
-    matchAttempts[rKey] = (matchAttempts[rKey] ?? 0) + 1;
-    const start = Date.now();
-    const timeout = setTimeout(() => {
-      // Respond to send back header info even if no response from GC
-      // Use a 204 status code to avoid exception, we'll check the response body after and read headers
-      res.statusCode = 204;
-      res.end();
-    }, 3000);
-    client.sendToGC(
-      DOTA_APPID,
-      EDOTAGCMsg.values.k_EMsgGCMatchDetailsRequest,
-      {},
-      Buffer.from(
-        CMsgGCMatchDetailsRequest.encode({
-          match_id: Number(matchId),
-        }).finish(),
-      ),
-      (appid, msgType, payload) => {
-        clearTimeout(timeout);
-        // Check if we already sent the response to avoid double-sending on slow requests
-        if (!res.headersSent) {
-          const end = Date.now();
-          console.log('match %s: %dms', matchId, end - start);
-          const matchData: any = CMsgGCMatchDetailsResponse.decode(payload);
-          if (matchData.result === 15) {
-            // Valve is blocking GC access to this match, probably a community prediction match
-            // Send back 204 success with a specific header that tells us not to retry
-            res.setHeader('x-match-noretry', matchData.result);
-            res.statusCode = 204;
-            res.end();
+    console.log(
+      'numReady: %s, matches: %s/%s, profiles: %s/%s, uptime: %s, matchRequestDelay: %s',
+      Object.keys(steamObj).length,
+      matchSuccesses,
+      matchRequests,
+      profileSuccesses,
+      profileRequests,
+      getUptime(),
+      matchRequestInterval,
+    );
+    if (url.pathname.startsWith('/profile')) {
+      const accountId = url.pathname.split('/')[2];
+      const keys = Object.keys(steamObj);
+      const rKey = keys[Math.floor(Math.random() * keys.length)];
+      const client = steamObj[rKey];
+      profileRequests += 1;
+      client.sendToGC(
+        DOTA_APPID,
+        EDOTAGCMsg.values.k_EMsgClientToGCGetProfileCard,
+        {},
+        Buffer.from(
+          CMsgClientToGCGetProfileCard.encode({
+            account_id: Number(accountId),
+          }).finish(),
+        ),
+        (appid, msgType, payload) => {
+          // console.log(appid, msgType, payload);
+          profileSuccesses += 1;
+          const profileCard = CMsgDOTAProfileCard.decode(payload);
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify(profileCard));
+        },
+      );
+    } else if (url.pathname.startsWith('/match')) {
+      // Don't allow requests coming in too fast
+      const curTime = Date.now();
+      if (
+        lastMatchRequestTime &&
+        curTime - lastMatchRequestTime < matchRequestInterval
+      ) {
+        res.statusCode = 429;
+        res.end('too many requests');
+        return;
+      }
+      lastMatchRequestTime = curTime;
+      const keys = Object.keys(steamObj);
+      // Round robin request to spread load evenly
+      const rKey = keys[matchRequests % keys.length];
+      const matchId = url.pathname.split('/')[2];
+      const client = steamObj[rKey];
+      matchRequests += 1;
+      // If the selected client has multiple consecutive failures, skip the request
+      if (matchAttempts[rKey] >= accountAttemptMax) {
+        res.statusCode = 500;
+        res.end('too many attempts');
+        return;
+      }
+      res.setHeader('x-match-request-steamid', rKey);
+      res.setHeader('x-match-request-ip', publicIP);
+      matchAttempts[rKey] = (matchAttempts[rKey] ?? 0) + 1;
+      const start = Date.now();
+      const timeout = setTimeout(() => {
+        // Respond to send back header info even if no response from GC
+        // Use a 204 status code to avoid exception, we'll check the response body after and read headers
+        res.statusCode = 204;
+        res.end();
+      }, 3000);
+      client.sendToGC(
+        DOTA_APPID,
+        EDOTAGCMsg.values.k_EMsgGCMatchDetailsRequest,
+        {},
+        Buffer.from(
+          CMsgGCMatchDetailsRequest.encode({
+            match_id: Number(matchId),
+          }).finish(),
+        ),
+        (appid, msgType, payload) => {
+          clearTimeout(timeout);
+          // Check if we already sent the response to avoid double-sending on slow requests
+          if (!res.headersSent) {
+            const end = Date.now();
+            console.log('match %s: %dms', matchId, end - start);
+            const matchData: any = CMsgGCMatchDetailsResponse.decode(payload);
+            if (matchData.result === 15) {
+              // Valve is blocking GC access to this match, probably a community prediction match
+              // Send back 204 success with a specific header that tells us not to retry
+              res.setHeader('x-match-noretry', matchData.result);
+              res.statusCode = 204;
+              res.end();
+              return;
+            }
+            matchSuccesses += 1;
+            // Reset on success
+            delete matchAttempts[rKey];
+            // Compress and send
+            res.setHeader('Content-Encoding', 'gzip');
+            res.end(gzipSync(JSON.stringify(matchData)));
             return;
           }
-          matchSuccesses += 1;
-          // Reset on success
-          delete matchAttempts[rKey];
-          // Compress and send
-          res.setHeader('Content-Encoding', 'gzip');
-          res.end(gzipSync(JSON.stringify(matchData)));
+        },
+      );
+    } else if (url.pathname.startsWith('/aliases')) {
+      // example: 76561198048632981
+      const keys = Object.keys(steamObj);
+      const rKey = keys[Math.floor(Math.random() * keys.length)];
+      const client = steamObj[rKey];
+      client.getAliases(
+        url.pathname.split('/')[2]?.split(','),
+        (err, aliases) => {
+          if (err) {
+            res.statusCode = 500;
+            res.end(err.message || err);
+            return;
+          }
+          res.end(JSON.stringify(aliases));
           return;
-        }
-      },
-    );
-  } else if (url.pathname.startsWith('/aliases')) {
-    // example: 76561198048632981
-    const keys = Object.keys(steamObj);
-    const rKey = keys[Math.floor(Math.random() * keys.length)];
-    const client = steamObj[rKey];
-    client.getAliases(
-      url.pathname.split('/')[2]?.split(','),
-      (err, aliases) => {
-        if (err) {
-          res.statusCode = 500;
-          res.end(err.message || err);
-          return;
-        }
-        res.end(JSON.stringify(aliases));
-        return;
-      },
-    );
-  } else {
-    res.statusCode = 404;
-    res.end('not found');
-    return;
+        },
+      );
+    } else {
+      res.statusCode = 404;
+      res.end('not found');
+      return;
+    }
+  } catch (e) {
+    console.log(e);
+    res.statusCode = 500;
+    res.end('error');
   }
 });
 server.listen(port, () => {
