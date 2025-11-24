@@ -40,14 +40,12 @@ export class MetaFetcher extends MatchFetcherBase<Record<string, any>> {
     // parse: ~50ms
     // We pipeline them here for efficiency
     // If we want to cache meta files, we can cache the bz2 versions and it won't add very much parse time
-    console.time('[METAPARSE]: download/bunzip');
+    const start = Date.now();
     const { stdout } = await execPromise(
       `curl -L ${url} | bunzip2`,
       //@ts-expect-error
       { shell: true, encoding: 'buffer', maxBuffer: 10 * 1024 * 1024 },
     );
-    console.timeEnd('[METAPARSE]: download/bunzip');
-    console.time('[METAPARSE]: parse');
     const message: any = CDOTAMatchMetadataFile.decode(stdout);
     // message.metadata.teams.forEach((team) => {
     //   team.players.forEach((player) => {
@@ -58,7 +56,8 @@ export class MetaFetcher extends MatchFetcherBase<Record<string, any>> {
     // });
     // This is encrypted in some way, see https://github.com/thedanill/dota_crypto (may require Dota plus subscription to request key)
     delete message.private_metadata;
-    console.timeEnd('[METAPARSE]: parse');
+    const end = Date.now();
+    console.log('[METAPARSE] %dms', end - start);
     if (message) {
       // Count the number of meta parses
       redisCount('meta_parse');

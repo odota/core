@@ -266,8 +266,8 @@ export async function buildStatus(isAdmin: boolean) {
             try {
               const resp = await axios.get('http://' + k, { timeout: 1000 });
               json = resp.data;
-            } catch (e) {
-              console.log(e);
+            } catch (e: any) {
+              console.log(k, e.message);
             }
             const found = ips.find((ip) => ip.key === k);
             return {

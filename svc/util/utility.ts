@@ -136,13 +136,14 @@ export async function getSteamAPIData(options: GetDataOptions): Promise<any> {
     axiosOptions.responseType = 'text';
   }
   let body = null;
-  console.time(target);
+  const start = Date.now();
   try {
     // Throws an exception if we get a non-2xx status code
     const response = await axios.get(target, axiosOptions);
     body = response.data;
   } catch (err) {
-    console.timeEnd(target);
+    const end = Date.now();
+    console.log('%s: %dms', target, end - start);
     if (axios.isAxiosError(err)) {
       const statusCode = err.response?.status;
       console.log('[EXCEPTION] %s, %s', statusCode, target);
@@ -161,7 +162,8 @@ export async function getSteamAPIData(options: GetDataOptions): Promise<any> {
       throw err;
     }
   }
-  console.timeEnd(target);
+  const end = Date.now();
+  console.log('%s: %dms', target, end - start);
   if (options.raw) {
     return body;
   }

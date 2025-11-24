@@ -63,7 +63,7 @@ runInLoop(async function scanApi() {
   const resp =
     data && data.result && data.result.matches ? data.result.matches : [];
   console.log('[API] match_seq_num:%s, matches:%s', seqNum, resp.length);
-  console.time('insert');
+  const start = Date.now();
   await Promise.all(
     resp.map(async (match: ApiData) => {
       // Optionally throttle inserts to prevent overload
@@ -96,7 +96,8 @@ runInLoop(async function scanApi() {
       }
     }),
   );
-  console.timeEnd('insert');
+  const end = Date.now();
+  console.log('insert: %dms', end - start);
   // Completed inserting matches on this page so update redis
   if (resp.length) {
     nextSeqNum = resp[resp.length - 1].match_seq_num + 1;
