@@ -24,8 +24,8 @@ export async function runQueue(
         await new Promise((resolve) => setTimeout(resolve, 3000));
         continue;
       }
-      const start = Date.now();
       const job = await consumer.blpop(queueName, '0');
+      const start = Date.now();
       if (job) {
         const jobData = JSON.parse(job[1]);
         // Note: If we fail here we will crash the process and possibly interrupt other parallel workers
