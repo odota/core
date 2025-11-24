@@ -96,12 +96,11 @@ const server = createServer((req, res) => {
       numReadyAccounts: Object.keys(steamObj).length,
       failedLogin,
     };
-    res.write(JSON.stringify(data));
-    res.end();
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify(data));
     return;
   } else if (url.pathname === '/healthz') {
-    res.write('ok');
-    res.end();
+    res.end('ok');
     return;
   }
   if (
@@ -109,15 +108,13 @@ const server = createServer((req, res) => {
     config.RETRIEVER_SECRET !== url.searchParams.get('key')
   ) {
     // reject request if it doesn't have key
-    res.write('invalid key');
     res.statusCode = 403;
-    res.end();
+    res.end('invalid key');
     return;
   }
   if (noneReady()) {
-    res.write('not ready');
     res.statusCode = 500;
-    res.end();
+    res.end('not ready');
     return;
   }
   console.log(
@@ -149,8 +146,8 @@ const server = createServer((req, res) => {
         // console.log(appid, msgType, payload);
         profileSuccesses += 1;
         const profileCard = CMsgDOTAProfileCard.decode(payload);
-        res.write(JSON.stringify(profileCard));
-        res.end();
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify(profileCard));
       },
     );
   } else if (url.pathname.startsWith('/match')) {
@@ -161,8 +158,7 @@ const server = createServer((req, res) => {
       curTime - lastMatchRequestTime < matchRequestInterval
     ) {
       res.statusCode = 429;
-      res.write('too many requests');
-      res.end();
+      res.end('too many requests');
       return;
     }
     lastMatchRequestTime = curTime;
@@ -175,8 +171,7 @@ const server = createServer((req, res) => {
     // If the selected client has multiple consecutive failures, skip the request
     if (matchAttempts[rKey] >= accountAttemptMax) {
       res.statusCode = 500;
-      res.write('too many attempts');
-      res.end();
+      res.end('too many attempts');
       return;
     }
     res.setHeader('x-match-request-steamid', rKey);
@@ -218,8 +213,7 @@ const server = createServer((req, res) => {
           delete matchAttempts[rKey];
           // Compress and send
           res.setHeader('Content-Encoding', 'gzip');
-          res.write(gzipSync(JSON.stringify(matchData)));
-          res.end();
+          res.end(gzipSync(JSON.stringify(matchData)));
           return;
         }
       },
@@ -234,19 +228,16 @@ const server = createServer((req, res) => {
       (err, aliases) => {
         if (err) {
           res.statusCode = 500;
-          res.write(err);
-          res.end();
+          res.end(err.message || err);
           return;
         }
-        res.write(JSON.stringify(aliases));
-        res.end();
+        res.end(JSON.stringify(aliases));
         return;
       },
     );
   } else {
     res.statusCode = 404;
-    res.write('not found');
-    res.end();
+    res.end('not found');
     return;
   }
 });
