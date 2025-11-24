@@ -19,5 +19,5 @@ runInLoop(async function autoFh() {
       {},
     );
   }
-// Fullhistory jobs can take ~5 seconds so only add new items slower than this to give queue time to drain
+  // Fullhistory jobs can take ~5 seconds so only add new items slower than this to give queue time to drain
 }, 5000);

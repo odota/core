@@ -31,7 +31,7 @@ async function processFullHistory(job: FullHistoryJob, metadata: JobMetadata) {
     (await redis.get('fh_queue:' + player.account_id))
   ) {
     redisCount('fullhistory_skip');
-    console.log('[FULLHISTORY#%s] skipping %s', metadata.i, player.account_id);
+    console.log('[FULLHISTORY][%s] skipping %s', metadata.i, player.account_id);
     return true;
   }
 
@@ -131,7 +131,12 @@ async function processFullHistory(job: FullHistoryJob, metadata: JobMetadata) {
   await updatePlayer(player);
   await redis.setex('fh_queue:' + player.account_id, 30 * 60, '1');
   const end = Date.now();
-  console.log('doFullHistory[%s] %s: %dms', metadata.i, player.account_id.toString(), end - start);
+  console.log(
+    'doFullHistory[%s] %s: %dms',
+    metadata.i,
+    player.account_id.toString(),
+    end - start,
+  );
   return true;
 }
 

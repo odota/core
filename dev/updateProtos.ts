@@ -21,4 +21,10 @@ async function updateProtos() {
       fs.writeFileSync('./proto/' + name, resp2.data);
     }
   }
+  // Get descriptor file
+  const resp3 = await axios.get(
+    'https://github.com/protocolbuffers/protobuf/raw/refs/heads/main/src/google/protobuf/descriptor.proto',
+    { responseType: 'arraybuffer' },
+  );
+  fs.writeFileSync('./proto/google/protobuf/descriptor.proto', resp3.data);
 }

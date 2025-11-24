@@ -12,7 +12,7 @@
   },
   "type": "module",
   "dependencies": {
-    "protobufjs": "7.2.5",
+    "protobufjs": "^7.5.4",
     "steam-user-odota": "^5.2.11"
   }
 }
