@@ -1,4 +1,9 @@
+import "google/protobuf/descriptor.proto";
 import "network_connection.proto";
+
+extend .google.protobuf.MessageOptions {
+	optional int32 maximum_size_bytes = 50000;
+}
 
 enum SignonState_t {
 	SIGNONSTATE_NONE = 0;
@@ -124,6 +129,8 @@ message CNETMsg_StringCmd {
 }
 
 message CNETMsg_SetConVar {
+	option (maximum_size_bytes) = 4096;
+
 	optional .CMsg_CVars convars = 1;
 }
 
@@ -163,6 +170,8 @@ message CSVCMsgList_GameEvents {
 }
 
 message CNETMsg_SpawnGroup_Load {
+	option (maximum_size_bytes) = 131072;
+
 	optional string worldname = 1;
 	optional string entitylumpname = 2;
 	optional string entityfiltername = 3;

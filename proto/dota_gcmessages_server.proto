@@ -9,6 +9,7 @@ import "dota_gcmessages_common_lobby.proto";
 import "dota_gcmessages_common_match_management.proto";
 import "dota_gcmessages_common_overworld.proto";
 import "dota_gcmessages_common_craftworks.proto";
+import "dota_gcmessages_common_monster_hunter.proto";
 import "gcsdk_gcmessages.proto";
 import "steammessages_steamlearn.steamworkssdk.proto";
 
@@ -467,6 +468,7 @@ message CMsgGameMatchSignoutResponse {
 	optional fixed32 ow_salt = 12;
 	optional uint64 ow_replay_id = 13;
 	optional .CMsgOverworldMatchRewards overworld_rewards = 14;
+	optional .CMsgMonsterHunterMatchRewards monster_hunter_rewards = 15;
 }
 
 message CMsgGameMatchSignOutPermissionRequest {
@@ -1505,5 +1507,16 @@ message CMsgSignOutCraftworks {
 	}
 
 	repeated .CMsgSignOutCraftworks.Player players = 1;
+	optional .EEvent event_id = 2 [default = EVENT_ID_NONE];
+}
+
+message CMsgSignOutMonsterHunter {
+	message Player {
+		optional uint32 account_id = 1;
+		optional .CMsgMonsterHunterInvestigationGameState investigation_game_state = 2;
+		optional .CMsgMonsterHunterCodexUpdateData codex_update_data = 3;
+	}
+
+	repeated .CMsgSignOutMonsterHunter.Player players = 1;
 	optional .EEvent event_id = 2 [default = EVENT_ID_NONE];
 }

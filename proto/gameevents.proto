@@ -26,6 +26,7 @@ message CMsgPlaceDecalEvent {
 	optional .CMsgVector normal = 2;
 	optional .CMsgVector saxis = 3;
 	optional int32 boneindex = 4;
+	optional int32 triangleindex = 13;
 	optional uint32 flags = 5;
 	optional fixed32 color = 6;
 	optional int32 random_seed = 7;
@@ -50,6 +51,8 @@ message CMsgClearDecalsForEntityEvent {
 }
 
 message CMsgSource1LegacyGameEventList {
+	option (maximum_size_bytes) = 24576;
+
 	message key_t {
 		optional int32 type = 1;
 		optional string name = 2;

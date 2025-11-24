@@ -466,6 +466,7 @@ message CMsgGCToGCMasterBroadcastMessage {
 	optional bool send_to_servers = 3;
 	optional uint32 msg_id = 4;
 	optional bytes msg_data = 5;
+	optional bool trusted_servers_only = 6;
 }
 
 message CMsgGCToGCMasterSubscribeToCache {

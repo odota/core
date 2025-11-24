@@ -1,0 +1,346 @@
+import "steammessages.proto";
+import "dota_shared_enums.proto";
+import "dota_gcmessages_common.proto";
+import "gcsdk_gcmessages.proto";
+
+enum EMonsterHunterAuditAction {
+	k_eMonsterHunterAuditAction_Invalid = 0;
+	k_eMonsterHunterAuditAction_DevModifyMaterials = 1;
+	k_eMonsterHunterAuditAction_DevGrantMaterials = 2;
+	k_eMonsterHunterAuditAction_DevResetAll = 3;
+	k_eMonsterHunterAuditAction_ClaimReward = 4;
+	k_eMonsterHunterAuditAction_MatchRewardsWin = 5;
+	k_eMonsterHunterAuditAction_MatchRewardsLose = 6;
+	k_eMonsterHunterAuditAction_MaterialTraderLost = 7;
+	k_eMonsterHunterAuditAction_MaterialTraderGained = 8;
+	k_eMonsterHunterAuditAction_RewardMaterialCost = 9;
+	k_eMonsterHunterAuditAction_SupportGrantMaterials = 10;
+	k_eMonsterHunterAuditAction_MaterialGiftSent = 11;
+	k_eMonsterHunterAuditAction_DevClaimInvestigationRewards = 12;
+	k_eMonsterHunterAuditAction_HeroCodexUpdate = 13;
+	k_eMonsterHunterAuditAction_EventActionReward = 14;
+}
+
+enum EHeroCodexEntryStatType {
+	k_eHeroCodexEntryStatType_Killed = 0;
+	k_eHeroCodexEntryStatType_WinsPlayingAsHero = 1;
+	k_eHeroCodexEntryStatType_WinsWith = 2;
+	k_eHeroCodexEntryStatType_LossesPlayingAsHero = 3;
+	k_eHeroCodexEntryStatType_LossesWith = 4;
+	k_eHeroCodexEntryStatType_TurboWinsPlayingAsHero = 5;
+	k_eHeroCodexEntryStatType_TurboWinsWith = 6;
+	k_eHeroCodexEntryStatType_TurboLossesPlayingAsHero = 7;
+	k_eHeroCodexEntryStatType_TurboLossesWith = 8;
+	k_eHeroCodexEntryStatType_Count = 9;
+}
+
+message CMsgMonsterHunterMaterialCount {
+	optional uint32 material_id = 1;
+	optional uint32 material_count = 2;
+}
+
+message CMsgMonsterHunterHeroCodexEntry {
+	repeated uint32 stats = 1;
+	optional bool unlocked = 2;
+}
+
+message CMsgMonsterHunterUserData {
+	message HeroCodexEntry {
+		optional int32 key = 1;
+		optional .CMsgMonsterHunterHeroCodexEntry value = 2;
+	}
+
+	optional .CMsgMonsterHunterMaterialQuantity material_inventory = 1;
+	repeated .CMsgMonsterHunterUserData.HeroCodexEntry hero_codex = 2;
+	optional int32 unlocked_count = 3;
+}
+
+message CMsgMonsterHunterMatchRewards {
+	message Player {
+		message HuntReward {
+			optional int32 hero_id = 1;
+			optional .CMsgMonsterHunterMaterialQuantity materials = 2;
+			optional bool success = 3;
+		}
+
+		optional uint32 player_slot = 1;
+		optional .CMsgMonsterHunterMaterialQuantity possible_match_reward_materials = 2;
+		optional .CMsgMonsterHunterMaterialQuantity actual_match_reward_materials = 3;
+		optional .CMsgMonsterHunterMatchRewards.Player.HuntReward hunt_reward = 4;
+		repeated .CMsgMonsterHunterMatchRewards.Player.HuntReward denial_rewards = 5;
+		optional bool hunter_duel = 6;
+	}
+
+	repeated .CMsgMonsterHunterMatchRewards.Player players = 1;
+}
+
+message CMsgClientToGCMonsterHunterGetUserData {
+}
+
+message CMsgClientToGCMonsterHunterGetUserDataResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+	}
+
+	optional .CMsgClientToGCMonsterHunterGetUserDataResponse.EResponse response = 1 [default = k_eInternalError];
+	optional .CMsgMonsterHunterUserData user_data = 2;
+}
+
+message CMsgGCToClientMonsterHunterUserDataUpdated {
+	optional .CMsgMonsterHunterUserData user_data = 1;
+}
+
+message CMsgClientToGCMonsterHunterClaimReward {
+	oneof RewardType {
+		uint32 item_id = 1;
+		uint32 hunter_rank_reward = 2;
+	}
+}
+
+message CMsgClientToGCMonsterHunterClaimRewardResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eRewardAlreadyClaimed = 5;
+		k_eNotEnoughMaterialsForReward = 6;
+		k_eNotEnoughResourceForReward = 7;
+		k_eRequiredHunterLevel = 8;
+		k_eDontHavePremium = 9;
+	}
+
+	optional .CMsgClientToGCMonsterHunterClaimRewardResponse.EResponse response = 1 [default = k_eInternalError];
+	optional .CMsgDOTAClaimEventActionResponse claim_response = 2;
+	optional .CMsgMonsterHunterMaterialQuantity materials_received = 3;
+}
+
+message CMsgMonsterHunterItemSet {
+	optional uint32 econ_item_id = 1;
+	optional uint32 set_index = 2;
+}
+
+message CMsgClientToGCMonsterHunterClaimSetReward {
+	repeated .CMsgMonsterHunterItemSet item_sets = 1;
+}
+
+message CMsgClientToGCMonsterHunterClaimSetRewardResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eRewardAlreadyClaimed = 5;
+		k_eNotEnoughMaterialsForReward = 6;
+		k_eDontHavePremium = 7;
+	}
+
+	optional .CMsgClientToGCMonsterHunterClaimSetRewardResponse.EResponse response = 1 [default = k_eInternalError];
+	repeated .CMsgDOTAClaimEventActionResponse claim_responses = 2;
+}
+
+message CMsgClientToGCMonsterHunterTradeMaterials {
+	optional .CMsgMonsterHunterMaterialQuantity material_offer = 1;
+	optional .CMsgMonsterHunterMaterialQuantity material_request = 2;
+	optional uint32 recipe_id = 3;
+}
+
+message CMsgClientToGCMonsterHunterTradeMaterialsResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eNotAllowed = 5;
+		k_eInvalidOffer = 6;
+		k_eNotEnoughMaterials = 7;
+		k_eRewardDoesNotMatchRecipe = 8;
+	}
+
+	optional .CMsgClientToGCMonsterHunterTradeMaterialsResponse.EResponse response = 1 [default = k_eInternalError];
+	optional .CMsgMonsterHunterMaterialQuantity materials_received = 2;
+}
+
+message CMsgClientToGCMonsterHunterGiftMaterials {
+	optional .CMsgMonsterHunterMaterialCount token_gift = 1;
+	optional uint32 recipient_account_id = 2;
+	optional uint32 periodic_resource_id = 3;
+}
+
+message CMsgClientToGCMonsterHunterGiftMaterialsResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eNotAllowed = 5;
+		k_eInvalidGift = 6;
+		k_eNotEnoughMaterials = 7;
+		k_eInvalidRecipient = 8;
+		k_eNotEnoughPeriodicResource = 9;
+	}
+
+	optional .CMsgClientToGCMonsterHunterGiftMaterialsResponse.EResponse response = 1 [default = k_eInternalError];
+}
+
+message CMsgClientToGCMonsterHunterRequestMaterialsNeededByFriend {
+	optional uint32 friend_account_id = 1;
+}
+
+message CMsgClientToGCMonsterHunterRequestMaterialsNeededByFriendResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eNotAllowed = 5;
+		k_eInvalidFriend = 6;
+		k_eTooManyRequests = 7;
+	}
+
+	optional .CMsgClientToGCMonsterHunterRequestMaterialsNeededByFriendResponse.EResponse response = 1 [default = k_eInternalError];
+	optional .CMsgMonsterHunterMaterialQuantity token_quantity = 2;
+}
+
+message CMsgClientToGCMonsterHunterDevResetAll {
+	optional bool reset_codex_only = 1;
+}
+
+message CMsgClientToGCMonsterHunterDevResetAllResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eNotAllowed = 5;
+	}
+
+	optional .CMsgClientToGCMonsterHunterDevResetAllResponse.EResponse response = 1 [default = k_eInternalError];
+}
+
+message CMsgClientToGCMonsterHunterDevGrantMaterials {
+	optional .CMsgMonsterHunterMaterialQuantity material_quantity = 1;
+}
+
+message CMsgClientToGCMonsterHunterDevGrantMaterialsResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eNotAllowed = 5;
+	}
+
+	optional .CMsgClientToGCMonsterHunterDevGrantMaterialsResponse.EResponse response = 1 [default = k_eInternalError];
+}
+
+message CMsgClientToGCMonsterHunterDevClearInventory {
+}
+
+message CMsgClientToGCMonsterHunterDevClearInventoryResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eNotAllowed = 5;
+	}
+
+	optional .CMsgClientToGCMonsterHunterDevClearInventoryResponse.EResponse response = 1 [default = k_eInternalError];
+}
+
+message CMsgClientToGCMonsterHunterDevClaimInvestigationRewards {
+	optional .CMsgMonsterHunterInvestigationGameState investigation_game_state = 1;
+	optional bool win = 2;
+}
+
+message CMsgClientToGCMonsterHunterDevClaimInvestigationRewardsResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eNotAllowed = 5;
+	}
+
+	optional .CMsgClientToGCMonsterHunterDevClaimInvestigationRewardsResponse.EResponse response = 1 [default = k_eInternalError];
+}
+
+message CMsgClientToGCMonsterHunterClaimCodexReward {
+	optional uint32 codex_id = 1;
+	optional uint32 reward = 2;
+}
+
+message CMsgClientToGCMonsterHunterClaimCodexRewardResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eNotAllowed = 5;
+		k_eAlreadyClaimed = 6;
+	}
+
+	optional .CMsgClientToGCMonsterHunterClaimCodexRewardResponse.EResponse response = 1 [default = k_eInternalError];
+	optional .CMsgDOTAClaimEventActionResponse claim_response = 2;
+}
+
+message CMsgDevModifyCodexAction {
+	enum EAction {
+		k_eClear = 0;
+		k_eAdd = 1;
+	}
+
+	optional uint32 codex_id = 1;
+	optional .EHeroCodexEntryStatType stat_type = 2 [default = k_eHeroCodexEntryStatType_Killed];
+	optional .CMsgDevModifyCodexAction.EAction action = 3 [default = k_eClear];
+}
+
+message CMsgClientToGCMonsterHunterDevModifyHeroCodex {
+	repeated .CMsgDevModifyCodexAction actions = 1;
+}
+
+message CMsgClientToGCMonsterHunterDevModifyHeroCodexResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eNotAllowed = 5;
+	}
+
+	optional .CMsgClientToGCMonsterHunterDevModifyHeroCodexResponse.EResponse response = 1 [default = k_eInternalError];
+}
+
+message CMsgClientToGCMonsterHunterFeedback {
+	optional uint32 language = 1;
+	optional string feedback = 2;
+}
+
+message CMsgClientToGCMonsterHunterFeedbackResponse {
+	enum EResponse {
+		k_eInternalError = 0;
+		k_eSuccess = 1;
+		k_eTooBusy = 2;
+		k_eDisabled = 3;
+		k_eTimeout = 4;
+		k_eNotAllowed = 5;
+	}
+
+	optional .CMsgClientToGCMonsterHunterFeedbackResponse.EResponse response = 1 [default = k_eInternalError];
+}

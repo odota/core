@@ -230,6 +230,7 @@ message CSODOTALobby {
 		EVENT_MATCH = 12;
 		NEW_PLAYER_POOL = 14;
 		FEATURED_GAMEMODE = 15;
+		AUTOMATED_BOT_ONLY_MATCH = 16;
 	}
 
 	optional uint64 lobby_id = 1 [(key_field) = true];

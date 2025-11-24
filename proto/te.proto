@@ -9,6 +9,8 @@ enum ETEProtobufIds {
 	TE_BeamRingId = 405;
 	TE_BubblesId = 408;
 	TE_BubbleTrailId = 409;
+	TE_DecalId = 410;
+	TE_WorldDecalId = 411;
 	TE_EnergySplashId = 412;
 	TE_FizzId = 413;
 	TE_ShatterSurfaceId = 414;
@@ -84,6 +86,14 @@ message CMsgTEBubbleTrail {
 	optional float waterz = 3;
 	optional uint32 count = 4;
 	optional float speed = 5;
+}
+
+message CMsgTEDecal {
+	optional .CMsgVector origin = 1;
+	optional .CMsgVector start = 2;
+	optional int32 entity = 3 [default = -1];
+	optional uint32 hitbox = 4;
+	optional uint32 index = 5;
 }
 
 message CMsgEffectData {
@@ -216,4 +226,10 @@ message CMsgTEPhysicsProp {
 message CMsgTESmoke {
 	optional .CMsgVector origin = 1;
 	optional float scale = 2;
+}
+
+message CMsgTEWorldDecal {
+	optional .CMsgVector origin = 1;
+	optional .CMsgVector normal = 2;
+	optional uint32 index = 3;
 }

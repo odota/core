@@ -123,6 +123,9 @@ enum EDotaClientMessages {
 	DOTA_CM_SuggestItemRefresh = 824;
 	DOTA_CM_SuggestItemVariantRequest = 825;
 	DOTA_CM_SuggestItemVariantSelect = 826;
+	DOTA_CM_MonsterHunter_SelectInvestigation = 827;
+	DOTA_CM_MonsterHunter_HuntAlert = 828;
+	DOTA_CM_AbilitySpecificChannelRequiresHalt = 829;
 }
 
 message CDOTAClientMsg_MapPing {
@@ -211,6 +214,12 @@ message CDOTAClientMsg_ChannelRequiresHalt {
 
 message CDOTAClientMsg_InteractionChannelsRequireHalt {
 	optional bool enabled = 1;
+}
+
+message CDOTAClientMsg_AbilitySpecificChannelRequiresHalt {
+	optional int32 ability_id = 1 [default = -1];
+	optional bool default = 2;
+	optional bool enabled = 3;
 }
 
 message CDOTAClientMsg_SearchString {
@@ -723,4 +732,13 @@ message CDOTAClientMsg_UpdateAutoCourierSettings {
 message CDOTAClientMsg_AutoCourierExecute {
 	optional int32 target_entindex = 1 [default = -1];
 	optional bool is_auto_deliver = 2;
+}
+
+message CDOTAClientMsg_MonsterHunter_SelectInvestigation {
+	optional uint32 investigation_index = 1;
+}
+
+message CDOTAClientMsg_MonsterHunter_HuntAlert {
+	optional uint32 investigation_state_index = 1;
+	optional bool ctrl_pressed = 2;
 }

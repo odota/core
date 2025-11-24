@@ -166,6 +166,9 @@ enum EDotaUserMessages {
 	DOTA_UM_TimerAlert = 628;
 	DOTA_UM_MadstoneAlert = 629;
 	DOTA_UM_CourierLeftFountainAlert = 630;
+	DOTA_UM_MonsterHunter_InvestigationsAvailable = 631;
+	DOTA_UM_MonsterHunter_InvestigationGameState = 632;
+	DOTA_UM_MonsterHunter_HuntAlert = 633;
 }
 
 enum DOTA_CHAT_MESSAGE {
@@ -495,6 +498,8 @@ message CDOTAUserMsg_CombatHeroPositions {
 }
 
 message CDOTAUserMsg_CombatLogBulkData {
+	option (maximum_size_bytes) = 0;
+
 	repeated .CMsgDOTACombatLogEntry combat_entries = 1;
 	optional float timestamp = 2;
 	optional float duration = 3;
@@ -1176,6 +1181,8 @@ message CDOTAUserMsg_StatsKillDetails {
 }
 
 message CDOTAUserMsg_StatsMatchDetails {
+	option (maximum_size_bytes) = 1000000;
+
 	message CDOTAUserMsg_StatsFightTeamDetails {
 		repeated int32 participants = 1;
 		repeated int32 deaths = 2;
@@ -1701,4 +1708,37 @@ message CDOTAUserMsg_MadstoneAlert {
 	optional int32 tier = 3;
 	optional .CDOTAUserMsg_MadstoneAlert.EMadstoneAlertType madstone_alert_type = 4 [default = CraftAvailable];
 	optional int32 value = 5;
+}
+
+message CDOTAUserMsg_MonsterHunter_InvestigationsAvailable {
+	repeated .CMsgMonsterHunterInvestigation investigations = 1;
+}
+
+message CDOTAUserMsg_MonsterHunter_InvestigationGameState {
+	optional .CMsgMonsterHunterInvestigationGameState investigation_game_state = 1;
+	optional bool investigations_locked = 2;
+}
+
+message CDOTAUserMsg_MonsterHunter_HuntAlert {
+	enum EHuntAlertType {
+		MainObjective = 0;
+		MainObjectiveAll = 1;
+		HuntedBy = 2;
+		HuntedByAll = 3;
+		HunterDuel = 4;
+		HunterDuelAll = 5;
+		HuntSelection = 6;
+	}
+
+	enum EHuntStatusType {
+		Pending = 0;
+		Success = 1;
+		Failed = 2;
+	}
+
+	optional int32 player_id = 1 [default = -1];
+	optional int32 hero_id = 2;
+	optional .CDOTAUserMsg_MonsterHunter_HuntAlert.EHuntAlertType hunt_alert_type = 3 [default = MainObjective];
+	optional .CDOTAUserMsg_MonsterHunter_HuntAlert.EHuntStatusType hunt_status_type = 4 [default = Pending];
+	optional int32 index = 5;
 }

@@ -1,6 +1,7 @@
 import "steammessages.proto";
 import "gcsdk_gcmessages.proto";
 import "dota_shared_enums.proto";
+import "networkbasetypes.proto";
 
 enum ESpecialPingValue {
 	k_ESpecialPingValue_NoData = 16382;
@@ -913,6 +914,8 @@ message CMsgLeagueWatchedGames {
 }
 
 message CMsgDOTAMatch {
+	option (maximum_size_bytes) = 4096;
+
 	message Player {
 		message CustomGameData {
 			optional uint32 dota_team = 1;
@@ -1747,6 +1750,15 @@ message CMsgDOTAClaimEventActionResponse {
 		}
 
 		repeated .CMsgDOTAClaimEventActionResponse.OverworldTokenRewardData.TokenQuantity tokens = 1;
+	}
+
+	message MonsterHunterMaterialRewardData {
+		message MaterialQuantity {
+			optional uint32 material_id = 1;
+			optional uint32 material_count = 2;
+		}
+
+		repeated .CMsgDOTAClaimEventActionResponse.MonsterHunterMaterialRewardData.MaterialQuantity materials = 1;
 	}
 
 	message GrantedRewardData {

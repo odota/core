@@ -82,10 +82,10 @@ message CMsgDotaScenario {
 
 	message DamageStatsByType {
 		optional int32 damage_type = 1;
-		optional int32 received_pre_reduction = 2;
-		optional int32 received_post_reduction = 3;
-		optional int32 outgoing_pre_reduction = 4;
-		optional int32 outgoing_post_reduction = 5;
+		optional float received_pre_reduction = 2;
+		optional float received_post_reduction = 3;
+		optional float outgoing_pre_reduction = 4;
+		optional float outgoing_post_reduction = 5;
 	}
 
 	message HeroAbility {
@@ -149,7 +149,7 @@ message CMsgDotaScenario {
 		optional int32 camps_stacked = 51;
 		optional int32 rune_pickups = 52;
 		optional int32 gold_spent_on_support = 53;
-		optional int32 hero_damage = 54;
+		optional float hero_damage = 54;
 		optional int32 wards_purchased = 55;
 		optional int32 wards_destroyed = 56;
 		optional int32 gold_spent_on_consumables = 58;

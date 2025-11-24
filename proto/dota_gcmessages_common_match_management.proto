@@ -140,6 +140,7 @@ message CSODOTAParty {
 	optional uint32 restricted_from_ranked_account_id = 75;
 	optional uint32 rank_spread_likert_scale = 76;
 	optional uint32 behavior_score_likert_scale = 77;
+	optional bool contains_required_playtester = 78;
 }
 
 message CSODOTAPartyInvite {

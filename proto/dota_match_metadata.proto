@@ -3,9 +3,11 @@ import "dota_gcmessages_common_match_management.proto";
 import "dota_gcmessages_common_lobby.proto";
 import "dota_gcmessages_common_overworld.proto";
 import "dota_gcmessages_common_craftworks.proto";
+import "dota_gcmessages_common_monster_hunter.proto";
 import "dota_gcmessages_common.proto";
 import "dota_shared_enums.proto";
 import "gcsdk_gcmessages.proto";
+import "networkbasetypes.proto";
 
 enum EPlayerInventorySnapshotFlags {
 	EPlayerInventorySnapshotFlags_HasScepter = 1;
@@ -13,6 +15,8 @@ enum EPlayerInventorySnapshotFlags {
 }
 
 message CDOTAMatchMetadataFile {
+	option (maximum_size_bytes) = 1000000;
+
 	required int32 version = 1;
 	required uint64 match_id = 2;
 	optional .CDOTAMatchMetadata metadata = 3;
@@ -229,6 +233,7 @@ message CDOTAMatchMetadata {
 			optional .CDOTAMatchMetadata.Team.Player.OverworldRewards overworld_rewards = 59;
 			repeated .CMsgCraftworksQuestReward craftworks_quest_rewards = 60;
 			optional int32 ad_facet_hero_id = 61;
+			optional .CMsgMonsterHunterMatchRewards.Player monster_hunter_rewards = 62;
 		}
 
 		optional uint32 dota_team = 1;

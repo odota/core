@@ -12,8 +12,8 @@ message CSubtickMoveStep {
 	optional float when = 3;
 	optional float analog_forward_delta = 4;
 	optional float analog_left_delta = 5;
-	optional float analog_pitch_delta = 6;
-	optional float analog_yaw_delta = 7;
+	optional float pitch_delta = 8;
+	optional float yaw_delta = 9;
 }
 
 message CBaseUserCmdPB {
