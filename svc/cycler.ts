@@ -31,7 +31,7 @@ runInLoop(async function cycler() {
   // Start with a base number for gcdata/rater reqs and add additional retrievers based on parser capacity
   // Each retriever handles about 1 req/sec so divide by the avg number of seconds per parse
   // const count = Math.ceil((await getCapacity()) / 12) + 5;
-  const zone = zones[i];
+  const zone = zones[i % zones.length];
   i += 1;
   const options = {
     name: 'retriever-' + process.hrtime.bigint(),
