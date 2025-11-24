@@ -196,7 +196,6 @@ export async function buildStatus(isAdmin: boolean) {
         web_crash_last_day: async () => getRedisCountDay('web_crash'),
         secondary_scanner_last_day: async () =>
           getRedisCountDay('secondary_scanner'),
-        skip_seq_num_last_day: async () => getRedisCountDay('skip_seq_num'),
       };
       return parallelPromise<Record<string, number>>(counts);
     },
