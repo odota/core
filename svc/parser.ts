@@ -27,13 +27,12 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
   let apiTime = 0;
   let gcTime = 0;
   let parseTime = 0;
-  console.log(metadata);
   try {
     redisCount('parser_job');
     redis.publish(
       String(metadata.jobId),
       c.blue(
-        `Starting parse job [id: ${metadata.jobId}] after ${Date.now() - Number(metadata.timestamp)}ms`,
+        `Starting parse job [id: ${metadata.jobId}] after waiting ${Date.now() - Number(metadata.timestamp)}ms`,
       ),
     );
     const matchId = job.match_id;

@@ -159,14 +159,6 @@ export async function addReliableJob(
     );
     redis.publish('queue', message);
   }
-  if (job && name === 'parse') {
-    redis.publish(
-      String(job.id),
-      c.magenta(
-        `Queued parse job for match ${data.match_id} [id: ${job.id}] [priority: ${job.priority}]`,
-      ),
-    );
-  }
   return job;
 }
 
