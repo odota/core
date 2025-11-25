@@ -215,7 +215,7 @@ app.post('/register/:service/:host', async (req, res, next) => {
   return res.end();
 });
 
-app.get('/logs/:jobId', (req, res) => {
+app.get('/logs/{:jobId}', (req, res) => {
   let logSub = new Redis(config.REDIS_URL);
   if (req.params.jobId) {
     logSub.subscribe(req.params.jobId);
