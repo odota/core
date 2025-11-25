@@ -159,7 +159,7 @@ export async function addReliableJob(
     );
     redis.publish('queue', message);
   }
-  if (name === 'parse') {
+  if (job && name === 'parse') {
     redis.publish(
       String(job.id),
       c.magenta(

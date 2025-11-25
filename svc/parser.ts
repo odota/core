@@ -27,6 +27,7 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
   let apiTime = 0;
   let gcTime = 0;
   let parseTime = 0;
+  console.log(metadata);
   try {
     redisCount('parser_job');
     redis.publish(
@@ -74,7 +75,7 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
     apiTime = Date.now() - apiStart;
     redis.publish(
       String(metadata.jobId),
-      c.blue(`Fetched API data in ${apiTime}ms`),
+      c.green(`Fetched API data in ${apiTime}ms`),
     );
 
     const { leagueid, duration, start_time } = apiMatch;
@@ -108,7 +109,7 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
     gcTime = Date.now() - gcStart;
     redis.publish(
       String(metadata.jobId),
-      c.blue(`Fetched replay data in ${gcTime}ms`),
+      c.green(`Fetched replay data in ${gcTime}ms`),
     );
     let url = buildReplayUrl(
       gcMatch.match_id,
@@ -133,7 +134,7 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
     parseTime = Date.now() - parseStart;
     redis.publish(
       String(metadata.jobId),
-      c.blue(`Parsed replay in ${parseTime}ms`),
+      c.green(`Parsed replay in ${parseTime}ms`),
     );
 
     // Reconcile if last attempt (no more retries) or skipped or successful parse
