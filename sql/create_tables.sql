@@ -465,11 +465,21 @@ CREATE TABLE IF NOT EXISTS player_computed_mmr(
 );
 CREATE INDEX IF NOT EXISTS player_computed_mmr_computed_mmr_idx ON player_computed_mmr(computed_mmr);
 
+CREATE TABLE IF NOT EXISTS player_computed_mmr_turbo(
+  PRIMARY KEY(account_id),
+  account_id bigint,
+  computed_mmr real,
+  delta real,
+  match_id bigint
+);
+CREATE INDEX IF NOT EXISTS player_computed_mmr_turbo_computed_mmr_idx ON player_computed_mmr_turbo(computed_mmr);
+
 CREATE TABLE IF NOT EXISTS rating_queue(
   PRIMARY KEY(match_seq_num),
   match_seq_num bigint,
   match_id bigint,
-  radiant_win boolean
+  radiant_win boolean,
+  game_mode int
 );
 
 CREATE TABLE IF NOT EXISTS league_match(

@@ -1,7 +1,7 @@
 import { gcFetcher } from './fetcher/allFetchers.ts';
 import db from './store/db.ts';
 import { redisCount } from './store/redis.ts';
-import { average, isRadiant, runInLoop } from './util/utility.ts';
+import { average, isRadiant, isTurbo, runInLoop } from './util/utility.ts';
 
 const DEFAULT_RATING = 4000;
 const kFactor = 50;
@@ -12,9 +12,10 @@ runInLoop(async function rate() {
       match_seq_num: number;
       match_id: number;
       radiant_win: boolean;
+      game_mode: number;
     }[];
   }>(
-    'SELECT match_seq_num, match_id, radiant_win from rating_queue order by match_seq_num ASC LIMIT 1',
+    'SELECT match_seq_num, match_id, radiant_win, game_mode from rating_queue order by match_seq_num ASC LIMIT 1',
   );
   const row = rows[0];
   if (!row) {
@@ -38,10 +39,12 @@ runInLoop(async function rate() {
     );
     return;
   }
+  const turbo = isTurbo(row);
+  const tableName = turbo ? 'player_computed_mmr_turbo' : 'player_computed_mmr';
   const { rows: existingRatings } = await db.raw<{
     rows: { account_id: number; computed_mmr: number }[];
   }>(
-    `SELECT account_id, computed_mmr FROM player_computed_mmr WHERE account_id IN (${accountIds.map((_) => '?').join(',')})`,
+    `SELECT account_id, computed_mmr FROM ${tableName} WHERE account_id IN (${accountIds.map((_) => '?').join(',')})`,
     [...accountIds],
   );
   const ratingMap = new Map<number, number>();
@@ -87,7 +90,7 @@ runInLoop(async function rate() {
     );
     // Write ratings back to players
     await trx.raw(
-      'INSERT INTO player_computed_mmr(account_id, computed_mmr, delta, match_id) VALUES(?, ?, ?, ?) ON CONFLICT(account_id) DO UPDATE SET computed_mmr = EXCLUDED.computed_mmr, delta = EXCLUDED.delta, match_id = EXCLUDED.match_id',
+      `INSERT INTO ${tableName}(account_id, computed_mmr, delta, match_id) VALUES(?, ?, ?, ?) ON CONFLICT(account_id) DO UPDATE SET computed_mmr = EXCLUDED.computed_mmr, delta = EXCLUDED.delta, match_id = EXCLUDED.match_id`,
       [p.account_id, newRating, delta, row.match_id],
     );
   }

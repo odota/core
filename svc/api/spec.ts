@@ -262,7 +262,12 @@ You can use the API without a key, but registering for a key allows increased ra
             // 404 error
             return next();
           }
-          const [rt, lr, cr] = await Promise.all([
+          const [
+            rankTier,
+            leaderboardRank,
+            computedRating,
+            computedRatingTurbo,
+          ] = await Promise.all([
             db.first().from('rank_tier').where({ account_id: accountId }),
             db
               .first()
@@ -272,12 +277,17 @@ You can use the API without a key, but registering for a key allows increased ra
               .first()
               .from('player_computed_mmr')
               .where({ account_id: accountId }),
+            db
+              .first()
+              .from('player_computed_mmr_turbo')
+              .where({ account_id: accountId }),
           ]);
           const result = {
             profile: playerData,
-            rank_tier: rt?.rating ?? null,
-            leaderboard_rank: lr?.rating ?? null,
-            computed_mmr: cr?.computed_mmr ?? null,
+            rank_tier: rankTier?.rating ?? null,
+            leaderboard_rank: leaderboardRank?.rating ?? null,
+            computed_mmr: computedRating?.computed_mmr ?? null,
+            computed_mmr_turbo: computedRatingTurbo?.computed_mmr ?? null,
           };
           return res.json(result);
         },
@@ -973,7 +983,17 @@ You can use the API without a key, but registering for a key allows increased ra
         summary: 'GET /topPlayers',
         description: 'Get list of highly ranked players',
         tags: ['top players'],
-        parameters: [],
+        parameters: [
+          {
+            name: 'turbo',
+            in: 'query',
+            description: 'Get ratings based on turbo matches',
+            required: false,
+            schema: {
+              type: 'integer',
+            },
+          },
+        ],
         responses: {
           200: {
             description: 'Success',
@@ -991,25 +1011,25 @@ You can use the API without a key, but registering for a key allows increased ra
         },
         route: () => '/topPlayers',
         func: async (req, res, next) => {
+          const turbo = Boolean(req.query.turbo);
+          const tableName = turbo
+            ? 'player_computed_mmr_turbo'
+            : 'player_computed_mmr';
           const result = await db
             .select([
               '*',
               'players.account_id as account_id',
               'rank_tier.rating as rank_tier',
             ])
-            .from('player_computed_mmr')
-            .join(
-              'players',
-              'players.account_id',
-              'player_computed_mmr.account_id',
-            )
+            .from(tableName)
+            .join('players', 'players.account_id', `${tableName}.account_id`)
             .leftJoin(
               'notable_players',
               'players.account_id',
               'notable_players.account_id',
             )
             .leftJoin('rank_tier', 'players.account_id', 'rank_tier.account_id')
-            .orderBy('player_computed_mmr.computed_mmr', 'desc')
+            .orderBy(`${tableName}.computed_mmr`, 'desc')
             .limit(100);
           return res.json(result);
         },

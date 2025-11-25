@@ -318,8 +318,12 @@ export function isProMatch(match: ApiData) {
   );
 }
 
-export function isTurbo(match: ApiData | Match) {
+export function isTurbo(match: { game_mode: number }) {
   return match.game_mode === 23;
+}
+
+export function isRanked(match: { lobby_type: number }) {
+  return match.lobby_type === 7;
 }
 
 /**

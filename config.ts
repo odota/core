@@ -66,6 +66,7 @@ const defaults = {
   BENCHMARK_RETENTION_MINUTES: '60', // minutes in block to retain benchmark data for percentile
   GCDATA_PERCENT: '0', // percent of inserted matches to randomly queue for GC data
   RATING_PERCENT: '0', // percent of ranked matches to update player ratings with
+  RATING_PERCENT_TURBO: '0', // percent of turbo matches to update player ratings with
   SCANNER_PERCENT: '100', // percent of matches to insert from scanner
   PUBLIC_SAMPLE_PERCENT: '10', // percent of public matches to sample in DB
   SCENARIOS_SAMPLE_PERCENT: '100', // percent of parsed matches to sample for scenarios

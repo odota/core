@@ -19,6 +19,7 @@ import {
   getStartOfBlockMinutes,
   getEndOfWeek,
   isTurbo,
+  isRanked,
 } from './utility.ts';
 import {
   getMatchRankTier,
@@ -509,7 +510,7 @@ export async function insertMatch(
     }
 
     async function updateRecords() {
-      if (isSignificant(match) && match.lobby_type === 7) {
+      if (isSignificant(match) && isRanked(match)) {
         updateRecord('duration', {} as ApiDataPlayer);
         match.players.forEach((player) => {
           updateRecord('kills', player);
@@ -757,7 +758,7 @@ function updateMatchups(match) {
         options.origin === 'scanner' &&
           options.type === 'api' &&
           'lobby_type' in match &&
-          match.lobby_type === 7 &&
+          isRanked(match) &&
           p.account_id &&
           p.account_id !== getAnonymousAccountId() &&
           config.ENABLE_RANDOM_MMR_UPDATE,
@@ -805,13 +806,20 @@ function updateMatchups(match) {
     if (
       options.origin === 'scanner' &&
       options.type === 'api' &&
-      'lobby_type' in match &&
-      match.lobby_type === 7 &&
-      match.match_id % 100 < Number(config.RATING_PERCENT)
+      'match_seq_num' in match &&
+      ((isRanked(match) &&
+        match.match_id % 100 < Number(config.RATING_PERCENT)) ||
+        (isTurbo(match) &&
+          match.match_id % 100 < Number(config.RATING_PERCENT_TURBO)))
     ) {
       await trx.raw(
-        'INSERT INTO rating_queue(match_seq_num, match_id, radiant_win) VALUES(?, ?, ?) ON CONFLICT DO NOTHING',
-        [match.match_seq_num, match.match_id, match.radiant_win],
+        'INSERT INTO rating_queue(match_seq_num, match_id, radiant_win, game_mode) VALUES(?, ?, ?, ?) ON CONFLICT DO NOTHING',
+        [
+          match.match_seq_num,
+          match.match_id,
+          match.radiant_win,
+          match.game_mode,
+        ],
       );
       await addReliableJob(
         {
