@@ -184,7 +184,7 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
     redis.publish('parsed', message);
     redis.publish(
       String(metadata.jobId),
-      `${type}: [${end - start}ms] ${displayMsg ?? ''}`,
+      c[colors[type]](`${type}: [${end - start}ms] ${displayMsg ?? ''}`),
     );
     console.log(message);
     if (type === 'fail') {
