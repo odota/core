@@ -11,7 +11,6 @@ import passportSteam from 'passport-steam';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import { Redis } from 'ioredis';
-import { WebSocketServer, WebSocket } from 'ws';
 import keys from './api/keyManagement.ts';
 import api from './api/api.ts';
 import db, { upsertPlayer } from './store/db.ts';
@@ -214,6 +213,30 @@ app.post('/register/:service/:host', async (req, res, next) => {
     return res.send(result.toString());
   }
   return res.end();
+});
+
+app.get('/logs/:jobId', (req, res) => {
+  let logSub = new Redis(config.REDIS_URL);
+  if (req.params.jobId) {
+    logSub.subscribe(req.params.jobId);
+  } else {
+    logSub.subscribe('api', 'parsed', 'gcdata', 'queue');
+  }
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    Connection: 'keep-alive',
+  });
+  const messageHandler = (channel: string, message: string) => {
+    // Write as a Server Sent Event
+    res.write('data: ' + message + '\n\n');
+  };
+  logSub.on('message', messageHandler);
+  req.on('end', () => {
+    // Client disconnected, shut down the subscribe
+    logSub.off('message', messageHandler);
+    logSub.disconnect();
+  });
 });
 
 // Compress everything after this
@@ -470,24 +493,6 @@ app.use(
 const port = config.PORT || config.FRONTEND_PORT;
 const server = app.listen(port, () => {
   console.log('[WEB] listening on %s', port);
-});
-
-// Websocket server for log streaming
-const wss = new WebSocketServer({ server });
-// wss.on('connection', (socket, request) => {
-//   // Parse the query params for channels to sub to
-//   // request.url
-// });
-const logSub = new Redis(config.REDIS_URL);
-logSub.subscribe('api', 'parsed', 'gcdata', 'queue');
-logSub.on('message', (channel: string, message: string) => {
-  // Emit it to all the connected websockets
-  // TODO let the user choose channels to sub to via query params?
-  wss.clients.forEach((client: WebSocket) => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(message);
-    }
-  });
 });
 
 process.on('exit', (code) => {

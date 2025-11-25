@@ -86,6 +86,7 @@ export async function runReliableQueue(
             priority: job.priority,
             attempts: job.attempts,
             timestamp: job.timestamp,
+            jobId: job.id,
             i,
           });
           // If the processor returns true or out of attempts, it's successful and we should delete the job and then commit
@@ -157,6 +158,14 @@ export async function addReliableJob(
       }`,
     );
     redis.publish('queue', message);
+  }
+  if (name === 'parse') {
+    redis.publish(
+      String(job.id),
+      c.magenta(
+        `Queued parse job for match ${data.match_id} [id: ${job.id}] [priority: ${job.priority}]`,
+      ),
+    );
   }
   return job;
 }

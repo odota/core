@@ -343,6 +343,7 @@ type JobMetadata = {
   attempts: number;
   timestamp: Date;
   priority: number;
+  jobId: number;
   i: number;
 };
 
