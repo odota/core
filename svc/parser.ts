@@ -31,7 +31,7 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
     redisCount('parser_job');
     redis.publish(
       String(metadata.jobId),
-      c.blue(
+      c.magenta(
         `Starting [job: ${metadata.jobId}] [match: ${job.match_id}] after ${Date.now() - Number(metadata.timestamp)}ms`,
       ),
     );
