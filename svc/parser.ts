@@ -32,7 +32,7 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
     redis.publish(
       String(metadata.jobId),
       c.blue(
-        `Starting parse job [id: ${metadata.jobId}] after waiting ${Date.now() - Number(metadata.timestamp)}ms`,
+        `Starting [job: ${metadata.jobId}] [match: ${job.match_id}] after ${Date.now() - Number(metadata.timestamp)}ms`,
       ),
     );
     const matchId = job.match_id;
@@ -184,7 +184,9 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
     redis.publish('parsed', message);
     redis.publish(
       String(metadata.jobId),
-      c[colors[type]](`${type}: [${end - start}ms] ${displayMsg ?? ''}`),
+      c[colors[type]](`[${type}] Finished [job: ${metadata.jobId}] [match: ${
+        job.match_id
+      }] in ${end - start}ms ${displayMsg ?? ''}`),
     );
     console.log(message);
     if (type === 'fail') {
