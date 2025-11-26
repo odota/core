@@ -32,6 +32,7 @@ import cassandra, { getCassandraColumns } from '../store/cassandra.ts';
 import { computeMatchData } from './compute.ts';
 import { benchmarks } from './benchmarksUtil.ts';
 import type knex from 'knex';
+import { PRIORITY } from './priority.ts';
 
 moment.relativeTimeThreshold('ss', 0);
 
@@ -839,6 +840,8 @@ function updateMatchups(match) {
   async function queueScenarios() {
     // Decide if we want to do scenarios (requires parsed match)
     // Only if it originated from scanner to avoid triggering on requests
+    // NOTE: This chooses from all matches that were auto-parsed, so not a random sample
+    // If we want to random sample then we need to mark those matches for scenarios prior to parsing
     if (
       options.origin === 'scanner' &&
       options.type === 'parsed' &&
@@ -882,12 +885,13 @@ function updateMatchups(match) {
     const doParse = hasTrackedPlayer || isLeagueMatch;
     if (doParse) {
       redisCount('auto_parse');
-      let priority = 5;
+      // By default, lower priority than requests
+      let priority = PRIORITY.AUTO_DEFAULT;
       if (isLeagueMatch) {
-        priority = -1;
+        priority = PRIORITY.AUTO_LEAGUE;
       }
       if (hasTrackedPlayer) {
-        priority = -2;
+        priority = PRIORITY.AUTO_TRACKED_PLAYER;
       }
       // We might have to retry since it might be too soon for the replay
       let attempts = 50;

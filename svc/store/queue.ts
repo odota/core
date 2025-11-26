@@ -143,7 +143,7 @@ export async function addReliableJob(
       new Date(),
       options.attempts || 1,
       JSON.stringify(data),
-      new Date(),
+      new Date(Date.now() + (options.delayMs ?? 0)),
       options.priority ?? 0,
     ],
   );

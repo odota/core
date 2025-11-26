@@ -90,6 +90,7 @@ import TeamHeroesResponse from './responses/TeamHeroesResponse.ts';
 import TeamMatchObjectResponse from './responses/TeamMatchObjectResponse.ts';
 import TeamObjectResponse from './responses/TeamObjectResponse.ts';
 import TeamPlayersResponse from './responses/TeamPlayersResponse.ts';
+import { PRIORITY } from '../util/priority.ts';
 
 const parameters = {
   ...heroParams,
@@ -1538,28 +1539,31 @@ You can use the API without a key, but registering for a key allows increased ra
           // Count this request
           redisCount('request');
           redisCountDistinct('distinct_request', matchId);
-          let priority = 1;
+          let priority = PRIORITY.REQUEST_DEFAULT;
           let numAttempts = 1;
+          let delayMs = 0;
           if (req.query.api_key) {
-            priority = 1;
+            priority = PRIORITY.REQUEST_API_KEY;
             redisCount('request_api_key');
+          }
+          if (req.headers.origin === config.UI_HOST) {
+            // Give UI requests higher priority
+            priority = PRIORITY.REQUEST_UI;
+            redisCount('request_ui');
+            // Delay the job 1s to give UI time to connect to logs
+            delayMs = 1000;
           }
           // if (await checkIsParsed(Number(matchId))) {
           //   // Deprioritize reparsing already parsed matches
-          //   priority = 9;
+          //   priority = PRIORITY.REQUEST_ALREADY_PARSED;
           // }
-          if (req.headers.origin === config.UI_HOST) {
-            // Give UI requests priority
-            priority = 0;
-            redisCount('request_ui');
-          }
-          if (
-            req.user?.account_id &&
-            (await isSubscriber(req.user.account_id))
-          ) {
-            // Give subscribers higher parse priority
-            priority = -9;
-          }
+          // if (
+          //   req.user?.account_id &&
+          //   (await isSubscriber(req.user.account_id))
+          // ) {
+          //   // Give subscribers higher parse priority
+          //   priority = PRIORITY_REQUEST_SUBSCRIBER;
+          // }
           const parseJob = await addReliableJob(
             {
               name: 'parse',
@@ -1568,6 +1572,7 @@ You can use the API without a key, but registering for a key allows increased ra
             {
               attempts: numAttempts,
               priority,
+              delayMs,
             },
           );
           return res.json({

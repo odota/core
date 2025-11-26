@@ -353,6 +353,7 @@ type ReliableQueueOptions = {
   priority?: number;
   caller?: string;
   trx?: Knex;
+  delayMs?: number;
 };
 
 type ProPlayer = {
