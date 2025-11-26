@@ -1,5 +1,4 @@
 import config, { fetchConfig } from '../config.ts';
-import redis from './store/redis.ts';
 import axios from 'axios';
 import { runInLoop, shuffle } from './util/utility.ts';
 
