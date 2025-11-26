@@ -1,8 +1,8 @@
 /**
  * File managing configuration for the application
  * */
-import { loadEnvFile } from 'node:process';
 import fs from 'node:fs';
+import dotenv from 'dotenv';
 
 await fetchConfig();
 
@@ -24,12 +24,14 @@ export async function fetchConfig(force?: boolean) {
       }
     }
   }
-  try {
-    loadEnvFile();
-  } catch (e) {
-    console.log(e);
+  // Also loads values into process.env
+  const result = dotenv.config();
+  
+  if (!result.parsed) {
+    throw new Error('failed to parse config');
   }
-  return process.env;
+
+  return result.parsed;
 }
 
 const defaults = {
