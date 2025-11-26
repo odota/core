@@ -56,7 +56,7 @@
     "pm2": "^6.0.14",
     "protobufjs": "^7.5.4",
     "steam-user-odota": "^5.2.11",
-    "stripe": "^9.16.0",
+    "stripe": "^20.0.0",
     "vdf-parser": "^1.2.1"
   },
   "devDependencies": {
