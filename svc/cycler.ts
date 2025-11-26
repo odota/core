@@ -24,8 +24,9 @@ runInLoop(async function cycler() {
     !GOOGLE_CLOUD_RETRIEVER_TEMPLATE ||
     !RETRIEVER_MIN_UPTIME
   ) {
-    throw new Error('[CYCLER] missing required GCE config');
+    throw new Error('[CYCLER] missing required config');
   }
+  console.log(CYCLER_COUNT, RETRIEVER_MIN_UPTIME, GOOGLE_CLOUD_RETRIEVER_TEMPLATE);
   const lifetime = Number(RETRIEVER_MIN_UPTIME);
   const count = Number(CYCLER_COUNT);
   // Start with a base number for gcdata/rater reqs and add additional retrievers based on parser capacity
@@ -70,11 +71,4 @@ async function getToken() {
   );
   const token = tokenResponse.data.access_token;
   return token;
-}
-
-async function getCapacity() {
-  if (config.USE_SERVICE_REGISTRY) {
-    return redis.zcard('registry:parser');
-  }
-  return Number(config.PARSER_PARALLELISM);
 }
