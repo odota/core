@@ -2,6 +2,25 @@
  * Entry point for the application.
  * */
 import cp from 'node:child_process';
+import fs from 'node:fs';
+
+if (!fs.existsSync('.env')) {
+  if (process.env.PROVIDER === 'gce') {
+    const resp = await fetch(
+      'http://metadata.google.internal/computeMetadata/v1/project/attributes/env',
+      {
+        headers: {
+          'Metadata-Flavor': 'Google',
+        },
+      },
+    );
+    if (resp.ok) {
+      fs.writeFileSync('.env', await resp.text());
+    } else {
+      throw new Error('failed to download config');
+    }
+  }
+}
 
 if (process.env.ROLE) {
   // if role variable is set just run that script

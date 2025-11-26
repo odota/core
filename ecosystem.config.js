@@ -2,7 +2,6 @@
  * PM2 configuration file
  */
 import 'dotenv/config';
-import os from 'node:os';
 
 const dev = process.env.NODE_ENV === 'development';
 const prod = process.env.NODE_ENV === 'production';

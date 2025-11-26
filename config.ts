@@ -2,36 +2,10 @@
  * File managing configuration for the application
  * */
 import fs from 'node:fs';
-import dotenv from 'dotenv';
+import { loadEnvFile } from 'node:process';
 
-await fetchConfig();
-
-export async function fetchConfig(force?: boolean) {
-  if (force || !fs.existsSync('/usr/src/.env')) {
-    if (process.env.PROVIDER === 'gce') {
-      const resp = await fetch(
-        'http://metadata.google.internal/computeMetadata/v1/project/attributes/env',
-        {
-          headers: {
-            'Metadata-Flavor': 'Google',
-          },
-        },
-      );
-      if (resp.ok) {
-        fs.writeFileSync('/usr/src/.env', await resp.text());
-      } else {
-        throw new Error('failed to load config');
-      }
-    }
-  }
-  // Also loads values into process.env
-  const result = dotenv.config();
-  
-  if (!result.parsed) {
-    throw new Error('failed to parse config');
-  }
-
-  return result.parsed;
+if (fs.existsSync('.env')) {
+  loadEnvFile();
 }
 
 const defaults = {

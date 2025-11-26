@@ -1,5 +1,8 @@
-import config, { fetchConfig } from '../config.ts';
+import config from '../config.ts';
 import axios from 'axios';
+import dotenv from 'dotenv';
+import fs from 'node:fs';
+import cp from 'node:child_process';
 import { runInLoop, shuffle } from './util/utility.ts';
 
 const zonesResponse = await axios.get(
@@ -12,10 +15,15 @@ shuffle(zones);
 let i = 0;
 
 runInLoop(async function cycler() {
-  // Reload the config on each run
-  const { CYCLER_COUNT, RETRIEVER_MIN_UPTIME, GOOGLE_CLOUD_RETRIEVER_TEMPLATE } = await fetchConfig(true);
+  // Download config on each run so we can update without restarting
+  cp.execSync('npm run gceconfig');
   // We have to use the output of dotenv parse to get updated values because pm2 caches process.env
   // https://github.com/Unitech/pm2/issues/3192
+  const {
+    CYCLER_COUNT,
+    RETRIEVER_MIN_UPTIME,
+    GOOGLE_CLOUD_RETRIEVER_TEMPLATE,
+  } = dotenv.parse(fs.readFileSync('.env'));
   if (
     !config.GOOGLE_CLOUD_PROJECT_ID ||
     !GOOGLE_CLOUD_RETRIEVER_TEMPLATE ||
@@ -23,7 +31,11 @@ runInLoop(async function cycler() {
   ) {
     throw new Error('[CYCLER] missing required config');
   }
-  console.log(CYCLER_COUNT, RETRIEVER_MIN_UPTIME, GOOGLE_CLOUD_RETRIEVER_TEMPLATE);
+  console.log(
+    CYCLER_COUNT,
+    RETRIEVER_MIN_UPTIME,
+    GOOGLE_CLOUD_RETRIEVER_TEMPLATE,
+  );
   const lifetime = Number(RETRIEVER_MIN_UPTIME);
   const count = Number(CYCLER_COUNT);
   // Start with a base number for gcdata/rater reqs and add additional retrievers based on parser capacity
