@@ -228,6 +228,7 @@ export async function buildStatus(isAdmin: boolean) {
     },
     retrieverCounts: async () => {
       if (isAdmin) {
+        const numRetrieverData = await redis.scard('retrieverDataSet');
         return {
           countReqs: ips.map((e) => e.reqs).reduce((a, b) => a + b, 0),
           countSuccess: ips.map((e) => e.success).reduce((a, b) => a + b, 0),
@@ -251,6 +252,7 @@ export async function buildStatus(isAdmin: boolean) {
           gceIps: ips.filter((e) => isGce(e)).length,
           nonGceIps: ips.filter((e) => !isGce(e)).length,
           numSteamIds: steamids.length,
+          numRetrieverData,
         };
       }
       return {} as Record<string, number>;
