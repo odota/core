@@ -274,7 +274,7 @@ export async function insertMatch(
       const ratingDiff1 = kFactor * (win1 - e1);
       const ratingDiff2 = kFactor * (win2 - e2);
       const query = `INSERT INTO team_rating(team_id, rating, wins, losses, last_match_time, delta, match_id) VALUES(?, ?, ?, ?, ?, ?, ?)
-          ON CONFLICT(team_id) DO UPDATE SET team_id=team_rating.team_id, rating=team_rating.rating + ?, wins=team_rating.wins + ?, losses=team_rating.losses + ?, last_match_time=?`;
+          ON CONFLICT(team_id) DO UPDATE SET team_id=team_rating.team_id, rating=team_rating.rating + ?, wins=team_rating.wins + ?, losses=team_rating.losses + ?, last_match_time=?, delta=?, match_id=?`;
       await trx.raw(query, [
         team1,
         currRating1 + ratingDiff1,
