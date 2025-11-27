@@ -273,7 +273,7 @@ export async function insertMatch(
       const win2 = Number(!team1Win);
       const ratingDiff1 = kFactor * (win1 - e1);
       const ratingDiff2 = kFactor * (win2 - e2);
-      const query = `INSERT INTO team_rating(team_id, rating, wins, losses, last_match_time) VALUES(?, ?, ?, ?, ?)
+      const query = `INSERT INTO team_rating(team_id, rating, wins, losses, last_match_time, delta, match_id) VALUES(?, ?, ?, ?, ?, ?, ?)
           ON CONFLICT(team_id) DO UPDATE SET team_id=team_rating.team_id, rating=team_rating.rating + ?, wins=team_rating.wins + ?, losses=team_rating.losses + ?, last_match_time=?`;
       await trx.raw(query, [
         team1,
@@ -282,9 +282,14 @@ export async function insertMatch(
         Number(!win1),
         match.start_time,
         ratingDiff1,
+        match.match_id,
+        // after conflict
+        ratingDiff1,
         win1,
         Number(!win1),
         match.start_time,
+        ratingDiff1,
+        match.match_id,
       ]);
       await trx.raw(query, [
         team2,
@@ -293,9 +298,14 @@ export async function insertMatch(
         Number(!win2),
         match.start_time,
         ratingDiff2,
+        match.match_id,
+        // after conflict
+        ratingDiff2,
         win2,
         Number(!win2),
         match.start_time,
+        ratingDiff2,
+        match.match_id,
       ]);
     }
   }

@@ -344,7 +344,9 @@ CREATE TABLE IF NOT EXISTS team_rating (
   rating real,
   wins int,
   losses int,
-  last_match_time bigint
+  last_match_time bigint,
+  delta real,
+  match_id bigint
 );
 CREATE INDEX IF NOT EXISTS team_rating_rating_idx ON team_rating(rating);
 
