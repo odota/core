@@ -1,11 +1,12 @@
 /**
  * File managing configuration for the application
  * */
-import fs from 'node:fs';
 import { loadEnvFile } from 'node:process';
 
-if (fs.existsSync('.env')) {
+try {
   loadEnvFile();
+} catch (e) {
+  console.log(e);
 }
 
 const defaults = {
