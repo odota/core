@@ -424,7 +424,6 @@ export async function insertMatch(
     if (options.origin === 'scanner' && options.type === 'api') {
       await updateHeroRankings();
       await upsertMatchSample();
-      await updateHeroSearch();
       await updateLastPlayed();
       await updateRecords();
       await updateHeroCounts(isProTier);
@@ -476,16 +475,8 @@ export async function insertMatch(
 
     async function upsertMatchSample() {
       if (
-        isSignificant(match) &&
         match.match_id % 100 < Number(config.PUBLIC_SAMPLE_PERCENT)
       ) {
-        if (!avg || !num) {
-          return;
-        }
-        const matchMmrData = {
-          avg_rank_tier: avg ?? null,
-          num_rank_tier: num ?? null,
-        };
         const radiant_team = match.players
           .filter((p) => isRadiant(p))
           .map((p) => p.hero_id);
@@ -494,7 +485,8 @@ export async function insertMatch(
           .map((p) => p.hero_id);
         const newMatch = {
           ...match,
-          ...matchMmrData,
+          avg_rank_tier: avg ?? null,
+          num_rank_tier: num ?? null,
           radiant_team,
           dire_team,
         };
@@ -553,41 +545,6 @@ export async function insertMatch(
             fh_unavailable: false,
           }),
         ),
-      );
-    }
-
-    /**
-     * Update table storing heroes played in a game for lookup of games by heroes played
-     * */
-    async function updateHeroSearch() {
-      const radiant = [];
-      const dire = [];
-      for (let i = 0; i < match.players.length; i += 1) {
-        const p = match.players[i];
-        if (p.hero_id === 0) {
-          // exclude this match if any hero is 0
-          return;
-        }
-        if (isRadiant(p)) {
-          radiant.push(p.hero_id);
-        } else {
-          dire.push(p.hero_id);
-        }
-      }
-      // Turn the arrays into strings
-      // const rcg = groupToString(radiant);
-      // const dcg = groupToString(dire);
-      // Always store the team whose string representation comes first (as teamA)
-      // This lets us only search in one order when we do a query
-      // Currently disabled because this doesn't work if the query is performed with a subset
-      // const inverted = rcg > dcg;
-      const inverted = false;
-      const teamA = inverted ? dire : radiant;
-      const teamB = inverted ? radiant : dire;
-      const teamAWin = inverted ? !match.radiant_win : match.radiant_win;
-      await trx.raw(
-        'INSERT INTO hero_search (match_id, teamA, teamB, teamAWin, start_time) VALUES (?, ?, ?, ?, ?) ON CONFLICT DO NOTHING',
-        [match.match_id, teamA, teamB, teamAWin, match.start_time],
       );
     }
 

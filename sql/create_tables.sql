@@ -337,6 +337,8 @@ CREATE TABLE IF NOT EXISTS public_matches (
 );
 CREATE INDEX IF NOT EXISTS public_matches_start_time_idx on public_matches(start_time);
 CREATE INDEX IF NOT EXISTS public_matches_avg_rank_tier_idx on public_matches(avg_rank_tier) WHERE avg_rank_tier IS NOT NULL;
+CREATE INDEX IF NOT EXISTS public_matches_radiant_team_idx_gin ON public_matches USING GIN(radiant_team);
+CREATE INDEX IF NOT EXISTS public_matches_dire_team_idx_gin ON public_matches USING GIN(dire_team);
 
 CREATE TABLE IF NOT EXISTS team_rating (
   PRIMARY KEY(team_id),
@@ -387,7 +389,6 @@ CREATE TABLE IF NOT EXISTS rank_tier (
   account_id bigint,
   rating int
 );
-CREATE INDEX IF NOT EXISTS rank_tier_rating_idx ON rank_tier(rating);
 
 CREATE TABLE IF NOT EXISTS leaderboard_rank (
   PRIMARY KEY (account_id),
@@ -416,17 +417,6 @@ CREATE TABLE IF NOT EXISTS team_scenarios (
   epoch_week integer,
   UNIQUE (scenario, is_radiant, region, epoch_week)
 );
-
-CREATE TABLE IF NOT EXISTS hero_search (
-  PRIMARY KEY (match_id),
-  match_id bigint,
-  teamA int[],
-  teamB int[],
-  teamAWin boolean,
-  start_time int
-);
-CREATE INDEX IF NOT EXISTS hero_search_teamA_idx_gin ON hero_search USING GIN(teamA);
-CREATE INDEX IF NOT EXISTS hero_search_teamB_idx_gin ON hero_search USING GIN(teamB);
 
 CREATE TABLE IF NOT EXISTS parsed_matches (
   PRIMARY KEY (match_id),
