@@ -12,13 +12,12 @@ import ProtoBuf from 'protobufjs';
 
 const steamObj: Record<string, SteamUser> = {};
 
-const minUpTimeSeconds = Number(config.RETRIEVER_MIN_UPTIME);
 const numAccounts = Number(config.RETRIEVER_NUM_ACCOUNTS);
 const matchesPerAccount = 100;
 const accountAttemptMax = 5;
 const matchRequestInterval = Math.max(
   1000 / numAccounts,
-  (minUpTimeSeconds / (numAccounts * matchesPerAccount)) * 1000,
+  250,
 );
 const port = config.PORT || config.RETRIEVER_PORT;
 const noneReady = () =>
@@ -61,12 +60,11 @@ const CMsgGCMatchDetailsResponse = builder.lookupType(
 setInterval(() => {
   const shouldRestart =
     matchRequests >= Object.keys(steamObj).length * matchesPerAccount ||
-    matchRequests - matchSuccesses > matchesPerAccount ||
     noneReady();
   if (
-    shouldRestart &&
     config.NODE_ENV !== 'development' &&
-    getUptime() > minUpTimeSeconds
+    shouldRestart &&
+    getUptime() > 60
   ) {
     return selfDestruct();
   }
