@@ -1654,7 +1654,7 @@ You can use the API without a key, but registering for a key allows increased ra
           const teamA = inverted ? t1 : t0;
           const teamB = inverted ? t0 : t1;
           const { rows } = await db.raw(
-            'select * from public_matches where (radiant_team @> ? AND dire_team @> ?) OR (radiant_team @> ? AND dire_team @> ?) order by match_id desc limit 10',
+            'select match_id, radiant_team as teamA, dire_team as teamB, radiant_win as teamAWin, start_time from public_matches where (radiant_team @> ? AND dire_team @> ?) OR (radiant_team @> ? AND dire_team @> ?) order by match_id desc limit 10',
             [teamA, teamB, teamB, teamA],
           );
           redis.setex(key, 60, JSON.stringify(rows));
