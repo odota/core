@@ -98,7 +98,7 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
           pgroup,
           origin: job.origin,
         },
-        1000,
+        250,
       );
     if (!gcMatch) {
       // non-retryable error

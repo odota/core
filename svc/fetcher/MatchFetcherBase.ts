@@ -69,7 +69,6 @@ export abstract class MatchFetcherBase<T> {
         break;
       }
       if (!data) {
-        await new Promise((resolve) => setTimeout(resolve, retryDelay));
         tryCount += 1;
         console.log(
           'matchId %s, error %s, attempt %s',
@@ -77,6 +76,7 @@ export abstract class MatchFetcherBase<T> {
           error,
           tryCount,
         );
+        await new Promise((resolve) => setTimeout(resolve, retryDelay));
       }
     }
     return { data, error };

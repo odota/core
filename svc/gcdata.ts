@@ -23,7 +23,7 @@ async function processGcData(job: GcDataJob) {
     {
       pgroup,
     },
-    500,
+    250,
   );
   if (gcMatch) {
     await redisCount('gcdata');
