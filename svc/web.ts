@@ -230,6 +230,8 @@ app.get('/logs{/:jobId}', (req, res) => {
   const messageHandler = (channel: string, message: string) => {
     // Write as a Server Sent Event
     res.write('data: ' + message + '\n\n');
+    // Flush needed when using with compression
+    res.flush();
   };
   logSub.on('message', messageHandler);
   req.once('close', () => {
