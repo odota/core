@@ -149,11 +149,11 @@ app.use(session(sessOptions));
 app.use(passport.initialize());
 app.use(passport.session());
 
-// req.body available after this
-app.use(bodyParser.json());
-
 // This is for passing the IP through if behind load balancer https://expressjs.com/en/guide/behind-proxies.html
-app.set('trust proxy', true);
+// app.set('trust proxy', true);
+
+// Compress everything after this
+app.use(compression());
 
 // CORS headers
 // All endpoints accessed from UI should be after this
@@ -232,15 +232,12 @@ app.get('/logs{/:jobId}', (req, res) => {
     res.write('data: ' + message + '\n\n');
   };
   logSub.on('message', messageHandler);
-  req.on('end', () => {
+  req.once('close', () => {
     // Client disconnected, shut down the subscribe
     logSub.off('message', messageHandler);
     logSub.disconnect();
   });
 });
-
-// Compress everything after this
-app.use(compression());
 
 app.get('/retrieverData', async (req, res, next) => {
   // check secret matches
@@ -321,6 +318,9 @@ app.get('/logout', (req, res) => {
   }
   return res.redirect('/api');
 });
+
+// req.body available after this
+app.use(bodyParser.json());
 
 app.get('/subscribeSuccess', async (req, res, next) => {
   if (!req.query.session_id) {
