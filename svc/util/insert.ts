@@ -474,9 +474,7 @@ export async function insertMatch(
     }
 
     async function upsertMatchSample() {
-      if (
-        match.match_id % 100 < Number(config.PUBLIC_SAMPLE_PERCENT)
-      ) {
+      if (match.match_id % 100 < Number(config.PUBLIC_SAMPLE_PERCENT)) {
         const radiant_team = match.players
           .filter((p) => isRadiant(p))
           .map((p) => p.hero_id);
@@ -724,12 +722,12 @@ function updateMatchups(match) {
     const arr = match.players.filter<ApiDataPlayer>((p): p is ApiDataPlayer => {
       return Boolean(
         options.origin === 'scanner' &&
-          options.type === 'api' &&
-          'lobby_type' in match &&
-          isRanked(match) &&
-          p.account_id &&
-          p.account_id !== getAnonymousAccountId() &&
-          config.ENABLE_RANDOM_MMR_UPDATE,
+        options.type === 'api' &&
+        'lobby_type' in match &&
+        isRanked(match) &&
+        p.account_id &&
+        p.account_id !== getAnonymousAccountId() &&
+        config.ENABLE_RANDOM_MMR_UPDATE,
       );
     });
     await Promise.all(

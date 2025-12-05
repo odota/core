@@ -1,8 +1,7 @@
 const { insertMatch } = await import('../svc/util/insert.ts');
 const { db } = await import('../svc/store/db.ts');
-const { SteamAPIUrls, getSteamAPIData, isProMatch } = await import(
-  '../svc/util/utility.ts'
-);
+const { SteamAPIUrls, getSteamAPIData, isProMatch } =
+  await import('../svc/util/utility.ts');
 
 // From DB
 const { rows } = await db.raw(

@@ -1,7 +1,6 @@
 import fs from 'node:fs';
-const { getPlayerMatchesWithMetadata } = await import(
-  '../svc/util/buildPlayer.ts'
-);
+const { getPlayerMatchesWithMetadata } =
+  await import('../svc/util/buildPlayer.ts');
 
 // Write player blob to archive
 // await processPlayerMatches(88367253);

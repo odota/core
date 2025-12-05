@@ -289,13 +289,12 @@ type LobbyType = keyof typeof lobby_type;
 export function isSignificant(match: Match | ApiData) {
   return Boolean(
     game_mode[match.game_mode as unknown as GameMode]?.balanced &&
-      lobby_type[match.lobby_type as unknown as LobbyType]?.balanced &&
-      match.radiant_win != null &&
-      match.duration > 360 &&
-      (match.players || []).every(
-        (player) =>
-          (player.gold_per_min || 0) <= 9999 && Boolean(player.hero_id),
-      ),
+    lobby_type[match.lobby_type as unknown as LobbyType]?.balanced &&
+    match.radiant_win != null &&
+    match.duration > 360 &&
+    (match.players || []).every(
+      (player) => (player.gold_per_min || 0) <= 9999 && Boolean(player.hero_id),
+    ),
   );
 }
 /**
@@ -304,17 +303,17 @@ export function isSignificant(match: Match | ApiData) {
 export function isProMatch(match: ApiData) {
   return Boolean(
     isSignificant(match) &&
-      match.leagueid &&
-      match.human_players === 10 &&
-      (match.game_mode === 0 ||
-        match.game_mode === 1 ||
-        match.game_mode === 2 ||
-        // This is all pick but should only be for testing
-        match.game_mode === 22) &&
-      match.players &&
-      match.players.every((player) => player.level > 1) &&
-      match.players.every((player) => player.xp_per_min > 0) &&
-      match.players.every((player) => player.hero_id > 0),
+    match.leagueid &&
+    match.human_players === 10 &&
+    (match.game_mode === 0 ||
+      match.game_mode === 1 ||
+      match.game_mode === 2 ||
+      // This is all pick but should only be for testing
+      match.game_mode === 22) &&
+    match.players &&
+    match.players.every((player) => player.level > 1) &&
+    match.players.every((player) => player.xp_per_min > 0) &&
+    match.players.every((player) => player.hero_id > 0),
   );
 }
 
@@ -909,15 +908,15 @@ export function isDataComplete(match: Partial<ParsedMatch>) {
   // Check for fields from API, gcdata, parse
   return Boolean(
     match &&
-      match.replay_salt &&
-      match.start_time &&
-      match.version &&
-      match.chat &&
-      match.players?.[0]?.hero_damage &&
-      // Some players may not have upgrades (DCed or never upgraded abilities), so check all slots
-      // If it's ability upgrade expired data none of the players will have it
-      // Looks like some ability draft matches also don't have this data (not sure if present in source)
-      match.players?.some((p) => p.ability_upgrades_arr),
+    match.replay_salt &&
+    match.start_time &&
+    match.version &&
+    match.chat &&
+    match.players?.[0]?.hero_damage &&
+    // Some players may not have upgrades (DCed or never upgraded abilities), so check all slots
+    // If it's ability upgrade expired data none of the players will have it
+    // Looks like some ability draft matches also don't have this data (not sure if present in source)
+    match.players?.some((p) => p.ability_upgrades_arr),
   );
 }
 
