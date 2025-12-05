@@ -2,7 +2,7 @@ import config from '../config.ts';
 import axios from 'axios';
 import dotenv from 'dotenv';
 import fs from 'node:fs';
-import cp from 'node:child_process';
+import { execSync } from 'node:child_process';
 import { runInLoop, shuffle } from './util/utility.ts';
 
 const zonesResponse = await axios.get(
@@ -16,7 +16,7 @@ let i = 0;
 
 runInLoop(async function cycler() {
   // Download config on each run so we can update without restarting
-  cp.execSync('npm run gceconfig');
+  execSync('npm run gceconfig');
   // We have to use the output of dotenv parse to get updated values because pm2 caches process.env
   // https://github.com/Unitech/pm2/issues/3192
   const {

@@ -1,7 +1,7 @@
 /**
  * Entry point for the application.
  * */
-import cp from 'node:child_process';
+import { execSync } from 'node:child_process';
 import fs from 'node:fs';
 
 if (!fs.existsSync('.env')) {
@@ -27,10 +27,10 @@ if (process.env.ROLE) {
   import('./svc/' + process.env.ROLE + '.ts');
 } else if (process.env.GROUP) {
   console.log('running group %s', process.env.GROUP);
-  cp.execSync('pm2 start ecosystem.config.js');
+  execSync('pm2 start ecosystem.config.js');
   setInterval(
     () => {
-      cp.execSync('pm2 flush');
+      execSync('pm2 flush');
     },
     24 * 60 * 60 * 1000,
   );
