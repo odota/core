@@ -77,10 +77,8 @@ export const SteamAPIUrls = {
     `${apiUrl}/IDOTA2Teams_570/GetTeamInfo/v1/?key=${apiKey}&team_id=${payload.team_id}`,
   api_item_schema: () =>
     `${apiUrl}/IEconItems_570/GetSchemaURL/v1?key=${apiKey}`,
-  api_top_live_game: () =>
-    `${apiUrl}/IDOTA2Match_570/GetTopLiveGame/v1/?key=${apiKey}&partner=${
-      Math.random() < 0.5 ? '1' : '2'
-    }`,
+  api_top_live_game: (payload: { partner: number }) =>
+    `${apiUrl}/IDOTA2Match_570/GetTopLiveGame/v1/?key=${apiKey}&partner=${payload.partner}`,
   api_realtime_stats: (payload: { server_steam_id: string }) =>
     `${apiUrl}/IDOTA2MatchStats_570/GetRealtimeStats/v1?key=${apiKey}&server_steam_id=${payload.server_steam_id}`,
   api_team_info_by_team_id: (payload: { start_at_team_id: number }) =>
