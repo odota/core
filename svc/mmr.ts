@@ -34,20 +34,19 @@ runQueue(
       [plus, data.account_id, plus],
     );
 
-    // Insert into history if different from current value
-    // NOTE: This is a read-then-insert and might insert twice if the same player is processed in parallel
-    await db.raw(
-      'INSERT INTO rank_tier_history(account_id, time, rank_tier) SELECT ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM rank_tier WHERE account_id = ? AND rating = ?)',
-      [
-        data.account_id,
-        new Date(),
-        data.rank_tier,
-        data.account_id,
-        data.rank_tier,
-      ],
-    );
-
     if (data.rank_tier) {
+      // Insert into history if different from current value
+      // NOTE: This is a read-then-insert and might insert twice if the same player is processed in parallel
+      await db.raw(
+        'INSERT INTO rank_tier_history(account_id, time, rank_tier) SELECT ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM rank_tier WHERE account_id = ? AND rating = ?)',
+        [
+          data.account_id,
+          new Date(),
+          data.rank_tier,
+          data.account_id,
+          data.rank_tier,
+        ],
+      );
       await db.raw(
         'INSERT INTO rank_tier(account_id, rating) VALUES (?, ?) ON CONFLICT(account_id) DO UPDATE SET rating = EXCLUDED.rating',
         [data.account_id, data.rank_tier],
