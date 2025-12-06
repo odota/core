@@ -49,13 +49,13 @@ runQueue(
 
     if (data.rank_tier) {
       await db.raw(
-        'INSERT INTO rank_tier(account_id, rating) VALUES (?, ?) ON CONFLICT DO UPDATE SET rating = EXCLUDED.rating',
+        'INSERT INTO rank_tier(account_id, rating) VALUES (?, ?) ON CONFLICT(account_id) DO UPDATE SET rating = EXCLUDED.rating',
         [data.account_id, data.rank_tier],
       );
     }
     if (data.leaderboard_rank) {
       await db.raw(
-        'INSERT INTO leaderboard_rank(account_id, rating) VALUES (?, ?) ON CONFLICT DO UPDATE SET rating = EXCLUDED.rating',
+        'INSERT INTO leaderboard_rank(account_id, rating) VALUES (?, ?) ON CONFLICT(account_id) DO UPDATE SET rating = EXCLUDED.rating',
         [data.account_id, data.leaderboard_rank],
       );
     }
