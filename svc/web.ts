@@ -119,7 +119,7 @@ const onResFinish = async (
   await redisCountHash('api_paths', req.method + ' ' + normPath);
   await redisCountHash('api_status', String(res.statusCode));
   if (req.headers.origin) {
-    await redisCountHash('api_origin', req.headers.origin);
+    await redisCountHash('api_origins', req.headers.origin);
   }
   if (req.user && req.user.account_id) {
     await redis.zadd('visitors', moment.utc().format('X'), req.user.account_id);

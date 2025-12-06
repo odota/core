@@ -213,6 +213,15 @@ export async function buildStatus(isAdmin: boolean) {
       // Sorting won't do anything here because JS always puts numeric keys in numeric order
       return result;
     },
+    api_origins: async () => {
+      const result = await getRedisCountDayHash('api_origins');
+      const sorted = Object.entries(result).sort((a, b) => b[1] - a[1]);
+      const final: Record<string, number> = {};
+      sorted.forEach(([k, v]) => {
+        final[k] = v;
+      });
+      return final;
+    },
     load_times: async () => {
       const arr = await redis.lrange('load_times', 0, -1);
       return generatePercentiles(arr ?? []);
