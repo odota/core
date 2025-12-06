@@ -7,9 +7,7 @@ import { buildMatch } from '../util/buildMatch.ts';
 import { getPlayerMatches } from '../util/buildPlayer.ts';
 import {
   countPeers,
-  getPatchIndex,
   isRadiant,
-  matchupToString,
   mergeObjects,
   queryParamToArray,
 } from '../util/utility.ts';
@@ -43,7 +41,6 @@ import {
   getProPeers,
   getTeamScenarios,
   getItemTimings,
-  isSubscriber,
   search,
 } from '../util/queries.ts';
 import heroParams from './requests/heroParams.ts';
@@ -91,6 +88,8 @@ import TeamMatchObjectResponse from './responses/TeamMatchObjectResponse.ts';
 import TeamObjectResponse from './responses/TeamObjectResponse.ts';
 import TeamPlayersResponse from './responses/TeamPlayersResponse.ts';
 import { PRIORITY } from '../util/priority.ts';
+import { getPatchIndex } from '../util/compute.ts';
+import { matchupToString } from '../util/matchups.ts';
 
 const parameters = {
   ...heroParams,
@@ -869,7 +868,8 @@ You can use the API without a key, but registering for a key allows increased ra
           '/players/{account_id}/ratings',
         ),
         summary: 'GET /players/{account_id}/ratings',
-        description: 'Returns a history of the player rank tier/medal changes (replaces MMR)',
+        description:
+          'Returns a history of the player rank tier/medal changes (replaces MMR)',
         tags: ['players'],
         parameters: [{ $ref: '#/components/parameters/accountIdParam' }],
         responses: {

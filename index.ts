@@ -4,7 +4,7 @@
 import { execSync } from 'node:child_process';
 import fs from 'node:fs';
 
-if (!fs.existsSync('.env')) {
+if (!fs.existsSync('.env') || process.env.GROUP) {
   if (process.env.PROVIDER === 'gce') {
     const resp = await fetch(
       'http://metadata.google.internal/computeMetadata/v1/project/attributes/env',

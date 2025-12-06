@@ -9,17 +9,9 @@ import redis, { redisCount } from '../store/redis.ts';
 import {
   getAnonymousAccountId,
   serialize,
-  isProMatch,
-  getLaneFromPosData,
   isRadiant,
-  getPatchIndex,
-  transformMatch,
-  createMatchCopy,
-  isSignificant,
-  getStartOfBlockMinutes,
-  getEndOfWeek,
-  isTurbo,
   isRanked,
+  isTurbo,
 } from './utility.ts';
 import {
   getMatchRankTier,
@@ -29,10 +21,19 @@ import {
 import { getPGroup } from './pgroup.ts';
 import { blobArchive } from '../store/archive.ts';
 import cassandra, { getCassandraColumns } from '../store/cassandra.ts';
-import { computeMatchData } from './compute.ts';
+import {
+  computeMatchData,
+  createMatchCopy,
+  getLaneFromPosData,
+  getPatchIndex,
+  isProMatch,
+  isSignificant,
+  transformMatch,
+} from './compute.ts';
 import { benchmarks } from './benchmarksUtil.ts';
 import type knex from 'knex';
 import { PRIORITY } from './priority.ts';
+import { getEndOfWeek, getStartOfBlockMinutes } from './time.ts';
 
 moment.relativeTimeThreshold('ss', 0);
 

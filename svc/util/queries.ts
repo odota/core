@@ -6,7 +6,6 @@ import redis from '../store/redis.ts';
 import { benchmarks } from './benchmarksUtil.ts';
 import type { Request } from 'express';
 import {
-  getStartOfBlockMinutes,
   countItemPopularity,
   getAnonymousAccountId,
   isContributor,
@@ -15,6 +14,7 @@ import {
 } from './utility.ts';
 import contributors from '../../CONTRIBUTORS.ts';
 import moment from 'moment';
+import { getStartOfBlockMinutes } from './time.ts';
 
 export async function getDistributions() {
   const result: AnyDict = {};

@@ -1,7 +1,5 @@
 #!/bin/bash
 
-curl -sSL https://get.docker.com/ | sh
-
 sudo mkdir /mnt/disks/es-1
 sudo mount -o discard,defaults /dev/disk/by-id/google-disk-elasticsearch-1 /mnt/disks/es-1
 sudo chown 1000:1000 -R /mnt/disks/es-1

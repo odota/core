@@ -2,17 +2,16 @@
 import JSONbig from 'json-bigint';
 import redis from './store/redis.ts';
 import db from './store/db.ts';
-import {
-  SteamAPIUrls,
-  getSteamAPIDataWithRetry,
-  runInLoop,
-} from './util/utility.ts';
+import { runInLoop } from './util/utility.ts';
+import { getSteamAPIDataWithRetry, SteamAPIUrls } from './util/http.ts';
 
 runInLoop(async function liveGames() {
   // Get the list of pro players
   const proPlayers: ProPlayer[] = await db.select().from('notable_players');
   // Get the list of live games
-  const url = SteamAPIUrls.api_top_live_game({ partner: Math.random() < 0.5 ? 1 : 2 });
+  const url = SteamAPIUrls.api_top_live_game({
+    partner: Math.random() < 0.5 ? 1 : 2,
+  });
   const body = await getSteamAPIDataWithRetry<string>({ url, raw: true });
   const json: TopLiveGames = JSONbig.parse(body);
   // If a match contains a pro player

@@ -1,4 +1,3 @@
-import { SteamAPIUrls, getSteamAPIDataWithRetry } from '../util/utility.ts';
 import { blobArchive } from '../store/archive.ts';
 import { MatchFetcherBase } from './MatchFetcherBase.ts';
 import { insertMatch } from '../util/insert.ts';
@@ -6,6 +5,7 @@ import { config } from '../../config.ts';
 import db from '../store/db.ts';
 import { GcdataFetcher } from './GcdataFetcher.ts';
 import { redisCount } from '../store/redis.ts';
+import { SteamAPIUrls, getSteamAPIDataWithRetry } from '../util/http.ts';
 
 const gcFetcher = new GcdataFetcher();
 

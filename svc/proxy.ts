@@ -2,9 +2,8 @@
 import httpProxy from 'http-proxy';
 import http from 'node:http';
 import config from '../config.ts';
-import child_process from 'node:child_process';
-import axios from 'axios';
 import os from 'node:os';
+
 const { PORT, PROXY_PORT } = config;
 const port = PORT || PROXY_PORT;
 const proxy = httpProxy.createProxyServer({
@@ -22,14 +21,16 @@ console.log('listening on port %s', port);
 if (config.SERVICE_REGISTRY_HOST) {
   let ip = os.networkInterfaces()?.eth0?.[0]?.address;
   if (config.EXTERNAL) {
-    ip = child_process
-      .spawnSync(`curl ${config.SERVICE_REGISTRY_HOST}/ip`)
-      .stdout.toString();
+    const resp = await fetch(`${config.SERVICE_REGISTRY_HOST}/ip`);
+    if (!resp.ok) {
+      throw new Error('resp not ok');
+    }
+    ip = await resp.text();
   }
   setInterval(() => {
     // Re-register ourselves as available
     const registerUrl = `https://${config.SERVICE_REGISTRY_HOST}/register/proxy/${ip}?key=${config.RETRIEVER_SECRET}`;
     console.log('registerUrl: %s', registerUrl);
-    axios.post(registerUrl);
+    fetch(registerUrl, { method: 'POST' });
   }, 5000);
 }

@@ -1,12 +1,20 @@
-import { heroes, cluster, ancients } from 'dotaconstants';
 import {
-  getLaneFromPosData,
-  getPatchIndex,
+  heroes,
+  cluster,
+  ancients,
+  game_mode,
+  lobby_type,
+  patch,
+} from 'dotaconstants';
+import {
+  getAnonymousAccountId,
   isRadiant,
   max,
   min,
+  modeWithCount,
   tokenize,
 } from './utility.ts';
+import laneMappings from './laneMappings.ts';
 
 /**
  * Count the words that occur in a set of messages
@@ -44,6 +52,7 @@ export function countWords(
   // return the final counts
   return Object.fromEntries(counts.entries());
 }
+
 /**
  * Computes additional properties from a match/player_match
  * */
@@ -240,4 +249,146 @@ export function computeMatchData(pm: ParsedPlayerMatch) {
   if (pm.life_state) {
     pm.life_state_dead = (pm.life_state[1] || 0) + (pm.life_state[2] || 0);
   }
+}
+
+/**
+ * Determines if a match is significant for aggregation purposes
+ * */
+export function isSignificant(match: Match | ApiData) {
+  return Boolean(
+    game_mode[String(match.game_mode) as keyof typeof game_mode]?.balanced &&
+    lobby_type[String(match.lobby_type) as keyof typeof lobby_type]?.balanced &&
+    match.radiant_win != null &&
+    match.duration > 360 &&
+    (match.players || []).every(
+      (player) => (player.gold_per_min || 0) <= 9999 && Boolean(player.hero_id),
+    ),
+  );
+}
+
+/**
+ * Determines if a match is a pro match
+ * */
+export function isProMatch(match: ApiData) {
+  return Boolean(
+    isSignificant(match) &&
+    match.leagueid &&
+    match.human_players === 10 &&
+    (match.game_mode === 0 ||
+      match.game_mode === 1 ||
+      match.game_mode === 2 ||
+      // This is all pick but should only be for testing
+      match.game_mode === 22) &&
+    match.players &&
+    match.players.every((player) => player.level > 1) &&
+    match.players.every((player) => player.xp_per_min > 0) &&
+    match.players.every((player) => player.hero_id > 0),
+  );
+}
+
+/**
+ * Gets the patch ID given a unix start time
+ * */
+export function getPatchIndex(startTime: number) {
+  const date = new Date(startTime * 1000);
+  let i;
+  for (i = 1; i < patch.length; i += 1) {
+    const pd = new Date(patch[i].date);
+    // stop when patch date is past the start time
+    if (pd > date) {
+      break;
+    }
+  }
+  // use the value of i before the break, started at 1 to avoid negative index
+  return i - 1;
+}
+
+/**
+ * Computes the lane a hero is in based on an input hash of positions
+ * */
+export function getLaneFromPosData(
+  lanePos: Record<string, NumberDict>,
+  isRadiant: boolean,
+) {
+  // compute lanes
+  const lanes: number[] = [];
+  // iterate over the position hash and get the lane bucket for each data point
+  Object.keys(lanePos).forEach((x) => {
+    Object.keys(lanePos[x]).forEach((y) => {
+      const val = lanePos[x][y];
+      const adjX = Number(x) - 64;
+      const adjY = 128 - (Number(y) - 64);
+      // Add it N times to the array
+      for (let i = 0; i < val; i += 1) {
+        if (laneMappings[adjY] && laneMappings[adjY][adjX]) {
+          lanes.push(laneMappings[adjY][adjX]);
+        }
+      }
+    });
+  });
+  const { mode: lane, count } = modeWithCount(lanes);
+  /**
+   * Player presence on lane. Calculated by the count of the prominant
+   * lane (`count` of mode) divided by the presence on all lanes (`lanes.length`).
+   * Having low presence (<45%) probably means the player is roaming.
+   * */
+  const isRoaming = (count ?? 0) / lanes.length < 0.45;
+  // Roles, currently doesn't distinguish between carry/support in safelane
+  // 1 safelane
+  // 2 mid
+  // 3 offlane
+  // 4 jungle
+  const laneRoles = {
+    // bot
+    1: isRadiant ? 1 : 3,
+    // mid
+    2: 2,
+    // top
+    3: isRadiant ? 3 : 1,
+    // radiant jungle
+    4: 4,
+    // dire jungle
+    5: 4,
+  };
+  return {
+    lane,
+    lane_role: laneRoles[lane as keyof typeof laneRoles],
+    is_roaming: isRoaming,
+  };
+}
+
+export function transformMatch(
+  origMatch: Readonly<InsertMatchInput>,
+): Readonly<InsertMatchInput> {
+  return {
+    ...origMatch,
+    players: origMatch.players.map((p) => {
+      const newP = { ...p } as Partial<ApiDataPlayer>;
+      if (newP.account_id === getAnonymousAccountId()) {
+        // don't insert anonymous account id
+        delete newP.account_id;
+      }
+      if (newP.ability_upgrades) {
+        // Reduce the ability upgrades info into ability_upgrades_arr (just an array of numbers)
+        newP.ability_upgrades_arr = newP.ability_upgrades.map(
+          (au: any) => au.ability,
+        );
+        delete newP.ability_upgrades;
+      }
+      delete newP.scaled_hero_damage;
+      delete newP.scaled_tower_damage;
+      delete newP.scaled_hero_healing;
+      // We can keep scepter/shard/moonshard from API and then we're not as reliant on permanent_buffs from GC
+      // delete p.aghanims_scepter;
+      // delete p.aghanims_shard;
+      // delete p.moonshard;
+      return newP as any;
+    }),
+  };
+}
+
+export function createMatchCopy<T>(match: any): T {
+  // Makes a deep copy of the original match
+  const copy = JSON.parse(JSON.stringify(match));
+  return copy;
 }

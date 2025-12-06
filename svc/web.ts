@@ -20,10 +20,10 @@ import redis, {
   redisCountHash,
 } from './store/redis.ts';
 import config from '../config.ts';
-import { getEndOfDay, getStartOfBlockMinutes } from './util/utility.ts';
 import stripe from './store/stripe.ts';
 import axios from 'axios';
 import { buildStatus } from './util/buildStatus.ts';
+import { getEndOfDay, getStartOfBlockMinutes } from './util/time.ts';
 
 const admins = config.ADMIN_ACCOUNT_IDS.split(',').map((e) => Number(e));
 const SteamStrategy = passportSteam.Strategy;

@@ -2,9 +2,9 @@
 import { runQueue } from './store/queue.ts';
 import db from './store/db.ts';
 import config from '../config.ts';
-import { getRandomRetrieverUrl } from './util/utility.ts';
 import axios from 'axios';
 import { redisCount } from './store/redis.ts';
+import { getRandomRetrieverUrl } from './util/registry.ts';
 
 runQueue(
   'mmrQueue',

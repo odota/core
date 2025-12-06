@@ -1,10 +1,10 @@
-import { getRandomParserUrl } from '../util/utility.ts';
 import { blobArchive } from '../store/archive.ts';
 import db from '../store/db.ts';
 import { insertMatch } from '../util/insert.ts';
 import axios from 'axios';
 import { MatchFetcherBase } from './MatchFetcherBase.ts';
 import config from '../../config.ts';
+import { getRandomParserUrl } from '../util/registry.ts';
 
 export class ParsedFetcher extends MatchFetcherBase<ParsedData> {
   savedDataMetricName: MetricName = 'reparse';

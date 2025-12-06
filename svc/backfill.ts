@@ -1,13 +1,10 @@
 // Fetches old matches from Steam API and writes to blob storage
 import { blobArchive } from './store/archive.ts';
-import {
-  SteamAPIUrls,
-  getSteamAPIDataWithRetry,
-  transformMatch,
-  runInLoop,
-} from './util/utility.ts';
+import { runInLoop } from './util/utility.ts';
 import fs from 'node:fs';
 import redis from './store/redis.ts';
+import { SteamAPIUrls, getSteamAPIDataWithRetry } from './util/http.ts';
+import { transformMatch } from './util/compute.ts';
 
 // following need to be set
 // STEAM_API_KEY

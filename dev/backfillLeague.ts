@@ -3,7 +3,7 @@
 // Can fetch up to 500 matches per league
 // We might have more than 500 in some pro leagues? can query existing matches table for that
 import db from '../svc/store/db.ts';
-import { getSteamAPIDataWithRetry, SteamAPIUrls } from '../svc/util/utility.ts';
+import { getSteamAPIDataWithRetry, SteamAPIUrls } from '../svc/util/http.ts';
 
 // Backfill from steam API
 let { rows } = await db.raw(

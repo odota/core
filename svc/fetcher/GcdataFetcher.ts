@@ -1,12 +1,12 @@
 import type { AxiosResponse } from 'axios';
 import db from '../store/db.ts';
-import { getRandomRetrieverUrl } from '../util/utility.ts';
 import axios from 'axios';
 import { insertMatch } from '../util/insert.ts';
 import { blobArchive } from '../store/archive.ts';
 import { MatchFetcherBase } from './MatchFetcherBase.ts';
 import config from '../../config.ts';
 import { redisCount, redisCountHash } from '../store/redis.ts';
+import { getRandomRetrieverUrl } from '../util/registry.ts';
 
 export class GcdataFetcher extends MatchFetcherBase<GcData> {
   savedDataMetricName: MetricName = 'regcdata';

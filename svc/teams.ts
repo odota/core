@@ -1,13 +1,13 @@
 // Updates the list of teams in the database
 import axios from 'axios';
 import db, { upsert } from './store/db.ts';
+import { runInLoop } from './util/utility.ts';
+import JSONbig from 'json-bigint';
 import {
   SteamAPIUrls,
-  getSteamAPIData,
   getSteamAPIDataWithRetry,
-  runInLoop,
-} from './util/utility.ts';
-import JSONbig from 'json-bigint';
+  getSteamAPIData,
+} from './util/http.ts';
 
 runInLoop(
   async function doTeams() {

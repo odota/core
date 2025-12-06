@@ -2,9 +2,10 @@
 import redis from './store/redis.ts';
 import db from './store/db.ts';
 import cassandra from './store/cassandra.ts';
-import { getSteamAPIData, runInLoop, SteamAPIUrls } from './util/utility.ts';
+import { runInLoop } from './util/utility.ts';
 import { apps } from '../ecosystem.config.js';
 import { config } from '../config.ts';
+import { getSteamAPIData, SteamAPIUrls } from './util/http.ts';
 
 const health: Record<string, () => Promise<Metric>> = {
   // steamApi,

@@ -3,8 +3,8 @@
 import { runReliableQueue } from './store/queue.ts';
 import config from '../config.ts';
 import { gcFetcher } from './fetcher/allFetchers.ts';
-import { getRetrieverCapacity } from './util/utility.ts';
 import { redisCount } from './store/redis.ts';
+import { getRetrieverCapacity } from './util/registry.ts';
 
 runReliableQueue(
   'gcQueue',

@@ -1,29 +1,34 @@
 import config from '../config.ts';
-import axios from 'axios';
 import dotenv from 'dotenv';
-import fs from 'node:fs';
-import { execSync } from 'node:child_process';
 import { runInLoop, shuffle } from './util/utility.ts';
 
-const zonesResponse = await axios.get(
+const resp = await fetch(
   `https://compute.googleapis.com/compute/v1/projects/${config.GOOGLE_CLOUD_PROJECT_ID}/zones`,
   { headers: { Authorization: 'Bearer ' + (await getToken()) } },
 );
-const zones = zonesResponse.data.items.map((zone: any) => zone.name);
+const zonesJson = await resp.json();
+const zones = zonesJson.items.map((zone: any) => zone.name);
 console.log(zones, zones.length);
 shuffle(zones);
 let i = 0;
 
 runInLoop(async function cycler() {
-  // Download config on each run so we can update without restarting
-  execSync('npm run gceconfig');
+  // Fetch config on each run so we can update without restarting
+  let resp = await fetch(
+    'http://metadata.google.internal/computeMetadata/v1/project/attributes/env',
+    {
+      headers: {
+        'Metadata-Flavor': 'Google',
+      },
+    },
+  );
   // We have to use the output of dotenv parse to get updated values because pm2 caches process.env
   // https://github.com/Unitech/pm2/issues/3192
   const {
     CYCLER_COUNT,
     RETRIEVER_MIN_UPTIME,
     GOOGLE_CLOUD_RETRIEVER_TEMPLATE,
-  } = dotenv.parse(fs.readFileSync('.env'));
+  } = dotenv.parse(await resp.text());
   if (
     !config.GOOGLE_CLOUD_PROJECT_ID ||
     !GOOGLE_CLOUD_RETRIEVER_TEMPLATE ||
@@ -56,28 +61,26 @@ runInLoop(async function cycler() {
     },
     zone: `projects/${config.GOOGLE_CLOUD_PROJECT_ID}/zones/` + zone,
   };
-  try {
-    const resp = await axios.post(
-      `https://compute.googleapis.com/compute/v1/projects/${config.GOOGLE_CLOUD_PROJECT_ID}/zones/${zone}/instances?sourceInstanceTemplate=global/instanceTemplates/${GOOGLE_CLOUD_RETRIEVER_TEMPLATE}`,
-      options,
-      { headers: { Authorization: 'Bearer ' + (await getToken()) } },
-    );
-    console.log(resp.data);
-    await new Promise((resolve) =>
-      setTimeout(resolve, (lifetime * 0.95 * 1000) / count),
-    );
-  } catch (e) {
-    // Try the next one
-    console.log(e);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-  }
+  resp = await fetch(
+    `https://compute.googleapis.com/compute/v1/projects/${config.GOOGLE_CLOUD_PROJECT_ID}/zones/${zone}/instances?sourceInstanceTemplate=global/instanceTemplates/${GOOGLE_CLOUD_RETRIEVER_TEMPLATE}`,
+    {
+      method: 'POST',
+      body: JSON.stringify(options),
+      headers: { Authorization: 'Bearer ' + (await getToken()) },
+    },
+  );
+  console.log(resp.status, await resp.json());
+  await new Promise((resolve) =>
+    setTimeout(resolve, (lifetime * 0.95 * 1000) / count),
+  );
 }, 0);
 
 async function getToken() {
-  const tokenResponse = await axios.get(
+  const resp = await fetch(
     'http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token',
     { headers: { 'Metadata-Flavor': 'Google' } },
   );
-  const token = tokenResponse.data.access_token;
+  const tokenJson = await resp.json();
+  const token = tokenJson.access_token;
   return token;
 }

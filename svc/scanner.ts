@@ -2,13 +2,10 @@
 import config from '../config.ts';
 import redis, { redisCount } from './store/redis.ts';
 import { insertMatch } from './util/insert.ts';
-import {
-  SteamAPIUrls,
-  getSteamAPIDataWithRetry,
-  runInLoop,
-} from './util/utility.ts';
+import { runInLoop } from './util/utility.ts';
 import db from './store/db.ts';
 import { cacheTrackedPlayers } from './util/queries.ts';
+import { getSteamAPIDataWithRetry, SteamAPIUrls } from './util/http.ts';
 
 const PAGE_SIZE = 100;
 // This endpoint is limited to something like 1 request every 5 seconds

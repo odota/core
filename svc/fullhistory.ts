@@ -1,10 +1,10 @@
 // Processes a queue of full history/refresh requests for players
 import config from '../config.ts';
-import { getSteamAPIDataWithRetry, SteamAPIUrls } from './util/utility.ts';
 import db from './store/db.ts';
 import { runReliableQueue } from './store/queue.ts';
 import { getPlayerMatches } from './util/buildPlayer.ts';
 import redis, { redisCount } from './store/redis.ts';
+import { SteamAPIUrls, getSteamAPIDataWithRetry } from './util/http.ts';
 
 // Approximately 5 req/sec limit per apiHost
 // Short fullhistory uses 1 req, long 5 req, some percentage will need to query for up to 500 matches

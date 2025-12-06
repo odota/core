@@ -38,14 +38,12 @@ export class MetaFetcher extends MatchFetcherBase<Record<string, any>> {
     // DL: 1072ms (curl http://replay152.valve.net/570/7503212404_1277518156.meta.bz2)
     // bunzip2: 13ms (bunzip2 7503212404_1277518156.meta.bz2)
     // parse: ~50ms
-    // We pipeline them here for efficiency
     // If we want to cache meta files, we can cache the bz2 versions and it won't add very much parse time
     const start = Date.now();
-    const { stdout } = await execPromise(
-      `curl -L ${url} | bunzip2`,
-      //@ts-expect-error
-      { shell: true, encoding: 'buffer', maxBuffer: 10 * 1024 * 1024 },
-    );
+    const { stdout } = await execPromise(`curl -L ${url} | bunzip2`, {
+      encoding: 'buffer',
+      maxBuffer: 10 * 1024 * 1024,
+    });
     const message: any = CDOTAMatchMetadataFile.decode(stdout);
     // message.metadata.teams.forEach((team) => {
     //   team.players.forEach((player) => {
