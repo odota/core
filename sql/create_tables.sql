@@ -396,6 +396,13 @@ CREATE TABLE IF NOT EXISTS leaderboard_rank (
   rating int
 );
 
+CREATE TABLE IF NOT EXISTS rank_tier_history (
+  PRIMARY KEY(account_id, time),
+  account_id bigint,
+  time timestamp with time zone,
+  rank_tier int
+);
+
 CREATE TABLE IF NOT EXISTS scenarios (
   hero_id smallint,
   item text,

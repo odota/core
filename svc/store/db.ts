@@ -29,6 +29,7 @@ export const db = knex({
 });
 
 const columns: Record<string, any> = {};
+
 export async function upsert(
   db: Knex,
   table: string,
@@ -76,28 +77,6 @@ export async function upsertPlayer(db: Knex, player: Partial<User>) {
   return upsert(db, 'players', player, {
     account_id: player.account_id,
   });
-}
-
-export async function insertPlayerRating(db: Knex, row: PlayerRating) {
-  if (row.rank_tier) {
-    await upsert(
-      db,
-      'rank_tier',
-      { account_id: row.account_id, rating: row.rank_tier },
-      { account_id: row.account_id },
-    );
-  }
-  if (row.leaderboard_rank) {
-    await upsert(
-      db,
-      'leaderboard_rank',
-      {
-        account_id: row.account_id,
-        rating: row.leaderboard_rank,
-      },
-      { account_id: row.account_id },
-    );
-  }
 }
 
 export default db;

@@ -4,19 +4,19 @@ const { getSteamAPIData, SteamAPIUrls } =
   await import('../svc/util/utility.ts');
 
 async function getPage(url: string, leagueid: number) {
-  const data: any = await getSteamAPIData({ url });
+  const data = await getSteamAPIData<MatchHistory>({ url });
   console.log(
     leagueid,
     data.result.total_results,
     data.result.results_remaining,
   );
   for (let i = 0; i < data.result.matches.length; i++) {
-    const match = data.results.matches[i];
+    const match = data.result.matches[i];
     console.log(match.match_id);
     const url = SteamAPIUrls.api_details({
       match_id: match.match_id,
     });
-    const body: any = await getSteamAPIData({
+    const body = await getSteamAPIData<MatchDetails>({
       url,
     });
     if (body.result) {

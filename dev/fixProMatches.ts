@@ -13,7 +13,7 @@ for (let i = 0; i < rows.length; i++) {
   const url = SteamAPIUrls.api_details({
     match_id: match.match_id,
   });
-  const body: any = await getSteamAPIData({
+  const body = await getSteamAPIData<MatchDetails>({
     url,
   });
   if (body.result) {

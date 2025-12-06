@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { execSync } from "node:child_process";
+import { execSync } from 'node:child_process';
 
 const strFmt = (
   matchId: string,

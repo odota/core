@@ -1,0 +1,1006 @@
+{
+"search_key": "",
+"league_id": 0,
+"hero_id": 0,
+"start_game": 0,
+"num_games": 0,
+"game_list_index": 0,
+"game_list": [
+{
+"activate_time": 1764980697,
+"deactivate_time": 0,
+"server_steam_id": "90277912349586453",
+"lobby_id": "29610055194542853",
+"league_id": 0,
+"lobby_type": 7,
+"game_time": 752,
+"delay": 120,
+"spectators": 37,
+"game_mode": 22,
+"average_mmr": 7351,
+"match_id": "8591964706",
+"series_id": 0,
+"team_name_radiant": "",
+"team_name_dire": "",
+"team_logo_radiant": "0",
+"team_logo_dire": "0",
+"team_id_radiant": 0,
+"team_id_dire": 0,
+"sort_score": 7888,
+"last_update_time": 1764981500,
+"radiant_lead": -1062,
+"radiant_score": 8,
+"dire_score": 8,
+"players": [
+{
+"account_id": 1200486799,
+"hero_id": 70,
+"team_slot": 1,
+"team": 0
+},
+{
+"account_id": 128738986,
+"hero_id": 103,
+"team_slot": 2,
+"team": 0
+},
+{
+"account_id": 147231905,
+"hero_id": 39,
+"team_slot": 3,
+"team": 0
+},
+{
+"account_id": 430946436,
+"hero_id": 137,
+"team_slot": 4,
+"team": 0
+},
+{
+"account_id": 218367089,
+"hero_id": 26,
+"team_slot": 5,
+"team": 0
+},
+{
+"account_id": 139935276,
+"hero_id": 36,
+"team_slot": 1,
+"team": 1
+},
+{
+"account_id": 1413874955,
+"hero_id": 53,
+"team_slot": 2,
+"team": 1
+},
+{
+"account_id": 905975416,
+"hero_id": 128,
+"team_slot": 3,
+"team": 1
+},
+{
+"account_id": 365417070,
+"hero_id": 46,
+"team_slot": 4,
+"team": 1
+},
+{
+"account_id": 130357820,
+"hero_id": 71,
+"team_slot": 5,
+"team": 1
+}
+],
+"building_state": 4784201,
+"weekend_tourney_tournament_id": 0,
+"weekend_tourney_division": 0,
+"weekend_tourney_skill_level": 0,
+"weekend_tourney_bracket_round": 0,
+"custom_game_difficulty": 0,
+"is_player_draft": false,
+"is_watch_eligible": true
+},
+{
+"activate_time": 1764981263,
+"deactivate_time": 0,
+"server_steam_id": "90277915087343643",
+"lobby_id": "29610055199167338",
+"league_id": 0,
+"lobby_type": 7,
+"game_time": 205,
+"delay": 120,
+"spectators": 0,
+"game_mode": 22,
+"average_mmr": 7316,
+"match_id": "8591970562",
+"series_id": 0,
+"team_name_radiant": "",
+"team_name_dire": "",
+"team_logo_radiant": "0",
+"team_logo_dire": "0",
+"team_id_radiant": 0,
+"team_id_dire": 0,
+"sort_score": 7816,
+"last_update_time": 1764981600,
+"radiant_lead": 409,
+"radiant_score": 2,
+"dire_score": 1,
+"players": [
+{
+"account_id": 315957923,
+"hero_id": 47,
+"team_slot": 1,
+"team": 0
+},
+{
+"account_id": 189996869,
+"hero_id": 14,
+"team_slot": 2,
+"team": 0
+},
+{
+"account_id": 164497085,
+"hero_id": 104,
+"team_slot": 3,
+"team": 0
+},
+{
+"account_id": 365250320,
+"hero_id": 45,
+"team_slot": 4,
+"team": 0
+},
+{
+"account_id": 140366120,
+"hero_id": 70,
+"team_slot": 5,
+"team": 0
+},
+{
+"account_id": 136176960,
+"hero_id": 8,
+"team_slot": 1,
+"team": 1
+},
+{
+"account_id": 169224478,
+"hero_id": 39,
+"team_slot": 2,
+"team": 1
+},
+{
+"account_id": 995538045,
+"hero_id": 30,
+"team_slot": 3,
+"team": 1
+},
+{
+"account_id": 173408147,
+"hero_id": 31,
+"team_slot": 4,
+"team": 1
+},
+{
+"account_id": 157390752,
+"hero_id": 28,
+"team_slot": 5,
+"team": 1
+}
+],
+"building_state": 4784201,
+"weekend_tourney_tournament_id": 0,
+"weekend_tourney_division": 0,
+"weekend_tourney_skill_level": 0,
+"weekend_tourney_bracket_round": 0,
+"custom_game_difficulty": 0,
+"is_player_draft": false,
+"is_watch_eligible": true
+},
+{
+"activate_time": 1764981361,
+"deactivate_time": 0,
+"server_steam_id": "90277909563526161",
+"lobby_id": "29610055200059463",
+"league_id": 0,
+"lobby_type": 7,
+"game_time": 76,
+"delay": 120,
+"spectators": 0,
+"game_mode": 22,
+"average_mmr": 6711,
+"match_id": "8591971570",
+"series_id": 0,
+"team_name_radiant": "",
+"team_name_dire": "",
+"team_logo_radiant": "0",
+"team_logo_dire": "0",
+"team_id_radiant": 0,
+"team_id_dire": 0,
+"sort_score": 7211,
+"last_update_time": 1764981500,
+"radiant_lead": 219,
+"radiant_score": 0,
+"dire_score": 2,
+"players": [
+{
+"account_id": 432867274,
+"hero_id": 2,
+"team_slot": 1,
+"team": 0
+},
+{
+"account_id": 367915823,
+"hero_id": 53,
+"team_slot": 2,
+"team": 0
+},
+{
+"account_id": 187067716,
+"hero_id": 98,
+"team_slot": 3,
+"team": 0
+},
+{
+"account_id": 855436157,
+"hero_id": 88,
+"team_slot": 4,
+"team": 0
+},
+{
+"account_id": 356875648,
+"hero_id": 121,
+"team_slot": 5,
+"team": 0
+},
+{
+"account_id": 1000636055,
+"hero_id": 40,
+"team_slot": 1,
+"team": 1
+},
+{
+"account_id": 219311801,
+"hero_id": 8,
+"team_slot": 2,
+"team": 1
+},
+{
+"account_id": 136216757,
+"hero_id": 136,
+"team_slot": 3,
+"team": 1
+},
+{
+"account_id": 324552231,
+"hero_id": 29,
+"team_slot": 4,
+"team": 1
+},
+{
+"account_id": 313789008,
+"hero_id": 110,
+"team_slot": 5,
+"team": 1
+}
+],
+"building_state": 4784201,
+"weekend_tourney_tournament_id": 0,
+"weekend_tourney_division": 0,
+"weekend_tourney_skill_level": 0,
+"weekend_tourney_bracket_round": 0,
+"custom_game_difficulty": 0,
+"is_player_draft": false,
+"is_watch_eligible": true
+},
+{
+"activate_time": 1764980384,
+"deactivate_time": 0,
+"server_steam_id": "90277912161084422",
+"lobby_id": "29610055192247025",
+"league_id": 0,
+"lobby_type": 7,
+"game_time": 1068,
+"delay": 120,
+"spectators": 12,
+"game_mode": 22,
+"average_mmr": 6566,
+"match_id": "8591961372",
+"series_id": 0,
+"team_name_radiant": "",
+"team_name_dire": "",
+"team_logo_radiant": "0",
+"team_logo_dire": "0",
+"team_id_radiant": 0,
+"team_id_dire": 0,
+"sort_score": 7078,
+"last_update_time": 1764981500,
+"radiant_lead": -1211,
+"radiant_score": 15,
+"dire_score": 12,
+"players": [
+{
+"account_id": 133307100,
+"hero_id": 39,
+"team_slot": 1,
+"team": 0
+},
+{
+"account_id": 406464797,
+"hero_id": 49,
+"team_slot": 2,
+"team": 0
+},
+{
+"account_id": 257647873,
+"hero_id": 14,
+"team_slot": 3,
+"team": 0
+},
+{
+"account_id": 228623793,
+"hero_id": 87,
+"team_slot": 4,
+"team": 0
+},
+{
+"account_id": 167370583,
+"hero_id": 101,
+"team_slot": 5,
+"team": 0
+},
+{
+"account_id": 186378245,
+"hero_id": 30,
+"team_slot": 1,
+"team": 1
+},
+{
+"account_id": 394188376,
+"hero_id": 40,
+"team_slot": 2,
+"team": 1
+},
+{
+"account_id": 167580868,
+"hero_id": 81,
+"team_slot": 3,
+"team": 1
+},
+{
+"account_id": 1063574819,
+"hero_id": 8,
+"team_slot": 4,
+"team": 1
+},
+{
+"account_id": 1021951619,
+"hero_id": 145,
+"team_slot": 5,
+"team": 1
+}
+],
+"building_state": 5374097,
+"weekend_tourney_tournament_id": 0,
+"weekend_tourney_division": 0,
+"weekend_tourney_skill_level": 0,
+"weekend_tourney_bracket_round": 0,
+"custom_game_difficulty": 0,
+"is_player_draft": false,
+"is_watch_eligible": true
+},
+{
+"activate_time": 1764981300,
+"deactivate_time": 0,
+"server_steam_id": "90277916365628439",
+"lobby_id": "29610055199440461",
+"league_id": 0,
+"lobby_type": 0,
+"game_time": 199,
+"delay": 120,
+"spectators": 0,
+"game_mode": 23,
+"average_mmr": 6590,
+"match_id": "8591970964",
+"series_id": 0,
+"team_name_radiant": "",
+"team_name_dire": "",
+"team_logo_radiant": "0",
+"team_logo_dire": "0",
+"team_id_radiant": 0,
+"team_id_dire": 0,
+"sort_score": 7051,
+"last_update_time": 1764981500,
+"radiant_lead": -541,
+"radiant_score": 1,
+"dire_score": 3,
+"players": [
+{
+"account_id": 214275982,
+"hero_id": 59,
+"team_slot": 1,
+"team": 0
+},
+{
+"account_id": 137851963,
+"hero_id": 75,
+"team_slot": 2,
+"team": 0
+},
+{
+"account_id": 100686158,
+"hero_id": 94,
+"team_slot": 3,
+"team": 0
+},
+{
+"account_id": 117141052,
+"hero_id": 98,
+"team_slot": 4,
+"team": 0
+},
+{
+"account_id": 140017294,
+"hero_id": 88,
+"team_slot": 5,
+"team": 0
+},
+{
+"account_id": 138879965,
+"hero_id": 101,
+"team_slot": 1,
+"team": 1
+},
+{
+"account_id": 100892423,
+"hero_id": 42,
+"team_slot": 2,
+"team": 1
+},
+{
+"account_id": 469923411,
+"hero_id": 69,
+"team_slot": 3,
+"team": 1
+},
+{
+"account_id": 378694876,
+"hero_id": 39,
+"team_slot": 4,
+"team": 1
+},
+{
+"account_id": 437253988,
+"hero_id": 2,
+"team_slot": 5,
+"team": 1
+}
+],
+"building_state": 4784201,
+"weekend_tourney_tournament_id": 0,
+"weekend_tourney_division": 0,
+"weekend_tourney_skill_level": 0,
+"weekend_tourney_bracket_round": 0,
+"custom_game_difficulty": 0,
+"is_player_draft": false,
+"is_watch_eligible": true
+},
+{
+"activate_time": 1764979005,
+"deactivate_time": 0,
+"server_steam_id": "90277907383898134",
+"lobby_id": "29610055180977885",
+"league_id": 0,
+"lobby_type": 7,
+"game_time": 2475,
+"delay": 120,
+"spectators": 3,
+"game_mode": 22,
+"average_mmr": 6426,
+"match_id": "8591946738",
+"series_id": 0,
+"team_name_radiant": "",
+"team_name_dire": "",
+"team_logo_radiant": "0",
+"team_logo_dire": "0",
+"team_id_radiant": 0,
+"team_id_dire": 0,
+"sort_score": 6929,
+"last_update_time": 1764981600,
+"radiant_lead": -14614,
+"radiant_score": 31,
+"dire_score": 53,
+"players": [
+{
+"account_id": 426535506,
+"hero_id": 47,
+"team_slot": 1,
+"team": 0
+},
+{
+"account_id": 1330791513,
+"hero_id": 88,
+"team_slot": 2,
+"team": 0
+},
+{
+"account_id": 293167560,
+"hero_id": 64,
+"team_slot": 3,
+"team": 0
+},
+{
+"account_id": 428236128,
+"hero_id": 70,
+"team_slot": 4,
+"team": 0
+},
+{
+"account_id": 322774348,
+"hero_id": 36,
+"team_slot": 5,
+"team": 0
+},
+{
+"account_id": 209946505,
+"hero_id": 39,
+"team_slot": 1,
+"team": 1
+},
+{
+"account_id": 143501020,
+"hero_id": 87,
+"team_slot": 2,
+"team": 1
+},
+{
+"account_id": 130895964,
+"hero_id": 98,
+"team_slot": 3,
+"team": 1
+},
+{
+"account_id": 182819601,
+"hero_id": 40,
+"team_slot": 4,
+"team": 1
+},
+{
+"account_id": 190869850,
+"hero_id": 49,
+"team_slot": 5,
+"team": 1
+}
+],
+"building_state": 9568484,
+"weekend_tourney_tournament_id": 0,
+"weekend_tourney_division": 0,
+"weekend_tourney_skill_level": 0,
+"weekend_tourney_bracket_round": 0,
+"custom_game_difficulty": 0,
+"is_player_draft": false,
+"is_watch_eligible": true
+},
+{
+"activate_time": 1764981224,
+"deactivate_time": 0,
+"server_steam_id": "90277912438776848",
+"lobby_id": "29610055199017328",
+"league_id": 0,
+"lobby_type": 7,
+"game_time": 214,
+"delay": 120,
+"spectators": 0,
+"game_mode": 22,
+"average_mmr": 6287,
+"match_id": "8591970154",
+"series_id": 0,
+"team_name_radiant": "",
+"team_name_dire": "",
+"team_logo_radiant": "0",
+"team_logo_dire": "0",
+"team_id_radiant": 0,
+"team_id_dire": 0,
+"sort_score": 6787,
+"last_update_time": 1764981500,
+"radiant_lead": -342,
+"radiant_score": 0,
+"dire_score": 2,
+"players": [
+{
+"account_id": 1158883308,
+"hero_id": 34,
+"team_slot": 1,
+"team": 0
+},
+{
+"account_id": 266399612,
+"hero_id": 64,
+"team_slot": 2,
+"team": 0
+},
+{
+"account_id": 158806698,
+"hero_id": 81,
+"team_slot": 3,
+"team": 0
+},
+{
+"account_id": 176541563,
+"hero_id": 59,
+"team_slot": 4,
+"team": 0
+},
+{
+"account_id": 132599679,
+"hero_id": 63,
+"team_slot": 5,
+"team": 0
+},
+{
+"account_id": 137605106,
+"hero_id": 128,
+"team_slot": 1,
+"team": 1
+},
+{
+"account_id": 321622359,
+"hero_id": 5,
+"team_slot": 2,
+"team": 1
+},
+{
+"account_id": 158681243,
+"hero_id": 96,
+"team_slot": 3,
+"team": 1
+},
+{
+"account_id": 257782493,
+"hero_id": 70,
+"team_slot": 4,
+"team": 1
+},
+{
+"account_id": 282846872,
+"hero_id": 62,
+"team_slot": 5,
+"team": 1
+}
+],
+"building_state": 4784201,
+"weekend_tourney_tournament_id": 0,
+"weekend_tourney_division": 0,
+"weekend_tourney_skill_level": 0,
+"weekend_tourney_bracket_round": 0,
+"custom_game_difficulty": 0,
+"is_player_draft": false,
+"is_watch_eligible": true
+},
+{
+"activate_time": 1764979986,
+"deactivate_time": 0,
+"server_steam_id": "90277907358297088",
+"lobby_id": "29610055189096533",
+"league_id": 0,
+"lobby_type": 7,
+"game_time": 1466,
+"delay": 120,
+"spectators": 0,
+"game_mode": 22,
+"average_mmr": 6274,
+"match_id": "8591957216",
+"series_id": 0,
+"team_name_radiant": "",
+"team_name_dire": "",
+"team_logo_radiant": "0",
+"team_logo_dire": "0",
+"team_id_radiant": 0,
+"team_id_dire": 0,
+"sort_score": 6774,
+"last_update_time": 1764981600,
+"radiant_lead": 1084,
+"radiant_score": 28,
+"dire_score": 30,
+"players": [
+{
+"account_id": 873793134,
+"hero_id": 10,
+"team_slot": 1,
+"team": 0
+},
+{
+"account_id": 249775328,
+"hero_id": 31,
+"team_slot": 2,
+"team": 0
+},
+{
+"account_id": 236667177,
+"hero_id": 39,
+"team_slot": 3,
+"team": 0
+},
+{
+"account_id": 217693906,
+"hero_id": 2,
+"team_slot": 4,
+"team": 0
+},
+{
+"account_id": 194751144,
+"hero_id": 47,
+"team_slot": 5,
+"team": 0
+},
+{
+"account_id": 338069875,
+"hero_id": 102,
+"team_slot": 1,
+"team": 1
+},
+{
+"account_id": 332439484,
+"hero_id": 59,
+"team_slot": 2,
+"team": 1
+},
+{
+"account_id": 180448022,
+"hero_id": 20,
+"team_slot": 3,
+"team": 1
+},
+{
+"account_id": 294424544,
+"hero_id": 13,
+"team_slot": 4,
+"team": 1
+},
+{
+"account_id": 184538857,
+"hero_id": 14,
+"team_slot": 5,
+"team": 1
+}
+],
+"building_state": 9568401,
+"weekend_tourney_tournament_id": 0,
+"weekend_tourney_division": 0,
+"weekend_tourney_skill_level": 0,
+"weekend_tourney_bracket_round": 0,
+"custom_game_difficulty": 0,
+"is_player_draft": false,
+"is_watch_eligible": true
+},
+{
+"activate_time": 1764981040,
+"deactivate_time": 0,
+"server_steam_id": "90277917330301975",
+"lobby_id": "29610055197443122",
+"league_id": 0,
+"lobby_type": 7,
+"game_time": 399,
+"delay": 120,
+"spectators": 0,
+"game_mode": 22,
+"average_mmr": 6152,
+"match_id": "8591968287",
+"series_id": 0,
+"team_name_radiant": "",
+"team_name_dire": "",
+"team_logo_radiant": "0",
+"team_logo_dire": "0",
+"team_id_radiant": 0,
+"team_id_dire": 0,
+"sort_score": 6652,
+"last_update_time": 1764981500,
+"radiant_lead": 2789,
+"radiant_score": 10,
+"dire_score": 4,
+"players": [
+{
+"account_id": 224641777,
+"hero_id": 22,
+"team_slot": 1,
+"team": 0
+},
+{
+"account_id": 139888544,
+"hero_id": 20,
+"team_slot": 2,
+"team": 0
+},
+{
+"account_id": 354664562,
+"hero_id": 52,
+"team_slot": 3,
+"team": 0
+},
+{
+"account_id": 313569414,
+"hero_id": 8,
+"team_slot": 4,
+"team": 0
+},
+{
+"account_id": 1230666620,
+"hero_id": 14,
+"team_slot": 5,
+"team": 0
+},
+{
+"account_id": 219247042,
+"hero_id": 56,
+"team_slot": 1,
+"team": 1
+},
+{
+"account_id": 170590408,
+"hero_id": 62,
+"team_slot": 2,
+"team": 1
+},
+{
+"account_id": 131047532,
+"hero_id": 129,
+"team_slot": 3,
+"team": 1
+},
+{
+"account_id": 221864413,
+"hero_id": 131,
+"team_slot": 4,
+"team": 1
+},
+{
+"account_id": 463758883,
+"hero_id": 27,
+"team_slot": 5,
+"team": 1
+}
+],
+"building_state": 4784201,
+"weekend_tourney_tournament_id": 0,
+"weekend_tourney_division": 0,
+"weekend_tourney_skill_level": 0,
+"weekend_tourney_bracket_round": 0,
+"custom_game_difficulty": 0,
+"is_player_draft": false,
+"is_watch_eligible": true
+},
+{
+"activate_time": 1764979675,
+"deactivate_time": 0,
+"server_steam_id": "90277909969931280",
+"lobby_id": "29610055186486217",
+"league_id": 0,
+"lobby_type": 7,
+"game_time": 1734,
+"delay": 120,
+"spectators": 1,
+"game_mode": 22,
+"average_mmr": 5873,
+"match_id": "8591953915",
+"series_id": 0,
+"team_name_radiant": "",
+"team_name_dire": "",
+"team_logo_radiant": "0",
+"team_logo_dire": "0",
+"team_id_radiant": 0,
+"team_id_dire": 0,
+"sort_score": 6374,
+"last_update_time": 1764981500,
+"radiant_lead": -4298,
+"radiant_score": 29,
+"dire_score": 25,
+"players": [
+{
+"account_id": 136160918,
+"hero_id": 39,
+"team_slot": 1,
+"team": 0
+},
+{
+"account_id": 138733246,
+"hero_id": 102,
+"team_slot": 2,
+"team": 0
+},
+{
+"account_id": 350138908,
+"hero_id": 100,
+"team_slot": 3,
+"team": 0
+},
+{
+"account_id": 176201448,
+"hero_id": 22,
+"team_slot": 4,
+"team": 0
+},
+{
+"account_id": 461189849,
+"hero_id": 7,
+"team_slot": 5,
+"team": 0
+},
+{
+"account_id": 179807842,
+"hero_id": 114,
+"team_slot": 1,
+"team": 1
+},
+{
+"account_id": 400905895,
+"hero_id": 64,
+"team_slot": 2,
+"team": 1
+},
+{
+"account_id": 148034876,
+"hero_id": 27,
+"team_slot": 3,
+"team": 1
+},
+{
+"account_id": 157550520,
+"hero_id": 81,
+"team_slot": 4,
+"team": 1
+},
+{
+"account_id": 217929697,
+"hero_id": 13,
+"team_slot": 5,
+"team": 1
+}
+],
+"building_state": 14352602,
+"weekend_tourney_tournament_id": 0,
+"weekend_tourney_division": 0,
+"weekend_tourney_skill_level": 0,
+"weekend_tourney_bracket_round": 0,
+"custom_game_difficulty": 0,
+"is_player_draft": false,
+"is_watch_eligible": true
+}
+],
+"specific_games": false,
+"bot_game": {
+"activate_time": 0,
+"deactivate_time": 0,
+"server_steam_id": "0",
+"lobby_id": "0",
+"league_id": 0,
+"lobby_type": 0,
+"game_time": 0,
+"delay": 0,
+"spectators": 0,
+"game_mode": 0,
+"average_mmr": 0,
+"match_id": "0",
+"series_id": 0,
+"team_name_radiant": "",
+"team_name_dire": "",
+"team_logo_radiant": "0",
+"team_logo_dire": "0",
+"team_id_radiant": 0,
+"team_id_dire": 0,
+"sort_score": 0,
+"last_update_time": 0,
+"radiant_lead": 0,
+"radiant_score": 0,
+"dire_score": 0,
+"players": [],
+"building_state": 0,
+"weekend_tourney_tournament_id": 0,
+"weekend_tourney_division": 0,
+"weekend_tourney_skill_level": 0,
+"weekend_tourney_bracket_round": 0,
+"custom_game_difficulty": 0,
+"is_player_draft": false,
+"is_watch_eligible": false
+}
+}

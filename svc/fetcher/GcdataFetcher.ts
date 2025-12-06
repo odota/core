@@ -2,7 +2,6 @@ import type { AxiosResponse } from 'axios';
 import db from '../store/db.ts';
 import { getRandomRetrieverUrl } from '../util/utility.ts';
 import axios from 'axios';
-import retrieverMatch from '../../test/data/retriever_match.json' with { type: 'json' };
 import { insertMatch } from '../util/insert.ts';
 import { blobArchive } from '../store/archive.ts';
 import { MatchFetcherBase } from './MatchFetcherBase.ts';
@@ -28,9 +27,9 @@ export class GcdataFetcher extends MatchFetcherBase<GcData> {
   };
   fetchData = async (matchId: number, extraData: GcExtraData | null) => {
     const url = await getRandomRetrieverUrl(`/match/${matchId}`);
-    let resp: AxiosResponse<typeof retrieverMatch>;
+    let resp: AxiosResponse<RetrieverMatch>;
     try {
-      resp = await axios.get<typeof retrieverMatch>(url, {
+      resp = await axios.get<RetrieverMatch>(url, {
         timeout: 4000,
       });
     } catch (e) {

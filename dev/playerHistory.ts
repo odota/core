@@ -5,7 +5,7 @@ import { execSync } from 'node:child_process';
 const matchIds: number[] = [];
 
 const strFmt = (
-  before?: number
+  before?: number,
 ) => `curl -X POST 'https://api.stratz.com/graphql' \
   -H 'Content-Type: application/json' \
   -H 'Authorization: Bearer ${process.env.STRATZ_TOKEN}' \
@@ -17,15 +17,15 @@ const strFmt = (
 let next = true;
 let last;
 while (next) {
-    const result = JSON.parse(execSync(strFmt(last)).toString());
-    console.log(result);
-    result.data.player.matches.forEach((r: any) => {
-        last = r.id;
-        matchIds.push(r.id);
-        console.log(r.id);
-    });
-    next = result.data.player.matches.length;
-    await new Promise(resolve => setTimeout(resolve, 1000));
+  const result = JSON.parse(execSync(strFmt(last)).toString());
+  console.log(result);
+  result.data.player.matches.forEach((r: any) => {
+    last = r.id;
+    matchIds.push(r.id);
+    console.log(r.id);
+  });
+  next = result.data.player.matches.length;
+  await new Promise((resolve) => setTimeout(resolve, 1000));
 }
 
 // Output results

@@ -12,7 +12,7 @@ runInLoop(
     const url = SteamAPIUrls.api_heroes({
       language: 'english',
     });
-    const body = await getSteamAPIDataWithRetry({ url });
+    const body = await getSteamAPIDataWithRetry<Heroes>({ url });
     if (!body || !body.result || !body.result.heroes) {
       return;
     }

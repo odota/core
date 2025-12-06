@@ -66,7 +66,7 @@ runInLoop(async function monitor() {
 
 async function seqNumDelay() {
   const url = SteamAPIUrls.api_history({});
-  const body = await getSteamAPIData({ url });
+  const body = await getSteamAPIData<MatchHistory>({ url });
   const currSeqNum = body.result.matches[0]?.match_seq_num;
   const { rows } = await db.raw('select max(match_seq_num) from last_seq_num;');
   const numResult = Number(rows[0]?.max) || 0;

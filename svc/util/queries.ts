@@ -157,12 +157,11 @@ export async function getHeroBenchmarks(heroId: string) {
 }
 
 export async function getPlayerRatings(accountId: string) {
-  return db
-    .from('player_ratings')
-    .where({
-      account_id: Number(accountId),
-    })
-    .orderBy('time', 'asc');
+  const { rows } = await db.raw(
+    'SELECT time, rank_tier FROM rank_tier_history WHERE account_id = ? ORDER BY time asc',
+    [accountId],
+  );
+  return rows;
 }
 export async function getPlayerHeroRankings(accountId: string): Promise<any[]> {
   const result = await db.raw(

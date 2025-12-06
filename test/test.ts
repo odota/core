@@ -3,14 +3,12 @@ import assert from 'node:assert';
 import supertest from 'supertest';
 import stripe from '../svc/store/stripe.ts';
 import redis from '../svc/store/redis.ts';
-import summariesApi from './data/summaries_api.json' with { type: 'json' };
-import historyApi from './data/history_api.json' with { type: 'json' };
-import heroesApi from './data/heroes_api.json' with { type: 'json' };
-import leaguesApi from './data/leagues_api.json' with { type: 'json' };
-import retrieverPlayer from './data/retriever_player.json' with { type: 'json' };
-import detailsApiPro from './data/details_api_pro.json' with { type: 'json' };
-import retrieverMatch from './data/retriever_match.json' with { type: 'json' };
-import detailsApi from './data/details_api.json' with { type: 'json' };
+import summariesApi from '../json/summaries_api.json' with { type: 'json' };
+import historyApi from '../json/history_api.json' with { type: 'json' };
+import retrieverPlayer from '../json/retriever_player.json' with { type: 'json' };
+import detailsApiPro from '../json/details_api_pro.json' with { type: 'json' };
+import retrieverMatch from '../json/retriever_match.json' with { type: 'json' };
+import detailsApi from '../json/details_api.json' with { type: 'json' };
 import { Client as DBClient } from 'pg';
 import { readFileSync } from 'node:fs';
 import { Client } from 'cassandra-driver';
@@ -53,15 +51,8 @@ nock('http://api.steampowered.com')
   // fake full history
   .get('/IDOTA2Match_570/GetMatchHistory/V001/')
   .query(true)
-  .reply(200, historyApi)
-  // fake heroes list
-  .get('/IEconDOTA2_570/GetHeroes/v0001/')
-  .query(true)
-  .reply(200, heroesApi)
-  // fake leagues
-  .get('/IDOTA2Match_570/GetLeagueListing/v0001/')
-  .query(true)
-  .reply(200, leaguesApi);
+  .reply(200, historyApi);
+
 nock(`http://${RETRIEVER_HOST}`)
   .get(/\/profile\/.*/)
   // fake mmr response up to 14 times for 7 non-anonymous players in test match inserted twice

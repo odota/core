@@ -39,7 +39,7 @@ runInLoop(async function backfill() {
     matches_requested: 100,
   });
   let data = null;
-  data = await getSteamAPIDataWithRetry({
+  data = await getSteamAPIDataWithRetry<MatchSequence>({
     url,
     proxy: true,
   });
@@ -49,7 +49,7 @@ runInLoop(async function backfill() {
   // write to blobstore, process the blob using same function as insertMatch
   try {
     const insertResult = await Promise.all(
-      resp.map(async (origMatch: ApiData) => {
+      resp.map(async (origMatch) => {
         const match = transformMatch(origMatch);
         const result = await blobArchive.archivePut(
           match.match_id + '_api',

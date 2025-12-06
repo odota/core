@@ -27,7 +27,7 @@ export class ApiFetcher extends MatchFetcherBase<ApiData> {
       // const url = SteamAPIUrls.api_details({
       //   match_id: matchId,
       // });
-      // const body = await getSteamAPIData({
+      // const body = await getSteamAPIData<MatchDetails>({
       //   url,
       // });
       // match = body.result;
@@ -93,17 +93,15 @@ export class ApiFetcher extends MatchFetcherBase<ApiData> {
     async function getPageFindMatch(
       earlierSeqNum: number,
       matchId: number,
-    ): Promise<[ApiData, number, number]> {
+    ): Promise<[ApiData | undefined, number, number]> {
       const url = SteamAPIUrls.api_sequence({
         start_at_match_seq_num: earlierSeqNum,
         matches_requested: 100,
       });
-      const body = await getSteamAPIDataWithRetry({
+      const body = await getSteamAPIDataWithRetry<MatchSequence>({
         url,
       });
-      const match = body.result.matches.find(
-        (m: ApiData) => m.match_id === matchId,
-      );
+      const match = body.result.matches.find((m) => m.match_id === matchId);
       const first = body.result.matches[0];
       const last = body.result.matches[body.result.matches.length - 1];
       redisCount('backfill_page_back');

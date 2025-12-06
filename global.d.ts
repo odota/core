@@ -68,10 +68,6 @@ type GetMatchDataMetadata = {
   has_archive: boolean;
 };
 
-interface LiveMatch extends Match {
-  lobby_id: string;
-}
-
 interface ParsedMatch extends Match {
   players: ParsedPlayer[];
   version: number;
@@ -547,8 +543,22 @@ type HistoryType = {
   retries: number;
 };
 
-type ApiDataResponse = typeof import('./test/data/details_api.json');
-type ApiData = ApiDataResponse['result'] & {
+type MatchHistory = typeof import('./json/history_api.json');
+type MatchSequence = typeof import('./json/sequence_api.json');
+type RetrieverPlayer = typeof import('./json/retriever_player.json');
+type RetrieverMatch = typeof import('./json/retriever_match.json');
+type ProfileSummaries = typeof import('./json/summaries_api.json');
+type TopLiveGames = typeof import('./json/toplivegames_api.json');
+type Heroes = typeof import('./json/heroes_api.json');
+type Leagues = typeof import('./json/leagues_api.json');
+type LeagueDB = Omit<Leagues['infos'][number], 'tier'> & {
+  tier: string | number;
+  ticket?: null;
+  banner?: null;
+  leagueid?: number;
+};
+type MatchDetails = typeof import('./json/details_api.json');
+type ApiData = MatchDetails['result'] & {
   picks_bans?: {
     hero_id: number;
     order: number;

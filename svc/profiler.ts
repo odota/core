@@ -16,14 +16,11 @@ runInLoop(async function profile() {
   const url = SteamAPIUrls.api_summaries({
     players: jobs,
   });
-  const body = await getSteamAPIDataWithRetry({ url });
-  const results = body.response.players.filter(
-    (player: User) => player.steamid,
-  );
+  const body = await getSteamAPIDataWithRetry<ProfileSummaries>({ url });
+  const results = body.response.players.filter((player) => player.steamid);
   const now = new Date();
   for (let player of results) {
-    player.profile_time = now;
-    await upsertPlayer(db, player);
+    await upsertPlayer(db, { ...player, profile_time: now });
   }
   redisCount('profiler', resp.length);
 }, 2000);

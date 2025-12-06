@@ -869,7 +869,7 @@ You can use the API without a key, but registering for a key allows increased ra
           '/players/{account_id}/ratings',
         ),
         summary: 'GET /players/{account_id}/ratings',
-        description: 'Player rating history',
+        description: 'Returns a history of the player rank tier/medal changes (replaces MMR)',
         tags: ['players'],
         parameters: [{ $ref: '#/components/parameters/accountIdParam' }],
         responses: {

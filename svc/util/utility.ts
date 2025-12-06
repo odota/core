@@ -104,7 +104,7 @@ type GetDataOptions = {
   proxy?: boolean;
 };
 const apiKeys = config.STEAM_API_KEY.split(',');
-export async function getSteamAPIData(options: GetDataOptions): Promise<any> {
+export async function getSteamAPIData<T>(options: GetDataOptions): Promise<T> {
   let url = options.url;
   const parsedUrl = new URL(url);
   redisCountHash('steam_api_paths', parsedUrl.pathname);
@@ -197,13 +197,13 @@ export async function getSteamAPIData(options: GetDataOptions): Promise<any> {
   return body;
 }
 
-export async function getSteamAPIDataWithRetry(
+export async function getSteamAPIDataWithRetry<T>(
   options: GetDataOptions,
-): Promise<any> {
+): Promise<T> {
   let body;
   while (!body) {
     try {
-      body = await getSteamAPIData(options);
+      body = await getSteamAPIData<T>(options);
     } catch (err: any) {
       // Can retry on transient error
       await new Promise((resolve) => setTimeout(resolve, 1000));

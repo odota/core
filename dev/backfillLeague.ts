@@ -20,7 +20,7 @@ for (let i = 0; i < rows.length; i++) {
       matches_requested: 100,
       start_at_match_id,
     });
-    const data = await getSteamAPIDataWithRetry({ url });
+    const data = await getSteamAPIDataWithRetry<MatchHistory>({ url });
     for (let j = 0; j < data.result.matches.length; j++) {
       const match = data.result.matches[j];
       console.log(leagueid, match.match_id);

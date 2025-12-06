@@ -34,7 +34,7 @@ runInLoop(
       const url = SteamAPIUrls.api_team_info_by_team_id({
         start_at_team_id: m.team_id,
       });
-      let raw = await getSteamAPIDataWithRetry({
+      let raw = await getSteamAPIDataWithRetry<string>({
         url,
         raw: true,
       });
@@ -65,7 +65,7 @@ runInLoop(
             ugcid: logoUgc,
           });
           // This may not exist for all teams so don't retry
-          const ugcBody = await getSteamAPIData({
+          const ugcBody = await getSteamAPIData<any>({
             url: ugcUrl,
           });
           if (ugcBody && ugcBody.data) {

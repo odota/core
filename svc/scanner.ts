@@ -23,7 +23,7 @@ if (config.NODE_ENV === 'development') {
     // Never do this in production to avoid skipping sequence number if we didn't pull .env properly
     const url = SteamAPIUrls.api_history({});
     // Just get the approximate current seq num
-    const data = await getSteamAPIDataWithRetry({ url });
+    const data = await getSteamAPIDataWithRetry<MatchHistory>({ url });
     numResult = data.result.matches[0].match_seq_num;
     await db.raw(
       'INSERT INTO last_seq_num(match_seq_num) VALUES (?) ON CONFLICT DO NOTHING',
@@ -56,12 +56,11 @@ runInLoop(async function scanApi() {
     start_at_match_seq_num: seqNum,
     matches_requested: PAGE_SIZE,
   });
-  let data = await getSteamAPIDataWithRetry({
+  let data = await getSteamAPIDataWithRetry<MatchSequence>({
     url,
     proxy: true,
   });
-  const resp =
-    data && data.result && data.result.matches ? data.result.matches : [];
+  const resp = data?.result?.matches ?? [];
   console.log('[API] match_seq_num:%s, matches:%s', seqNum, resp.length);
   const start = Date.now();
   await Promise.all(

@@ -7,17 +7,17 @@ runInLoop(
   async function leagues() {
     const url =
       'http://www.dota2.com/webapi/IDOTA2League/GetLeagueInfoList/v001';
-    const resp = await axios.get(url);
+    const resp = await axios.get<Leagues>(url);
     const apiLeagues = resp.data.infos;
     console.log('[LEAGUES]', apiLeagues.length, 'leagues');
     for (let i = 0; i < apiLeagues.length; i++) {
-      const league = apiLeagues[i];
+      const league: LeagueDB = apiLeagues[i];
       const openQualifierTier =
         league.name.indexOf('Open Qualifier') === -1 ? null : 'excluded';
       let eventTier = 'excluded';
       if (league.tier === 2) {
         eventTier = 'professional';
-      } else if (league.tier >= 3) {
+      } else if (Number(league.tier) >= 3) {
         eventTier = 'premium';
       }
       if (league.league_id === 4664) {
