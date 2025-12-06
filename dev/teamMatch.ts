@@ -1,6 +1,4 @@
-import { upsert } from '../svc/store/db.ts';
-
-const { db } = await import('../svc/store/db.ts');
+import db, { upsert } from '../svc/store/db.ts';
 
 const matches = await db
   .select(['radiant_team_id', 'dire_team_id', 'match_id'])
