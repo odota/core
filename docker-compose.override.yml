@@ -41,6 +41,5 @@ services:
       exit 0;
       "
   core:
-    entrypoint: bash launch.sh
     volumes:
       - .:/usr/src

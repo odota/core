@@ -1,4 +1,4 @@
-// Deployed in the cloud to proxy requests to the Steam API
+// Proxies requests to the Steam API
 import httpProxy from 'http-proxy';
 import http from 'node:http';
 import config from '../config.ts';

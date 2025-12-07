@@ -35,8 +35,14 @@ if (process.env.ROLE) {
     24 * 60 * 60 * 1000,
   );
 } else {
-  console.log('blocking process indefinitely for Docker');
-  process.stdin.resume();
+  console.log('starting web');
+  execSync('pm2 start ecosystem.config.js --only web');
+  setInterval(
+    () => {
+      // execSync('pm2 flush');
+    },
+    24 * 60 * 60 * 1000,
+  );
 }
 
 process.on('uncaughtException', async (err) => {
