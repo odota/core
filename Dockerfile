@@ -1,7 +1,5 @@
 FROM node:24
 
-ENV NPM_CONFIG_LOGLEVEL warn
-
 COPY . /usr/src
 
 WORKDIR /usr/src

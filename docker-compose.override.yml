@@ -30,8 +30,6 @@ services:
     image: minio/mc
     depends_on:
       - minio
-    volumes:
-      - .:/usr/src
     container_name: odota-minioinit
     entrypoint: >
       /bin/sh -c "
@@ -43,3 +41,4 @@ services:
   core:
     volumes:
       - .:/usr/src
+      - /usr/src/node_modules
