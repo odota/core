@@ -19,8 +19,7 @@ import { getStartOfBlockMinutes } from './time.ts';
 export async function getDistributions() {
   const result: AnyDict = {};
   const keys = ['distribution:ranks'];
-  for (let i = 0; i < keys.length; i++) {
-    const r = keys[i];
+  for (let r of keys) {
     const blob = await redis.get(r);
     result[r.split(':')[1]] = blob ? JSON.parse(blob) : null;
   }

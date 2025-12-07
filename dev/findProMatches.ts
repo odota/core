@@ -9,8 +9,7 @@ async function getPage(url: string, leagueid: number) {
     data.result.total_results,
     data.result.results_remaining,
   );
-  for (let i = 0; i < data.result.matches.length; i++) {
-    const match = data.result.matches[i];
+  for (let match of data.result.matches) {
     console.log(match.match_id);
     const url = SteamAPIUrls.api_details({
       match_id: match.match_id,

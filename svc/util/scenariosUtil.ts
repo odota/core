@@ -103,8 +103,7 @@ export const scenarioChecks = {
       let radiantPositive = false;
       let direPositive = false;
       if (match.chat) {
-        for (let i = 0; i < match.chat.length; i += 1) {
-          const c = match.chat[i];
+        for (let c of match.chat) {
           if (c.time >= 60) {
             break;
           }

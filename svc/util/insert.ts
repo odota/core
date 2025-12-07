@@ -570,8 +570,7 @@ export async function insertMatch(
       }
       const timestamp = moment.utc().startOf('day').unix();
       const expire = moment.utc().startOf('day').add(8, 'day').unix();
-      for (let i = 0; i < match.players.length; i += 1) {
-        const player = match.players[i];
+      for (let player of match.players) {
         const heroId = player.hero_id;
         if (heroId) {
           const win = Number(isRadiant(player) === match.radiant_win);
@@ -620,8 +619,7 @@ export async function insertMatch(
         match.match_id % 100 < Number(config.BENCHMARKS_SAMPLE_PERCENT) &&
         (isSignificant(match) || turbo)
       ) {
-        for (let i = 0; i < match.players.length; i += 1) {
-          const p = match.players[i];
+        for (let p of match.players) {
           // only do if all players have heroes
           if (p.hero_id) {
             Object.keys(benchmarks).forEach((key) => {

@@ -50,7 +50,7 @@ const filterFuncs: {
     return m.lobby_type === val;
   },
   region(m, val) {
-    return cluster[m.cluster as unknown as keyof typeof cluster] === val;
+    return cluster[String(m.cluster) as keyof typeof cluster] === val;
   },
   date(m, val, _arr, curtime) {
     return m.start_time > curtime - Number(val) * 86400;
@@ -164,7 +164,7 @@ export function filterMatches(
   const curtime = Math.floor(Date.now() / 1000);
   // accept a hash of filters, run all the filters in the hash in series
   const filtered = [];
-  for (let i = 0; i < matches.length; i += 1) {
+  for (let match of matches) {
     let include = true;
     if (filters) {
       // verify the match passes each filter test
@@ -178,13 +178,13 @@ export function filterMatches(
           // pass the player_match, the first element of array, and the array itself
           include =
             include &&
-            filterFuncs[key as FilterType](matches[i], first, arr, curtime);
+            filterFuncs[key as FilterType](match, first, arr, curtime);
         }
       });
     }
     // if we passed, push it
     if (include) {
-      filtered.push(matches[i]);
+      filtered.push(match);
     }
   }
   return filtered;

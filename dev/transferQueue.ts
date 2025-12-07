@@ -4,8 +4,7 @@ import { addReliableJob } from '../svc/store/queue.ts';
 const { rows } = await db.raw(
   `select match_id, pgroup from rating_queue WHERE match_seq_num < 7094889566 ORDER BY match_seq_num ASC`,
 );
-for (let i = 0; i < rows.length; i++) {
-  const row = rows[i];
+for (let row of rows) {
   await addReliableJob(
     {
       name: 'gcQueue',

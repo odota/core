@@ -75,8 +75,7 @@ export function modeWithCount(array: number[]) {
   const modeMap: NumberDict = {};
   let maxEl = array[0];
   let maxCount = 1;
-  for (let i = 0; i < array.length; i += 1) {
-    const el = array[i];
+  for (let el of array) {
     if (modeMap[el] == null) modeMap[el] = 1;
     else modeMap[el] += 1;
     if (modeMap[el] > maxCount) {
@@ -127,8 +126,7 @@ export function serialize(row: AnyDict): AnyDict {
 export function deserialize(row: AnyDict): any {
   const obj: AnyDict = {};
   const keys = row.keys();
-  for (let i = 0; i < keys.length; i++) {
-    const key = keys[i];
+  for (let key of keys) {
     obj[key] = JSON.parse(row[key]);
   }
   return obj;

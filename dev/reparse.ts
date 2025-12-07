@@ -6,8 +6,7 @@ const matches = await db.raw(
   'select match_id from matches where replay_salt IS NULL',
 );
 console.log(matches.rows.length);
-for (let i = 0; i < matches.rows.length; i++) {
-  const input = matches.rows[i];
+for (let input of matches.rows) {
   // match id request, get data from API
   await addReliableJob(
     { name: 'parse', data: { match_id: input.match_id } },

@@ -21,8 +21,7 @@ const { rows } = await db.raw(
 );
 // console.log(rows);
 const apiTimestamp = moment.utc().startOf('month');
-for (let i = 0; i < rows.length; i++) {
-  const row = rows[i];
+for (let row of rows) {
   const curr = await db.raw(
     'select * from api_key_usage where api_key = ? and timestamp = ?',
     [row.api_key, apiTimestamp],

@@ -551,7 +551,7 @@ type ProfileSummaries = typeof import('./json/summaries_api.json');
 type TopLiveGames = typeof import('./json/toplivegames_api.json');
 type Heroes = typeof import('./json/heroes_api.json');
 type Leagues = typeof import('./json/leagues_api.json');
-type LeagueDB = Omit<Leagues['infos'][number], 'tier'> & {
+type LeagueToInsert = Omit<Leagues['infos'][number], 'tier'> & {
   tier: string | number;
   ticket?: null;
   banner?: null;

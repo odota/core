@@ -92,8 +92,8 @@ async function processFullHistory(job: FullHistoryJob, metadata: JobMetadata) {
     const origCount = Object.keys(matchesToProcess).length;
     // iterate through db results, delete match_id key if this player has this match already
     // will re-request and update matches where this player was previously anonymous
-    for (let i = 0; i < docs.length; i += 1) {
-      const matchId = docs[i].match_id;
+    for (let doc of docs) {
+      const matchId = doc.match_id;
       delete matchesToProcess[matchId];
     }
     console.log(
@@ -104,8 +104,8 @@ async function processFullHistory(job: FullHistoryJob, metadata: JobMetadata) {
       Object.keys(matchesToProcess).length,
     );
     const keys = Object.keys(matchesToProcess);
-    for (let i = 0; i < keys.length; i++) {
-      const match = matchesToProcess[keys[i]];
+    for (let key of keys) {
+      const match = matchesToProcess[key];
       const playerSlot = match.players.find(
         (p) => p.account_id === player.account_id,
       )?.player_slot;

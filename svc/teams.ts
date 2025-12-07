@@ -18,8 +18,7 @@ runInLoop(
       'select team_id from (select distinct team_id from team_match) ids where team_id not in (select team_id from teams)',
     );
     const combined = [...result2.rows, ...result.rows];
-    for (let i = 0; i < combined.length; i++) {
-      const m = combined[i];
+    for (let m of combined) {
       if (!m.team_id) {
         continue;
       }

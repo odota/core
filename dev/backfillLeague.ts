@@ -9,8 +9,8 @@ import { getSteamAPIDataWithRetry, SteamAPIUrls } from '../svc/util/http.ts';
 let { rows } = await db.raw(
   'select leagueid from leagues WHERE leagueid > 0 ORDER by leagueid ASC',
 );
-for (let i = 0; i < rows.length; i++) {
-  const leagueid = rows[i].leagueid;
+for (let row of rows) {
+  const leagueid = row.leagueid;
   // Get a page of matches
   let nextPage = true;
   let start_at_match_id = undefined;

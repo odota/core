@@ -38,8 +38,8 @@ export function kCombinations(arr: number[], k: number): number[][] {
   }
   if (k === 1) {
     combs = [];
-    for (i = 0; i < arr.length; i += 1) {
-      combs.push([arr[i]]);
+    for (let comb of arr) {
+      combs.push([comb]);
     }
     return combs;
   }
@@ -66,8 +66,7 @@ export function generateMatchups(match: Match, max: number, oneSided: boolean) {
   let rCombs: number[][] = [[]];
   let dCombs: number[][] = [[]];
   const result: string[] = [];
-  for (let i = 0; i < match.players.length; i += 1) {
-    const p = match.players[i];
+  for (let p of match.players) {
     if (p.hero_id === 0) {
       // exclude this match if any hero is 0
       return result;

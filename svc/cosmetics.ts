@@ -19,8 +19,7 @@ runInLoop(
 
     const ids = Object.keys(itemData.items_game.items);
     console.log('%s cosmetics to process', ids.length);
-    for (let i = 0; i < ids.length; i++) {
-      const itemId = ids[i];
+    for (let itemId of ids) {
       const item = itemData.items_game.items[itemId];
       item.item_id = Number(itemId);
       const hero =

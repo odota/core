@@ -258,8 +258,8 @@ app.get('/retrieverData', async (req, res, next) => {
     const accountData = resp.data.split(/\r\n|\r|\n/g);
     // Store in redis set
     const idReqs = await getRedisCountDayHash('retrieverSteamIDs');
-    for (let i = 0; i < accountData.length; i++) {
-      const accountName = accountData[i].split(/:|\t/)[0];
+    for (let line of accountData) {
+      const accountName = line.split(/:|\t/)[0];
       const reqs = idReqs[accountName] || 0;
       // const reqs = Number(await redis.hget('retrieverSteamIDs', accountName));
       // const success = Number(
@@ -269,7 +269,7 @@ app.get('/retrieverData', async (req, res, next) => {
       // const isLowRatio = reqs > 25 && ratio <= 0;
       // Don't add high usage logons or high fail logons
       if (reqs < 200) {
-        await redis.sadd('retrieverDataSet', accountData[i]);
+        await redis.sadd('retrieverDataSet', line);
       }
     }
   }

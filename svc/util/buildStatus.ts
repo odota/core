@@ -354,10 +354,8 @@ export async function buildStatus(isAdmin: boolean) {
     },
     game_mode: async () => {
       const result: Record<string, number> = {};
-      const keys = Object.keys(game_mode);
-      for (let i = 0; i < keys.length; i++) {
-        const key = keys[i] as keyof typeof game_mode;
-        result[game_mode[key]?.name] = Number(
+      for (let key of Object.keys(game_mode)) {
+        result[game_mode[key as keyof typeof game_mode]?.name] = Number(
           await getRedisCountDay(`${key}_game_mode` as MetricName),
         );
       }
@@ -365,10 +363,8 @@ export async function buildStatus(isAdmin: boolean) {
     },
     lobby_type: async () => {
       const result: Record<string, number> = {};
-      const keys = Object.keys(lobby_type);
-      for (let i = 0; i < keys.length; i++) {
-        const key = keys[i] as keyof typeof lobby_type;
-        result[lobby_type[key]?.name] = Number(
+      for (let key of Object.keys(lobby_type)) {
+        result[lobby_type[key as keyof typeof lobby_type]?.name] = Number(
           await getRedisCountDay(`${key}_lobby_type` as MetricName),
         );
       }
@@ -376,14 +372,11 @@ export async function buildStatus(isAdmin: boolean) {
     },
     region: async () => {
       const result: Record<string, number> = {};
-      const clusters = Object.entries(cluster);
-      for (let i = 0; i < clusters.length; i++) {
-        const [cluster, reg] = clusters[i];
-        const regName =
-          region[reg as unknown as keyof typeof region] ?? cluster;
+      for (let [cl, reg] of Object.entries(cluster)) {
+        const regName = region[String(reg) as keyof typeof region] ?? cl;
         result[regName] =
           (result[regName] ?? 0) +
-          Number(await getRedisCountDay(`${cluster}_cluster` as MetricName));
+          Number(await getRedisCountDay(`${cl}_cluster` as MetricName));
       }
       return result;
     },

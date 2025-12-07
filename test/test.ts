@@ -125,8 +125,7 @@ async function initCassandra() {
   const tables = readFileSync('./sql/create_tables.cql', 'utf8')
     .split(';')
     .filter((cql) => cql.length > 1);
-  for (let i = 0; i < tables.length; i++) {
-    const cql = tables[i];
+  for (let cql of tables) {
     await init.execute('USE yasp_test');
     await init.execute(cql);
   }
@@ -166,8 +165,7 @@ async function startServices() {
 async function loadMatches() {
   console.log('loading matches');
   const arr = [detailsApi.result, detailsApiPro.result, detailsApiPro.result];
-  for (let i = 0; i < arr.length; i++) {
-    const m = arr[i];
+  for (let m of arr) {
     await insertMatch(m, {
       type: 'api',
       // Pretend to be scanner insert so we queue mmr/counts update etc.
@@ -499,8 +497,7 @@ suite(c.blue('API ROUTES'), async () => {
         }
       });
     });
-    for (let i = 0; i < tests.length; i++) {
-      const t = tests[i];
+    for (let t of tests) {
       const [path, verb, replacedPath] = t;
       if (path.indexOf('/explorer') === 0 || path.indexOf('/request') === 0) {
         continue;
@@ -581,8 +578,7 @@ suite(c.blue('RATE LIMITING'), async () => {
       `/api${key}`, // Docs
       `/api/metadata${key}`, // Login status
     ];
-    for (let i = 0; i < routes.length; i++) {
-      const route = routes[i];
+    for (let route of routes) {
       const res = await supertest(app).get(route);
       assert.notEqual(res.statusCode, 429);
     }

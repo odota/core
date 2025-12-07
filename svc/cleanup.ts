@@ -36,13 +36,13 @@ runInLoop(
     } catch (e) {
       // ignore if doesn't exist
     }
-    for (let i = 0; i < files.length; i++) {
+    for (let file of files) {
       try {
         // Check if the ID is of a recent visitor or recently visited profile, if so, don't delete
-        const isVisitor = await isRecentVisitor(Number(files[i]));
-        const isVisited = await isRecentlyVisited(Number(files[i]));
+        const isVisitor = await isRecentVisitor(Number(file));
+        const isVisited = await isRecentlyVisited(Number(file));
         if (!isVisited && !isVisitor) {
-          await fs.unlink('./cache/' + files[i]);
+          await fs.unlink('./cache/' + file);
         }
       } catch (e) {
         console.log(e);

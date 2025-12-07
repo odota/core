@@ -674,7 +674,7 @@ You can use the API without a key, but registering for a key allows increased ra
             > = {
               is_radiant: isRadiant(m),
               patch: getPatchIndex(m.start_time),
-              region: cluster[m.cluster as unknown as keyof typeof cluster],
+              region: cluster[String(m.cluster) as keyof typeof cluster],
               leaver_status: m.leaver_status,
               game_mode: m.game_mode,
               lobby_type: m.lobby_type,

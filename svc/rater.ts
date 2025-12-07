@@ -75,8 +75,7 @@ runInLoop(async function rate() {
   const trx = await db.transaction();
   // Rate each player
   console.log('match %s, radiant_win: %s', row.match_id, row.radiant_win);
-  for (let i = 0; i < gcMatch.players.length; i++) {
-    const p = gcMatch.players[i];
+  for (let p of gcMatch.players) {
     const oldRating = ratingMap.get(p.account_id!) ?? DEFAULT_RATING;
     const delta = isRadiant(p) ? ratingDiff1 : ratingDiff2;
     // apply delta to each player (all players on a team will have the same rating change)

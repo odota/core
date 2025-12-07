@@ -57,8 +57,8 @@ async function processPlayer(accountId: string) {
   const matches = body.result.matches
     .filter((m: any) => m.match_seq_num > Number(res))
     .map((m: any) => m.match_id);
-  for (let i = 0; i < matches.length; i++) {
-    await processMatch(matches[i]);
+  for (let match of matches) {
+    await processMatch(match);
   }
 }
 */

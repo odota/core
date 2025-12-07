@@ -34,8 +34,7 @@ async function processScenarios(matchID: string, i: number) {
   Object.keys(scenarioChecks).forEach((table) => {
     scenarioChecks[table as ScenariosKey].forEach(async (scenarioCheck) => {
       const rows = scenarioCheck(match);
-      for (let i = 0; i < rows.length; i++) {
-        let row = rows[i];
+      for (let row of rows) {
         row = Object.assign(row, {
           epoch_week: currentWeek,
           wins: row.wins ? '1' : '0',

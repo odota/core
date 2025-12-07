@@ -43,10 +43,10 @@ export function countWords(
   // count how frequently each word occurs
   // Use a JS Map since it's user input and a string like 'constructor' is going to cause problems
   const counts = new Map<string, number>();
-  for (let i = 0; i < tokens.length; i += 1) {
+  for (let token of tokens) {
     // ignore the empty string
-    if (tokens[i]) {
-      counts.set(tokens[i], (counts.get(tokens[i]) ?? 0) + 1);
+    if (token) {
+      counts.set(token, (counts.get(token) ?? 0) + 1);
     }
   }
   // return the final counts
@@ -57,13 +57,13 @@ export function countWords(
  * Computes additional properties from a match/player_match
  * */
 export function computeMatchData(pm: ParsedPlayerMatch) {
-  const selfHero = heroes[pm.hero_id as unknown as keyof typeof heroes];
+  const selfHero = heroes[String(pm.hero_id) as keyof typeof heroes];
   // Compute patch based on start_time
   if (pm.start_time) {
     pm.patch = getPatchIndex(pm.start_time);
   }
   if (pm.cluster) {
-    pm.region = cluster[pm.cluster as unknown as keyof typeof cluster];
+    pm.region = cluster[String(pm.cluster) as keyof typeof cluster];
   }
   if (pm.player_slot !== undefined && pm.radiant_win !== undefined) {
     pm.isRadiant = isRadiant(pm);

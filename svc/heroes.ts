@@ -20,8 +20,7 @@ runInLoop(
     if (!heroData) {
       return;
     }
-    for (let i = 0; i < body.result.heroes.length; i++) {
-      const hero = body.result.heroes[i];
+    for (let hero of body.result.heroes) {
       const heroDataHero = heroData[hero.id] || {};
       await upsert(
         db,

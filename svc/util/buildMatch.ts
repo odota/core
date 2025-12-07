@@ -94,8 +94,7 @@ export async function getPlayerBenchmarks(m: Match) {
   return Promise.all(
     m.players.map(async (p) => {
       const result: Record<string, { raw?: number; pct?: number }> = {};
-      for (let i = 0; i < Object.keys(benchmarks).length; i++) {
-        const metric = Object.keys(benchmarks)[i];
+      for (let metric of Object.keys(benchmarks)) {
         result[metric] = {};
         // Use data from previous epoch
         let key = [
@@ -234,7 +233,7 @@ export async function buildMatch(
         if (!cosmetics) {
           return p;
         }
-        const hero = heroes[p.hero_id as unknown as keyof typeof heroes] || {};
+        const hero = heroes[String(p.hero_id) as keyof typeof heroes] || {};
         const playerCosmetics = cosmetics
           .filter(Boolean)
           .filter(

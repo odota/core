@@ -16,8 +16,7 @@ runInLoop(async function liveGames() {
   const json: TopLiveGames = JSONbig.parse(body);
   // If a match contains a pro player
   // add their name to the match object, save it to redis zset, keyed by server_steam_id
-  for (let i = 0; i < json.game_list.length; i++) {
-    const match = json.game_list[i];
+  for (let match of json.game_list) {
     // let addToRedis = false;
     if (match && match.players) {
       match.players.forEach((player, i) => {
