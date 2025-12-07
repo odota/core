@@ -57,7 +57,7 @@ export async function getRedisCountDayDistinct(prefix: MetricName) {
 export async function getRedisCountDayHash(
   prefix: string,
 ): Promise<Record<string, number>> {
-  const result: Record<string, number> = {};
+  const result = new Map<string, number>();
   for (let i = 0; i < 24; i += 1) {
     const key = `${prefix}:${moment
       .utc()
@@ -66,10 +66,10 @@ export async function getRedisCountDayHash(
       .format('X')}`;
     const hash = await redis?.hgetall(key);
     for (let key in hash) {
-      result[key] = (result[key] ?? 0) + Number(hash[key]);
+      result.set(key, (result.get(key) ?? 0) + Number(hash[key]));
     }
   }
-  return result;
+  return Object.fromEntries(result);
 }
 
 /**
