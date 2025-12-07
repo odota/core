@@ -547,6 +547,7 @@ type MatchHistory = typeof import('./json/history_api.json');
 type MatchSequence = typeof import('./json/sequence_api.json');
 type RetrieverPlayer = typeof import('./json/retriever_player.json');
 type RetrieverMatch = typeof import('./json/retriever_match.json');
+type RetrieverAliases = typeof import('./json/retriever_aliases.json');
 type ProfileSummaries = typeof import('./json/summaries_api.json');
 type TopLiveGames = typeof import('./json/toplivegames_api.json');
 type Heroes = typeof import('./json/heroes_api.json');

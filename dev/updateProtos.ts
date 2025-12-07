@@ -35,4 +35,7 @@ if (!resp.ok) {
   throw new Error('fetch not ok');
 }
 fs.mkdirSync('./proto/google/protobuf', { recursive: true });
-fs.writeFileSync('./proto/google/protobuf/descriptor.proto', Buffer.from(await resp.arrayBuffer()));
+fs.writeFileSync(
+  './proto/google/protobuf/descriptor.proto',
+  Buffer.from(await resp.arrayBuffer()),
+);

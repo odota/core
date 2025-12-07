@@ -487,6 +487,13 @@ CREATE TABLE IF NOT EXISTS league_match(
   match_id bigint
 );
 
+CREATE TABLE IF NOT EXISTS aliases(
+  PRIMARY KEY(account_id, personaname),
+  account_id bigint,
+  personaname text,
+  name_since timestamp with time zone
+);
+
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'readonly') THEN

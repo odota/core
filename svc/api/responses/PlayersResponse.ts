@@ -20,6 +20,23 @@ export default {
         type: 'number',
         nullable: true,
       },
+      aliases: {
+        description: 'List of names the player has used on Steam',
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            personaname: {
+              description: 'The name used by the player',
+              type: 'string',
+            },
+            name_since: {
+              description: 'The date the name was used since',
+              type: 'string',
+            },
+          },
+        },
+      },
       profile: {
         description: 'profile',
         type: 'object',

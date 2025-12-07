@@ -267,6 +267,7 @@ You can use the API without a key, but registering for a key allows increased ra
             leaderboardRank,
             computedRating,
             computedRatingTurbo,
+            aliases,
           ] = await Promise.all([
             db.first().from('rank_tier').where({ account_id: accountId }),
             db
@@ -281,6 +282,10 @@ You can use the API without a key, but registering for a key allows increased ra
               .first()
               .from('player_computed_mmr_turbo')
               .where({ account_id: accountId }),
+            db
+              .select('personaname', 'name_since')
+              .from('aliases')
+              .where({ account_id: accountId }),
           ]);
           const result = {
             profile: playerData,
@@ -288,6 +293,7 @@ You can use the API without a key, but registering for a key allows increased ra
             leaderboard_rank: leaderboardRank?.rating ?? null,
             computed_mmr: computedRating?.computed_mmr ?? null,
             computed_mmr_turbo: computedRatingTurbo?.computed_mmr ?? null,
+            aliases,
           };
           return res.json(result);
         },

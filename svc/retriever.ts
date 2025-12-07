@@ -24,6 +24,8 @@ let matchRequests = 0;
 let matchSuccesses = 0;
 let profileRequests = 0;
 let profileSuccesses = 0;
+let aliasRequests = 0;
+let aliasSuccesses = 0;
 const matchAttempts: Record<string, number> = {};
 const failedLogin: Record<string, string> = {};
 const DOTA_APPID = 570;
@@ -104,12 +106,14 @@ const server = createServer(async (req, res) => {
         return;
       }
       console.log(
-        'numReady: %s, matches: %s/%s, profiles: %s/%s, uptime: %s, matchRequestDelay: %s',
+        'numReady: %s, matches: %s/%s, profiles: %s/%s, aliases: %s/%s, uptime: %s, matchRequestDelay: %s',
         Object.keys(steamObj).length,
         matchSuccesses,
         matchRequests,
         profileSuccesses,
         profileRequests,
+        aliasSuccesses,
+        aliasRequests,
         getUptime(),
         matchRequestInterval,
       );
@@ -208,6 +212,7 @@ const server = createServer(async (req, res) => {
         const keys = Object.keys(steamObj);
         const rKey = keys[Math.floor(Math.random() * keys.length)];
         const client = steamObj[rKey];
+        aliasRequests += 1;
         client.getAliases(
           url.pathname.split('/')[2]?.split(','),
           (err, aliases) => {
@@ -216,7 +221,9 @@ const server = createServer(async (req, res) => {
               res.end(err.message || err);
               return;
             }
-            res.end(JSON.stringify(aliases));
+            aliasSuccesses += 1;
+            res.setHeader('Content-Encoding', 'gzip');
+            res.end(gzipSync(JSON.stringify(aliases)));
           },
         );
       } else {
