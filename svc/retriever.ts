@@ -14,7 +14,7 @@ const steamObj: Record<string, SteamUser> = {};
 
 const numAccounts = Number(config.RETRIEVER_NUM_ACCOUNTS);
 const matchesPerAccount = 100;
-const accountAttemptMax = 5;
+const accountAttemptMax = 10;
 const matchRequestInterval = Math.max(1000 / numAccounts, 250);
 const port = config.PORT || config.RETRIEVER_PORT;
 const noneReady = () =>
