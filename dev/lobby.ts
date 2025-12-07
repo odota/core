@@ -2,8 +2,6 @@
 const app = express();
 const users = config.STEAM_USER.split(',');
 const passes = config.STEAM_PASS.split(',');
-const steamObj = {};
-const accountToIdx = {};
 const replayRequests = 0;
 const launch = new Date();
 let launched = false;

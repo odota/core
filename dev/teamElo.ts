@@ -4,10 +4,10 @@
 import db from '../svc/store/db.ts';
 
 // Keep each team's rating in memory and update
-const teams: any = {};
-const wins: any = {};
-const losses: any = {};
-const startTimes: any = {};
+const teams = new Map<string, number>();
+const wins = new Map<string, number>();
+const losses = new Map<string, number>();
+const startTimes = new Map<string, number>();
 const kFactor = 32;
 // Read a stream from the database
 const stream = db
@@ -24,28 +24,28 @@ ORDER BY match_id ASC
   .stream();
 stream.on('data', (match) => {
   // console.log(JSON.stringify(match));
-  if (!teams[match.team_id1]) {
-    teams[match.team_id1] = 1000;
+  if (!teams.has(match.team_id1)) {
+    teams.set(match.team_id1, 1000);
   }
-  if (!teams[match.team_id2]) {
-    teams[match.team_id2] = 1000;
+  if (!teams.has(match.team_id2)) {
+    teams.set(match.team_id2, 1000);
   }
-  if (!wins[match.team_id1]) {
-    wins[match.team_id1] = 0;
+  if (!wins.has(match.team_id1)) {
+    wins.set(match.team_id1, 0);
   }
-  if (!wins[match.team_id2]) {
-    wins[match.team_id2] = 0;
+  if (!wins.has(match.team_id2)) {
+    wins.set(match.team_id2, 0);
   }
-  if (!losses[match.team_id1]) {
-    losses[match.team_id1] = 0;
+  if (!losses.has(match.team_id1)) {
+    losses.set(match.team_id1, 0);
   }
-  if (!losses[match.team_id2]) {
-    losses[match.team_id2] = 0;
+  if (!losses.has(match.team_id2)) {
+    losses.set(match.team_id2, 0);
   }
-  startTimes[match.team_id1] = match.start_time;
-  startTimes[match.team_id2] = match.start_time;
-  const currRating1 = teams[match.team_id1];
-  const currRating2 = teams[match.team_id2];
+  startTimes.set(match.team_id1, match.start_time);
+  startTimes.set(match.team_id2, match.start_time);
+  const currRating1 = teams.get(match.team_id1)!;
+  const currRating2 = teams.get(match.team_id2)!;
   const r1 = 10 ** (currRating1 / 400);
   const r2 = 10 ** (currRating2 / 400);
   const e1 = r1 / (r1 + r2);
@@ -54,12 +54,12 @@ stream.on('data', (match) => {
   const win2 = Number(!win1);
   const ratingDiff1 = kFactor * (win1 - e1);
   const ratingDiff2 = kFactor * (win2 - e2);
-  teams[match.team_id1] += ratingDiff1;
-  teams[match.team_id2] += ratingDiff2;
-  wins[match.team_id1] += win1;
-  wins[match.team_id2] += win2;
-  losses[match.team_id1] += Number(!win1);
-  losses[match.team_id2] += Number(!win2);
+  teams.set(match.team_id1, teams.get(match.team_id1)! + ratingDiff1);
+  teams.set(match.team_id2, teams.get(match.tem_id2)! + ratingDiff2);
+  wins.set(match.team_id1, wins.get(match.team_id1)! + win1);
+  wins.set(match.team_id2, wins.get(match.team_id2)! + win2);
+  losses.set(match.team_id1, losses.get(match.team_id1)! + Number(!win1));
+  losses.set(match.team_id2, losses.get(match.team_id2)! + Number(!win2));
 });
 stream.on('end', () => {
   console.log(teams, wins, losses, startTimes);
@@ -67,15 +67,21 @@ stream.on('end', () => {
   Object.keys(teams).forEach((teamId) => {
     console.log([
       teamId,
-      teams[teamId],
-      wins[teamId],
-      losses[teamId],
-      startTimes[teamId],
+      teams.get(teamId),
+      wins.get(teamId),
+      losses.get(teamId),
+      startTimes.get(teamId),
     ]);
     db.raw(
       `INSERT INTO team_rating(team_id, rating, wins, losses, last_match_time) VALUES(?, ?, ?, ?, ?)
   ON CONFLICT(team_id) DO UPDATE SET team_id=EXCLUDED.team_id, rating=EXCLUDED.rating, wins=EXCLUDED.wins, losses=EXCLUDED.losses, last_match_time=EXCLUDED.last_match_time`,
-      [teamId, teams[teamId], wins[teamId], losses[teamId], startTimes[teamId]],
+      [
+        teamId,
+        teams.get(teamId),
+        wins.get(teamId),
+        losses.get(teamId),
+        startTimes.get(teamId),
+      ],
     );
   });
 });

@@ -10,7 +10,9 @@ import { gzipSync } from 'node:zlib';
 import config from '../config.ts';
 import ProtoBuf from 'protobufjs';
 
-const steamObj: Record<string, SteamUser> = {};
+const steamObj = new Map<string, SteamUser>();
+const matchAttempts = new Map<string, number>();
+const failedLogin = new Map<string, string>();
 
 const numAccounts = Number(config.RETRIEVER_NUM_ACCOUNTS);
 const matchesPerAccount = 100;
@@ -26,8 +28,6 @@ let profileRequests = 0;
 let profileSuccesses = 0;
 let aliasRequests = 0;
 let aliasSuccesses = 0;
-const matchAttempts: Record<string, number> = {};
-const failedLogin: Record<string, string> = {};
 const DOTA_APPID = 570;
 let publicIP = '';
 
@@ -121,7 +121,7 @@ const server = createServer(async (req, res) => {
         const accountId = url.pathname.split('/')[2];
         const keys = Object.keys(steamObj);
         const rKey = keys[Math.floor(Math.random() * keys.length)];
-        const client = steamObj[rKey];
+        const client = steamObj.get(rKey)!;
         profileRequests += 1;
         client.sendToGC(
           DOTA_APPID,
@@ -156,17 +156,17 @@ const server = createServer(async (req, res) => {
         // Round robin request to spread load evenly
         const rKey = keys[matchRequests % keys.length];
         const matchId = url.pathname.split('/')[2];
-        const client = steamObj[rKey];
+        const client = steamObj.get(rKey)!;
         matchRequests += 1;
         // If the selected client has multiple consecutive failures, skip the request
-        if (matchAttempts[rKey] >= accountAttemptMax) {
+        if ((matchAttempts.get(rKey) ?? 0) >= accountAttemptMax) {
           res.statusCode = 500;
           res.end('too many attempts');
           return;
         }
         res.setHeader('x-match-request-steamid', rKey);
         res.setHeader('x-match-request-ip', publicIP);
-        matchAttempts[rKey] = (matchAttempts[rKey] ?? 0) + 1;
+        matchAttempts.set(rKey, (matchAttempts.get(rKey) ?? 0) + 1);
         const start = Date.now();
         const timeout = setTimeout(() => {
           // Respond to send back header info even if no response from GC
@@ -200,7 +200,7 @@ const server = createServer(async (req, res) => {
               }
               matchSuccesses += 1;
               // Reset on success
-              delete matchAttempts[rKey];
+              matchAttempts.delete(rKey);
               // Compress and send
               res.setHeader('Content-Encoding', 'gzip');
               res.end(gzipSync(JSON.stringify(matchData)));
@@ -211,7 +211,7 @@ const server = createServer(async (req, res) => {
         // example: 76561198048632981
         const keys = Object.keys(steamObj);
         const rKey = keys[Math.floor(Math.random() * keys.length)];
-        const client = steamObj[rKey];
+        const client = steamObj.get(rKey)!;
         aliasRequests += 1;
         client.getAliases(
           url.pathname.split('/')[2]?.split(','),
@@ -310,18 +310,18 @@ logOns.forEach((logOnDetails) => {
         logOnDetails.accountName,
         // client.steamID.toString(),
       );
-      steamObj[logOnDetails.accountName] = client;
+      steamObj.set(logOnDetails.accountName, client);
     }
     // We can also handle other GC responses here if not using callbacks
   });
   client.on('steamGuard', (domain, callback) => {
     console.log('Steam Guard code needed from email ending in ' + domain);
-    failedLogin[logOnDetails.accountName] = 'steamGuard';
+    failedLogin.set(logOnDetails.accountName, 'steamGuard');
     // callback(code);
   });
   client.on('error', (err: any) => {
     console.error(err);
-    failedLogin[logOnDetails.accountName] = SteamUser.EResult[err.eresult];
+    failedLogin.set(logOnDetails.accountName, SteamUser.EResult[err.eresult]);
   });
   client.logOn(logOnDetails);
 });

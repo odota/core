@@ -19,13 +19,13 @@ import moment from 'moment';
 import { getStartOfBlockMinutes } from './time.ts';
 
 export async function getDistributions() {
-  const result: AnyDict = {};
+  const result = new Map<string, any>();
   const keys = ['distribution:ranks'];
   for (let r of keys) {
     const blob = await redis.get(r);
-    result[r.split(':')[1]] = blob ? JSON.parse(blob) : null;
+    result.set(r.split(':')[1], blob ? JSON.parse(blob) : null);
   }
-  return result;
+  return Object.fromEntries(result);
 }
 
 export async function getHeroRankings(heroId: string) {

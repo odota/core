@@ -202,25 +202,12 @@ export async function buildStatus(isAdmin: boolean) {
     api_paths: async () => {
       const result = await getRedisCountDayHash('api_paths');
       const sorted = Object.entries(result).sort((a, b) => b[1] - a[1]);
-      const final: Record<string, number> = {};
-      sorted.forEach(([k, v]) => {
-        final[k] = v;
-      });
-      return final;
+      return Object.fromEntries(sorted);
     },
     api_status: async () => {
       const result = await getRedisCountDayHash('api_status');
       // Sorting won't do anything here because JS always puts numeric keys in numeric order
       return result;
-    },
-    api_origins: async () => {
-      const result = await getRedisCountDayHash('api_origins');
-      const sorted = Object.entries(result).sort((a, b) => b[1] - a[1]);
-      const final: Record<string, number> = {};
-      sorted.forEach(([k, v]) => {
-        final[k] = v;
-      });
-      return final;
     },
     load_times: async () => {
       const arr = await redis.lrange('load_times', 0, -1);
@@ -229,11 +216,7 @@ export async function buildStatus(isAdmin: boolean) {
     steam_api_paths: async () => {
       const result = await getRedisCountDayHash('steam_api_paths');
       const sorted = Object.entries(result).sort((a, b) => b[1] - a[1]);
-      const final: Record<string, number> = {};
-      sorted.forEach(([k, v]) => {
-        final[k] = v;
-      });
-      return final;
+      return Object.fromEntries(sorted);
     },
     retrieverCounts: async () => {
       if (isAdmin) {
@@ -267,7 +250,7 @@ export async function buildStatus(isAdmin: boolean) {
       return {} as Record<string, number>;
     },
     retrieverRegistry: async () => {
-      let retrieverRegistry: Record<string, Metric> = {};
+      let result = new Map<string, Metric>();
       if (isAdmin) {
         const registryKeys = await redis.zrange('registry:retriever', 0, -1);
         const rows = await Promise.all(
@@ -288,38 +271,42 @@ export async function buildStatus(isAdmin: boolean) {
             };
           }),
         );
-        rows.forEach((r) => {
-          retrieverRegistry[r.key] = r;
-        });
+        result = new Map(rows.map((r) => [r.key, r]));
       }
-      return retrieverRegistry;
+      return Object.fromEntries(result);
     },
     retrieverIPs: async () => {
-      let retrieverIPs: Record<string, Metric> = {};
+      let result = new Map<string, Metric>();
       if (isAdmin) {
-        ips.forEach((ip) => {
-          retrieverIPs[ip.key] = {
-            metric: ip.success,
-            limit: ip.reqs,
-          };
-        });
+        result = new Map(
+          ips.map((ip) => [
+            ip.key,
+            {
+              metric: ip.success,
+              limit: ip.reqs,
+            },
+          ]),
+        );
       }
-      return retrieverIPs;
+      return Object.fromEntries(result);
     },
     retrieverSteamIDs: async () => {
-      let retrieverSteamIDs: Record<string, Metric> = {};
+      let result = new Map<string, Metric>();
       if (isAdmin) {
-        steamids.forEach((steamid) => {
-          retrieverSteamIDs[steamid.key] = {
-            metric: steamid.success,
-            limit: steamid.reqs,
-          };
-        });
+        result = new Map(
+          steamids.map((steamid) => [
+            steamid.key,
+            {
+              metric: steamid.success,
+              limit: steamid.reqs,
+            },
+          ]),
+        );
       }
-      return retrieverSteamIDs;
+      return Object.fromEntries(result);
     },
     apiMetrics: async () => {
-      let apiMetrics: Record<string, number> = {};
+      let result = new Map<string, number>();
       if (isAdmin) {
         const startTime = moment.utc().startOf('month').format('YYYY-MM-DD');
         const endTime = moment.utc().endOf('month').format('YYYY-MM-DD');
@@ -346,39 +333,59 @@ export async function buildStatus(isAdmin: boolean) {
     `,
           [startTime, endTime],
         );
-        rows.forEach((r: any) => {
-          apiMetrics[`id_${r.account_id}`] = Number(r.usage_count);
-        });
+        result = new Map(
+          rows.map((r: any) => [`id_${r.account_id}`, Number(r.usage_count)]),
+        );
       }
-      return apiMetrics;
+      return Object.fromEntries(result);
+    },
+    api_origins: async () => {
+      if (isAdmin) {
+        const result = await getRedisCountDayHash('api_origins');
+        const sorted = Object.entries(result).sort((a, b) => b[1] - a[1]);
+        return Object.fromEntries(sorted);
+      }
+      return {};
     },
     game_mode: async () => {
-      const result: Record<string, number> = {};
+      const result = new Map<string, number>();
       for (let key of Object.keys(game_mode)) {
-        result[game_mode[key as keyof typeof game_mode]?.name] = Number(
+        const value = Number(
           await getRedisCountDay(`${key}_game_mode` as MetricName),
         );
+        if (value) {
+          result.set(game_mode[key as keyof typeof game_mode]?.name, value);
+        }
       }
-      return result;
+      const sorted = Object.entries(result).sort((a, b) => b[1] - a[1]);
+      return Object.fromEntries(sorted);
     },
     lobby_type: async () => {
-      const result: Record<string, number> = {};
+      const result = new Map<string, number>();
       for (let key of Object.keys(lobby_type)) {
-        result[lobby_type[key as keyof typeof lobby_type]?.name] = Number(
+        const value = Number(
           await getRedisCountDay(`${key}_lobby_type` as MetricName),
         );
+        if (value) {
+          result.set(lobby_type[key as keyof typeof lobby_type]?.name, value);
+        }
       }
-      return result;
+      const sorted = Object.entries(result).sort((a, b) => b[1] - a[1]);
+      return Object.fromEntries(sorted);
     },
     region: async () => {
-      const result: Record<string, number> = {};
+      const result = new Map<string, number>();
       for (let [cl, reg] of Object.entries(cluster)) {
         const regName = region[String(reg) as keyof typeof region] ?? cl;
-        result[regName] =
-          (result[regName] ?? 0) +
+        const value =
+          (result.get(regName) ?? 0) +
           Number(await getRedisCountDay(`${cl}_cluster` as MetricName));
+        if (value) {
+          result.set(regName, value);
+        }
       }
-      return result;
+      const sorted = Object.entries(result).sort((a, b) => b[1] - a[1]);
+      return Object.fromEntries(sorted);
     },
   };
   return parallelPromise<{
