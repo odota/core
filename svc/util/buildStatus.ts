@@ -357,7 +357,7 @@ export async function buildStatus(isAdmin: boolean) {
           result.set(game_mode[key as keyof typeof game_mode]?.name, value);
         }
       }
-      const sorted = Object.entries(result).sort((a, b) => b[1] - a[1]);
+      const sorted = Array.from(result.entries()).sort((a, b) => b[1] - a[1]);
       return Object.fromEntries(sorted);
     },
     lobby_type: async () => {
@@ -370,7 +370,7 @@ export async function buildStatus(isAdmin: boolean) {
           result.set(lobby_type[key as keyof typeof lobby_type]?.name, value);
         }
       }
-      const sorted = Object.entries(result).sort((a, b) => b[1] - a[1]);
+      const sorted = Array.from(result.entries()).sort((a, b) => b[1] - a[1]);
       return Object.fromEntries(sorted);
     },
     region: async () => {
@@ -384,7 +384,7 @@ export async function buildStatus(isAdmin: boolean) {
           result.set(regName, value);
         }
       }
-      const sorted = Object.entries(result).sort((a, b) => b[1] - a[1]);
+      const sorted = Array.from(result.entries()).sort((a, b) => b[1] - a[1]);
       return Object.fromEntries(sorted);
     },
   };

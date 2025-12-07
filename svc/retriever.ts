@@ -10,7 +10,7 @@ import { gzipSync } from 'node:zlib';
 import config from '../config.ts';
 import ProtoBuf from 'protobufjs';
 
-const steamObj = new Map<string, SteamUser>();
+const clientMap = new Map<string, SteamUser>();
 const matchAttempts = new Map<string, number>();
 const failedLogin = new Map<string, string>();
 
@@ -19,8 +19,7 @@ const matchesPerAccount = 100;
 const accountAttemptMax = 10;
 const matchRequestInterval = Math.max(1000 / numAccounts, 250);
 const port = config.PORT || config.RETRIEVER_PORT;
-const noneReady = () =>
-  Object.values(steamObj).filter((client) => client.steamID).length === 0;
+const noneReady = () => clientMap.size === 0;
 let lastMatchRequestTime: number | null = null;
 let matchRequests = 0;
 let matchSuccesses = 0;
@@ -58,7 +57,7 @@ const CMsgGCMatchDetailsResponse = builder.lookupType(
 
 setInterval(() => {
   const shouldRestart =
-    matchRequests >= Object.keys(steamObj).length * matchesPerAccount ||
+    matchRequests >= clientMap.size * matchesPerAccount ||
     noneReady();
   if (config.NODE_ENV !== 'development' && shouldRestart && getUptime() > 60) {
     return selfDestruct();
@@ -83,7 +82,7 @@ const server = createServer(async (req, res) => {
         uptime: getUptime(),
         osUptime: getOSUptime(),
         hostname: os.hostname(),
-        numReadyAccounts: Object.keys(steamObj).length,
+        numReadyAccounts: clientMap.size,
         failedLogin,
       };
       res.setHeader('Content-Type', 'application/json');
@@ -107,7 +106,7 @@ const server = createServer(async (req, res) => {
       }
       console.log(
         'numReady: %s, matches: %s/%s, profiles: %s/%s, aliases: %s/%s, uptime: %s, matchRequestDelay: %s',
-        Object.keys(steamObj).length,
+        clientMap.size,
         matchSuccesses,
         matchRequests,
         profileSuccesses,
@@ -119,9 +118,9 @@ const server = createServer(async (req, res) => {
       );
       if (url.pathname.startsWith('/profile')) {
         const accountId = url.pathname.split('/')[2];
-        const keys = Object.keys(steamObj);
+        const keys = Array.from(clientMap.keys());
         const rKey = keys[Math.floor(Math.random() * keys.length)];
-        const client = steamObj.get(rKey)!;
+        const client = clientMap.get(rKey)!;
         profileRequests += 1;
         client.sendToGC(
           DOTA_APPID,
@@ -152,11 +151,11 @@ const server = createServer(async (req, res) => {
           return;
         }
         lastMatchRequestTime = curTime;
-        const keys = Object.keys(steamObj);
+        const keys = Array.from(clientMap.keys());
         // Round robin request to spread load evenly
         const rKey = keys[matchRequests % keys.length];
         const matchId = url.pathname.split('/')[2];
-        const client = steamObj.get(rKey)!;
+        const client = clientMap.get(rKey)!;
         matchRequests += 1;
         // If the selected client has multiple consecutive failures, skip the request
         if ((matchAttempts.get(rKey) ?? 0) >= accountAttemptMax) {
@@ -209,9 +208,9 @@ const server = createServer(async (req, res) => {
         );
       } else if (url.pathname.startsWith('/aliases')) {
         // example: 76561198048632981
-        const keys = Object.keys(steamObj);
+        const keys = Array.from(clientMap.keys());
         const rKey = keys[Math.floor(Math.random() * keys.length)];
-        const client = steamObj.get(rKey)!;
+        const client = clientMap.get(rKey)!;
         aliasRequests += 1;
         client.getAliases(
           url.pathname.split('/')[2]?.split(','),
@@ -310,7 +309,7 @@ logOns.forEach((logOnDetails) => {
         logOnDetails.accountName,
         // client.steamID.toString(),
       );
-      steamObj.set(logOnDetails.accountName, client);
+      clientMap.set(logOnDetails.accountName, client);
     }
     // We can also handle other GC responses here if not using callbacks
   });
