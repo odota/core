@@ -88,11 +88,6 @@ export default {
         type: 'integer',
         nullable: true,
       },
-      computed_mmr_turbo: {
-        description: 'Rating estimate based on turbo matches',
-        type: 'integer',
-        nullable: true,
-      },
     },
   },
 };

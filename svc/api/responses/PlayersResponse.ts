@@ -20,6 +20,11 @@ export default {
         type: 'number',
         nullable: true,
       },
+      computed_mmr_turbo: {
+        description: 'Rating estimate based on turbo matches',
+        type: 'integer',
+        nullable: true,
+      },
       aliases: {
         description: 'List of names the player has used on Steam',
         type: 'array',
