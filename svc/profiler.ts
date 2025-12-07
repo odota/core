@@ -32,12 +32,13 @@ runInLoop(async function profile() {
   const respAliases = await axios.get<RetrieverAliases>(url2);
   console.log('got %s alias results', Object.keys(respAliases.data).length);
   for (let steamid of Object.keys(respAliases.data)) {
+    const accountId = convert64to32(steamid);
     for (let item of respAliases.data[
       steamid as keyof typeof respAliases.data
     ]) {
       await db.raw(
         'INSERT INTO aliases(account_id, personaname, name_since) VALUES(?, ?, ?) ON CONFLICT(account_id, personaname) DO NOTHING',
-        [convert64to32(steamid), item.name, new Date(item.name_since)],
+        [accountId, item.name, new Date(item.name_since)],
       );
     }
   }
