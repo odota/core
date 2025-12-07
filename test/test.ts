@@ -524,6 +524,22 @@ suite(c.blue('API ROUTES'), async () => {
       );
     }
   });
+  test('search for steamid32', async () => {
+    const res = await supertest(app).get(
+      `/api/search?q=120269134`,
+    );
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.body.length, 1);
+    assert.equal(res.body[0].account_id, 120269134);
+  });
+  test('search for steamid64', async () => {
+    const res = await supertest(app).get(
+      `/api/search?q=76561198080534862`,
+    );
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.body.length, 1);
+    assert.equal(res.body[0].account_id, 120269134);
+  });
 });
 
 suite(c.blue('RATE LIMITING'), async () => {

@@ -11,6 +11,8 @@ import {
   isContributor,
   averageMedal,
   parallelPromise,
+  isSteamID64,
+  convert64to32,
 } from './utility.ts';
 import contributors from '../../CONTRIBUTORS.ts';
 import moment from 'moment';
@@ -419,12 +421,14 @@ export async function isRecentlyVisited(accountId: number): Promise<boolean> {
 }
 
 export async function search(query: string) {
-  const accountIdMatch = Number.isInteger(Number(query))
-    ? await db
-        .select(['account_id', 'personaname', 'avatarfull'])
-        .from('players')
-        .where({ account_id: Number(query) })
-    : [];
+  let accountIdMatch: any[] = [];
+  if (Number.isInteger(Number(query))) {
+    let query32 = isSteamID64(query) ? convert64to32(query) : query;
+    accountIdMatch = await db
+      .select(['account_id', 'personaname', 'avatarfull'])
+      .from('players')
+      .where({ account_id: Number(query32) });
+  }
   // Set similarity threshold
   // await db.raw('SELECT set_limit(0.5)');
   let rows = [];
@@ -438,7 +442,7 @@ export async function search(query: string) {
       ORDER BY sml DESC, last_match_time DESC NULLS LAST
       LIMIT 50;
       `,
-      // ilike search is faster, but won't return results for e.g. 'yasp triplea' for '[YASP.co] TripleA'
+      // replace spaces with % so we trigram search around them
       [trim, `%${trim.replaceAll(' ', '%')}%`],
     );
     rows = personaNameMatch.rows;

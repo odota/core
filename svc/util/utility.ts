@@ -28,6 +28,10 @@ export function convert32to64(id: string): string {
   return (BigInt(id) + BigInt('76561197960265728')).toString();
 }
 
+export function isSteamID64(id: string): boolean {
+  return BigInt(id) >= BigInt('76561197960265728');
+}
+
 export function randomInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min) + min);
 }
