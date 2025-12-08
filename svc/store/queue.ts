@@ -169,6 +169,7 @@ export async function addReliableJob(
     redis.publish('queue', message);
   }
   // This might be undefined if a job with the same key already exists. Try to find it
+  // Note: In Postgres 18+ we can use RETURNING with OLD to fetch the old id
   if (!job) {
     const existing = await dbToUse.raw<{
       rows: ReliableQueueRow[];
