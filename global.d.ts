@@ -327,12 +327,6 @@ type QueueInput =
 
 type ReliableQueueRow = {
   id: number;
-  type: QueueName;
-  timestamp: string;
-  attempts: number;
-  data: any;
-  next_attempt_time: string;
-  priority: number;
 };
 
 type JobMetadata = {
@@ -500,7 +494,8 @@ type MetricName =
   | 'cache_parsed_hit'
   | 'player_discover'
   | 'scenario'
-  | 'dedupe_queue';
+  | 'dedupe_queue'
+  | 'add_queue_fail';
 
 // Object to map player_slot to basic info
 type PGroup = {

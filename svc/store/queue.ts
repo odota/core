@@ -126,7 +126,7 @@ export async function addJob(input: QueueInput) {
 export async function addReliableJob(
   input: QueueInput,
   options: ReliableQueueOptions,
-): Promise<ReliableQueueRow | undefined> {
+): Promise<ReliableQueueRow> {
   const { name, data } = input;
   let jobKey;
   if (name === 'parse') {
@@ -138,6 +138,8 @@ export async function addReliableJob(
   } else {
     jobKey = crypto.randomUUID();
   }
+  const attempts = options.attempts || 1;
+  const priority = options.priority || 0;
   const dbToUse = options.trx ?? db;
   const { rows } = await dbToUse.raw<{
     rows: ReliableQueueRow[];
@@ -145,24 +147,24 @@ export async function addReliableJob(
     `INSERT INTO queue(type, timestamp, attempts, data, next_attempt_time, priority, job_key)
     VALUES (?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT DO NOTHING
-    RETURNING *`,
+    RETURNING id`,
     [
       name,
       new Date(),
-      options.attempts || 1,
+      attempts,
       JSON.stringify(data),
       new Date(Date.now() + (options.delayMs ?? 0)),
-      options.priority ?? 0,
+      priority,
       jobKey,
     ],
   );
-  const job = rows[0];
+  let job = rows[0];
   const source = options.caller ?? config.APP_NAME;
   if (job && source === 'web') {
     const message = c.magenta(
       `[${new Date().toISOString()}] [${
         source
-      }] [queue: ${name}] [pri: ${job.priority}] [att: ${job.attempts}] ${
+      }] [queue: ${name}] [pri: ${priority}] [att: ${attempts}] ${
         name === 'parse' ? data.match_id : ''
       }`,
     );
@@ -171,13 +173,15 @@ export async function addReliableJob(
   // This might be undefined if a job with the same key already exists. Try to find it
   // Note: In Postgres 18+ we can use RETURNING with OLD to fetch the old id
   if (!job) {
-    const existing = await dbToUse.raw<{
+    redisCount('dedupe_queue');
+    const { rows } = await dbToUse.raw<{
       rows: ReliableQueueRow[];
-    }>('SELECT * from queue WHERE job_key = ?', [jobKey]);
-    if (existing.rows[0]) {
-      redisCount('dedupe_queue');
-      return existing.rows[0];
-    }
+    }>('SELECT id from queue WHERE job_key = ?', [jobKey]);
+    job = rows[0];
+  }
+  if (!job) {
+    redisCount('add_queue_fail');
+    throw new Error('no job created');
   }
   return job;
 }

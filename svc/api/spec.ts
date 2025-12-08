@@ -1583,7 +1583,7 @@ You can use the API without a key, but registering for a key allows increased ra
           );
           return res.json({
             job: {
-              jobId: parseJob?.id,
+              jobId: parseJob.id,
             },
           });
         },

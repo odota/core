@@ -95,6 +95,7 @@ export async function buildStatus(isAdmin: boolean) {
         request_api_fail_last_day: async () =>
           getRedisCountDay('request_api_fail'),
         dedupe_queue_last_day: async () => getRedisCountDay('dedupe_queue'),
+        add_queue_fail_last_day: async () => getRedisCountDay('add_queue_fail'),
         tracked_players: async () => redis.zcard('tracked'),
         auto_parse_last_day: async () => getRedisCountDay('auto_parse'),
         meta_parsed_last_day: async () => getRedisCountDay('meta_parse'),
