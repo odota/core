@@ -621,7 +621,8 @@ suite(c.blue('REPLAY PARSING'), async () => {
     assert.ok(parseJob);
     // Duplicate request shouldn't create another job
     const dupe = await addReliableJob({ name: 'parse', data: { match_id: matchData.match_id } }, {});
-    assert.ok(!dupe);
+    assert.ok(dupe);
+    assert.equal(dupe.id, parseJob.id);
     let notDone = true;
     let tries = 0;
     while (notDone && tries < 30) {

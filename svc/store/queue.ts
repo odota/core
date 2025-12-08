@@ -139,6 +139,14 @@ export async function addReliableJob(
     jobKey = crypto.randomUUID();
   }
   const dbToUse = options.trx ?? db;
+  // Check to see if job with this key already exists, if so return it
+  const existing = await dbToUse.raw<{
+    rows: ReliableQueueRow[];
+  }>('SELECT * from queue WHERE job_key = ?', [jobKey]);
+  if (existing.rows[0]) {
+    redisCount('dedupe_queue');
+    return existing.rows[0];
+  }
   const { rows } = await dbToUse.raw<{
     rows: ReliableQueueRow[];
   }>(
@@ -156,10 +164,8 @@ export async function addReliableJob(
       jobKey,
     ],
   );
+  // This might be undefined if a job with the same key was created by another process
   const job = rows[0];
-  if (!job) {
-    redisCount('dedupe_queue');
-  }
   const source = options.caller ?? config.APP_NAME;
   if (job && source === 'web') {
     const message = c.magenta(
