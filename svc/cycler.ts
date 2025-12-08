@@ -1,5 +1,5 @@
 import config from '../config.ts';
-import dotenv from 'dotenv';
+import { parseEnv } from 'node:util';
 import { runInLoop, shuffle } from './util/utility.ts';
 
 const resp = await fetch(
@@ -22,13 +22,13 @@ runInLoop(async function cycler() {
       },
     },
   );
-  // We have to use the output of dotenv parse to get updated values because pm2 caches process.env
+  // We have to parse the file directly because pm2 caches process.env
   // https://github.com/Unitech/pm2/issues/3192
   const {
     CYCLER_COUNT,
     RETRIEVER_MIN_UPTIME,
     GOOGLE_CLOUD_RETRIEVER_TEMPLATE,
-  } = dotenv.parse(await resp.text());
+  } = parseEnv(await resp.text());
   if (
     !config.GOOGLE_CLOUD_PROJECT_ID ||
     !GOOGLE_CLOUD_RETRIEVER_TEMPLATE ||

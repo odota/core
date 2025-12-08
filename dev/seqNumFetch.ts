@@ -1,4 +1,6 @@
-import 'dotenv/config';
+import { loadEnvFile } from 'node:process';
+
+loadEnvFile();
 
 const matchId = process.argv[2];
 const resp = await fetch('https://api.stratz.com/graphql', {
