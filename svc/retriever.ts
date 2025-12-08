@@ -57,8 +57,7 @@ const CMsgGCMatchDetailsResponse = builder.lookupType(
 
 setInterval(() => {
   const shouldRestart =
-    matchRequests >= clientMap.size * matchesPerAccount ||
-    noneReady();
+    matchRequests >= clientMap.size * matchesPerAccount || noneReady();
   if (config.NODE_ENV !== 'development' && shouldRestart && getUptime() > 60) {
     return selfDestruct();
   }

@@ -6,6 +6,9 @@ const resp = await fetch(
   `https://compute.googleapis.com/compute/v1/projects/${config.GOOGLE_CLOUD_PROJECT_ID}/zones`,
   { headers: { Authorization: 'Bearer ' + (await getToken()) } },
 );
+if (!resp.ok) {
+  throw new Error('fetch not ok');
+}
 const zonesJson = await resp.json();
 const zones = zonesJson.items.map((zone: any) => zone.name);
 console.log(zones, zones.length);
@@ -22,6 +25,9 @@ runInLoop(async function cycler() {
       },
     },
   );
+  if (!resp.ok) {
+    throw new Error('fetch not ok');
+  }
   // We have to parse the file directly because pm2 caches process.env
   // https://github.com/Unitech/pm2/issues/3192
   const {
@@ -70,9 +76,14 @@ runInLoop(async function cycler() {
     },
   );
   console.log(resp.status, await resp.json());
-  await new Promise((resolve) =>
-    setTimeout(resolve, (lifetime * 0.95 * 1000) / count),
-  );
+  if (resp.ok) {
+    await new Promise((resolve) =>
+      setTimeout(resolve, (lifetime * 0.95 * 1000) / count),
+    );
+  } else {
+    // Try the next one
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
 }, 0);
 
 async function getToken() {

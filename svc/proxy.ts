@@ -23,7 +23,7 @@ if (config.SERVICE_REGISTRY_HOST) {
   if (config.EXTERNAL) {
     const resp = await fetch(`${config.SERVICE_REGISTRY_HOST}/ip`);
     if (!resp.ok) {
-      throw new Error('resp not ok');
+      throw new Error('fetch not ok');
     }
     ip = await resp.text();
   }

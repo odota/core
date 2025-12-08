@@ -132,7 +132,7 @@ export async function addReliableJob(
   if (name === 'parse') {
     jobKey = `${name}:${data.match_id}`;
   } else if (name === 'fhQueue') {
-    jobKey =`${name}:${data.account_id}`;
+    jobKey = `${name}:${data.account_id}`;
   } else if (name === 'gcQueue') {
     jobKey = `${name}:${data.match_id}`;
   } else {
