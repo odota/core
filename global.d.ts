@@ -432,7 +432,6 @@ type MetricName =
   | 'api_hits'
   | 'retriever_player'
   | 'fullhistory'
-  | 'fullhistory_skip'
   | 'match_archive_read'
   | 'match_archive_write'
   | 'auto_parse'
@@ -500,7 +499,8 @@ type MetricName =
   | 'cache_gcdata_hit'
   | 'cache_parsed_hit'
   | 'player_discover'
-  | 'scenario';
+  | 'scenario'
+  | 'dedupe_queue';
 
 // Object to map player_slot to basic info
 type PGroup = {

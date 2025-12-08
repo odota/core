@@ -3,7 +3,7 @@ import config from '../config.ts';
 import db from './store/db.ts';
 import { runReliableQueue } from './store/queue.ts';
 import { getPlayerMatches } from './util/buildPlayer.ts';
-import redis, { redisCount } from './store/redis.ts';
+import { redisCount } from './store/redis.ts';
 import { SteamAPIUrls, getSteamAPIDataWithRetry } from './util/http.ts';
 
 // Approximately 5 req/sec limit per apiHost
@@ -22,16 +22,6 @@ async function processFullHistory(job: FullHistoryJob, metadata: JobMetadata) {
     Number(player.account_id) === 0 ||
     Number.isNaN(Number(player.account_id))
   ) {
-    return true;
-  }
-
-  // If this player has already recently been processed, don't do it again
-  if (
-    config.NODE_ENV !== 'development' &&
-    (await redis.get('fh_queue:' + player.account_id))
-  ) {
-    redisCount('fullhistory_skip');
-    console.log('[FULLHISTORY][%s] skipping %s', metadata.i, player.account_id);
     return true;
   }
 
@@ -132,7 +122,6 @@ async function processFullHistory(job: FullHistoryJob, metadata: JobMetadata) {
     player.fh_unavailable = isMatchDataDisabled;
   }
   await updatePlayer(player);
-  await redis.setex('fh_queue:' + player.account_id, 30 * 60, '1');
   const end = Date.now();
   console.log(
     'doFullHistory[%s] %s: %dms',

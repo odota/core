@@ -368,7 +368,9 @@ CREATE TABLE IF NOT EXISTS queue (
   attempts int,
   data json,
   next_attempt_time timestamp with time zone,
-  priority int
+  priority int,
+  job_key text,
+  UNIQUE(job_key)
 );
 CREATE INDEX IF NOT EXISTS queue_type_priority_id_idx on queue(type, priority, id);
 

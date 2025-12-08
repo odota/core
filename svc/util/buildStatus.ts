@@ -81,8 +81,6 @@ export async function buildStatus(isAdmin: boolean) {
         player_discover_last_day: async () =>
           getRedisCountDay('player_discover'),
         fullhistory_last_day: async () => getRedisCountDay('fullhistory'),
-        fullhistory_skips_last_day: async () =>
-          getRedisCountDay('fullhistory_skip'),
         pmh_fullhistory_last_day: async () =>
           getRedisCountDay('pmh_fullhistory'),
         pmh_gcdata_last_day: async () => getRedisCountDay('pmh_gcdata'),
@@ -96,6 +94,7 @@ export async function buildStatus(isAdmin: boolean) {
           getRedisCountDay('request_api_key'),
         request_api_fail_last_day: async () =>
           getRedisCountDay('request_api_fail'),
+        dedupe_queue_last_day: async () => getRedisCountDay('dedupe_queue'),
         tracked_players: async () => redis.zcard('tracked'),
         auto_parse_last_day: async () => getRedisCountDay('auto_parse'),
         meta_parsed_last_day: async () => getRedisCountDay('meta_parse'),

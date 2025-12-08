@@ -25,6 +25,7 @@ import c from 'ansi-colors';
 import { suite, test, before, beforeEach, after } from 'node:test';
 import { S3Client } from '@bradenmacdonald/s3-lite-client';
 import { averageMedal } from '../svc/util/utility.ts';
+import { addReliableJob } from '../svc/store/queue.ts';
 
 const { RETRIEVER_HOST, POSTGRES_URL, CASSANDRA_URL } = config;
 const initPostgresHost = POSTGRES_URL.replace('/yasp_test', '/postgres');
@@ -618,6 +619,9 @@ suite(c.blue('REPLAY PARSING'), async () => {
       origin: 'scanner',
     });
     assert.ok(parseJob);
+    // Duplicate request shouldn't create another job
+    const dupe = await addReliableJob({ name: 'parse', data: { match_id: matchData.match_id } }, {});
+    assert.ok(!dupe);
     let notDone = true;
     let tries = 0;
     while (notDone && tries < 30) {

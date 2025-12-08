@@ -1,5 +1,5 @@
 import moment from 'moment';
-import redis from './redis.ts';
+import redis, { redisCount } from './redis.ts';
 import db from './db.ts';
 import { Redis } from 'ioredis';
 import config from '../../config.ts';
@@ -126,18 +126,26 @@ export async function addJob(input: QueueInput) {
 export async function addReliableJob(
   input: QueueInput,
   options: ReliableQueueOptions,
-) {
+): Promise<ReliableQueueRow | undefined> {
   const { name, data } = input;
-  // if (name === 'parse') {
-  //   // Could queue the job for gcdata only in case parsing is held up
-  // }
+  let jobKey;
+  if (name === 'parse') {
+    jobKey = `${name}:${data.match_id}`;
+  } else if (name === 'fhQueue') {
+    jobKey =`${name}:${data.account_id}`;
+  } else if (name === 'gcQueue') {
+    jobKey = `${name}:${data.match_id}`;
+  } else {
+    jobKey = crypto.randomUUID();
+  }
   const dbToUse = options.trx ?? db;
   const { rows } = await dbToUse.raw<{
     rows: ReliableQueueRow[];
   }>(
-    `INSERT INTO queue(type, timestamp, attempts, data, next_attempt_time, priority)
-  VALUES (?, ?, ?, ?, ?, ?) 
-  RETURNING *`,
+    `INSERT INTO queue(type, timestamp, attempts, data, next_attempt_time, priority, job_key)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT DO NOTHING
+    RETURNING *`,
     [
       name,
       new Date(),
@@ -145,9 +153,13 @@ export async function addReliableJob(
       JSON.stringify(data),
       new Date(Date.now() + (options.delayMs ?? 0)),
       options.priority ?? 0,
+      jobKey,
     ],
   );
   const job = rows[0];
+  if (!job) {
+    redisCount('dedupe_queue');
+  }
   const source = options.caller ?? config.APP_NAME;
   if (job && source === 'web') {
     const message = c.magenta(
