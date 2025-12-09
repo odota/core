@@ -1581,6 +1581,10 @@ You can use the API without a key, but registering for a key allows increased ra
               delayMs,
             },
           );
+          if (!parseJob) {
+            redisCount('add_queue_fail');
+            throw new Error('no job created');
+          }
           return res.json({
             job: {
               jobId: parseJob.id,

@@ -126,7 +126,7 @@ export async function addJob(input: QueueInput) {
 export async function addReliableJob(
   input: QueueInput,
   options: ReliableQueueOptions,
-): Promise<ReliableQueueRow> {
+): Promise<ReliableQueueRow | undefined> {
   const { name, data } = input;
   let jobKey;
   if (name === 'parse') {
@@ -171,17 +171,14 @@ export async function addReliableJob(
     redis.publish('queue', message);
   }
   // This might be undefined if a job with the same key already exists. Try to find it
-  // Note: In Postgres 18+ we can use RETURNING with OLD to fetch the old id
+  // May not exist anymore if the job finished in the meantime
+  // Note: In Postgres 18+ we can use RETURNING with OLD to fetch the old id and return it
   if (!job) {
     redisCount('dedupe_queue');
     const { rows } = await dbToUse.raw<{
       rows: ReliableQueueRow[];
     }>('SELECT id from queue WHERE job_key = ?', [jobKey]);
     job = rows[0];
-  }
-  if (!job) {
-    redisCount('add_queue_fail');
-    throw new Error('no job created');
   }
   return job;
 }
