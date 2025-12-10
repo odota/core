@@ -24,8 +24,8 @@ CREATE TABLE IF NOT EXISTS matches (
   picks_bans json[],
   radiant_team_id integer,
   dire_team_id integer,
-  radiant_team_name varchar(255),
-  dire_team_name varchar(255),
+  radiant_team_name text,
+  dire_team_name text,
   radiant_team_complete smallint,
   dire_team_complete smallint,
   radiant_captain bigint,
@@ -145,18 +145,18 @@ CREATE INDEX IF NOT EXISTS player_matches_hero_id_idx on player_matches(hero_id)
 
 CREATE TABLE IF NOT EXISTS players (
   account_id bigint PRIMARY KEY,
-  steamid varchar(32),
-  avatar varchar(255),
-  avatarmedium varchar(255),
-  avatarfull varchar(255),
-  profileurl varchar(255),
-  personaname varchar(255),
+  steamid text,
+  avatar text,
+  avatarmedium text,
+  avatarfull text,
+  profileurl text,
+  personaname text,
   plus boolean DEFAULT false,
   last_login timestamp with time zone,
   full_history_time timestamp with time zone,
   cheese integer DEFAULT 0,
   fh_unavailable boolean,
-  loccountrycode varchar(2),
+  loccountrycode text,
   last_match_time timestamp with time zone,
   profile_time timestamp with time zone,
   rank_tier_time timestamp with time zone
@@ -192,7 +192,7 @@ CREATE TABLE IF NOT EXISTS player_ratings (
 CREATE TABLE IF NOT EXISTS subscriptions (
   PRIMARY KEY(customer_id),
   account_id bigint REFERENCES players(account_id) ON DELETE CASCADE,
-  customer_id varchar(255),
+  customer_id text,
   amount int,
   active_until date
 );
@@ -241,12 +241,12 @@ CREATE UNIQUE INDEX IF NOT EXISTS user_usage_unique_idx on user_usage(account_id
 
 CREATE TABLE IF NOT EXISTS notable_players (
   account_id bigint PRIMARY KEY,
-  name varchar(255),
-  country_code varchar(2),
+  name text,
+  country_code text,
   fantasy_role int,
   team_id int,
-  team_name varchar(255),
-  team_tag varchar(255),
+  team_name text,
+  team_tag text,
   is_locked boolean,
   is_pro boolean,
   locked_until integer
@@ -263,16 +263,16 @@ CREATE TABLE IF NOT EXISTS picks_bans(
 
 CREATE TABLE IF NOT EXISTS leagues(
   leagueid bigint PRIMARY KEY,
-  ticket varchar(255),
-  banner varchar(255),
-  tier varchar(255),
-  name varchar(255)
+  ticket text,
+  banner text,
+  tier text,
+  name text
 );
 
 CREATE TABLE IF NOT EXISTS teams(
   team_id bigint PRIMARY KEY,
-  name varchar(255),
-  tag varchar(255),
+  name text,
+  tag text,
   logo_url text
 );
 
@@ -437,8 +437,8 @@ CREATE INDEX IF NOT EXISTS parsed_matches_is_archived_idx ON parsed_matches(is_a
 CREATE TABLE IF NOT EXISTS subscriber (
   PRIMARY KEY (account_id),
   account_id bigint,
-  customer_id varchar(255),
-  status varchar(100)
+  customer_id text,
+  status text
 );
 
 CREATE TABLE IF NOT EXISTS last_seq_num (
