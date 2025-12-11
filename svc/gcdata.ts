@@ -26,7 +26,7 @@ async function processGcData(job: GcDataJob) {
     250,
   );
   if (gcMatch) {
-    await redisCount('gcdata');
+    redisCount('gcdata');
   }
   // await new Promise((resolve) => setTimeout(resolve, 0));
   return true;

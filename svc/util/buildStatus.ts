@@ -66,6 +66,10 @@ export async function buildStatus(isAdmin: boolean) {
         registry_retriever: async () => redis.zcard('registry:retriever'),
         registry_parser: async () => redis.zcard('registry:parser'),
 
+        login_last_day: async () => getRedisCountDay('login'),
+        user_players_recent: async () => redis.zcard('visitors'),
+        visited_players_recent: async () => redis.zcard('visitedIds'),
+
         matches_last_day: async () => getRedisCountDay('added_match'),
         matches_prev_hour: async () => getRedisCountLastHour('added_match'),
         retriever_players_last_day: async () =>
@@ -163,13 +167,6 @@ export async function buildStatus(isAdmin: boolean) {
           getRedisCountDay('archive_put_error'),
         // incomplete_archive_last_day: async () => countDay('incomplete_archive'),
 
-        // user_players: async () => redis.zcard('visitors'),
-        // user_players_recent: async () =>
-        //   redis.zcount(
-        //     'visitors',
-        //     moment.utc().subtract(30, 'day').format('X'),
-        //     '+inf',
-        //   ),
         // distinct_match_players_last_day: async () =>
         //   countDayDistinct('distinct_match_player'),
         // distinct_match_players_user_last_day: async () =>

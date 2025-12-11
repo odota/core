@@ -67,7 +67,7 @@ export async function upsert(
 }
 
 export async function upsertPlayer(db: Knex, player: Partial<User>) {
-  if (player.steamid) {
+  if (player.steamid && !player.account_id) {
     // convert steamid to accountid
     player.account_id = Number(convert64to32(player.steamid));
   }

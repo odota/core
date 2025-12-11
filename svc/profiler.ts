@@ -29,7 +29,9 @@ runInLoop(async function profile() {
     '/aliases/' +
       jobs.map((j) => convert32to64(String(j.account_id))).join(','),
   );
-  const respAliases = await axios.get<RetrieverAliases>(url2, { timeout: 5000 });
+  const respAliases = await axios.get<RetrieverAliases>(url2, {
+    timeout: 5000,
+  });
   console.log('got %s alias results', Object.keys(respAliases.data).length);
   for (let steamid of Object.keys(respAliases.data)) {
     const accountId = convert64to32(steamid);

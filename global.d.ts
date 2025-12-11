@@ -495,7 +495,8 @@ type MetricName =
   | 'player_discover'
   | 'scenario'
   | 'dedupe_queue'
-  | 'add_queue_fail';
+  | 'add_queue_fail'
+  | 'login';
 
 // Object to map player_slot to basic info
 type PGroup = {

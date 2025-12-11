@@ -114,7 +114,7 @@ async function processFullHistory(job: FullHistoryJob, metadata: JobMetadata) {
         [row.account_id, row.match_id, row.player_slot],
       );
       if (rows?.length) {
-        await redisCount('pmh_fullhistory');
+        redisCount('pmh_fullhistory');
       }
     }
   }

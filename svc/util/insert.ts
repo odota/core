@@ -608,9 +608,9 @@ export async function insertMatch(
     }
 
     async function updateMatchCounts() {
-      await redisCount(`${match.game_mode}_game_mode` as MetricName);
-      await redisCount(`${match.lobby_type}_lobby_type` as MetricName);
-      await redisCount(`${match.cluster}_cluster` as MetricName);
+      redisCount(`${match.game_mode}_game_mode` as MetricName);
+      redisCount(`${match.lobby_type}_lobby_type` as MetricName);
+      redisCount(`${match.cluster}_cluster` as MetricName);
     }
 
     async function updateBenchmarks() {

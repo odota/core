@@ -45,7 +45,7 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
       matchId > Number.MAX_SAFE_INTEGER ||
       matchId < Number.MIN_SAFE_INTEGER
     ) {
-      log('skip', 'Match ID out of range');
+      await log('skip', 'Match ID out of range');
       return true;
     }
 
@@ -60,16 +60,16 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
     );
     if (apiError) {
       redisCount('request_api_fail');
-      log('fail', 'API error: ' + apiError);
+      await log('fail', 'API error: ' + apiError);
       return false;
     }
     if (!apiMatch) {
-      log('fail', 'Missing API data');
+      await log('fail', 'Missing API data');
       return false;
     }
     const pgroup = getPGroup(apiMatch);
     if (!pgroup) {
-      log('fail', 'Missing pgroup');
+      await log('fail', 'Missing pgroup');
       return false;
     }
     apiTime = Date.now() - apiStart;
@@ -84,7 +84,7 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
     //   if (config.DISABLE_OLD_PARSE) {
     //     // Valve doesn't keep non-league replays for more than a few weeks.
     //     // Skip even attempting the parse if it's too old
-    //     log('skip');
+    //     await log('skip');
     //     return true;
     //   }
     // }
@@ -103,7 +103,7 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
       );
     if (!gcMatch) {
       // non-retryable error
-      log('fail', gcError || 'Missing gcdata');
+      await log('fail', gcError || 'Missing gcdata');
       return false;
     }
     gcTime = Date.now() - gcStart;
@@ -144,25 +144,25 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
 
     if (parseError) {
       console.log('[PARSER] %s: %s', matchId, parseError);
-      log('fail', parseError);
+      await log('fail', parseError);
       return false;
     }
 
     if (skipped) {
-      log('skip', 'Replay parse skipped (already parsed)');
+      await log('skip', 'Replay parse skipped (already parsed)');
       return true;
     }
 
     // Log successful parse and timing
-    log('success');
+    await log('success');
     return true;
   } catch (e: any) {
-    log('crash', e?.message);
+    await log('crash', e?.message);
     // Rethrow the exception
     throw e;
   }
 
-  function log(
+  async function log(
     type: 'fail' | 'crash' | 'success' | 'skip',
     displayMsg?: string | null,
   ) {
@@ -219,7 +219,7 @@ export async function queueReconcile(
               [p.account_id, gcMatch.match_id, p.player_slot],
             );
             if (rows.length > 0) {
-              await redisCount(metricName);
+              redisCount(metricName);
             }
           }
         }),

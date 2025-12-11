@@ -7,7 +7,7 @@ import session from 'cookie-session';
 import moment from 'moment';
 import express from 'express';
 import passport from 'passport';
-import passportSteam from 'passport-steam';
+import { SteamOpenIdStrategy } from 'passport-steam-openid';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import { Redis } from 'ioredis';
@@ -24,11 +24,10 @@ import stripe from './store/stripe.ts';
 import axios from 'axios';
 import { buildStatus } from './util/buildStatus.ts';
 import { getEndOfDay, getStartOfBlockMinutes } from './util/time.ts';
+import { convert64to32 } from './util/utility.ts';
 
 const admins = config.ADMIN_ACCOUNT_IDS.split(',').map((e) => Number(e));
-const SteamStrategy = passportSteam.Strategy;
 export const app = express();
-const apiKey = config.STEAM_API_KEY.split(',')[0];
 const host = config.ROOT_URL;
 const sessOptions = {
   domain: config.COOKIE_DOMAIN,
@@ -41,27 +40,32 @@ const unlimitedPaths = [
 ];
 
 // PASSPORT config
-passport.serializeUser((user: any, done: ErrorCb) => {
+passport.serializeUser((user, done) => {
   done(null, user.account_id);
 });
-passport.deserializeUser((accountId: string | number, done: ErrorCb) => {
+passport.deserializeUser((accountId, done) => {
   done(null, {
-    account_id: accountId,
+    // This is currently a number but Express.User wants it to be string
+    account_id: accountId as string,
   });
 });
 passport.use(
-  new SteamStrategy(
+  new SteamOpenIdStrategy(
     {
-      providerURL: 'https://steamcommunity.com/openid',
       returnURL: `${host}/return`,
-      realm: host,
-      apiKey,
+      profile: false,
     },
-    async (identifier: string, profile: any, cb: ErrorCb) => {
-      const player = profile._json;
-      player.last_login = new Date();
+    async (req, identifier, profile, cb) => {
+      redisCount('login');
+      const steamid = profile.steamid;
+      const player = {
+        steamid,
+        account_id: Number(convert64to32(steamid)),
+        last_login: new Date(),
+      };
       await upsertPlayer(db, player);
-      cb(null, player);
+      // This is currently a number but Express.User wants it to be string
+      cb(null, { account_id: player.account_id as unknown as string });
     },
   ),
 );
@@ -116,18 +120,22 @@ const onResFinish = async (
     redisCount('api_hits_ui');
   }
   const normPath = req.route?.path;
-  await redisCountHash('api_paths', req.method + ' ' + normPath);
-  await redisCountHash('api_status', String(res.statusCode));
+  redisCountHash('api_paths', req.method + ' ' + normPath);
+  redisCountHash('api_status', String(res.statusCode));
   if (req.headers.origin) {
-    await redisCountHash('api_origins', req.headers.origin);
+    redisCountHash('api_origins', req.headers.origin);
   }
   if (req.user && req.user.account_id) {
-    await redis.zadd('visitors', moment.utc().format('X'), req.user.account_id);
-    await redis.zremrangebyrank('visitors', '0', '-50001');
+    redis.zadd('visitors', moment.utc().format('X'), req.user.account_id);
+    redis.zremrangebyscore(
+      'visitors',
+      '-inf',
+      moment.utc().subtract(30, 'day').format('X'),
+    );
   }
   await redis.lpush('load_times', elapsed);
   await redis.ltrim('load_times', 0, 9999);
-  await redis.setex(
+  redis.setex(
     'lastRun:' + config.APP_NAME,
     config.HEALTH_TIMEOUT,
     elapsed,
@@ -151,6 +159,21 @@ if (config.NODE_ENV === 'test') {
 app.use(session(sessOptions));
 app.use(passport.initialize());
 app.use(passport.session());
+// register regenerate & save after the cookieSession middleware initialization
+// Fix for passport 0.6.0+ which expects these functions
+app.use((req, res, next) => {
+  if (req.session && !req.session.regenerate) {
+    req.session.regenerate = (cb: Function) => {
+      cb();
+    };
+  }
+  if (req.session && !req.session.save) {
+    req.session.save = (cb: Function) => {
+      cb();
+    };
+  }
+  next();
+});
 
 // This is for passing the IP through if behind load balancer https://expressjs.com/en/guide/behind-proxies.html
 app.set('trust proxy', true);
@@ -291,37 +314,27 @@ app.get('/status', async (req, res, next) => {
   return res.json(status);
 });
 
-app.get(
-  '/login',
-  passport.authenticate('steam', {
-    failureRedirect: '/api',
-  }),
-);
+app.get('/login', passport.authenticate('steam-openid'));
 
-app.get(
-  '/return',
-  passport.authenticate('steam', {
-    failureRedirect: '/api',
-  }),
-  (req, res) => {
-    if (config.UI_HOST) {
-      return res.redirect(
-        req.user
-          ? `${config.UI_HOST}/players/${req.user.account_id}`
-          : config.UI_HOST,
-      );
-    }
-    return res.redirect('/api');
-  },
-);
-
-app.get('/logout', (req, res) => {
-  req.logout(() => {});
-  req.session = null;
+app.get('/return', passport.authenticate('steam-openid'), (req, res) => {
   if (config.UI_HOST) {
-    return res.redirect(config.UI_HOST);
+    return res.redirect(
+      req.user
+        ? `${config.UI_HOST}/players/${req.user.account_id}`
+        : config.UI_HOST,
+    );
   }
   return res.redirect('/api');
+});
+
+app.get('/logout', (req, res) => {
+  req.logout(() => {
+    req.session = null;
+    if (config.UI_HOST) {
+      return res.redirect(config.UI_HOST);
+    }
+    return res.redirect('/api');
+  });
 });
 
 // req.body available after this
