@@ -69,7 +69,7 @@
     "@types/json-bigint": "^1.0.4",
     "@types/node": "^24.10.2",
     "@types/passport": "^1.0.17",
-    "@types/pg": "^8.15.6",
+    "@types/pg": "^8.16.0",
     "@types/qs": "^6.14.0",
     "@types/supertest": "^6.0.3",
     "nock": "^13.5.6",
