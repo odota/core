@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node index.ts",
     "test": "node --test --test-concurrency 1 test/test.ts",
-    "build": "npm install && npm run typecheck",
+    "build": "npm run typecheck",
     "typecheck": "tsc --project tsconfig.json",
     "lint": "eslint .",
     "lintfix": "eslint . --fix",

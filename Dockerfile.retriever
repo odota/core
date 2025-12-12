@@ -8,6 +8,6 @@ COPY package.retriever.json /usr/src/package.json
 
 WORKDIR /usr/src
 
-RUN npm install
+RUN npm ci
 
 CMD ["npm",  "start"]
