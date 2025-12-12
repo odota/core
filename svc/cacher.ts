@@ -1,11 +1,12 @@
 // Processes a queue of auto player cache requests
 import { populateTemp } from './util/buildPlayer.ts';
-import { runQueue } from './store/queue.ts';
+import { runReliableQueue } from './store/queue.ts';
 import { redisCount, redisCountDistinct } from './store/redis.ts';
 
-runQueue('cacheQueue', 10, async (job: CacheJob, i: number) => {
-  const accountId = job;
-  redisCountDistinct('distinct_auto_player_temp', accountId);
+runReliableQueue('cacheQueue', 1, async function cache(job: CacheJob) {
+  const accountId = job.account_id;
+  redisCountDistinct('distinct_auto_player_temp', String(accountId));
   redisCount('auto_player_temp');
-  await populateTemp(Number(accountId), ['match_id']);
+  await populateTemp(accountId, ['match_id']);
+  return true;
 });

@@ -109,28 +109,32 @@ async function fhDelay() {
   };
 }
 async function mmrDelay() {
-  const result = await redis.llen('mmrQueue');
+  const result = await redis.scard('mmrQueue');
   return {
     metric: result,
     limit: 100000,
   };
 }
 async function cacheDelay() {
-  const result = await redis.llen('cacheQueue');
+  const result = await db.raw(
+    "select count(*) from queue where type = 'cacheQueue'",
+  );
   return {
-    metric: result,
+    metric: result.rows[0]?.count,
     limit: 100000,
   };
 }
 async function scenariosDelay() {
-  const result = await redis.llen('scenariosQueue');
+  const result = await db.raw(
+    "select count(*) from queue where type = 'scenariosQueue'",
+  );
   return {
-    metric: result,
+    metric: result.rows[0]?.count,
     limit: 100000,
   };
 }
 async function profileDelay() {
-  const result = await redis.llen('profileQueue');
+  const result = await redis.scard('profileQueue');
   return {
     metric: result,
     limit: 100000,

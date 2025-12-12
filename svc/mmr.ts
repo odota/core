@@ -6,10 +6,12 @@ import axios from 'axios';
 import { redisCount } from './store/redis.ts';
 import { getRandomRetrieverUrl } from './util/registry.ts';
 
-runQueue(
+runQueue<MmrJob>(
   'mmrQueue',
   Number(config.MMR_PARALLELISM) || 1,
-  async (job: MmrJob, i: number) => {
+  1,
+  async (batch: MmrJob[], i: number) => {
+    const job = batch[0];
     const accountId = job.account_id;
     const url = await getRandomRetrieverUrl(`/profile/${accountId}`);
     console.log(url);

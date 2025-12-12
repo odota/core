@@ -7,32 +7,31 @@ import {
   validateMatchProperties,
 } from './util/scenariosUtil.ts';
 import { epochWeek } from './util/utility.ts';
-import { runQueue } from './store/queue.ts';
+import { runReliableQueue } from './store/queue.ts';
 import { redisCount } from './store/redis.ts';
 
-type ScenariosKey = keyof typeof scenarioChecks;
-
-runQueue('scenariosQueue', 1, processScenarios);
+runReliableQueue('scenariosQueue', 1, processScenarios);
 
 // Processors generally get back job objects but this one uses a string
-async function processScenarios(matchID: string, i: number) {
+async function processScenarios(job: ScenariosJob) {
+  const matchID = job.match_id;
   console.log('[SCENARIOS] match: %s', matchID);
   // NOTE: Using buildMatch is unnecessarily expensive here since it also looks up player names etc.
   // But we do it to have calculated fields present
   const match = await buildMatch(Number(matchID), {});
   if (!match || !('version' in match)) {
-    return;
+    return false;
   }
   if (!validateMatchProperties(match)) {
     console.log(
       `Skipping scenario checks for match ${matchID}. Invalid match object.`,
     );
-    return;
+    return false;
   }
   redisCount('scenario');
   const currentWeek = epochWeek();
-  Object.keys(scenarioChecks).forEach((table) => {
-    scenarioChecks[table as ScenariosKey].forEach(async (scenarioCheck) => {
+  for (let [table, scenarioCheckArr] of Object.entries(scenarioChecks)) {
+    for (let scenarioCheck of scenarioCheckArr) {
       const rows = scenarioCheck(match);
       for (let row of rows) {
         row = Object.assign(row, {
@@ -56,6 +55,7 @@ async function processScenarios(matchID: string, i: number) {
           Object.keys(row).map((key) => row[key]),
         );
       }
-    });
-  });
+    }
+  }
+  return true;
 }

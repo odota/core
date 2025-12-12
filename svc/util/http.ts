@@ -29,10 +29,8 @@ export const SteamAPIUrls = {
         ? `&start_at_match_id=${payload.start_at_match_id}`
         : ''
     }`,
-  api_summaries: (payload: { players: ProfileJob[] }) =>
-    `${apiUrl}/ISteamUser/GetPlayerSummaries/v0002/?key=${apiKey}&steamids=${payload.players
-      .map((p: ProfileJob) => convert32to64(String(p.account_id)))
-      .join()}`,
+  api_summaries: (payload: { steamids: string[] }) =>
+    `${apiUrl}/ISteamUser/GetPlayerSummaries/v0002/?key=${apiKey}&steamids=${payload.steamids.join(',')}`,
   api_sequence: (payload: {
     start_at_match_seq_num: number;
     matches_requested: number;

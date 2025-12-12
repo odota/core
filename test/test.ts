@@ -80,8 +80,8 @@ await initMinio();
 await loadMatches();
 await loadPlayers();
 await startServices();
-// Wait one second to give mmr time to update
-await new Promise((resolve) => setTimeout(resolve, 1000));
+// Wait to give mmr time to update
+await new Promise((resolve) => setTimeout(resolve, 2000));
 
 async function initRedis() {
   console.log('wiping redis');

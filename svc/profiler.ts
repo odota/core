@@ -1,19 +1,18 @@
 // Updates Steam profile data for players periodically
 import db, { upsertPlayer } from './store/db.ts';
 import { convert32to64, convert64to32, runInLoop } from './util/utility.ts';
-import redis, { redisCount } from './store/redis.ts';
+import { redisCount } from './store/redis.ts';
 import { SteamAPIUrls, getSteamAPIDataWithRetry } from './util/http.ts';
 import { getRandomRetrieverUrl } from './util/registry.ts';
 import axios from 'axios';
+import { runQueue } from './store/queue.ts';
 
-runInLoop(async function profile() {
-  const resp = await redis.lpop('profileQueue', 100);
-  if (!resp || !resp.length) {
-    return;
-  }
-  const jobs = resp.map((item) => JSON.parse(item) as ProfileJob);
+runQueue<ProfileJob>('profileQueue', 1, 100, profile);
+
+async function profile(batch: ProfileJob[]) {
+  const steamids = batch.map((j) => convert32to64(String(j.account_id)));
   const url = SteamAPIUrls.api_summaries({
-    players: jobs,
+    steamids,
   });
   const body = await getSteamAPIDataWithRetry<ProfileSummaries>({ url });
   const results = body.response.players.filter((player) => player.steamid);
@@ -21,14 +20,11 @@ runInLoop(async function profile() {
   for (let player of results) {
     await upsertPlayer(db, { ...player, profile_time: now });
   }
-  redisCount('profiler', resp.length);
+  redisCount('profiler', batch.length);
 
   // Get aliases from retriever
   // This may fail but we'll just let it crash if we do
-  const url2 = await getRandomRetrieverUrl(
-    '/aliases/' +
-      jobs.map((j) => convert32to64(String(j.account_id))).join(','),
-  );
+  const url2 = await getRandomRetrieverUrl('/aliases/' + steamids.join(','));
   const respAliases = await axios.get<RetrieverAliases>(url2, {
     timeout: 5000,
   });
@@ -44,4 +40,4 @@ runInLoop(async function profile() {
       );
     }
   }
-}, 2000);
+}

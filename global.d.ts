@@ -285,8 +285,12 @@ type GcDataJob = {
 };
 
 type CountsJob = ApiData;
-type ScenariosJob = string;
-type CacheJob = string;
+type ScenariosJob = {
+  match_id: number;
+};
+type CacheJob = {
+  account_id: number;
+};
 
 type ParseJob = {
   match_id: number;

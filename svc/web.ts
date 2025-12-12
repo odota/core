@@ -135,11 +135,7 @@ const onResFinish = async (
   }
   await redis.lpush('load_times', elapsed);
   await redis.ltrim('load_times', 0, 9999);
-  redis.setex(
-    'lastRun:' + config.APP_NAME,
-    config.HEALTH_TIMEOUT,
-    elapsed,
-  );
+  redis.setex('lastRun:' + config.APP_NAME, config.HEALTH_TIMEOUT, elapsed);
 };
 
 // Dummy User ID for testing

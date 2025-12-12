@@ -404,10 +404,13 @@ export async function insertMatch(
             const isVisited = await isRecentlyVisited(account_id);
             if (isVisitor || isVisited) {
               // If OpenDota visitor or profile was recently visited by anyone, pre-compute the tempfile
-              await addJob({
-                name: 'cacheQueue',
-                data: account_id.toString(),
-              });
+              await addReliableJob(
+                {
+                  name: 'cacheQueue',
+                  data: { account_id },
+                },
+                {},
+              );
             }
           }
         }),
@@ -811,10 +814,13 @@ function updateMatchups(match) {
       options.type === 'parsed' &&
       match.match_id % 100 < Number(config.SCENARIOS_SAMPLE_PERCENT)
     ) {
-      await addJob({
-        name: 'scenariosQueue',
-        data: match.match_id.toString(),
-      });
+      await addReliableJob(
+        {
+          name: 'scenariosQueue',
+          data: { match_id: match.match_id },
+        },
+        {},
+      );
     }
   }
   async function postParsedMatch(trx: knex.Knex.Transaction) {

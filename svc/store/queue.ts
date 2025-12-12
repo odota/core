@@ -1,37 +1,37 @@
 import moment from 'moment';
 import redis, { redisCount } from './redis.ts';
 import db from './db.ts';
-import { Redis } from 'ioredis';
 import config from '../../config.ts';
 import { Client } from 'pg';
 import c from 'ansi-colors';
 
 moment.relativeTimeThreshold('ss', 0);
 
-export async function runQueue(
+export async function runQueue<T>(
   queueName: QueueName,
   parallelism: number,
-  processor: (job: any, i: number) => Promise<void>,
+  batchSize: number,
+  processor: (batch: T[], i: number) => Promise<void>,
   getCapacity?: () => Promise<number>,
 ) {
   const executor = async (i: number) => {
-    // Since this may block, we need a separate client for each parallelism!
-    // Otherwise the workers cannot issue redis commands since something is waiting for redis to return a job
-    const consumer = new Redis(config.REDIS_URL);
     while (true) {
       // If we have a way to measure capacity, throttle the processing speed based on capacity
       if (getCapacity && i >= (await getCapacity())) {
         await new Promise((resolve) => setTimeout(resolve, 3000));
         continue;
       }
-      const job = await consumer.blpop(queueName, '0');
+      const resp = await redis.spop(queueName, batchSize);
+      const batch = resp.map((el) => JSON.parse(el) as T);
       const start = Date.now();
-      if (job) {
-        const jobData = JSON.parse(job[1]);
+      if (batch?.length) {
         // Note: If we fail here we will crash the process and possibly interrupt other parallel workers
         // Handle errors in the processor to mitigate this
         // The job will not be retried since this is an unreliable queue
-        await processor(jobData, i);
+        await processor(batch, i);
+      } else {
+        // Wait before trying again
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
       const end = Date.now();
       await redis.setex(
@@ -120,7 +120,11 @@ export async function runReliableQueue(
 
 export async function addJob(input: QueueInput) {
   const { name, data } = input;
-  return redis.rpush(name, JSON.stringify(data));
+  return redis.sadd(name, JSON.stringify(data));
+}
+
+function exhaustive(name: never) {
+  console.log('Unhandled queue name case: %s', name);
 }
 
 export async function addReliableJob(
@@ -135,7 +139,16 @@ export async function addReliableJob(
     jobKey = `${name}:${data.account_id}`;
   } else if (name === 'gcQueue') {
     jobKey = `${name}:${data.match_id}`;
+  } else if (name === 'scenariosQueue') {
+    jobKey = `${name}:${data.match_id}`;
+  } else if (name === 'profileQueue') {
+    jobKey = `${name}:${data.account_id}`;
+  } else if (name === 'mmrQueue') {
+    jobKey = `${name}:${data.account_id}`;
+  } else if (name === 'cacheQueue') {
+    jobKey = `${name}:${data.account_id}`;
   } else {
+    exhaustive(name);
     jobKey = crypto.randomUUID();
   }
   const attempts = options.attempts || 1;
