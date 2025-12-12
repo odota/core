@@ -45,7 +45,7 @@ type ProMatchInfo = {
 
 async function getProMatchInfo(match: Match): Promise<ProMatchInfo> {
   const resultPromise =
-    'leagueid' in match
+    match.leagueid
       ? db
           .first(['series_id', 'series_type', 'replay_salt'])
           .from('matches')
@@ -54,7 +54,7 @@ async function getProMatchInfo(match: Match): Promise<ProMatchInfo> {
           })
       : Promise.resolve(undefined);
   const leaguePromise =
-    'leagueid' in match
+    match.leagueid
       ? db.first().from('leagues').where({
           leagueid: match.leagueid,
         })
