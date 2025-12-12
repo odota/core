@@ -40,7 +40,7 @@ runQueue<MmrJob>(
       // Insert into history if different from current value
       // NOTE: This is a read-then-insert and might insert twice if the same player is processed in parallel
       await db.raw(
-        'INSERT INTO rank_tier_history(account_id, time, rank_tier) SELECT ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM rank_tier WHERE account_id = ? AND rating = ?)',
+        'INSERT INTO rank_tier_history(account_id, time, rank_tier) SELECT ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM rank_tier WHERE account_id = ? AND rating = ?) ON CONFLICT DO NOTHING',
         [
           data.account_id,
           new Date(),
