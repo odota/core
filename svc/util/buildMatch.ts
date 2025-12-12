@@ -47,7 +47,6 @@ async function getProMatchInfo(match: Match): Promise<{
     .first([
       'series_id',
       'series_type',
-      'cluster',
       'replay_salt',
     ])
     .from('matches')
@@ -75,7 +74,6 @@ async function getProMatchInfo(match: Match): Promise<{
     dire_team: direTeam,
     series_id: result?.series_id ?? undefined,
     series_type: result?.series_type ?? undefined,
-    cluster: result?.cluster ?? undefined,
     replay_salt: result?.replay_salt ?? undefined,
   };
   return final;
