@@ -82,6 +82,7 @@ export async function buildStatus(isAdmin: boolean) {
         rated_skip_last_day: async () => getRedisCountDay('rater_skip'),
         scenario_last_day: async () => getRedisCountDay('scenario'),
         profiler_last_day: async () => getRedisCountDay('profiler'),
+        alias_last_day: async () => getRedisCountDay('alias'),
         player_discover_last_day: async () =>
           getRedisCountDay('player_discover'),
         fullhistory_last_day: async () => getRedisCountDay('fullhistory'),
@@ -336,14 +337,14 @@ export async function buildStatus(isAdmin: boolean) {
       }
       return Object.fromEntries(result);
     },
-    api_origins: async () => {
-      if (isAdmin) {
-        const result = await getRedisCountDayHash('api_origins');
-        const sorted = Object.entries(result).sort((a, b) => b[1] - a[1]);
-        return Object.fromEntries(sorted);
-      }
-      return {};
-    },
+    // api_origins: async () => {
+    //   if (isAdmin) {
+    //     const result = await getRedisCountDayHash('api_origins');
+    //     const sorted = Object.entries(result).sort((a, b) => b[1] - a[1]);
+    //     return Object.fromEntries(sorted);
+    //   }
+    //   return {};
+    // },
     game_mode: async () => {
       const result = new Map<string, number>();
       for (let key of Object.keys(game_mode)) {

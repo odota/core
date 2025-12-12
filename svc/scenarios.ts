@@ -28,7 +28,6 @@ async function processScenarios(job: ScenariosJob) {
     );
     return false;
   }
-  redisCount('scenario');
   const currentWeek = epochWeek();
   for (let [table, scenarioCheckArr] of Object.entries(scenarioChecks)) {
     for (let scenarioCheck of scenarioCheckArr) {
@@ -57,5 +56,6 @@ async function processScenarios(job: ScenariosJob) {
       }
     }
   }
+  redisCount('scenario');
   return true;
 }

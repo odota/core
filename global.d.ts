@@ -500,7 +500,8 @@ type MetricName =
   | 'scenario'
   | 'dedupe_queue'
   | 'add_queue_fail'
-  | 'login';
+  | 'login'
+  | 'alias';
 
 // Object to map player_slot to basic info
 type PGroup = {

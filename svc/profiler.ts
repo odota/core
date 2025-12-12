@@ -40,4 +40,5 @@ async function profile(batch: ProfileJob[]) {
       );
     }
   }
+  redisCount('alias');
 }

@@ -32,11 +32,11 @@ runInLoop(async function rate() {
   // console.log(row.match_id, accountIds);
   if (!accountIds.every(Boolean)) {
     // undefined account ID, delete the row
-    redisCount('rater_skip');
     await db.raw(
       'DELETE FROM rating_queue WHERE match_seq_num = ?',
       row.match_seq_num,
     );
+    redisCount('rater_skip');
     return;
   }
   const turbo = isTurbo(row);
