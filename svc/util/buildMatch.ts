@@ -56,13 +56,13 @@ async function getProMatchInfo(match: Match): Promise<{
     });
   const leaguePromise = 'leagueid' in match ? db.first().from('leagues').where({
     leagueid: match.leagueid,
-  }) : Promise.resolve(null);
+  }) : Promise.resolve(undefined);
   const radiantTeamPromise = 'radiant_team_id' in match ? db.first().from('teams').where({
     team_id: match.radiant_team_id,
-  }): Promise.resolve(null);
+  }): Promise.resolve(undefined);
   const direTeamPromise = 'dire_team_id' in match ? db.first().from('teams').where({
     team_id: match.dire_team_id,
-  }) : Promise.resolve(null);
+  }) : Promise.resolve(undefined);
   const [result, league, radiantTeam, direTeam] = await Promise.all([
     resultPromise,
     leaguePromise,
@@ -73,10 +73,10 @@ async function getProMatchInfo(match: Match): Promise<{
     league,
     radiant_team: radiantTeam,
     dire_team: direTeam,
-    series_id: result.series_id,
-    series_type: result.series_type,
-    cluster: result.cluster ?? undefined,
-    replay_salt: result.replay_salt ?? undefined,
+    series_id: result?.series_id ?? undefined,
+    series_type: result?.series_type ?? undefined,
+    cluster: result?.cluster ?? undefined,
+    replay_salt: result?.replay_salt ?? undefined,
   };
   return final;
 }
