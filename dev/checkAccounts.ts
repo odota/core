@@ -16,24 +16,24 @@ for (let i = Number(process.argv[2]) || 0; i < accountArray.length; i++) {
     client.logOn(logOnDetails);
     client.on('loggedOn', (logOnResp: any) => {
       if (logOnResp.eresult === SteamUser.EResult.OK) {
-        console.error(i, user, pass, 'passed', logOnResp.eresult);
+        console.log(i, user, pass, 'passed', logOnResp.eresult);
         client.logOff();
         resolve(null);
       } else {
-        console.error(i, user, pass, 'failed', logOnResp.eresult);
+        console.log(i, user, pass, 'failed', logOnResp.eresult);
         process.exit(1);
       }
     });
     client.on('steamGuard', () => {
-      console.error(i, user, pass, 'failed', 'steamguard');
+      console.log(i, user, pass, 'failed', 'steamguard');
       process.exit(1);
     });
     client.on('error', (err: any) => {
-      console.error(err);
+      console.log(err);
       if (err.eresult === SteamUser.EResult.AccountDisabled) {
-        console.error(i, user, pass, 'failed', err.eresult);
+        console.log(i, user, pass, 'failed', err.eresult);
       } else if (err.eresult === SteamUser.EResult.InvalidPassword) {
-        console.error(i, user, pass, 'failed', err.eresult);
+        console.log(i, user, pass, 'failed', err.eresult);
       }
       process.exit(1);
     });

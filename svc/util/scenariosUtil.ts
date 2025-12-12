@@ -165,7 +165,11 @@ export const metadata = {
  * Make sure the match object has all required properties.
  * */
 export function validateMatchProperties(match: ParsedMatch) {
-  return matchProperties.every(
-    (property) => match[property] !== undefined && match[property] !== null,
+  return (
+    matchProperties.every(
+      (property) => match[property] !== undefined && match[property] !== null,
+    ) &&
+    match.players.length === 10 &&
+    match.players.every((p) => p.hero_id)
   );
 }

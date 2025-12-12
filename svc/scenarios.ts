@@ -38,7 +38,6 @@ async function processScenarios(job: ScenariosJob) {
           epoch_week: currentWeek,
           wins: row.wins ? '1' : '0',
         });
-        console.log(row);
         const values = Object.keys(row).map(() => '?');
         const query = util.format(
           'INSERT INTO %s (%s) VALUES (%s) ON CONFLICT (%s) DO UPDATE SET wins = %s.wins + EXCLUDED.wins, games = %s.games + 1',
@@ -58,6 +57,5 @@ async function processScenarios(job: ScenariosJob) {
       }
     }
   }
-  console.log('done');
   return true;
 }

@@ -55,7 +55,7 @@ export async function archivePostgresStream() {
       try {
         await processMatch(row.match_id);
       } catch (e) {
-        console.error(e);
+        console.log(e);
       }
     }
   });
@@ -71,7 +71,7 @@ async function archiveSequential(start: number, max: number) {
     try {
       await processMatch(i);
     } catch (e) {
-      console.error(e);
+      console.log(e);
     }
   }
 }

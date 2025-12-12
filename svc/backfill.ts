@@ -73,7 +73,7 @@ runInLoop(async function backfill() {
     }
   } catch (e) {
     // If any fail, log the error and try the same number again
-    console.error(e);
+    console.log(e);
   }
   // const end = Date.now();
   // const elapsed = end - begin;

@@ -115,7 +115,7 @@ class Archive {
       result = await this.client.putObject(key, zip);
     } catch (e: unknown) {
       const error = e as S3Errors.ServerError;
-      console.error('[ARCHIVE] put error (%s): %s', error.code, error.message);
+      console.log('[ARCHIVE] put error (%s): %s', error.code, error.message);
       // if (ifNotExists && e.Code === 'PreconditionFailed') {
       //   // Expected error if ifNotExists was passed
       //   return { message: 'already exists' };

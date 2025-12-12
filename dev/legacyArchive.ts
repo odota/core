@@ -143,7 +143,7 @@ async function start() {
       const page = await getTokenRange(10);
       await Promise.allSettled(page.map((i) => doArchiveFromLegacy(i)));
     } catch (e) {
-      console.error(e);
+      console.log(e);
     }
   }
 }
@@ -159,7 +159,7 @@ async function start2() {
       console.log(page[0]);
       await Promise.allSettled(page.map((i) => doArchiveFromLegacy(i)));
     } catch (e) {
-      console.error(e);
+      console.log(e);
     }
   }
 }

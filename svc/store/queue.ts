@@ -102,6 +102,7 @@ export async function runReliableQueue(
             end - start,
           );
         } catch (e) {
+          console.log(e);
           // If the processor crashes unexpectedly, we should rollback the transaction to not consume an attempt
           await consumer.query('ROLLBACK');
           await new Promise((resolve) => setTimeout(resolve, 1000));

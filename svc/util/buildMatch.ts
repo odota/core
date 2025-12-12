@@ -34,7 +34,7 @@ function extendPlayerData(
   return p as Player | ParsedPlayer;
 }
 
-async function getProMatchInfo(matchId: number): Promise<{
+async function getProMatchInfo(match: Match): Promise<{
   radiant_team?: any;
   dire_team?: any;
   league?: any;
@@ -43,11 +43,8 @@ async function getProMatchInfo(matchId: number): Promise<{
   cluster?: number;
   replay_salt?: number;
 }> {
-  const result = await db
+  const resultPromise = db
     .first([
-      'radiant_team_id',
-      'dire_team_id',
-      'leagueid',
       'series_id',
       'series_type',
       'cluster',
@@ -55,21 +52,19 @@ async function getProMatchInfo(matchId: number): Promise<{
     ])
     .from('matches')
     .where({
-      match_id: matchId,
+      match_id: match.match_id,
     });
-  if (!result) {
-    return {};
-  }
-  const leaguePromise = db.first().from('leagues').where({
-    leagueid: result.leagueid,
-  });
-  const radiantTeamPromise = db.first().from('teams').where({
-    team_id: result.radiant_team_id,
-  });
-  const direTeamPromise = db.first().from('teams').where({
-    team_id: result.dire_team_id,
-  });
-  const [league, radiantTeam, direTeam] = await Promise.all([
+  const leaguePromise = 'leagueid' in match ? db.first().from('leagues').where({
+    leagueid: match.leagueid,
+  }) : Promise.resolve(null);
+  const radiantTeamPromise = 'radiant_team_id' in match ? db.first().from('teams').where({
+    team_id: match.radiant_team_id,
+  }): Promise.resolve(null);
+  const direTeamPromise = 'dire_team_id' in match ? db.first().from('teams').where({
+    team_id: match.dire_team_id,
+  }) : Promise.resolve(null);
+  const [result, league, radiantTeam, direTeam] = await Promise.all([
+    resultPromise,
     leaguePromise,
     radiantTeamPromise,
     direTeamPromise,
@@ -218,7 +213,7 @@ export async function buildMatch(
   const [players, prodata, cosmetics, metadata, playerBenchmarks] =
     await Promise.all([
       getPlayerDetails(match),
-      getProMatchInfo(matchId),
+      getProMatchInfo(match),
       getCosmetics(match),
       getMeta(options.meta ? matchId : undefined),
       getPlayerBenchmarks(match),
