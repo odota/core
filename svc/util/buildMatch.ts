@@ -34,48 +34,64 @@ function extendPlayerData(
   return p as Player | ParsedPlayer;
 }
 
-async function getProMatchInfo(match: Match): Promise<{
+type ProMatchInfo = {
   radiant_team?: any;
   dire_team?: any;
   league?: any;
   series_id?: number;
   series_type?: number;
-  cluster?: number;
   replay_salt?: number;
-}> {
-  const resultPromise = db
-    .first([
-      'series_id',
-      'series_type',
-      'replay_salt',
-    ])
-    .from('matches')
-    .where({
-      match_id: match.match_id,
-    });
-  const leaguePromise = 'leagueid' in match ? db.first().from('leagues').where({
-    leagueid: match.leagueid,
-  }) : Promise.resolve(undefined);
-  const radiantTeamPromise = 'radiant_team_id' in match ? db.first().from('teams').where({
-    team_id: match.radiant_team_id,
-  }): Promise.resolve(undefined);
-  const direTeamPromise = 'dire_team_id' in match ? db.first().from('teams').where({
-    team_id: match.dire_team_id,
-  }) : Promise.resolve(undefined);
+};
+
+async function getProMatchInfo(match: Match): Promise<ProMatchInfo> {
+  const resultPromise =
+    'leagueid' in match
+      ? db
+          .first(['series_id', 'series_type', 'replay_salt'])
+          .from('matches')
+          .where({
+            match_id: match.match_id,
+          })
+      : Promise.resolve(undefined);
+  const leaguePromise =
+    'leagueid' in match
+      ? db.first().from('leagues').where({
+          leagueid: match.leagueid,
+        })
+      : Promise.resolve(undefined);
+  const radiantTeamPromise =
+    'radiant_team_id' in match
+      ? db.first().from('teams').where({
+          team_id: match.radiant_team_id,
+        })
+      : Promise.resolve(undefined);
+  const direTeamPromise =
+    'dire_team_id' in match
+      ? db.first().from('teams').where({
+          team_id: match.dire_team_id,
+        })
+      : Promise.resolve(undefined);
   const [result, league, radiantTeam, direTeam] = await Promise.all([
     resultPromise,
     leaguePromise,
     radiantTeamPromise,
     direTeamPromise,
   ]);
-  const final = {
-    league,
-    radiant_team: radiantTeam,
-    dire_team: direTeam,
-    series_id: result?.series_id ?? undefined,
-    series_type: result?.series_type ?? undefined,
-    replay_salt: result?.replay_salt ?? undefined,
-  };
+  const final: ProMatchInfo = {};
+  if (result) {
+    final.series_id = result.series_id;
+    final.series_type = result.series_type;
+    final.replay_salt = result.replay_salt;
+  }
+  if (league) {
+    final.league = league;
+  }
+  if (radiantTeam) {
+    final.radiant_team = radiantTeam;
+  }
+  if (direTeam) {
+    final.dire_team = direTeam;
+  }
   return final;
 }
 
