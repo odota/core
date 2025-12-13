@@ -1,8 +1,8 @@
-import { ApiFetcher } from './ApiFetcher.ts';
-import { ArchivedFetcher } from './ArchivedFetcher.ts';
-import { GcdataFetcher } from './GcdataFetcher.ts';
-import { ParsedFetcher } from './ParsedFetcher.ts';
-import { MetaFetcher } from './MetaFetcher.ts';
+import { ApiFetcher } from "./ApiFetcher.ts";
+import { ArchivedFetcher } from "./ArchivedFetcher.ts";
+import { GcdataFetcher } from "./GcdataFetcher.ts";
+import { ParsedFetcher } from "./ParsedFetcher.ts";
+import { MetaFetcher } from "./MetaFetcher.ts";
 
 export const apiFetcher = new ApiFetcher();
 export const gcFetcher = new GcdataFetcher();

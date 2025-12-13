@@ -1,10 +1,10 @@
-import ProtoBuf from 'protobufjs';
-import { exec } from 'node:child_process';
-import { promisify } from 'node:util';
-import { buildReplayUrl } from '../util/utility.ts';
-import { MatchFetcherBase } from './MatchFetcherBase.ts';
-import { GcdataFetcher } from './GcdataFetcher.ts';
-import { redisCount } from '../store/redis.ts';
+import ProtoBuf from "protobufjs";
+import { exec } from "node:child_process";
+import { promisify } from "node:util";
+import { buildReplayUrl } from "../util/utility.ts";
+import { MatchFetcherBase } from "./MatchFetcherBase.ts";
+import { GcdataFetcher } from "./GcdataFetcher.ts";
+import { redisCount } from "../store/redis.ts";
 const execPromise = promisify(exec);
 
 const gcFetcher = new GcdataFetcher();
@@ -13,10 +13,10 @@ const gcFetcher = new GcdataFetcher();
 // curl http://replay117.valve.net/570/7468445438_1951738768.meta.bz2
 
 const root = new ProtoBuf.Root();
-const builder = root.loadSync('./proto/dota_match_metadata.proto', {
+const builder = root.loadSync("./proto/dota_match_metadata.proto", {
   keepCase: true,
 });
-const CDOTAMatchMetadataFile = builder.lookupType('CDOTAMatchMetadataFile');
+const CDOTAMatchMetadataFile = builder.lookupType("CDOTAMatchMetadataFile");
 
 export class MetaFetcher extends MatchFetcherBase<Record<string, any>> {
   getData = async (matchId: number) => {
@@ -26,7 +26,7 @@ export class MetaFetcher extends MatchFetcherBase<Record<string, any>> {
   fetchData = async (matchId: number) => {
     const gcdata = await gcFetcher.getData(matchId);
     if (!gcdata) {
-      return { data: null, error: 'no gcdata' };
+      return { data: null, error: "no gcdata" };
     }
     const url = buildReplayUrl(
       gcdata.match_id,
@@ -41,7 +41,7 @@ export class MetaFetcher extends MatchFetcherBase<Record<string, any>> {
     // If we want to cache meta files, we can cache the bz2 versions and it won't add very much parse time
     const start = Date.now();
     const { stdout } = await execPromise(`curl -L ${url} | bunzip2`, {
-      encoding: 'buffer',
+      encoding: "buffer",
       maxBuffer: 10 * 1024 * 1024,
     });
     const message: any = CDOTAMatchMetadataFile.decode(stdout);
@@ -55,15 +55,15 @@ export class MetaFetcher extends MatchFetcherBase<Record<string, any>> {
     // This is encrypted in some way, see https://github.com/thedanill/dota_crypto (may require Dota plus subscription to request key)
     delete message.private_metadata;
     const end = Date.now();
-    console.log('[METAPARSE] %dms', end - start);
+    console.log("[METAPARSE] %dms", end - start);
     if (message) {
       // Count the number of meta parses
-      redisCount('meta_parse');
+      redisCount("meta_parse");
     }
     // Return the info, it may be null if we failed at any step or meta isn't available
     return { data: message, error: null };
   };
   checkAvailable = () => {
-    throw new Error('not implemented');
+    throw new Error("not implemented");
   };
 }

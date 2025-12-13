@@ -1,8 +1,8 @@
-import { matchArchive } from '../store/archive.ts';
-import db from '../store/db.ts';
-import { MatchFetcherBase } from './MatchFetcherBase.ts';
-import { doArchiveMatchFromBlobs } from '../util/archiveUtil.ts';
-import { redisCount } from '../store/redis.ts';
+import { matchArchive } from "../store/archive.ts";
+import db from "../store/db.ts";
+import { MatchFetcherBase } from "./MatchFetcherBase.ts";
+import { doArchiveMatchFromBlobs } from "../util/archiveUtil.ts";
+import { redisCount } from "../store/redis.ts";
 
 export class ArchivedFetcher extends MatchFetcherBase<ParsedMatch> {
   getData = async (matchId: number): Promise<ParsedMatch | null> => {
@@ -17,7 +17,7 @@ export class ArchivedFetcher extends MatchFetcherBase<ParsedMatch> {
       ? JSON.parse(blob.toString())
       : null;
     if (result) {
-      redisCount('match_archive_read');
+      redisCount("match_archive_read");
       return result;
     }
     return null;
@@ -30,7 +30,7 @@ export class ArchivedFetcher extends MatchFetcherBase<ParsedMatch> {
     return Boolean(
       (
         await db.raw(
-          'select match_id from parsed_matches where match_id = ? and is_archived IS TRUE',
+          "select match_id from parsed_matches where match_id = ? and is_archived IS TRUE",
           [matchId],
         )
       ).rows[0],

@@ -5,19 +5,19 @@
  * Stream is run through a series of processors to count/aggregate it into a single object
  * This object is passed to insertMatch to persist the data into the database.
  * */
-import config from '../config.ts';
-import { runReliableQueue } from './store/queue.ts';
-import c from 'ansi-colors';
-import { buildReplayUrl } from './util/utility.ts';
-import redis, { redisCount } from './store/redis.ts';
-import { apiFetcher, gcFetcher, parsedFetcher } from './fetcher/allFetchers.ts';
-import { getPGroup } from './util/pgroup.ts';
-import moment from 'moment';
-import db from './store/db.ts';
-import { getParserCapacity } from './util/registry.ts';
+import config from "../config.ts";
+import { runReliableQueue } from "./store/queue.ts";
+import c from "ansi-colors";
+import { buildReplayUrl } from "./util/utility.ts";
+import redis, { redisCount } from "./store/redis.ts";
+import { apiFetcher, gcFetcher, parsedFetcher } from "./fetcher/allFetchers.ts";
+import { getPGroup } from "./util/pgroup.ts";
+import moment from "moment";
+import db from "./store/db.ts";
+import { getParserCapacity } from "./util/registry.ts";
 
 runReliableQueue(
-  'parse',
+  "parse",
   Number(config.PARSER_PARALLELISM),
   parseProcessor,
   getParserCapacity,
@@ -29,7 +29,7 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
   let gcTime = 0;
   let parseTime = 0;
   try {
-    redisCount('parser_job');
+    redisCount("parser_job");
     redis.publish(
       String(metadata.jobId),
       c.magenta(
@@ -45,7 +45,7 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
       matchId > Number.MAX_SAFE_INTEGER ||
       matchId < Number.MIN_SAFE_INTEGER
     ) {
-      await log('skip', 'Match ID out of range');
+      await log("skip", "Match ID out of range");
       return true;
     }
 
@@ -59,17 +59,17 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
       { seqNumBackfill: false },
     );
     if (apiError) {
-      redisCount('request_api_fail');
-      await log('fail', 'API error: ' + apiError);
+      redisCount("request_api_fail");
+      await log("fail", "API error: " + apiError);
       return false;
     }
     if (!apiMatch) {
-      await log('fail', 'Missing API data');
+      await log("fail", "Missing API data");
       return false;
     }
     const pgroup = getPGroup(apiMatch);
     if (!pgroup) {
-      await log('fail', 'Missing pgroup');
+      await log("fail", "Missing pgroup");
       return false;
     }
     apiTime = Date.now() - apiStart;
@@ -103,7 +103,7 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
       );
     if (!gcMatch) {
       // non-retryable error
-      await log('fail', gcError || 'Missing gcdata');
+      await log("fail", gcError || "Missing gcdata");
       return false;
     }
     gcTime = Date.now() - gcStart;
@@ -139,39 +139,39 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
 
     // Reconcile if last attempt (no more retries) or skipped or successful parse
     if (metadata.attempts === 0 || !parseError) {
-      await queueReconcile(gcMatch, pgroup, 'pmh_parsed');
+      await queueReconcile(gcMatch, pgroup, "pmh_parsed");
     }
 
     if (parseError) {
-      console.log('[PARSER] %s: %s', matchId, parseError);
-      await log('fail', parseError);
+      console.log("[PARSER] %s: %s", matchId, parseError);
+      await log("fail", parseError);
       return false;
     }
 
     if (skipped) {
-      await log('skip', 'Replay parse skipped (already parsed)');
+      await log("skip", "Replay parse skipped (already parsed)");
       return true;
     }
 
     // Log successful parse and timing
-    await log('success');
+    await log("success");
     return true;
   } catch (e: any) {
-    await log('crash', e?.message);
+    await log("crash", e?.message);
     // Rethrow the exception
     throw e;
   }
 
   async function log(
-    type: 'fail' | 'crash' | 'success' | 'skip',
+    type: "fail" | "crash" | "success" | "skip",
     displayMsg?: string | null,
   ) {
     const end = Date.now();
-    const colors: Record<typeof type, 'yellow' | 'red' | 'green' | 'gray'> = {
-      fail: 'yellow',
-      crash: 'red',
-      success: 'green',
-      skip: 'gray',
+    const colors: Record<typeof type, "yellow" | "red" | "green" | "gray"> = {
+      fail: "yellow",
+      crash: "red",
+      success: "green",
+      skip: "gray",
     };
     const message = c[colors[type]](
       `[${new Date().toISOString()}] [parser] [${type}: ${
@@ -180,24 +180,24 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
         .utc(metadata.timestamp)
         .fromNow()}] [pri: ${metadata.priority}] [att: ${metadata.attempts}] ${
         job.match_id
-      } ${displayMsg ?? ''}`,
+      } ${displayMsg ?? ""}`,
     );
-    redis.publish('parsed', message);
+    redis.publish("parsed", message);
     redis.publish(
       String(metadata.jobId),
       c[colors[type]](
         `[${type}] Finished [job: ${metadata.jobId}] [match: ${
           job.match_id
-        }] in ${end - start}ms ${displayMsg ?? ''}`,
+        }] in ${end - start}ms ${displayMsg ?? ""}`,
       ),
     );
     console.log(message);
-    if (type === 'fail') {
-      redisCount('parser_fail');
-    } else if (type === 'crash') {
-      redisCount('parser_crash');
-    } else if (type === 'skip') {
-      redisCount('parser_skip');
+    if (type === "fail") {
+      redisCount("parser_fail");
+    } else if (type === "crash") {
+      redisCount("parser_crash");
+    } else if (type === "skip") {
+      redisCount("parser_skip");
     }
   }
 }
@@ -215,7 +215,7 @@ export async function queueReconcile(
         .map(async (p) => {
           if (p.account_id) {
             const { rows } = await db.raw(
-              'INSERT INTO player_match_history(account_id, match_id, player_slot) VALUES (?, ?, ?) ON CONFLICT DO NOTHING RETURNING *',
+              "INSERT INTO player_match_history(account_id, match_id, player_slot) VALUES (?, ?, ?) ON CONFLICT DO NOTHING RETURNING *",
               [p.account_id, gcMatch.match_id, p.player_slot],
             );
             if (rows.length > 0) {

@@ -1,16 +1,16 @@
-import constants, { heroes, cluster } from 'dotaconstants';
-import moment from 'moment';
-import { Client } from 'pg';
-import config from '../../config.ts';
-import { addJob, addReliableJob, getReliableJob } from '../store/queue.ts';
-import { buildMatch } from '../util/buildMatch.ts';
-import { getPlayerMatches } from '../util/buildPlayer.ts';
+import constants, { heroes, cluster } from "dotaconstants";
+import moment from "moment";
+import { Client } from "pg";
+import config from "../../config.ts";
+import { addJob, addReliableJob, getReliableJob } from "../store/queue.ts";
+import { buildMatch } from "../util/buildMatch.ts";
+import { getPlayerMatches } from "../util/buildPlayer.ts";
 import {
   countPeers,
   isRadiant,
   mergeObjects,
   queryParamToArray,
-} from '../util/utility.ts';
+} from "../util/utility.ts";
 import {
   matchesCols,
   countsCats,
@@ -22,11 +22,11 @@ import {
   wardmapCols,
   wordcloudCols,
   recentMatchesCols,
-} from './playerFields.ts';
-import db from '../store/db.ts';
-import redis, { redisCount, redisCountDistinct } from '../store/redis.ts';
-import packageJson from '../../package.json' with { type: 'json' };
-import generateOperationId from './generateOperationId.ts';
+} from "./playerFields.ts";
+import db from "../store/db.ts";
+import redis, { redisCount, redisCountDistinct } from "../store/redis.ts";
+import packageJson from "../../package.json" with { type: "json" };
+import generateOperationId from "./generateOperationId.ts";
 import {
   getDistributions,
   getPlayerRatings,
@@ -42,54 +42,54 @@ import {
   getTeamScenarios,
   getItemTimings,
   search,
-} from '../util/queries.ts';
-import heroParams from './requests/heroParams.ts';
-import leagueParams from './requests/leagueParams.ts';
-import matchParams from './requests/matchParams.ts';
-import playerParams from './requests/playerParams.ts';
-import scenarioParams from './requests/scenarioParams.ts';
-import teamParams from './requests/teamParams.ts';
-import BenchmarksResponse from './responses/BenchmarksResponse.ts';
-import DistributionsResponse from './responses/DistributionsResponse.ts';
-import HeroDurationsResponse from './responses/HeroDurationsResponse.ts';
-import HeroItemPopularityResponse from './responses/HeroItemPopularityResponse.ts';
-import HeroMatchupsResponse from './responses/HeroMatchupsResponse.ts';
-import HeroObjectResponse from './responses/HeroObjectResponse.ts';
-import HeroStatsResponse from './responses/HeroStatsResponse.ts';
-import LeagueObjectResponse from './responses/LeagueObjectResponse.ts';
-import MatchObjectResponse from './responses/MatchObjectResponse.ts';
-import MatchResponse from './responses/MatchResponse.ts';
-import MetadataResponse from './responses/MetadataResponse.ts';
-import ParsedMatchesResponse from './responses/ParsedMatchesResponse.ts';
-import PlayerCountsResponse from './responses/PlayerCountsResponse.ts';
-import PlayerHeroesResponse from './responses/PlayerHeroesResponse.ts';
-import PlayerMatchesResponse from './responses/PlayerMatchesResponse.ts';
-import PlayerObjectResponse from './responses/PlayerObjectResponse.ts';
-import PlayerPeersResponse from './responses/PlayerPeersResponse.ts';
-import PlayerProsResponse from './responses/PlayerProsResponse.ts';
-import PlayerRankingsResponse from './responses/PlayerRankingsResponse.ts';
-import PlayerRatingsResponse from './responses/PlayerRatingsResponse.ts';
-import PlayerRecentMatchesResponse from './responses/PlayerRecentMatchesResponse.ts';
-import PlayersResponse from './responses/PlayersResponse.ts';
-import PlayerTotalsResponse from './responses/PlayerTotalsResponse.ts';
-import PlayerWardMapResponse from './responses/PlayerWardMapResponse.ts';
-import PlayerWinLossResponse from './responses/PlayerWinLossResponse.ts';
-import PlayerWordCloudResponse from './responses/PlayerWordCloudResponse.ts';
-import PublicMatchesResponse from './responses/PublicMatchesResponse.ts';
-import RankingsResponse from './responses/RankingsResponse.ts';
-import RecordsResponse from './responses/RecordsResponse.ts';
-import ScenarioItemTimingsResponse from './responses/ScenarioItemTimingsResponse.ts';
-import ScenarioLaneRolesResponse from './responses/ScenarioLaneRolesResponse.ts';
-import ScenarioMiscResponse from './responses/ScenarioMiscResponse.ts';
-import SchemaResponse from './responses/SchemaResponse.ts';
-import SearchResponse from './responses/SearchResponse.ts';
-import TeamHeroesResponse from './responses/TeamHeroesResponse.ts';
-import TeamMatchObjectResponse from './responses/TeamMatchObjectResponse.ts';
-import TeamObjectResponse from './responses/TeamObjectResponse.ts';
-import TeamPlayersResponse from './responses/TeamPlayersResponse.ts';
-import { PRIORITY } from '../util/priority.ts';
-import { getPatchIndex } from '../util/compute.ts';
-import { matchupToString } from '../util/matchups.ts';
+} from "../util/queries.ts";
+import heroParams from "./requests/heroParams.ts";
+import leagueParams from "./requests/leagueParams.ts";
+import matchParams from "./requests/matchParams.ts";
+import playerParams from "./requests/playerParams.ts";
+import scenarioParams from "./requests/scenarioParams.ts";
+import teamParams from "./requests/teamParams.ts";
+import BenchmarksResponse from "./responses/BenchmarksResponse.ts";
+import DistributionsResponse from "./responses/DistributionsResponse.ts";
+import HeroDurationsResponse from "./responses/HeroDurationsResponse.ts";
+import HeroItemPopularityResponse from "./responses/HeroItemPopularityResponse.ts";
+import HeroMatchupsResponse from "./responses/HeroMatchupsResponse.ts";
+import HeroObjectResponse from "./responses/HeroObjectResponse.ts";
+import HeroStatsResponse from "./responses/HeroStatsResponse.ts";
+import LeagueObjectResponse from "./responses/LeagueObjectResponse.ts";
+import MatchObjectResponse from "./responses/MatchObjectResponse.ts";
+import MatchResponse from "./responses/MatchResponse.ts";
+import MetadataResponse from "./responses/MetadataResponse.ts";
+import ParsedMatchesResponse from "./responses/ParsedMatchesResponse.ts";
+import PlayerCountsResponse from "./responses/PlayerCountsResponse.ts";
+import PlayerHeroesResponse from "./responses/PlayerHeroesResponse.ts";
+import PlayerMatchesResponse from "./responses/PlayerMatchesResponse.ts";
+import PlayerObjectResponse from "./responses/PlayerObjectResponse.ts";
+import PlayerPeersResponse from "./responses/PlayerPeersResponse.ts";
+import PlayerProsResponse from "./responses/PlayerProsResponse.ts";
+import PlayerRankingsResponse from "./responses/PlayerRankingsResponse.ts";
+import PlayerRatingsResponse from "./responses/PlayerRatingsResponse.ts";
+import PlayerRecentMatchesResponse from "./responses/PlayerRecentMatchesResponse.ts";
+import PlayersResponse from "./responses/PlayersResponse.ts";
+import PlayerTotalsResponse from "./responses/PlayerTotalsResponse.ts";
+import PlayerWardMapResponse from "./responses/PlayerWardMapResponse.ts";
+import PlayerWinLossResponse from "./responses/PlayerWinLossResponse.ts";
+import PlayerWordCloudResponse from "./responses/PlayerWordCloudResponse.ts";
+import PublicMatchesResponse from "./responses/PublicMatchesResponse.ts";
+import RankingsResponse from "./responses/RankingsResponse.ts";
+import RecordsResponse from "./responses/RecordsResponse.ts";
+import ScenarioItemTimingsResponse from "./responses/ScenarioItemTimingsResponse.ts";
+import ScenarioLaneRolesResponse from "./responses/ScenarioLaneRolesResponse.ts";
+import ScenarioMiscResponse from "./responses/ScenarioMiscResponse.ts";
+import SchemaResponse from "./responses/SchemaResponse.ts";
+import SearchResponse from "./responses/SearchResponse.ts";
+import TeamHeroesResponse from "./responses/TeamHeroesResponse.ts";
+import TeamMatchObjectResponse from "./responses/TeamMatchObjectResponse.ts";
+import TeamObjectResponse from "./responses/TeamObjectResponse.ts";
+import TeamPlayersResponse from "./responses/TeamPlayersResponse.ts";
+import { PRIORITY } from "../util/priority.ts";
+import { getPatchIndex } from "../util/compute.ts";
+import { matchupToString } from "../util/matchups.ts";
 
 const parameters = {
   ...heroParams,
@@ -142,25 +142,25 @@ const schemas = {
 };
 
 const playerParamNames = [
-  'accountIdParam',
-  'limitParam',
-  'offsetParam',
-  'winParam',
-  'patchParam',
-  'gameModeParam',
-  'lobbyTypeParam',
-  'regionParam',
-  'dateParam',
-  'laneRoleParam',
-  'heroIdParam',
-  'isRadiantParam',
-  'includedAccountIdParam',
-  'excludedAccountIdParam',
-  'withHeroIdParam',
-  'againstHeroIdParam',
-  'significantParam',
-  'havingParam',
-  'sortParam',
+  "accountIdParam",
+  "limitParam",
+  "offsetParam",
+  "winParam",
+  "patchParam",
+  "gameModeParam",
+  "lobbyTypeParam",
+  "regionParam",
+  "dateParam",
+  "laneRoleParam",
+  "heroIdParam",
+  "isRadiantParam",
+  "includedAccountIdParam",
+  "excludedAccountIdParam",
+  "withHeroIdParam",
+  "againstHeroIdParam",
+  "significantParam",
+  "havingParam",
+  "sortParam",
 ];
 const playerParamsList = playerParamNames.map((paramName) => ({
   $ref: `#/components/parameters/${paramName}`,
@@ -168,21 +168,21 @@ const playerParamsList = playerParamNames.map((paramName) => ({
 
 const securitySchemes = {
   api_key: {
-    type: 'apiKey',
-    name: 'api_key',
+    type: "apiKey",
+    name: "api_key",
     description: `Use an API key to remove monthly call limits and to receive higher rate limits. [Learn more and get your API key](https://www.opendota.com/api-keys).
         Usage example: https://api.opendota.com/api/matches/271145478?api_key=YOUR-API-KEY
         
         API key can also be sent using the authorization header "Authorization: Bearer YOUR-API-KEY"
         `,
-    in: 'query',
+    in: "query",
   },
 };
 
 const spec: OpenAPISpec = {
-  openapi: '3.0.3',
+  openapi: "3.0.3",
   info: {
-    title: 'OpenDota API',
+    title: "OpenDota API",
     description: `# Introduction
 The OpenDota API provides Dota 2 related data including advanced match data extracted from match replays.
 
@@ -194,7 +194,7 @@ You can use the API without a key, but registering for a key allows increased ra
   },
   servers: [
     {
-      url: 'https://api.opendota.com/api',
+      url: "https://api.opendota.com/api",
     },
   ],
   components: {
@@ -203,26 +203,26 @@ You can use the API without a key, but registering for a key allows increased ra
     parameters,
   },
   paths: {
-    '/matches/{match_id}': {
+    "/matches/{match_id}": {
       get: {
-        operationId: generateOperationId('get', '/matches/{match_id}'),
-        summary: 'GET /matches/{match_id}',
-        description: 'Match data',
-        tags: ['matches'],
-        parameters: [{ $ref: '#/components/parameters/matchIdParam' }],
+        operationId: generateOperationId("get", "/matches/{match_id}"),
+        summary: "GET /matches/{match_id}",
+        description: "Match data",
+        tags: ["matches"],
+        parameters: [{ $ref: "#/components/parameters/matchIdParam" }],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  $ref: '#/components/schemas/MatchResponse',
+                  $ref: "#/components/schemas/MatchResponse",
                 },
               },
             },
           },
         },
-        route: () => '/matches/:match_id',
+        route: () => "/matches/:match_id",
         func: async (req, res, next) => {
           const match = await buildMatch(Number(req.params.match_id), {
             meta: req.query.meta as string,
@@ -235,26 +235,26 @@ You can use the API without a key, but registering for a key allows increased ra
         },
       },
     },
-    '/players/{account_id}': {
+    "/players/{account_id}": {
       get: {
-        operationId: generateOperationId('get', '/players/{account_id}'),
-        summary: 'GET /players/{account_id}',
-        description: 'Player data',
-        tags: ['players'],
-        parameters: [{ $ref: '#/components/parameters/accountIdParam' }],
+        operationId: generateOperationId("get", "/players/{account_id}"),
+        summary: "GET /players/{account_id}",
+        description: "Player data",
+        tags: ["players"],
+        parameters: [{ $ref: "#/components/parameters/accountIdParam" }],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  $ref: '#/components/schemas/PlayersResponse',
+                  $ref: "#/components/schemas/PlayersResponse",
                 },
               },
             },
           },
         },
-        route: () => '/players/:account_id',
+        route: () => "/players/:account_id",
         func: async (req, res, next) => {
           const accountId = Number(req.params.account_id);
           const playerData = await getPlayer(accountId);
@@ -269,22 +269,22 @@ You can use the API without a key, but registering for a key allows increased ra
             computedRatingTurbo,
             aliases,
           ] = await Promise.all([
-            db.first().from('rank_tier').where({ account_id: accountId }),
+            db.first().from("rank_tier").where({ account_id: accountId }),
             db
               .first()
-              .from('leaderboard_rank')
+              .from("leaderboard_rank")
               .where({ account_id: accountId }),
             db
               .first()
-              .from('player_computed_mmr')
+              .from("player_computed_mmr")
               .where({ account_id: accountId }),
             db
               .first()
-              .from('player_computed_mmr_turbo')
+              .from("player_computed_mmr_turbo")
               .where({ account_id: accountId }),
             db
-              .select('personaname', 'name_since')
-              .from('aliases')
+              .select("personaname", "name_since")
+              .from("aliases")
               .where({ account_id: accountId }),
           ]);
           const result = {
@@ -299,26 +299,26 @@ You can use the API without a key, but registering for a key allows increased ra
         },
       },
     },
-    '/players/{account_id}/wl': {
+    "/players/{account_id}/wl": {
       get: {
-        operationId: generateOperationId('get', '/players/{account_id}/wl'),
-        summary: 'GET /players/{account_id}/wl',
-        description: 'Win/Loss count',
-        tags: ['players'],
+        operationId: generateOperationId("get", "/players/{account_id}/wl"),
+        summary: "GET /players/{account_id}/wl",
+        description: "Win/Loss count",
+        tags: ["players"],
         parameters: playerParamsList,
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  $ref: '#/components/schemas/PlayerWinLossResponse',
+                  $ref: "#/components/schemas/PlayerWinLossResponse",
                 },
               },
             },
           },
         },
-        route: () => '/players/:account_id/wl',
+        route: () => "/players/:account_id/wl",
         func: async (req, res, next) => {
           const result = {
             win: 0,
@@ -339,27 +339,27 @@ You can use the API without a key, but registering for a key allows increased ra
         },
       },
     },
-    '/players/{account_id}/recentMatches': {
+    "/players/{account_id}/recentMatches": {
       get: {
         operationId: generateOperationId(
-          'get',
-          '/players/{account_id}/recentMatches',
+          "get",
+          "/players/{account_id}/recentMatches",
         ),
-        summary: 'GET /players/{account_id}/recentMatches',
-        description: 'Recent matches played (limited number of results)',
-        tags: ['players'],
-        parameters: [{ $ref: '#/components/parameters/accountIdParam' }],
+        summary: "GET /players/{account_id}/recentMatches",
+        description: "Recent matches played (limited number of results)",
+        tags: ["players"],
+        parameters: [{ $ref: "#/components/parameters/accountIdParam" }],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  type: 'array',
+                  type: "array",
                   items: {
-                    type: 'object',
+                    type: "object",
                     items: {
-                      $ref: '#/components/schemas/PlayerRecentMatchesResponse',
+                      $ref: "#/components/schemas/PlayerRecentMatchesResponse",
                     },
                   },
                 },
@@ -367,7 +367,7 @@ You can use the API without a key, but registering for a key allows increased ra
             },
           },
         },
-        route: () => '/players/:account_id/recentMatches',
+        route: () => "/players/:account_id/recentMatches",
         func: async (req, res, next) => {
           const queryObj = res.locals.queryObj;
           // Endpoint is limited to last 20 server results only
@@ -375,7 +375,7 @@ You can use the API without a key, but registering for a key allows increased ra
           queryObj.project = recentMatchesCols;
           queryObj.dbLimit = 20;
           // Disable significance filter since we want to show turbo matches by default
-          queryObj.filter?.delete('significant');
+          queryObj.filter?.delete("significant");
           const cache = await getPlayerMatches(
             Number(req.params.account_id),
             queryObj,
@@ -384,38 +384,38 @@ You can use the API without a key, but registering for a key allows increased ra
         },
       },
     },
-    '/players/{account_id}/matches': {
+    "/players/{account_id}/matches": {
       get: {
         operationId: generateOperationId(
-          'get',
-          '/players/{account_id}/matches',
+          "get",
+          "/players/{account_id}/matches",
         ),
-        summary: 'GET /players/{account_id}/matches',
+        summary: "GET /players/{account_id}/matches",
         description:
-          'Matches played (full history, and supports column selection)',
-        tags: ['players'],
+          "Matches played (full history, and supports column selection)",
+        tags: ["players"],
         parameters: [
           ...playerParamsList,
           {
-            $ref: '#/components/parameters/projectParam',
+            $ref: "#/components/parameters/projectParam",
           },
         ],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  type: 'array',
+                  type: "array",
                   items: {
-                    $ref: '#/components/schemas/PlayerMatchesResponse',
+                    $ref: "#/components/schemas/PlayerMatchesResponse",
                   },
                 },
               },
             },
           },
         },
-        route: () => '/players/:account_id/matches',
+        route: () => "/players/:account_id/matches",
         func: async (req, res, next) => {
           let userFields = queryParamToArray(
             req.query.project,
@@ -431,29 +431,29 @@ You can use the API without a key, but registering for a key allows increased ra
         },
       },
     },
-    '/players/{account_id}/heroes': {
+    "/players/{account_id}/heroes": {
       get: {
-        operationId: generateOperationId('get', '/players/{account_id}/heroes'),
-        summary: 'GET /players/{account_id}/heroes',
-        description: 'Heroes played',
-        tags: ['players'],
+        operationId: generateOperationId("get", "/players/{account_id}/heroes"),
+        summary: "GET /players/{account_id}/heroes",
+        description: "Heroes played",
+        tags: ["players"],
         parameters: playerParamsList,
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  type: 'array',
+                  type: "array",
                   items: {
-                    $ref: '#/components/schemas/PlayerHeroesResponse',
+                    $ref: "#/components/schemas/PlayerHeroesResponse",
                   },
                 },
               },
             },
           },
         },
-        route: () => '/players/:account_id/heroes',
+        route: () => "/players/:account_id/heroes",
         func: async (req, res, next) => {
           const counts: AnyDict = {};
           // prefill heroes with every hero
@@ -515,29 +515,29 @@ You can use the API without a key, but registering for a key allows increased ra
         },
       },
     },
-    '/players/{account_id}/peers': {
+    "/players/{account_id}/peers": {
       get: {
-        operationId: generateOperationId('get', '/players/{account_id}/peers'),
-        summary: 'GET /players/{account_id}/peers',
-        description: 'Players played with',
-        tags: ['players'],
+        operationId: generateOperationId("get", "/players/{account_id}/peers"),
+        summary: "GET /players/{account_id}/peers",
+        description: "Players played with",
+        tags: ["players"],
         parameters: playerParamsList,
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  type: 'array',
+                  type: "array",
                   items: {
-                    $ref: '#/components/schemas/PlayerPeersResponse',
+                    $ref: "#/components/schemas/PlayerPeersResponse",
                   },
                 },
               },
             },
           },
         },
-        route: () => '/players/:account_id/peers',
+        route: () => "/players/:account_id/peers",
         func: async (req, res, next) => {
           res.locals.queryObj.project =
             res.locals.queryObj.project.concat(peersCols);
@@ -553,29 +553,29 @@ You can use the API without a key, but registering for a key allows increased ra
         },
       },
     },
-    '/players/{account_id}/pros': {
+    "/players/{account_id}/pros": {
       get: {
-        operationId: generateOperationId('get', '/players/{account_id}/pros'),
-        summary: 'GET /players/{account_id}/pros',
-        description: 'Pro players played with',
-        tags: ['players'],
+        operationId: generateOperationId("get", "/players/{account_id}/pros"),
+        summary: "GET /players/{account_id}/pros",
+        description: "Pro players played with",
+        tags: ["players"],
         parameters: playerParamsList,
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  type: 'array',
+                  type: "array",
                   items: {
-                    $ref: '#/components/schemas/PlayerProsResponse',
+                    $ref: "#/components/schemas/PlayerProsResponse",
                   },
                 },
               },
             },
           },
         },
-        route: () => '/players/:account_id/pros',
+        route: () => "/players/:account_id/pros",
         func: async (req, res, next) => {
           res.locals.queryObj.project =
             res.locals.queryObj.project.concat(prosCols);
@@ -591,29 +591,29 @@ You can use the API without a key, but registering for a key allows increased ra
         },
       },
     },
-    '/players/{account_id}/totals': {
+    "/players/{account_id}/totals": {
       get: {
-        operationId: generateOperationId('get', '/players/{account_id}/totals'),
-        summary: 'GET /players/{account_id}/totals',
-        description: 'Totals in stats',
-        tags: ['players'],
+        operationId: generateOperationId("get", "/players/{account_id}/totals"),
+        summary: "GET /players/{account_id}/totals",
+        description: "Totals in stats",
+        tags: ["players"],
         parameters: playerParamsList,
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  type: 'array',
+                  type: "array",
                   items: {
-                    $ref: '#/components/schemas/PlayerTotalsResponse',
+                    $ref: "#/components/schemas/PlayerTotalsResponse",
                   },
                 },
               },
             },
           },
         },
-        route: () => '/players/:account_id/totals',
+        route: () => "/players/:account_id/totals",
         func: async (req, res, next) => {
           const result: AnyDict = {};
           histogramCols.forEach((key) => {
@@ -641,26 +641,26 @@ You can use the API without a key, but registering for a key allows increased ra
         },
       },
     },
-    '/players/{account_id}/counts': {
+    "/players/{account_id}/counts": {
       get: {
-        operationId: generateOperationId('get', '/players/{account_id}/counts'),
-        summary: 'GET /players/{account_id}/counts',
-        description: 'Counts in categories',
-        tags: ['players'],
+        operationId: generateOperationId("get", "/players/{account_id}/counts"),
+        summary: "GET /players/{account_id}/counts",
+        description: "Counts in categories",
+        tags: ["players"],
         parameters: playerParamsList,
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  $ref: '#/components/schemas/PlayerCountsResponse',
+                  $ref: "#/components/schemas/PlayerCountsResponse",
                 },
               },
             },
           },
         },
-        route: () => '/players/:account_id/counts',
+        route: () => "/players/:account_id/counts",
         func: async (req, res, next) => {
           const result = {} as Record<(typeof countsCats)[number], any>;
           countsCats.forEach((key) => {
@@ -702,38 +702,38 @@ You can use the API without a key, but registering for a key allows increased ra
         },
       },
     },
-    '/players/{account_id}/histograms/{field}': {
+    "/players/{account_id}/histograms/{field}": {
       get: {
         operationId: generateOperationId(
-          'get',
-          '/players/{account_id}/histograms/{field}',
+          "get",
+          "/players/{account_id}/histograms/{field}",
         ),
-        summary: 'GET /players/{account_id}/histograms',
-        description: 'Distribution of matches in a single stat',
-        tags: ['players'],
+        summary: "GET /players/{account_id}/histograms",
+        description: "Distribution of matches in a single stat",
+        tags: ["players"],
         parameters: [
           ...playerParamsList,
           {
-            $ref: '#/components/parameters/fieldParam',
+            $ref: "#/components/parameters/fieldParam",
           },
         ],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  type: 'array',
+                  type: "array",
                   items: {
-                    title: 'PlayerHistogramsResponse',
-                    type: 'object',
+                    title: "PlayerHistogramsResponse",
+                    type: "object",
                   },
                 },
               },
             },
           },
         },
-        route: () => '/players/:account_id/histograms/:field',
+        route: () => "/players/:account_id/histograms/:field",
         func: async (req, res, next) => {
           const field = histogramCols.find((key) => key === req.params.field);
           if (field) {
@@ -775,29 +775,29 @@ You can use the API without a key, but registering for a key allows increased ra
         },
       },
     },
-    '/players/{account_id}/wardmap': {
+    "/players/{account_id}/wardmap": {
       get: {
         operationId: generateOperationId(
-          'get',
-          '/players/{account_id}/wardmap',
+          "get",
+          "/players/{account_id}/wardmap",
         ),
-        summary: 'GET /players/{account_id}/wardmap',
-        description: 'Wards placed in matches played',
-        tags: ['players'],
+        summary: "GET /players/{account_id}/wardmap",
+        description: "Wards placed in matches played",
+        tags: ["players"],
         parameters: playerParamsList,
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  $ref: '#/components/schemas/PlayerWardMapResponse',
+                  $ref: "#/components/schemas/PlayerWardMapResponse",
                 },
               },
             },
           },
         },
-        route: () => '/players/:account_id/wardmap',
+        route: () => "/players/:account_id/wardmap",
         func: async (req, res, next) => {
           const result = {} as Record<(typeof wardmapCols)[number], any>;
           wardmapCols.forEach((key) => {
@@ -821,29 +821,29 @@ You can use the API without a key, but registering for a key allows increased ra
         },
       },
     },
-    '/players/{account_id}/wordcloud': {
+    "/players/{account_id}/wordcloud": {
       get: {
         operationId: generateOperationId(
-          'get',
-          '/players/{account_id}/wordcloud',
+          "get",
+          "/players/{account_id}/wordcloud",
         ),
-        summary: 'GET /players/{account_id}/wordcloud',
-        description: 'Words said/read in matches played',
-        tags: ['players'],
+        summary: "GET /players/{account_id}/wordcloud",
+        description: "Words said/read in matches played",
+        tags: ["players"],
         parameters: playerParamsList,
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  $ref: '#/components/schemas/PlayerWordCloudResponse',
+                  $ref: "#/components/schemas/PlayerWordCloudResponse",
                 },
               },
             },
           },
         },
-        route: () => '/players/:account_id/wordcloud',
+        route: () => "/players/:account_id/wordcloud",
         func: async (req, res, next) => {
           const result = {} as Record<(typeof wordcloudCols)[number], any>;
           wordcloudCols.forEach((key) => {
@@ -867,33 +867,33 @@ You can use the API without a key, but registering for a key allows increased ra
         },
       },
     },
-    '/players/{account_id}/ratings': {
+    "/players/{account_id}/ratings": {
       get: {
         operationId: generateOperationId(
-          'get',
-          '/players/{account_id}/ratings',
+          "get",
+          "/players/{account_id}/ratings",
         ),
-        summary: 'GET /players/{account_id}/ratings',
+        summary: "GET /players/{account_id}/ratings",
         description:
-          'Returns a history of the player rank tier/medal changes (replaces MMR)',
-        tags: ['players'],
-        parameters: [{ $ref: '#/components/parameters/accountIdParam' }],
+          "Returns a history of the player rank tier/medal changes (replaces MMR)",
+        tags: ["players"],
+        parameters: [{ $ref: "#/components/parameters/accountIdParam" }],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  type: 'array',
+                  type: "array",
                   items: {
-                    $ref: '#/components/schemas/PlayerRatingsResponse',
+                    $ref: "#/components/schemas/PlayerRatingsResponse",
                   },
                 },
               },
             },
           },
         },
-        route: () => '/players/:account_id/ratings',
+        route: () => "/players/:account_id/ratings",
         func: async (req, res, next) => {
           if (res.locals.queryObj.isPrivate) {
             return res.json([]);
@@ -903,32 +903,32 @@ You can use the API without a key, but registering for a key allows increased ra
         },
       },
     },
-    '/players/{account_id}/rankings': {
+    "/players/{account_id}/rankings": {
       get: {
         operationId: generateOperationId(
-          'get',
-          '/players/{account_id}/rankings',
+          "get",
+          "/players/{account_id}/rankings",
         ),
-        summary: 'GET /players/{account_id}/rankings',
-        description: 'Player hero rankings',
-        tags: ['players'],
-        parameters: [{ $ref: '#/components/parameters/accountIdParam' }],
+        summary: "GET /players/{account_id}/rankings",
+        description: "Player hero rankings",
+        tags: ["players"],
+        parameters: [{ $ref: "#/components/parameters/accountIdParam" }],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  type: 'array',
+                  type: "array",
                   items: {
-                    $ref: '#/components/schemas/PlayerRankingsResponse',
+                    $ref: "#/components/schemas/PlayerRankingsResponse",
                   },
                 },
               },
             },
           },
         },
-        route: () => '/players/:account_id/rankings',
+        route: () => "/players/:account_id/rankings",
         func: async (req, res, next) => {
           if (res.locals.queryObj.isPrivate) {
             return res.json([]);
@@ -937,29 +937,29 @@ You can use the API without a key, but registering for a key allows increased ra
         },
       },
     },
-    '/players/{account_id}/refresh': {
+    "/players/{account_id}/refresh": {
       post: {
-        operationId: generateOperationId('post', '/refresh'),
-        summary: 'POST /players/{account_id}/refresh',
+        operationId: generateOperationId("post", "/refresh"),
+        summary: "POST /players/{account_id}/refresh",
         description:
-          'Refresh player match history (up to 500), medal (rank), and profile name',
-        tags: ['players'],
-        parameters: [{ $ref: '#/components/parameters/accountIdParam' }],
+          "Refresh player match history (up to 500), medal (rank), and profile name",
+        tags: ["players"],
+        parameters: [{ $ref: "#/components/parameters/accountIdParam" }],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {},
               },
             },
           },
         },
-        route: () => '/players/:account_id/refresh',
+        route: () => "/players/:account_id/refresh",
         func: async (req, res, next) => {
           await addReliableJob(
             {
-              name: 'fhQueue',
+              name: "fhQueue",
               data: {
                 account_id: Number(req.params.account_id),
               },
@@ -968,14 +968,14 @@ You can use the API without a key, but registering for a key allows increased ra
           );
           // Also queue a refresh of the user's rank/medal
           await addJob({
-            name: 'mmrQueue',
+            name: "mmrQueue",
             data: {
               account_id: Number(req.params.account_id),
             },
           });
           // Queue a refresh of the player name
           await addJob({
-            name: 'profileQueue',
+            name: "profileQueue",
             data: {
               account_id: Number(req.params.account_id),
             },
@@ -984,124 +984,124 @@ You can use the API without a key, but registering for a key allows increased ra
         },
       },
     },
-    '/topPlayers': {
+    "/topPlayers": {
       get: {
-        operationId: generateOperationId('get', '/topPlayers'),
-        summary: 'GET /topPlayers',
-        description: 'Get list of highly ranked players',
-        tags: ['top players'],
+        operationId: generateOperationId("get", "/topPlayers"),
+        summary: "GET /topPlayers",
+        description: "Get list of highly ranked players",
+        tags: ["top players"],
         parameters: [
           {
-            name: 'turbo',
-            in: 'query',
-            description: 'Get ratings based on turbo matches',
+            name: "turbo",
+            in: "query",
+            description: "Get ratings based on turbo matches",
             required: false,
             schema: {
-              type: 'integer',
+              type: "integer",
             },
           },
         ],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  type: 'array',
+                  type: "array",
                   items: {
-                    $ref: '#/components/schemas/PlayerObjectResponse',
+                    $ref: "#/components/schemas/PlayerObjectResponse",
                   },
                 },
               },
             },
           },
         },
-        route: () => '/topPlayers',
+        route: () => "/topPlayers",
         func: async (req, res, next) => {
           const turbo = Boolean(req.query.turbo);
           const tableName = turbo
-            ? 'player_computed_mmr_turbo'
-            : 'player_computed_mmr';
+            ? "player_computed_mmr_turbo"
+            : "player_computed_mmr";
           const result = await db
             .select([
-              '*',
-              'players.account_id as account_id',
-              'rank_tier.rating as rank_tier',
+              "*",
+              "players.account_id as account_id",
+              "rank_tier.rating as rank_tier",
             ])
             .from(tableName)
-            .join('players', 'players.account_id', `${tableName}.account_id`)
+            .join("players", "players.account_id", `${tableName}.account_id`)
             .leftJoin(
-              'notable_players',
-              'players.account_id',
-              'notable_players.account_id',
+              "notable_players",
+              "players.account_id",
+              "notable_players.account_id",
             )
-            .leftJoin('rank_tier', 'players.account_id', 'rank_tier.account_id')
-            .orderBy(`${tableName}.computed_mmr`, 'desc')
+            .leftJoin("rank_tier", "players.account_id", "rank_tier.account_id")
+            .orderBy(`${tableName}.computed_mmr`, "desc")
             .limit(100);
           return res.json(result);
         },
       },
     },
-    '/proPlayers': {
+    "/proPlayers": {
       get: {
-        operationId: generateOperationId('get', '/proPlayers'),
-        summary: 'GET /proPlayers',
-        description: 'Get list of pro players',
-        tags: ['pro players'],
+        operationId: generateOperationId("get", "/proPlayers"),
+        summary: "GET /proPlayers",
+        description: "Get list of pro players",
+        tags: ["pro players"],
         parameters: [],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  type: 'array',
+                  type: "array",
                   items: {
-                    $ref: '#/components/schemas/PlayerObjectResponse',
+                    $ref: "#/components/schemas/PlayerObjectResponse",
                   },
                 },
               },
             },
           },
         },
-        route: () => '/proPlayers',
+        route: () => "/proPlayers",
         func: async (req, res, next) => {
           const result = await db
             .select()
-            .from('players')
+            .from("players")
             .rightJoin(
-              'notable_players',
-              'players.account_id',
-              'notable_players.account_id',
+              "notable_players",
+              "players.account_id",
+              "notable_players.account_id",
             )
-            .orderBy('notable_players.account_id', 'asc');
+            .orderBy("notable_players.account_id", "asc");
           return res.json(result);
         },
       },
     },
-    '/proMatches': {
+    "/proMatches": {
       get: {
-        operationId: generateOperationId('get', '/proMatches'),
-        summary: 'GET /proMatches',
-        description: 'Get list of pro matches',
-        tags: ['pro matches'],
-        parameters: [{ $ref: '#/components/parameters/lessThanMatchIdParam' }],
+        operationId: generateOperationId("get", "/proMatches"),
+        summary: "GET /proMatches",
+        description: "Get list of pro matches",
+        tags: ["pro matches"],
+        parameters: [{ $ref: "#/components/parameters/lessThanMatchIdParam" }],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  type: 'array',
+                  type: "array",
                   items: {
-                    $ref: '#/components/schemas/MatchObjectResponse',
+                    $ref: "#/components/schemas/MatchObjectResponse",
                   },
                 },
               },
             },
           },
         },
-        route: () => '/proMatches',
+        route: () => "/proMatches",
         func: async (req, res, next) => {
           const { rows } = await db.raw(
             `
@@ -1128,33 +1128,33 @@ You can use the API without a key, but registering for a key allows increased ra
         },
       },
     },
-    '/publicMatches': {
+    "/publicMatches": {
       get: {
-        operationId: generateOperationId('get', '/publicMatches'),
-        summary: 'GET /publicMatches',
-        description: 'Get list of randomly sampled public matches',
-        tags: ['public matches'],
+        operationId: generateOperationId("get", "/publicMatches"),
+        summary: "GET /publicMatches",
+        description: "Get list of randomly sampled public matches",
+        tags: ["public matches"],
         parameters: [
-          { $ref: '#/components/parameters/lessThanMatchIdParam' },
-          { $ref: '#/components/parameters/minRankParam' },
-          { $ref: '#/components/parameters/maxRankParam' },
+          { $ref: "#/components/parameters/lessThanMatchIdParam" },
+          { $ref: "#/components/parameters/minRankParam" },
+          { $ref: "#/components/parameters/maxRankParam" },
         ],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  type: 'array',
+                  type: "array",
                   items: {
-                    $ref: '#/components/schemas/PublicMatchesResponse',
+                    $ref: "#/components/schemas/PublicMatchesResponse",
                   },
                 },
               },
             },
           },
         },
-        route: () => '/publicMatches',
+        route: () => "/publicMatches",
         func: async (req, res, next) => {
           const lessThan =
             Number(req.query.less_than_match_id) || Number.MAX_SAFE_INTEGER;
@@ -1176,29 +1176,29 @@ You can use the API without a key, but registering for a key allows increased ra
         },
       },
     },
-    '/parsedMatches': {
+    "/parsedMatches": {
       get: {
-        operationId: generateOperationId('get', '/parsedMatches'),
-        summary: 'GET /parsedMatches',
-        description: 'Get list of parsed match IDs',
-        tags: ['parsed matches'],
-        parameters: [{ $ref: '#/components/parameters/lessThanMatchIdParam' }],
+        operationId: generateOperationId("get", "/parsedMatches"),
+        summary: "GET /parsedMatches",
+        description: "Get list of parsed match IDs",
+        tags: ["parsed matches"],
+        parameters: [{ $ref: "#/components/parameters/lessThanMatchIdParam" }],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  type: 'array',
+                  type: "array",
                   items: {
-                    $ref: '#/components/schemas/ParsedMatchesResponse',
+                    $ref: "#/components/schemas/ParsedMatchesResponse",
                   },
                 },
               },
             },
           },
         },
-        route: () => '/parsedMatches',
+        route: () => "/parsedMatches",
         func: async (req, res, next) => {
           const lessThan =
             req.query.less_than_match_id || Number.MAX_SAFE_INTEGER;
@@ -1215,41 +1215,41 @@ You can use the API without a key, but registering for a key allows increased ra
         },
       },
     },
-    '/explorer': {
+    "/explorer": {
       get: {
-        operationId: generateOperationId('get', '/explorer'),
-        summary: 'GET /explorer',
-        description: 'Submit arbitrary SQL queries to the database',
-        tags: ['explorer'],
+        operationId: generateOperationId("get", "/explorer"),
+        summary: "GET /explorer",
+        description: "Submit arbitrary SQL queries to the database",
+        tags: ["explorer"],
         parameters: [
           {
-            name: 'sql',
-            in: 'query',
-            description: 'The PostgreSQL query as percent-encoded string.',
+            name: "sql",
+            in: "query",
+            description: "The PostgreSQL query as percent-encoded string.",
             required: false,
             schema: {
-              type: 'string',
+              type: "string",
             },
           },
         ],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  title: 'ExplorerResponse',
-                  type: 'object',
+                  title: "ExplorerResponse",
+                  type: "object",
                 },
               },
             },
           },
         },
-        route: () => '/explorer',
+        route: () => "/explorer",
         func: async (req, res) => {
           const input = req.query.sql;
-          if (typeof input !== 'string') {
-            return res.status(400).json({ error: 'sql is not a string' });
+          if (typeof input !== "string") {
+            return res.status(400).json({ error: "sql is not a string" });
           }
           const client = new Client({
             connectionString: config.READONLY_POSTGRES_URL,
@@ -1269,198 +1269,198 @@ You can use the API without a key, but registering for a key allows increased ra
         },
       },
     },
-    '/metadata': {
+    "/metadata": {
       get: {
-        operationId: generateOperationId('get', '/metadata'),
-        summary: 'GET /metadata',
-        description: 'Site metadata',
-        tags: ['metadata'],
+        operationId: generateOperationId("get", "/metadata"),
+        summary: "GET /metadata",
+        description: "Site metadata",
+        tags: ["metadata"],
         parameters: [],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  $ref: '#/components/schemas/MetadataResponse',
+                  $ref: "#/components/schemas/MetadataResponse",
                 },
               },
             },
           },
         },
-        route: () => '/metadata',
+        route: () => "/metadata",
         func: async (req, res, next) => {
           return res.json(await getMetadata(req));
         },
       },
     },
-    '/distributions': {
+    "/distributions": {
       get: {
-        operationId: generateOperationId('get', '/distributions'),
-        summary: 'GET /distributions',
-        description: 'Distributions of MMR data by bracket and country',
-        tags: ['distributions'],
+        operationId: generateOperationId("get", "/distributions"),
+        summary: "GET /distributions",
+        description: "Distributions of MMR data by bracket and country",
+        tags: ["distributions"],
         parameters: [],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  $ref: '#/components/schemas/DistributionsResponse',
+                  $ref: "#/components/schemas/DistributionsResponse",
                 },
               },
             },
           },
         },
-        route: () => '/distributions',
+        route: () => "/distributions",
         func: async (req, res, next) => {
           const result = await getDistributions();
           return res.json(result);
         },
       },
     },
-    '/search': {
+    "/search": {
       get: {
-        operationId: generateOperationId('get', '/search'),
-        summary: 'GET /search',
-        description: 'Search players by personaname.',
-        tags: ['search'],
+        operationId: generateOperationId("get", "/search"),
+        summary: "GET /search",
+        description: "Search players by personaname.",
+        tags: ["search"],
         parameters: [
           {
-            name: 'q',
-            in: 'query',
-            description: 'Search string',
+            name: "q",
+            in: "query",
+            description: "Search string",
             required: true,
             schema: {
-              type: 'string',
+              type: "string",
             },
           },
         ],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  type: 'array',
+                  type: "array",
                   items: {
-                    $ref: '#/components/schemas/SearchResponse',
+                    $ref: "#/components/schemas/SearchResponse",
                   },
                 },
               },
             },
           },
         },
-        route: () => '/search',
+        route: () => "/search",
         func: async (req, res, next) => {
-          if (typeof req.query.q !== 'string') {
-            return res.status(400).json({ error: 'q is not a string' });
+          if (typeof req.query.q !== "string") {
+            return res.status(400).json({ error: "q is not a string" });
           }
           let result = await search(req.query.q);
           return res.json(result);
         },
       },
     },
-    '/rankings': {
+    "/rankings": {
       get: {
-        operationId: generateOperationId('get', '/rankings'),
-        summary: 'GET /rankings',
-        description: 'Top players by hero',
-        tags: ['rankings'],
+        operationId: generateOperationId("get", "/rankings"),
+        summary: "GET /rankings",
+        description: "Top players by hero",
+        tags: ["rankings"],
         parameters: [
           {
-            name: 'hero_id',
-            in: 'query',
-            description: 'Hero ID',
+            name: "hero_id",
+            in: "query",
+            description: "Hero ID",
             required: true,
             schema: {
-              type: 'string', // todo: String for hero id?
+              type: "string", // todo: String for hero id?
             },
           },
         ],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  $ref: '#/components/schemas/RankingsResponse',
+                  $ref: "#/components/schemas/RankingsResponse",
                 },
               },
             },
           },
         },
-        route: () => '/rankings',
+        route: () => "/rankings",
         func: async (req, res, next) => {
-          if (typeof req.query.hero_id !== 'string') {
-            return res.status(400).json({ error: 'hero_id is not a string' });
+          if (typeof req.query.hero_id !== "string") {
+            return res.status(400).json({ error: "hero_id is not a string" });
           }
           return res.json(await getHeroRankings(req.query.hero_id));
         },
       },
     },
-    '/benchmarks': {
+    "/benchmarks": {
       get: {
-        operationId: generateOperationId('get', '/benchmarks'),
-        summary: 'GET /benchmarks',
-        description: 'Benchmarks of average stat values for a hero',
-        tags: ['benchmarks'],
+        operationId: generateOperationId("get", "/benchmarks"),
+        summary: "GET /benchmarks",
+        description: "Benchmarks of average stat values for a hero",
+        tags: ["benchmarks"],
         parameters: [
           {
-            name: 'hero_id',
-            in: 'query',
-            description: 'Hero ID',
+            name: "hero_id",
+            in: "query",
+            description: "Hero ID",
             required: true,
             schema: {
-              type: 'string', // todo: String for hero id?
+              type: "string", // todo: String for hero id?
             },
           },
         ],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  $ref: '#/components/schemas/BenchmarksResponse',
+                  $ref: "#/components/schemas/BenchmarksResponse",
                 },
               },
             },
           },
         },
-        route: () => '/benchmarks',
+        route: () => "/benchmarks",
         func: async (req, res, next) => {
-          if (typeof req.query.hero_id !== 'string') {
-            return res.status(400).json({ error: 'hero_id is not a string' });
+          if (typeof req.query.hero_id !== "string") {
+            return res.status(400).json({ error: "hero_id is not a string" });
           }
           const result = await getHeroBenchmarks(req.query.hero_id);
           return res.json(result);
         },
       },
     },
-    '/health': {
+    "/health": {
       get: {
-        operationId: generateOperationId('get', '/health'),
-        summary: 'GET /health',
-        description: 'Get service health data',
-        tags: ['health'],
+        operationId: generateOperationId("get", "/health"),
+        summary: "GET /health",
+        description: "Get service health data",
+        tags: ["health"],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  title: 'HealthResponse',
-                  type: 'object',
+                  title: "HealthResponse",
+                  type: "object",
                 },
               },
             },
           },
         },
-        route: () => '/health{/:metric}',
+        route: () => "/health{/:metric}",
         func: async (req, res, next) => {
-          const result = await redis.get('health:v2');
+          const result = await redis.get("health:v2");
           if (!result) {
             return res.json(result);
           }
@@ -1477,37 +1477,37 @@ You can use the API without a key, but registering for a key allows increased ra
         },
       },
     },
-    '/request/{jobId}': {
+    "/request/{jobId}": {
       get: {
-        operationId: generateOperationId('get', '/request/{jobId}'),
-        summary: 'GET /request/{jobId}',
-        description: 'Get parse request state',
-        tags: ['request'],
+        operationId: generateOperationId("get", "/request/{jobId}"),
+        summary: "GET /request/{jobId}",
+        description: "Get parse request state",
+        tags: ["request"],
         parameters: [
           {
-            name: 'jobId',
-            in: 'path',
-            description: 'The job ID to query.',
+            name: "jobId",
+            in: "path",
+            description: "The job ID to query.",
             required: true,
             schema: {
-              type: 'string',
+              type: "string",
             },
           },
         ],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  title: 'RequestJobResponse',
-                  type: 'object',
+                  title: "RequestJobResponse",
+                  type: "object",
                 },
               },
             },
           },
         },
-        route: () => '/request/:jobId',
+        route: () => "/request/:jobId",
         func: async (req, res, next) => {
           const job = await getReliableJob(req.params.jobId);
           if (job) {
@@ -1517,45 +1517,45 @@ You can use the API without a key, but registering for a key allows increased ra
         },
       },
     },
-    '/request/{match_id}': {
+    "/request/{match_id}": {
       post: {
-        operationId: generateOperationId('post', '/request/{jobId}'),
-        summary: 'POST /request/{match_id}',
+        operationId: generateOperationId("post", "/request/{jobId}"),
+        summary: "POST /request/{match_id}",
         description:
-          'Submit a new parse request. This call counts as 10 calls for rate limit (but not billing) purposes.',
-        tags: ['request'],
-        parameters: [{ $ref: '#/components/parameters/matchIdParam' }],
+          "Submit a new parse request. This call counts as 10 calls for rate limit (but not billing) purposes.",
+        tags: ["request"],
+        parameters: [{ $ref: "#/components/parameters/matchIdParam" }],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  title: 'RequestMatchResponse',
-                  type: 'object',
+                  title: "RequestMatchResponse",
+                  type: "object",
                 },
               },
             },
           },
         },
-        route: () => '/request/:match_id',
+        route: () => "/request/:match_id",
         func: async (req, res, next) => {
           // We validated the ID in middleware
           const matchId = req.params.match_id;
           // Count this request
-          redisCount('request');
-          redisCountDistinct('distinct_request', matchId);
+          redisCount("request");
+          redisCountDistinct("distinct_request", matchId);
           let priority = PRIORITY.REQUEST_DEFAULT;
           let numAttempts = 1;
           let delayMs = 0;
           if (req.query.api_key) {
             priority = PRIORITY.REQUEST_API_KEY;
-            redisCount('request_api_key');
+            redisCount("request_api_key");
           }
           if (req.headers.origin === config.UI_HOST) {
             // Give UI requests higher priority
             priority = PRIORITY.REQUEST_UI;
-            redisCount('request_ui');
+            redisCount("request_ui");
             // Delay the job 1s to give UI time to connect to logs
             delayMs = 1000;
           }
@@ -1572,7 +1572,7 @@ You can use the API without a key, but registering for a key allows increased ra
           // }
           const parseJob = await addReliableJob(
             {
-              name: 'parse',
+              name: "parse",
               data: { match_id: Number(matchId) },
             },
             {
@@ -1582,8 +1582,8 @@ You can use the API without a key, but registering for a key allows increased ra
             },
           );
           if (!parseJob) {
-            redisCount('add_queue_fail');
-            throw new Error('no job created');
+            redisCount("add_queue_fail");
+            throw new Error("no job created");
           }
           return res.json({
             job: {
@@ -1593,59 +1593,59 @@ You can use the API without a key, but registering for a key allows increased ra
         },
       },
     },
-    '/findMatches': {
+    "/findMatches": {
       get: {
-        operationId: generateOperationId('get', '/findMatches'),
-        summary: 'GET /',
-        description: 'Finds recent matches by heroes played',
-        tags: ['findMatches'],
+        operationId: generateOperationId("get", "/findMatches"),
+        summary: "GET /",
+        description: "Finds recent matches by heroes played",
+        tags: ["findMatches"],
         parameters: [
           {
-            name: 'teamA',
-            in: 'query',
-            description: 'Hero IDs on first team (array)',
+            name: "teamA",
+            in: "query",
+            description: "Hero IDs on first team (array)",
             required: false,
-            style: 'form',
+            style: "form",
             explode: false,
             schema: {
-              type: 'array',
+              type: "array",
               items: {
-                type: 'integer',
+                type: "integer",
               },
             },
           },
           {
-            name: 'teamB',
-            in: 'query',
-            description: 'Hero IDs on second team (array)',
+            name: "teamB",
+            in: "query",
+            description: "Hero IDs on second team (array)",
             required: false,
-            style: 'form',
+            style: "form",
             explode: false,
             schema: {
-              type: 'array',
+              type: "array",
               items: {
-                type: 'integer',
+                type: "integer",
               },
             },
           },
         ],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  title: 'FindMatchesResponse',
-                  type: 'array',
+                  title: "FindMatchesResponse",
+                  type: "array",
                   items: {
-                    type: 'object',
+                    type: "object",
                   },
                 },
               },
             },
           },
         },
-        route: () => '/findMatches',
+        route: () => "/findMatches",
         func: async (req, res, next) => {
           // accept as input two arrays of up to 5
           const t0 = queryParamToArray(req.query.teamA).map(Number).slice(0, 5);
@@ -1664,7 +1664,7 @@ You can use the API without a key, but registering for a key allows increased ra
           const teamA = inverted ? t1 : t0;
           const teamB = inverted ? t0 : t1;
           const { rows } = await db.raw(
-            'select match_id, radiant_team as teamA, dire_team as teamB, radiant_win as teamAWin, start_time from public_matches where (radiant_team @> ? AND dire_team @> ?) OR (radiant_team @> ? AND dire_team @> ?) order by match_id desc limit 10',
+            "select match_id, radiant_team as teamA, dire_team as teamB, radiant_win as teamAWin, start_time from public_matches where (radiant_team @> ? AND dire_team @> ?) OR (radiant_team @> ? AND dire_team @> ?) order by match_id desc limit 10",
             [teamA, teamB, teamB, teamA],
           );
           redis.setex(key, 60, JSON.stringify(rows));
@@ -1672,59 +1672,59 @@ You can use the API without a key, but registering for a key allows increased ra
         },
       },
     },
-    '/heroes': {
+    "/heroes": {
       get: {
-        operationId: generateOperationId('get', '/heroes'),
-        summary: 'GET /heroes',
-        description: 'Get hero data',
-        tags: ['heroes'],
+        operationId: generateOperationId("get", "/heroes"),
+        summary: "GET /heroes",
+        description: "Get hero data",
+        tags: ["heroes"],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  type: 'array',
+                  type: "array",
                   items: {
-                    $ref: '#/components/schemas/HeroObjectResponse',
+                    $ref: "#/components/schemas/HeroObjectResponse",
                   },
                 },
               },
             },
           },
         },
-        route: () => '/heroes',
+        route: () => "/heroes",
         func: async (req, res, next) => {
-          const result = await db.select().from('heroes').orderBy('id', 'asc');
+          const result = await db.select().from("heroes").orderBy("id", "asc");
           return res.json(result);
         },
       },
     },
-    '/heroStats': {
+    "/heroStats": {
       get: {
-        operationId: generateOperationId('get', '/heroStats'),
-        summary: 'GET /heroStats',
-        description: 'Get stats about hero performance in recent matches',
-        tags: ['hero stats'],
+        operationId: generateOperationId("get", "/heroStats"),
+        summary: "GET /heroStats",
+        description: "Get stats about hero performance in recent matches",
+        tags: ["hero stats"],
         parameters: [],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  type: 'array',
+                  type: "array",
                   items: {
-                    $ref: '#/components/schemas/HeroStatsResponse',
+                    $ref: "#/components/schemas/HeroStatsResponse",
                   },
                 },
               },
             },
           },
         },
-        route: () => '/heroStats',
+        route: () => "/heroStats",
         func: async (req, res, next) => {
-          const cached = await redis.get('heroStats2');
+          const cached = await redis.get("heroStats2");
           if (cached) {
             return res.json(JSON.parse(cached));
           }
@@ -1732,30 +1732,30 @@ You can use the API without a key, but registering for a key allows increased ra
           const result = await Promise.all(
             Object.values(heroes).map((hero) => getHeroStat(hero)),
           );
-          redis.setex('heroStats2', 60, JSON.stringify(result));
+          redis.setex("heroStats2", 60, JSON.stringify(result));
           return res.json(result);
 
           async function getHeroStat(hero: any) {
             const final = { ...hero };
             // Add all the count properties
-            const names = ['pick', 'win', 'ban'];
+            const names = ["pick", "win", "ban"];
             const tiers = [
-              '1',
-              '2',
-              '3',
-              '4',
-              '5',
-              '6',
-              '7',
-              '8',
-              'turbo',
-              'pro',
-              'pub',
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "turbo",
+              "pro",
+              "pub",
             ];
             const tierNames: string[][] = [];
             tiers.forEach((tier) => {
               names.forEach((name) => {
-                if (name === 'ban' && tier !== 'pro') {
+                if (name === "ban" && tier !== "pro") {
                   // Only pro has ban counts
                   return;
                 }
@@ -1772,9 +1772,9 @@ You can use the API without a key, but registering for a key allows increased ra
                     // Get the unix timestamps for the start of the last 7 days
                     `${heroId}:${tier}:${name}:${moment
                       .utc()
-                      .startOf('day')
-                      .subtract(i, 'day')
-                      .format('X')}`,
+                      .startOf("day")
+                      .subtract(i, "day")
+                      .format("X")}`,
                   );
                 }
                 // mget the 7 keys for this hero and sum them
@@ -1782,10 +1782,10 @@ You can use the API without a key, but registering for a key allows increased ra
                 const sum = counts.reduce((a, b) => Number(a) + Number(b), 0);
                 // Object keys are in the format `${tier}_${name}`
                 // For compatibility, turbo has s on the end (picks/wins)
-                const objKey = `${tier}_${name}${tier === 'turbo' ? 's' : ''}`;
+                const objKey = `${tier}_${name}${tier === "turbo" ? "s" : ""}`;
                 final[objKey] = sum;
-                if (tier === 'pub' || tier === 'turbo') {
-                  final[objKey + '_trend'] = counts.map(Number);
+                if (tier === "pub" || tier === "turbo") {
+                  final[objKey + "_trend"] = counts.map(Number);
                 }
               }),
             );
@@ -1794,29 +1794,29 @@ You can use the API without a key, but registering for a key allows increased ra
         },
       },
     },
-    '/heroes/{hero_id}/matches': {
+    "/heroes/{hero_id}/matches": {
       get: {
-        operationId: generateOperationId('get', '/heroes/{hero_id}/matches'),
-        summary: 'GET /heroes/{hero_id}/matches',
-        description: 'Get recent matches with a hero',
-        tags: ['heroes'],
-        parameters: [{ $ref: '#/components/parameters/heroIdPathParam' }],
+        operationId: generateOperationId("get", "/heroes/{hero_id}/matches"),
+        summary: "GET /heroes/{hero_id}/matches",
+        description: "Get recent matches with a hero",
+        tags: ["heroes"],
+        parameters: [{ $ref: "#/components/parameters/heroIdPathParam" }],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  type: 'array',
+                  type: "array",
                   items: {
-                    $ref: '#/components/schemas/MatchObjectResponse',
+                    $ref: "#/components/schemas/MatchObjectResponse",
                   },
                 },
               },
             },
           },
         },
-        route: () => '/heroes/:hero_id/matches',
+        route: () => "/heroes/:hero_id/matches",
         func: async (req, res, next) => {
           const heroId = req.params.hero_id;
           const { rows } = await db.raw(
@@ -1846,29 +1846,29 @@ You can use the API without a key, but registering for a key allows increased ra
         },
       },
     },
-    '/heroes/{hero_id}/matchups': {
+    "/heroes/{hero_id}/matchups": {
       get: {
-        operationId: generateOperationId('get', '/heroes/{hero_id}/matchups'),
-        summary: 'GET /heroes/{hero_id}/matchups',
-        description: 'Get results against other heroes for a hero',
-        tags: ['heroes'],
-        parameters: [{ $ref: '#/components/parameters/heroIdPathParam' }],
+        operationId: generateOperationId("get", "/heroes/{hero_id}/matchups"),
+        summary: "GET /heroes/{hero_id}/matchups",
+        description: "Get results against other heroes for a hero",
+        tags: ["heroes"],
+        parameters: [{ $ref: "#/components/parameters/heroIdPathParam" }],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  type: 'array',
+                  type: "array",
                   items: {
-                    $ref: '#/components/schemas/HeroMatchupsResponse',
+                    $ref: "#/components/schemas/HeroMatchupsResponse",
                   },
                 },
               },
             },
           },
         },
-        route: () => '/heroes/:hero_id/matchups',
+        route: () => "/heroes/:hero_id/matchups",
         func: async (req, res, next) => {
           const heroId = req.params.hero_id;
           const { rows } = await db.raw(
@@ -1883,35 +1883,35 @@ You can use the API without a key, but registering for a key allows increased ra
             AND matches.start_time > ?
             GROUP BY pm2.hero_id
             ORDER BY games_played DESC`,
-            [heroId, moment.utc().subtract(1, 'year').format('X')],
+            [heroId, moment.utc().subtract(1, "year").format("X")],
           );
           return res.json(rows);
         },
       },
     },
-    '/heroes/{hero_id}/durations': {
+    "/heroes/{hero_id}/durations": {
       get: {
-        operationId: generateOperationId('get', '/heroes/{hero_id}/durations'),
-        summary: 'GET /heroes/{hero_id}/durations',
-        description: 'Get hero performance over a range of match durations',
-        tags: ['heroes'],
-        parameters: [{ $ref: '#/components/parameters/heroIdPathParam' }],
+        operationId: generateOperationId("get", "/heroes/{hero_id}/durations"),
+        summary: "GET /heroes/{hero_id}/durations",
+        description: "Get hero performance over a range of match durations",
+        tags: ["heroes"],
+        parameters: [{ $ref: "#/components/parameters/heroIdPathParam" }],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  type: 'array',
+                  type: "array",
                   items: {
-                    $ref: '#/components/schemas/HeroDurationsResponse',
+                    $ref: "#/components/schemas/HeroDurationsResponse",
                   },
                 },
               },
             },
           },
         },
-        route: () => '/heroes/:hero_id/durations',
+        route: () => "/heroes/:hero_id/durations",
         func: async (req, res, next) => {
           const heroId = req.params.hero_id;
           const { rows } = await db.raw(
@@ -1929,24 +1929,24 @@ You can use the API without a key, but registering for a key allows increased ra
         },
       },
     },
-    '/heroes/{hero_id}/players': {
+    "/heroes/{hero_id}/players": {
       get: {
-        operationId: generateOperationId('get', '/heroes/{hero_id}/players'),
-        summary: 'GET /heroes/{hero_id}/players',
-        description: 'Get players who have played this hero',
-        tags: ['heroes'],
-        parameters: [{ $ref: '#/components/parameters/heroIdPathParam' }],
+        operationId: generateOperationId("get", "/heroes/{hero_id}/players"),
+        summary: "GET /heroes/{hero_id}/players",
+        description: "Get players who have played this hero",
+        tags: ["heroes"],
+        parameters: [{ $ref: "#/components/parameters/heroIdPathParam" }],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  type: 'array',
+                  type: "array",
                   items: {
-                    type: 'array',
+                    type: "array",
                     items: {
-                      $ref: '#/components/schemas/PlayerObjectResponse',
+                      $ref: "#/components/schemas/PlayerObjectResponse",
                     },
                   },
                 },
@@ -1954,7 +1954,7 @@ You can use the API without a key, but registering for a key allows increased ra
             },
           },
         },
-        route: () => '/heroes/:hero_id/players',
+        route: () => "/heroes/:hero_id/players",
         func: async (req, res, next) => {
           const heroId = req.params.hero_id;
           const { rows } = await db.raw(
@@ -1973,30 +1973,30 @@ You can use the API without a key, but registering for a key allows increased ra
         },
       },
     },
-    '/heroes/{hero_id}/itemPopularity': {
+    "/heroes/{hero_id}/itemPopularity": {
       get: {
         operationId: generateOperationId(
-          'get',
-          '/heroes/{hero_id}/itemPopularity',
+          "get",
+          "/heroes/{hero_id}/itemPopularity",
         ),
-        summary: 'GET /heroes/{hero_id}/itemPopularity',
+        summary: "GET /heroes/{hero_id}/itemPopularity",
         description:
-          'Get item popularity of hero categoried by start, early, mid and late game, analyzed from professional games',
-        tags: ['heroes'],
-        parameters: [{ $ref: '#/components/parameters/heroIdPathParam' }],
+          "Get item popularity of hero categoried by start, early, mid and late game, analyzed from professional games",
+        tags: ["heroes"],
+        parameters: [{ $ref: "#/components/parameters/heroIdPathParam" }],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  $ref: '#/components/schemas/HeroItemPopularityResponse',
+                  $ref: "#/components/schemas/HeroItemPopularityResponse",
                 },
               },
             },
           },
         },
-        route: () => '/heroes/:hero_id/itemPopularity',
+        route: () => "/heroes/:hero_id/itemPopularity",
         func: async (req, res, next) => {
           const heroId = req.params.hero_id;
           const result = await getHeroItemPopularity(heroId);
@@ -2004,57 +2004,57 @@ You can use the API without a key, but registering for a key allows increased ra
         },
       },
     },
-    '/leagues': {
+    "/leagues": {
       get: {
-        operationId: generateOperationId('get', '/leagues'),
-        summary: 'GET /leagues',
-        description: 'Get league data',
-        tags: ['leagues'],
+        operationId: generateOperationId("get", "/leagues"),
+        summary: "GET /leagues",
+        description: "Get league data",
+        tags: ["leagues"],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  type: 'array',
+                  type: "array",
                   items: {
-                    $ref: '#/components/schemas/LeagueObjectResponse',
+                    $ref: "#/components/schemas/LeagueObjectResponse",
                   },
                 },
               },
             },
           },
         },
-        route: () => '/leagues',
+        route: () => "/leagues",
         func: async (req, res, next) => {
-          const result = await db.select().from('leagues');
+          const result = await db.select().from("leagues");
           return res.json(result);
         },
       },
     },
-    '/leagues/{league_id}': {
+    "/leagues/{league_id}": {
       get: {
-        operationId: generateOperationId('get', '/leagues/{league_id}'),
-        summary: 'GET /leagues/{league_id}',
-        description: 'Get data for a league',
-        tags: ['leagues'],
-        parameters: [{ $ref: '#/components/parameters/leagueIdPathParam' }],
+        operationId: generateOperationId("get", "/leagues/{league_id}"),
+        summary: "GET /leagues/{league_id}",
+        description: "Get data for a league",
+        tags: ["leagues"],
+        parameters: [{ $ref: "#/components/parameters/leagueIdPathParam" }],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  type: 'array',
+                  type: "array",
                   items: {
-                    $ref: '#/components/schemas/LeagueObjectResponse',
+                    $ref: "#/components/schemas/LeagueObjectResponse",
                   },
                 },
               },
             },
           },
         },
-        route: () => '/leagues/:league_id',
+        route: () => "/leagues/:league_id",
         func: async (req, res, next) => {
           const { rows } = await db.raw(
             `SELECT leagues.*
@@ -2066,26 +2066,26 @@ You can use the API without a key, but registering for a key allows increased ra
         },
       },
     },
-    '/leagues/{league_id}/matches': {
+    "/leagues/{league_id}/matches": {
       get: {
-        operationId: generateOperationId('get', '/leagues/{league_id}/matches'),
-        summary: 'GET /leagues/{league_id}/matches',
-        description: 'Get matches for a league (excluding amateur leagues)',
-        tags: ['leagues'],
-        parameters: [{ $ref: '#/components/parameters/leagueIdPathParam' }],
+        operationId: generateOperationId("get", "/leagues/{league_id}/matches"),
+        summary: "GET /leagues/{league_id}/matches",
+        description: "Get matches for a league (excluding amateur leagues)",
+        tags: ["leagues"],
+        parameters: [{ $ref: "#/components/parameters/leagueIdPathParam" }],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  $ref: '#/components/schemas/MatchObjectResponse',
+                  $ref: "#/components/schemas/MatchObjectResponse",
                 },
               },
             },
           },
         },
-        route: () => '/leagues/:league_id/matches',
+        route: () => "/leagues/:league_id/matches",
         func: async (req, res, next) => {
           const { rows } = await db.raw(
             `SELECT match_id, radiant_win, start_time, duration, leagueid, radiant_score, dire_score, radiant_team_id, radiant_team_name, dire_team_id, dire_team_name, series_id, series_type
@@ -2098,32 +2098,32 @@ You can use the API without a key, but registering for a key allows increased ra
         },
       },
     },
-    '/leagues/{league_id}/matchIds': {
+    "/leagues/{league_id}/matchIds": {
       get: {
         operationId: generateOperationId(
-          'get',
-          '/leagues/{league_id}/matchIds',
+          "get",
+          "/leagues/{league_id}/matchIds",
         ),
-        summary: 'GET /leagues/{league_id}/matchIds',
-        description: 'Get match IDs for a league (including amateur leagues)',
-        tags: ['leagues'],
-        parameters: [{ $ref: '#/components/parameters/leagueIdPathParam' }],
+        summary: "GET /leagues/{league_id}/matchIds",
+        description: "Get match IDs for a league (including amateur leagues)",
+        tags: ["leagues"],
+        parameters: [{ $ref: "#/components/parameters/leagueIdPathParam" }],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  type: 'array',
+                  type: "array",
                   items: {
-                    type: 'string',
+                    type: "string",
                   },
                 },
               },
             },
           },
         },
-        route: () => '/leagues/:league_id/matchIds',
+        route: () => "/leagues/:league_id/matchIds",
         func: async (req, res, next) => {
           const { rows } = await db.raw(
             `SELECT match_id
@@ -2136,26 +2136,26 @@ You can use the API without a key, but registering for a key allows increased ra
         },
       },
     },
-    '/leagues/{league_id}/teams': {
+    "/leagues/{league_id}/teams": {
       get: {
-        operationId: generateOperationId('get', '/leagues/{league_id}/teams'),
-        summary: 'GET /leagues/{league_id}/teams',
-        description: 'Get teams for a league',
-        tags: ['leagues'],
-        parameters: [{ $ref: '#/components/parameters/leagueIdPathParam' }],
+        operationId: generateOperationId("get", "/leagues/{league_id}/teams"),
+        summary: "GET /leagues/{league_id}/teams",
+        description: "Get teams for a league",
+        tags: ["leagues"],
+        parameters: [{ $ref: "#/components/parameters/leagueIdPathParam" }],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  $ref: '#/components/schemas/TeamObjectResponse',
+                  $ref: "#/components/schemas/TeamObjectResponse",
                 },
               },
             },
           },
         },
-        route: () => '/leagues/:league_id/teams',
+        route: () => "/leagues/:league_id/teams",
         func: async (req, res, next) => {
           const { rows } = await db.raw(
             `SELECT team_rating.*, teams.*
@@ -2171,40 +2171,40 @@ You can use the API without a key, but registering for a key allows increased ra
         },
       },
     },
-    '/teams': {
+    "/teams": {
       get: {
-        operationId: generateOperationId('get', '/teams'),
-        summary: 'GET /teams',
-        description: 'Get team data',
-        tags: ['teams'],
+        operationId: generateOperationId("get", "/teams"),
+        summary: "GET /teams",
+        description: "Get team data",
+        tags: ["teams"],
         parameters: [
           {
-            name: 'page',
-            in: 'query',
+            name: "page",
+            in: "query",
             description:
-              'Page number, zero indexed. Each page returns up to 1000 entries.',
+              "Page number, zero indexed. Each page returns up to 1000 entries.",
             required: false,
             schema: {
-              type: 'integer',
+              type: "integer",
             },
           },
         ],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  type: 'array',
+                  type: "array",
                   items: {
-                    $ref: '#/components/schemas/TeamObjectResponse',
+                    $ref: "#/components/schemas/TeamObjectResponse",
                   },
                 },
               },
             },
           },
         },
-        route: () => '/teams',
+        route: () => "/teams",
         func: async (req, res, next) => {
           const { rows } = await db.raw(
             `SELECT team_rating.*, teams.*
@@ -2219,26 +2219,26 @@ You can use the API without a key, but registering for a key allows increased ra
         },
       },
     },
-    '/teams/{team_id}': {
+    "/teams/{team_id}": {
       get: {
-        operationId: generateOperationId('get', '/teams/{team_id}'),
-        summary: 'GET /teams/{team_id}',
-        description: 'Get data for a team',
-        tags: ['teams'],
-        parameters: [{ $ref: '#/components/parameters/teamIdPathParam' }],
+        operationId: generateOperationId("get", "/teams/{team_id}"),
+        summary: "GET /teams/{team_id}",
+        description: "Get data for a team",
+        tags: ["teams"],
+        parameters: [{ $ref: "#/components/parameters/teamIdPathParam" }],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  $ref: '#/components/schemas/TeamObjectResponse',
+                  $ref: "#/components/schemas/TeamObjectResponse",
                 },
               },
             },
           },
         },
-        route: () => '/teams/:team_id',
+        route: () => "/teams/:team_id",
         func: async (req, res, next) => {
           const { rows } = await db.raw(
             `SELECT team_rating.*, teams.*
@@ -2251,26 +2251,26 @@ You can use the API without a key, but registering for a key allows increased ra
         },
       },
     },
-    '/teams/{team_id}/matches': {
+    "/teams/{team_id}/matches": {
       get: {
-        operationId: generateOperationId('get', '/teams/{team_id}/matches'),
-        summary: 'GET /teams/{team_id}/matches',
-        description: 'Get matches for a team',
-        tags: ['teams'],
-        parameters: [{ $ref: '#/components/parameters/teamIdPathParam' }],
+        operationId: generateOperationId("get", "/teams/{team_id}/matches"),
+        summary: "GET /teams/{team_id}/matches",
+        description: "Get matches for a team",
+        tags: ["teams"],
+        parameters: [{ $ref: "#/components/parameters/teamIdPathParam" }],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  $ref: '#/components/schemas/TeamMatchObjectResponse',
+                  $ref: "#/components/schemas/TeamMatchObjectResponse",
                 },
               },
             },
           },
         },
-        route: () => '/teams/:team_id/matches',
+        route: () => "/teams/:team_id/matches",
         func: async (req, res, next) => {
           const { rows } = await db.raw(
             `
@@ -2289,26 +2289,26 @@ You can use the API without a key, but registering for a key allows increased ra
         },
       },
     },
-    '/teams/{team_id}/players': {
+    "/teams/{team_id}/players": {
       get: {
-        operationId: generateOperationId('get', '/teams/{team_id}/players'),
-        summary: 'GET /teams/{team_id}/players',
-        description: 'Get players who have played for a team',
-        tags: ['teams'],
-        parameters: [{ $ref: '#/components/parameters/teamIdPathParam' }],
+        operationId: generateOperationId("get", "/teams/{team_id}/players"),
+        summary: "GET /teams/{team_id}/players",
+        description: "Get players who have played for a team",
+        tags: ["teams"],
+        parameters: [{ $ref: "#/components/parameters/teamIdPathParam" }],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  $ref: '#/components/schemas/TeamPlayersResponse',
+                  $ref: "#/components/schemas/TeamPlayersResponse",
                 },
               },
             },
           },
         },
-        route: () => '/teams/:team_id/players',
+        route: () => "/teams/:team_id/players",
         func: async (req, res, next) => {
           const { rows } = await db.raw(
             `SELECT account_id, notable_players.name, count(matches.match_id) games_played, sum(case when (player_matches.player_slot < 128) = matches.radiant_win then 1 else 0 end) wins, notable_players.team_id = teams.team_id is_current_team_member
@@ -2326,26 +2326,26 @@ You can use the API without a key, but registering for a key allows increased ra
         },
       },
     },
-    '/teams/{team_id}/heroes': {
+    "/teams/{team_id}/heroes": {
       get: {
-        operationId: generateOperationId('get', '/teams/{team_id}/heroes'),
-        summary: 'GET /teams/{team_id}/heroes',
-        description: 'Get heroes for a team',
-        tags: ['teams'],
-        parameters: [{ $ref: '#/components/parameters/teamIdPathParam' }],
+        operationId: generateOperationId("get", "/teams/{team_id}/heroes"),
+        summary: "GET /teams/{team_id}/heroes",
+        description: "Get heroes for a team",
+        tags: ["teams"],
+        parameters: [{ $ref: "#/components/parameters/teamIdPathParam" }],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  $ref: '#/components/schemas/TeamHeroesResponse',
+                  $ref: "#/components/schemas/TeamHeroesResponse",
                 },
               },
             },
           },
         },
-        route: () => '/teams/:team_id/heroes',
+        route: () => "/teams/:team_id/heroes",
         func: async (req, res, next) => {
           const { rows } = await db.raw(
             `SELECT hero_id, localized_name, count(matches.match_id) games_played, sum(case when (player_matches.player_slot < 128) = matches.radiant_win then 1 else 0 end) wins
@@ -2363,51 +2363,51 @@ You can use the API without a key, but registering for a key allows increased ra
         },
       },
     },
-    '/records/{field}': {
+    "/records/{field}": {
       get: {
-        operationId: generateOperationId('get', '/records/{field}'),
-        summary: 'GET /records/{field}',
-        description: 'Get top performances in a stat',
-        tags: ['records'],
+        operationId: generateOperationId("get", "/records/{field}"),
+        summary: "GET /records/{field}",
+        description: "Get top performances in a stat",
+        tags: ["records"],
         parameters: [
           {
-            name: 'field',
-            in: 'path',
-            description: 'Field name to query',
+            name: "field",
+            in: "path",
+            description: "Field name to query",
             required: true,
             schema: {
-              type: 'string',
+              type: "string",
             },
           },
         ],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  type: 'array',
+                  type: "array",
                   items: {
-                    $ref: '#/components/schemas/RecordsResponse',
+                    $ref: "#/components/schemas/RecordsResponse",
                   },
                 },
               },
             },
           },
         },
-        route: () => '/records/:field',
+        route: () => "/records/:field",
         func: async (req, res, next) => {
           const rows = await redis.zrevrange(
             `records:${req.params.field}`,
             0,
             99,
-            'WITHSCORES',
+            "WITHSCORES",
           );
           const entries = rows
             ?.map((r, i) => {
-              const match_id = parseInt(r.split(':')[0]);
-              const start_time = parseInt(r.split(':')[1]);
-              const hero_id = parseInt(r.split(':')[2]);
+              const match_id = parseInt(r.split(":")[0]);
+              const start_time = parseInt(r.split(":")[1]);
+              const hero_id = parseInt(r.split(":")[2]);
               const score = parseInt(rows[i + 1]);
               return {
                 match_id: Number.isNaN(match_id) ? null : match_id,
@@ -2421,23 +2421,23 @@ You can use the API without a key, but registering for a key allows increased ra
         },
       },
     },
-    '/live': {
+    "/live": {
       get: {
-        operationId: generateOperationId('get', '/live'),
-        summary: 'GET /live',
-        description: 'Get top currently ongoing live games',
-        tags: ['live'],
+        operationId: generateOperationId("get", "/live"),
+        summary: "GET /live",
+        description: "Get top currently ongoing live games",
+        tags: ["live"],
         parameters: [],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  type: 'array',
+                  type: "array",
                   items: {
-                    title: 'LiveResponse',
-                    type: 'object',
+                    title: "LiveResponse",
+                    type: "object",
                     properties: {},
                   },
                 },
@@ -2445,9 +2445,9 @@ You can use the API without a key, but registering for a key allows increased ra
             },
           },
         },
-        route: () => '/live',
+        route: () => "/live",
         func: async (req, res, next) => {
-          const games = await redis.zrangebyscore('liveGames', '-inf', 'inf');
+          const games = await redis.zrangebyscore("liveGames", "-inf", "inf");
           if (!games?.length) {
             return res.json(games);
           }
@@ -2457,195 +2457,195 @@ You can use the API without a key, but registering for a key allows increased ra
         },
       },
     },
-    '/scenarios/itemTimings': {
+    "/scenarios/itemTimings": {
       get: {
-        operationId: generateOperationId('get', '/scenarios/itemTimings'),
-        summary: 'GET /scenarios/itemTimings',
+        operationId: generateOperationId("get", "/scenarios/itemTimings"),
+        summary: "GET /scenarios/itemTimings",
         description:
-          'Win rates for certain item timings on a hero for items that cost at least 1400 gold',
-        tags: ['scenarios'],
+          "Win rates for certain item timings on a hero for items that cost at least 1400 gold",
+        tags: ["scenarios"],
         parameters: [
           {
-            name: 'item',
-            in: 'query',
+            name: "item",
+            in: "query",
             description: 'Filter by item name e.g. "spirit_vessel"',
             required: false,
             schema: {
-              type: 'string',
+              type: "string",
             },
           },
-          { $ref: '#/components/parameters/heroIdParam' },
+          { $ref: "#/components/parameters/heroIdParam" },
         ],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  type: 'array',
+                  type: "array",
                   items: {
-                    $ref: '#/components/schemas/ScenarioItemTimingsResponse',
+                    $ref: "#/components/schemas/ScenarioItemTimingsResponse",
                   },
                 },
               },
             },
           },
         },
-        route: () => '/scenarios/itemTimings',
+        route: () => "/scenarios/itemTimings",
         func: async (req, res, next) => {
           const result = await getItemTimings(req);
           return res.json(result);
         },
       },
     },
-    '/scenarios/laneRoles': {
+    "/scenarios/laneRoles": {
       get: {
-        operationId: generateOperationId('get', '/scenarios/laneRoles'),
-        summary: 'GET /scenarios/laneRoles',
-        description: 'Win rates for heroes in certain lane roles',
-        tags: ['scenarios'],
+        operationId: generateOperationId("get", "/scenarios/laneRoles"),
+        summary: "GET /scenarios/laneRoles",
+        description: "Win rates for heroes in certain lane roles",
+        tags: ["scenarios"],
         parameters: [
           {
-            name: 'lane_role',
-            in: 'query',
-            description: 'Filter by lane role 1-4 (Safe, Mid, Off, Jungle)',
+            name: "lane_role",
+            in: "query",
+            description: "Filter by lane role 1-4 (Safe, Mid, Off, Jungle)",
             required: false,
             schema: {
-              type: 'string',
+              type: "string",
             },
           },
-          { $ref: '#/components/parameters/heroIdParam' },
+          { $ref: "#/components/parameters/heroIdParam" },
         ],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  type: 'array',
+                  type: "array",
                   items: {
-                    $ref: '#/components/schemas/ScenarioLaneRolesResponse',
+                    $ref: "#/components/schemas/ScenarioLaneRolesResponse",
                   },
                 },
               },
             },
           },
         },
-        route: () => '/scenarios/laneRoles',
+        route: () => "/scenarios/laneRoles",
         func: async (req, res, next) => {
           const result = await getLaneRoles(req);
           return res.json(result);
         },
       },
     },
-    '/scenarios/misc': {
+    "/scenarios/misc": {
       get: {
-        operationId: generateOperationId('get', '/scenarios/misc'),
-        summary: 'GET /scenarios/misc',
-        description: 'Miscellaneous team scenarios',
-        tags: ['scenarios'],
-        parameters: [{ $ref: '#/components/parameters/scenarioParam' }],
+        operationId: generateOperationId("get", "/scenarios/misc"),
+        summary: "GET /scenarios/misc",
+        description: "Miscellaneous team scenarios",
+        tags: ["scenarios"],
+        parameters: [{ $ref: "#/components/parameters/scenarioParam" }],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  type: 'array',
+                  type: "array",
                   items: {
-                    $ref: '#/components/schemas/ScenarioMiscResponse',
+                    $ref: "#/components/schemas/ScenarioMiscResponse",
                   },
                 },
               },
             },
           },
         },
-        route: () => '/scenarios/misc',
+        route: () => "/scenarios/misc",
         func: async (req, res, next) => {
           const result = await getTeamScenarios(req);
           return res.json(result);
         },
       },
     },
-    '/schema': {
+    "/schema": {
       get: {
-        operationId: generateOperationId('get', '/schema'),
-        summary: 'GET /schema',
-        description: 'Get database schema',
-        tags: ['schema'],
+        operationId: generateOperationId("get", "/schema"),
+        summary: "GET /schema",
+        description: "Get database schema",
+        tags: ["schema"],
         parameters: [],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
-                  type: 'array',
+                  type: "array",
                   items: {
-                    $ref: '#/components/schemas/SchemaResponse',
+                    $ref: "#/components/schemas/SchemaResponse",
                   },
                 },
               },
             },
           },
         },
-        route: () => '/schema',
+        route: () => "/schema",
         func: async (req, res, next) => {
           const result = await db
-            .select(['table_name', 'column_name', 'data_type'])
-            .from('information_schema.columns')
+            .select(["table_name", "column_name", "data_type"])
+            .from("information_schema.columns")
             .where({
-              table_schema: 'public',
+              table_schema: "public",
             });
           return res.json(result);
         },
       },
     },
-    '/constants/{resource}': {
+    "/constants/{resource}": {
       get: {
-        operationId: generateOperationId('get', '/constants/{resource}'),
-        summary: 'GET /constants',
+        operationId: generateOperationId("get", "/constants/{resource}"),
+        summary: "GET /constants",
         description:
-          'Get static game data mirrored from the dotaconstants repository.',
-        tags: ['constants'],
+          "Get static game data mirrored from the dotaconstants repository.",
+        tags: ["constants"],
         parameters: [
           {
-            name: 'resource',
-            in: 'path',
+            name: "resource",
+            in: "path",
             description:
-              'Resource name e.g. `heroes`. [List of resources](https://github.com/odota/dotaconstants/tree/master/build)',
+              "Resource name e.g. `heroes`. [List of resources](https://github.com/odota/dotaconstants/tree/master/build)",
             required: true,
             schema: {
-              type: 'string',
+              type: "string",
             },
           },
         ],
         responses: {
           200: {
-            description: 'Success',
+            description: "Success",
             content: {
-              'application/json; charset=utf-8': {
+              "application/json; charset=utf-8": {
                 schema: {
                   nullable: true,
                   oneOf: [
                     {
-                      type: 'object',
+                      type: "object",
                       additionalProperties: {
-                        title: 'ConstantResourceResponse',
+                        title: "ConstantResourceResponse",
                       },
                     },
                     {
-                      type: 'array',
+                      type: "array",
                       items: {
                         oneOf: [
                           {
-                            type: 'object',
+                            type: "object",
                             additionalProperties: {
-                              title: 'ConstantResourceResponse',
+                              title: "ConstantResourceResponse",
                             },
                           },
                           {
-                            type: 'integer',
+                            type: "integer",
                           },
                         ],
                       },
@@ -2656,7 +2656,7 @@ You can use the API without a key, but registering for a key allows increased ra
             },
           },
         },
-        route: () => '/constants/{:resource}',
+        route: () => "/constants/{:resource}",
         func: async (req, res, next) => {
           const { resource } = req.params;
           const resp = constants[resource as keyof typeof constants];

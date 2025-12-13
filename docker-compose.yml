@@ -24,8 +24,8 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - '5000:5000'
-      - '5100:5100'
+      - "5000:5000"
+      - "5100:5100"
     environment:
       PARSER_HOST: odota-parser:5600
       POSTGRES_URL: postgresql://postgres:postgres@odota-postgres/yasp

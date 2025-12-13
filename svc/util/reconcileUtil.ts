@@ -1,8 +1,8 @@
-import * as allFetchers from '../fetcher/allFetchers.ts';
-import db from '../store/db.ts';
-import { getMatchBlob } from './getMatchBlob.ts';
-import { upsertPlayerCaches } from './insert.ts';
-import { getPGroup } from './pgroup.ts';
+import * as allFetchers from "../fetcher/allFetchers.ts";
+import db from "../store/db.ts";
+import { getMatchBlob } from "./getMatchBlob.ts";
+import { upsertPlayerCaches } from "./insert.ts";
+import { getPGroup } from "./pgroup.ts";
 
 const { apiFetcher } = allFetchers;
 
@@ -13,27 +13,27 @@ export async function reconcileMatch(
   // validate that all rows have the same match ID
   const set = new Set(rows.map((r) => r.match_id));
   if (set.size > 1) {
-    throw new Error('multiple match IDs found in input to reconcileMatch');
+    throw new Error("multiple match IDs found in input to reconcileMatch");
   }
   const first = rows[0];
   if (!first) {
-    throw new Error('no rows in input to reconcileMatch');
+    throw new Error("no rows in input to reconcileMatch");
   }
   // optional: Verify each player/match combination doesn't exist in player_caches (or we have parsed data to update)
   let [match] = await getMatchBlob(first.match_id, allFetchers);
   if (!match && attemptRepair) {
-    console.log('[RECONCILE] attempting repair for %s', first.match_id);
+    console.log("[RECONCILE] attempting repair for %s", first.match_id);
     await apiFetcher.getOrFetchData(first.match_id, { seqNumBackfill: true });
     [match] = await getMatchBlob(first.match_id, allFetchers);
   }
   if (!match) {
-    console.log('[RECONCILE] no API data for %s', first.match_id);
+    console.log("[RECONCILE] no API data for %s", first.match_id);
     return;
   }
   // Update the league to match index (if available)
-  if ('leagueid' in match && match.leagueid) {
+  if ("leagueid" in match && match.leagueid) {
     await db.raw(
-      'INSERT INTO league_match(leagueid, match_id) VALUES(?, ?) ON CONFLICT DO NOTHING',
+      "INSERT INTO league_match(leagueid, match_id) VALUES(?, ?) ON CONFLICT DO NOTHING",
       [match.leagueid, match.match_id],
     );
   }
@@ -55,7 +55,7 @@ export async function reconcileMatch(
     match,
     undefined,
     pgroup,
-    'reconcile',
+    "reconcile",
   );
   if (result.every(Boolean)) {
     const trx = await db.transaction();
@@ -63,7 +63,7 @@ export async function reconcileMatch(
     await Promise.all(
       rows.map(async (row) => {
         return trx.raw(
-          'DELETE FROM player_match_history WHERE account_id = ? AND match_id = ?',
+          "DELETE FROM player_match_history WHERE account_id = ? AND match_id = ?",
           [row.account_id, row.match_id],
         );
       }),

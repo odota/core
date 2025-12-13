@@ -1,11 +1,11 @@
 export default {
   teamIdPathParam: {
-    name: 'team_id',
-    in: 'path',
-    description: 'Team ID',
+    name: "team_id",
+    in: "path",
+    description: "Team ID",
     required: true,
     schema: {
-      type: 'integer',
+      type: "integer",
     },
   },
 };

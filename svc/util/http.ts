@@ -1,11 +1,11 @@
-import type { AxiosRequestConfig } from 'axios';
-import config from '../../config.ts';
-import redis, { redisCount, redisCountHash } from '../store/redis.ts';
-import axios from 'axios';
-import { convert32to64 } from './utility.ts';
+import type { AxiosRequestConfig } from "axios";
+import config from "../../config.ts";
+import redis, { redisCount, redisCountHash } from "../store/redis.ts";
+import axios from "axios";
+import { convert32to64 } from "./utility.ts";
 
-const apiUrl = 'http://api.steampowered.com';
-let apiKey = config.STEAM_API_KEY.split(',')[0];
+const apiUrl = "http://api.steampowered.com";
+let apiKey = config.STEAM_API_KEY.split(",")[0];
 export const SteamAPIUrls = {
   api_details: (payload: { match_id: string | number }) =>
     `${apiUrl}/IDOTA2Match_570/GetMatchDetails/V001/?key=${apiKey}&match_id=${payload.match_id}`,
@@ -17,20 +17,20 @@ export const SteamAPIUrls = {
     start_at_match_id?: number;
   }) =>
     `${apiUrl}/IDOTA2Match_570/GetMatchHistory/V001/?key=${apiKey}${
-      payload.account_id ? `&account_id=${payload.account_id}` : ''
+      payload.account_id ? `&account_id=${payload.account_id}` : ""
     }${
       payload.matches_requested
         ? `&matches_requested=${payload.matches_requested}`
-        : ''
-    }${payload.hero_id ? `&hero_id=${payload.hero_id}` : ''}${
-      payload.leagueid != null ? `&league_id=${payload.leagueid}` : ''
+        : ""
+    }${payload.hero_id ? `&hero_id=${payload.hero_id}` : ""}${
+      payload.leagueid != null ? `&league_id=${payload.leagueid}` : ""
     }${
       payload.start_at_match_id
         ? `&start_at_match_id=${payload.start_at_match_id}`
-        : ''
+        : ""
     }`,
   api_summaries: (payload: { steamids: string[] }) =>
-    `${apiUrl}/ISteamUser/GetPlayerSummaries/v0002/?key=${apiKey}&steamids=${payload.steamids.join(',')}`,
+    `${apiUrl}/ISteamUser/GetPlayerSummaries/v0002/?key=${apiKey}&steamids=${payload.steamids.join(",")}`,
   api_sequence: (payload: {
     start_at_match_seq_num: number;
     matches_requested: number;
@@ -68,37 +68,37 @@ type GetDataOptions = {
   raw?: boolean;
   proxy?: boolean;
 };
-const apiKeys = config.STEAM_API_KEY.split(',');
+const apiKeys = config.STEAM_API_KEY.split(",");
 export async function getSteamAPIData<T>(options: GetDataOptions): Promise<T> {
   let url = options.url;
   const parsedUrl = new URL(url);
-  redisCountHash('steam_api_paths', parsedUrl.pathname);
+  redisCountHash("steam_api_paths", parsedUrl.pathname);
   // choose an api key to use
   parsedUrl.searchParams.set(
-    'key',
+    "key",
     apiKeys[Math.floor(Math.random() * apiKeys.length)],
   );
   if (options.proxy) {
     const apiHosts = await getApiHosts();
     // add the proxy hosts and select
-    const hosts = ['api.steampowered.com', ...apiHosts];
+    const hosts = ["api.steampowered.com", ...apiHosts];
     parsedUrl.host = hosts[Math.floor(Math.random() * hosts.length)];
   }
-  if (parsedUrl.host === 'api.steampowered.com') {
-    redisCount('steam_api_call');
+  if (parsedUrl.host === "api.steampowered.com") {
+    redisCount("steam_api_call");
   } else {
-    redisCount('steam_proxy_call');
+    redisCount("steam_proxy_call");
   }
   const target = parsedUrl.toString();
   const axiosOptions: AxiosRequestConfig = {
     timeout: options.timeout ?? 5000,
     headers: {
-      'Content-Encoding': 'gzip',
+      "Content-Encoding": "gzip",
     },
   };
   if (options.raw) {
     // Return string instead of JSON
-    axiosOptions.responseType = 'text';
+    axiosOptions.responseType = "text";
   }
   let body = null;
   const start = Date.now();
@@ -108,27 +108,27 @@ export async function getSteamAPIData<T>(options: GetDataOptions): Promise<T> {
     body = response.data;
   } catch (err) {
     const end = Date.now();
-    console.log('%s: %dms', target, end - start);
+    console.log("%s: %dms", target, end - start);
     if (axios.isAxiosError(err)) {
       const statusCode = err.response?.status;
-      console.log('[EXCEPTION] %s, %s', statusCode, target);
+      console.log("[EXCEPTION] %s, %s", statusCode, target);
       if (statusCode === 429) {
-        redisCount('steam_429');
+        redisCount("steam_429");
       } else if (statusCode === 403) {
-        redisCount('steam_403');
+        redisCount("steam_403");
       }
       if (statusCode === 429) {
         await new Promise((resolve) => setTimeout(resolve, 2000));
       }
       throw new Error(
-        '[EXCEPTION] status: ' + statusCode + ' message: ' + err.message,
+        "[EXCEPTION] status: " + statusCode + " message: " + err.message,
       );
     } else {
       throw err;
     }
   }
   const end = Date.now();
-  console.log('%s: %dms', target, end - start);
+  console.log("%s: %dms", target, end - start);
   if (options.raw) {
     return body;
   }
@@ -138,16 +138,16 @@ export async function getSteamAPIData<T>(options: GetDataOptions): Promise<T> {
     if (
       body.result.status === 15 ||
       body.result.error ===
-        'Practice matches are not available via GetMatchDetails' ||
-      body.result.error === 'No Match ID specified' ||
-      body.result.error === 'Match ID not found' ||
+        "Practice matches are not available via GetMatchDetails" ||
+      body.result.error === "No Match ID specified" ||
+      body.result.error === "Match ID not found" ||
       (body.result.status === 2 &&
-        body.result.statusDetail === 'Error retrieving match data.')
+        body.result.statusDetail === "Error retrieving match data.")
     ) {
       // private match history or attempting to get practice match/invalid id, don't retry
       // These shouldn't be retried, so just return the response directly but we might want to incllude some metadata to tell the user it's not retryable
       console.log(
-        '[INVALID] (non-retryable) %s, %s',
+        "[INVALID] (non-retryable) %s, %s",
         target,
         JSON.stringify(body),
       );
@@ -155,8 +155,8 @@ export async function getSteamAPIData<T>(options: GetDataOptions): Promise<T> {
     }
     if (body.result.error || body.result.status === 2) {
       // this is invalid data but we can retry, so throw an exception and let the caller handle
-      console.log('[INVALID] (retryable) %s, %s', target, JSON.stringify(body));
-      throw new Error('invalid data (retryable)');
+      console.log("[INVALID] (retryable) %s, %s", target, JSON.stringify(body));
+      throw new Error("invalid data (retryable)");
     }
   }
   return body;
@@ -181,17 +181,17 @@ export async function getSteamAPIDataWithRetry<T>(
  * Return an array of hostnames to use for Steam API requests
  * @returns
  */
-const staticHosts = config.STEAM_API_HOST.split(',');
+const staticHosts = config.STEAM_API_HOST.split(",");
 async function getApiHosts(): Promise<string[]> {
   let additional: string[] = [];
   if (config.USE_SERVICE_REGISTRY) {
     // Purge values older than 10 seconds (stale heartbeat)
     await redis.zremrangebyscore(
-      'registry:' + 'proxy',
-      '-inf',
+      "registry:" + "proxy",
+      "-inf",
       Date.now() - 10000,
     );
-    additional = await redis.zrange('registry:proxy', 0, -1);
+    additional = await redis.zrange("registry:proxy", 0, -1);
   }
   return [...staticHosts, ...additional];
 }

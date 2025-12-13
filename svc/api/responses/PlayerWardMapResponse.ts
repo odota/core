@@ -1,15 +1,15 @@
 export default {
   PlayerWardMapResponse: {
-    title: 'PlayerWardMapResponse',
-    type: 'object',
+    title: "PlayerWardMapResponse",
+    type: "object",
     properties: {
       obs: {
-        description: 'obs',
-        type: 'object',
+        description: "obs",
+        type: "object",
       },
       sen: {
-        description: 'sen',
-        type: 'object',
+        description: "sen",
+        type: "object",
       },
     },
   },

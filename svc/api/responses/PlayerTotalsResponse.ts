@@ -1,19 +1,19 @@
 export default {
   PlayerTotalsResponse: {
-    title: 'PlayerTotalsResponse',
-    type: 'object',
+    title: "PlayerTotalsResponse",
+    type: "object",
     properties: {
       field: {
-        description: 'field',
-        type: 'string',
+        description: "field",
+        type: "string",
       },
       n: {
-        description: 'number',
-        type: 'integer',
+        description: "number",
+        type: "integer",
       },
       sum: {
-        description: 'sum',
-        type: 'number',
+        description: "sum",
+        type: "number",
       },
     },
   },

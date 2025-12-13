@@ -1,7 +1,7 @@
-import { gcFetcher } from './fetcher/allFetchers.ts';
-import db from './store/db.ts';
-import { redisCount } from './store/redis.ts';
-import { average, isRadiant, isTurbo, runInLoop } from './util/utility.ts';
+import { gcFetcher } from "./fetcher/allFetchers.ts";
+import db from "./store/db.ts";
+import { redisCount } from "./store/redis.ts";
+import { average, isRadiant, isTurbo, runInLoop } from "./util/utility.ts";
 
 const DEFAULT_RATING = 4000;
 const kFactor = 50;
@@ -15,7 +15,7 @@ runInLoop(async function rate() {
       game_mode: number;
     }[];
   }>(
-    'SELECT match_seq_num, match_id, radiant_win, game_mode from rating_queue order by match_seq_num ASC LIMIT 1',
+    "SELECT match_seq_num, match_id, radiant_win, game_mode from rating_queue order by match_seq_num ASC LIMIT 1",
   );
   const row = rows[0];
   if (!row) {
@@ -33,18 +33,18 @@ runInLoop(async function rate() {
   if (!accountIds.every(Boolean)) {
     // undefined account ID, delete the row
     await db.raw(
-      'DELETE FROM rating_queue WHERE match_seq_num = ?',
+      "DELETE FROM rating_queue WHERE match_seq_num = ?",
       row.match_seq_num,
     );
-    redisCount('rater_skip');
+    redisCount("rater_skip");
     return;
   }
   const turbo = isTurbo(row);
-  const tableName = turbo ? 'player_computed_mmr_turbo' : 'player_computed_mmr';
+  const tableName = turbo ? "player_computed_mmr_turbo" : "player_computed_mmr";
   const { rows: existingRatings } = await db.raw<{
     rows: { account_id: number; computed_mmr: number }[];
   }>(
-    `SELECT account_id, computed_mmr FROM ${tableName} WHERE account_id IN (${accountIds.map((_) => '?').join(',')})`,
+    `SELECT account_id, computed_mmr FROM ${tableName} WHERE account_id IN (${accountIds.map((_) => "?").join(",")})`,
     [...accountIds],
   );
   const ratingMap = new Map<number, number>();
@@ -74,14 +74,14 @@ runInLoop(async function rate() {
   // Start transaction
   const trx = await db.transaction();
   // Rate each player
-  console.log('match %s, radiant_win: %s', row.match_id, row.radiant_win);
+  console.log("match %s, radiant_win: %s", row.match_id, row.radiant_win);
   for (let p of gcMatch.players) {
     const oldRating = ratingMap.get(p.account_id!) ?? DEFAULT_RATING;
     const delta = isRadiant(p) ? ratingDiff1 : ratingDiff2;
     // apply delta to each player (all players on a team will have the same rating change)
     const newRating = oldRating + delta;
     console.log(
-      'account_id: %s, oldRating: %s, newRating: %s, delta: %s',
+      "account_id: %s, oldRating: %s, newRating: %s, delta: %s",
       p.account_id,
       oldRating,
       newRating,
@@ -95,10 +95,10 @@ runInLoop(async function rate() {
   }
   // Delete row
   await trx.raw(
-    'DELETE FROM rating_queue WHERE match_seq_num = ?',
+    "DELETE FROM rating_queue WHERE match_seq_num = ?",
     row.match_seq_num,
   );
   // Commit transaction
   await trx.commit();
-  redisCount('rater');
+  redisCount("rater");
 }, 0);

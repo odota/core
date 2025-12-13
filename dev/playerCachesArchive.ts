@@ -1,5 +1,5 @@
-import fs from 'node:fs';
-import { getPlayerMatchesWithMetadata } from '../svc/util/buildPlayer.ts';
+import fs from "node:fs";
+import { getPlayerMatchesWithMetadata } from "../svc/util/buildPlayer.ts";
 
 // Write player blob to archive
 // await processPlayerMatches(88367253);
@@ -16,4 +16,4 @@ console.log(readBack[1]);
 
 // There shouldn't be any duplicate match IDs
 // The data should be the same
-fs.writeFileSync('./build/88367253,json', JSON.stringify(readBack[0], null, 2));
+fs.writeFileSync("./build/88367253,json", JSON.stringify(readBack[0], null, 2));

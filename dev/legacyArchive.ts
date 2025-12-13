@@ -1,11 +1,11 @@
-import crypto from 'node:crypto';
-import cassandra from '../svc/store/cassandra.ts';
-import db from '../svc/store/db.ts';
-import { deserialize, randomInt } from '../svc/util/utility.ts';
-import { matchArchive } from '../svc/store/archive.ts';
+import crypto from "node:crypto";
+import cassandra from "../svc/store/cassandra.ts";
+import db from "../svc/store/db.ts";
+import { deserialize, randomInt } from "../svc/util/utility.ts";
+import { matchArchive } from "../svc/store/archive.ts";
 
 function randomBigInt(byteCount: number) {
-  return BigInt(`0x${crypto.randomBytes(byteCount).toString('hex')}`);
+  return BigInt(`0x${crypto.randomBytes(byteCount).toString("hex")}`);
 }
 
 function isDataComplete(match: Partial<ParsedMatch> | null) {
@@ -18,7 +18,7 @@ async function getTokenRange(size: number) {
   // Convert to signed 64-bit integer
   const signedBigInt = BigInt.asIntN(64, randomBigInt(8));
   const result = await cassandra.execute(
-    'select match_id, token(match_id) from matches where token(match_id) >= ? limit ? ALLOW FILTERING;',
+    "select match_id, token(match_id) from matches where token(match_id) >= ? limit ? ALLOW FILTERING;",
     [signedBigInt.toString(), size],
     {
       prepare: true,
@@ -33,11 +33,11 @@ async function doArchiveFromLegacy(matchId: number) {
   let match = await getMatchDataFromLegacy(matchId);
   if (!match) {
     // We couldn't find this match so just skip it
-    console.log('could not find match:', matchId);
+    console.log("could not find match:", matchId);
     return;
   }
   if (!isDataComplete(match)) {
-    console.log('data incomplete for match: ' + matchId);
+    console.log("data incomplete for match: " + matchId);
     await deleteFromLegacy(matchId);
     return;
   }
@@ -46,7 +46,7 @@ async function doArchiveFromLegacy(matchId: number) {
   const isArchived = Boolean(
     (
       await db.raw(
-        'select match_id from parsed_matches where match_id = ? and is_archived IS TRUE',
+        "select match_id from parsed_matches where match_id = ? and is_archived IS TRUE",
         [matchId],
       )
     ).rows[0],
@@ -58,10 +58,10 @@ async function doArchiveFromLegacy(matchId: number) {
   const playerMatches = await getPlayerMatchDataFromLegacy(matchId);
   if (!playerMatches.length) {
     // We couldn't find players for this match, some data was corrupted and we only have match level parsed data
-    console.log('no players for match, deleting:', matchId);
+    console.log("no players for match, deleting:", matchId);
     if (Number(matchId) < 7000000000) {
       // Just delete it from postgres too
-      await db.raw('DELETE from parsed_matches WHERE match_id = ?', [
+      await db.raw("DELETE from parsed_matches WHERE match_id = ?", [
         Number(matchId),
       ]);
     }
@@ -71,7 +71,7 @@ async function doArchiveFromLegacy(matchId: number) {
 
   // Add to parsed_matches if not present
   await db.raw(
-    'INSERT INTO parsed_matches(match_id) VALUES(?) ON CONFLICT DO NOTHING',
+    "INSERT INTO parsed_matches(match_id) VALUES(?) ON CONFLICT DO NOTHING",
     [matchId],
   );
 
@@ -92,10 +92,10 @@ async function doArchiveFromLegacy(matchId: number) {
 
 async function deleteFromLegacy(id: number) {
   await Promise.all([
-    cassandra.execute('DELETE from player_matches where match_id = ?', [id], {
+    cassandra.execute("DELETE from player_matches where match_id = ?", [id], {
       prepare: true,
     }),
-    cassandra.execute('DELETE from matches where match_id = ?', [id], {
+    cassandra.execute("DELETE from matches where match_id = ?", [id], {
       prepare: true,
     }),
   ]);
@@ -105,7 +105,7 @@ async function getMatchDataFromLegacy(
   matchId: number,
 ): Promise<Partial<ParsedMatch> | null> {
   const result = await cassandra.execute(
-    'SELECT * FROM matches where match_id = ?',
+    "SELECT * FROM matches where match_id = ?",
     [matchId],
     {
       prepare: true,
@@ -125,7 +125,7 @@ async function getPlayerMatchDataFromLegacy(
   matchId: number,
 ): Promise<ParsedPlayer[]> {
   const result = await cassandra.execute(
-    'SELECT * FROM player_matches where match_id = ?',
+    "SELECT * FROM player_matches where match_id = ?",
     [matchId],
     {
       prepare: true,

@@ -1,10 +1,10 @@
 // Fetches old matches from Steam API and writes to blob storage
-import { blobArchive } from './store/archive.ts';
-import { runInLoop } from './util/utility.ts';
-import fs from 'node:fs';
-import redis from './store/redis.ts';
-import { SteamAPIUrls, getSteamAPIDataWithRetry } from './util/http.ts';
-import { transformMatch } from './util/compute.ts';
+import { blobArchive } from "./store/archive.ts";
+import { runInLoop } from "./util/utility.ts";
+import fs from "node:fs";
+import redis from "./store/redis.ts";
+import { SteamAPIUrls, getSteamAPIDataWithRetry } from "./util/http.ts";
+import { transformMatch } from "./util/compute.ts";
 
 // following need to be set
 // STEAM_API_KEY
@@ -21,10 +21,10 @@ runInLoop(async function backfill() {
   let seqNum;
   if (redis) {
     seqNum =
-      Number(await redis.get('backfill:' + process.env.BACKFILL_START)) ||
+      Number(await redis.get("backfill:" + process.env.BACKFILL_START)) ||
       Number(process.env.BACKFILL_START);
   } else {
-    seqNum = Number(fs.readFileSync('./match_seq_num.txt')) || 0;
+    seqNum = Number(fs.readFileSync("./match_seq_num.txt")) || 0;
   }
   if (seqNum > stop) {
     await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -42,33 +42,33 @@ runInLoop(async function backfill() {
   });
   const resp =
     data && data.result && data.result.matches ? data.result.matches : [];
-  console.log('[API] match_seq_num:%s, matches:%s', seqNum, resp.length);
+  console.log("[API] match_seq_num:%s, matches:%s", seqNum, resp.length);
   // write to blobstore, process the blob using same function as insertMatch
   try {
     const insertResult = await Promise.all(
       resp.map(async (origMatch) => {
         const match = transformMatch(origMatch);
         const result = await blobArchive.archivePut(
-          match.match_id + '_api',
+          match.match_id + "_api",
           Buffer.from(JSON.stringify(match)),
           true,
         );
         if (!result) {
-          throw new Error('failed to insert match ' + match.match_id);
+          throw new Error("failed to insert match " + match.match_id);
         }
       }),
     );
     if (resp.length) {
       const nextSeqNum = resp[resp.length - 1].match_seq_num + 1;
-      console.log('next_seq_num: %s', nextSeqNum);
+      console.log("next_seq_num: %s", nextSeqNum);
       // Completed inserting matches on this page so update
       if (redis) {
         await redis.set(
-          'backfill:' + process.env.BACKFILL_START,
+          "backfill:" + process.env.BACKFILL_START,
           nextSeqNum.toString(),
         );
       } else {
-        fs.writeFileSync('./match_seq_num.txt', nextSeqNum.toString());
+        fs.writeFileSync("./match_seq_num.txt", nextSeqNum.toString());
       }
     }
   } catch (e) {

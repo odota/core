@@ -1,19 +1,19 @@
-import pg from 'pg';
-import knex from 'knex';
-import config from '../../config.ts';
-import { convert64to32, getAnonymousAccountId } from '../util/utility.ts';
-import util from 'node:util';
+import pg from "pg";
+import knex from "knex";
+import config from "../../config.ts";
+import { convert64to32, getAnonymousAccountId } from "../util/utility.ts";
+import util from "node:util";
 
 // remember: all values returned from the server are either NULL or a string
 pg.types.setTypeParser(20, (val) => (val === null ? null : parseInt(val, 10)));
 console.log(
-  '[POSTGRES] connecting %s with %s max connections',
+  "[POSTGRES] connecting %s with %s max connections",
   config.POSTGRES_URL,
   config.POSTGRES_MAX_CONNECTIONS,
 );
 
 export const db = knex({
-  client: 'pg',
+  client: "pg",
   connection: config.POSTGRES_URL,
   pool: {
     min: 0,
@@ -48,17 +48,17 @@ export async function upsert(
       delete row[key];
     }
   });
-  const values = Object.keys(row).map(() => '?');
+  const values = Object.keys(row).map(() => "?");
   const update = Object.keys(row).map((key) =>
-    util.format('%s=%s', key, `EXCLUDED.${key}`),
+    util.format("%s=%s", key, `EXCLUDED.${key}`),
   );
   const query = util.format(
-    'INSERT INTO %s (%s) VALUES (%s) ON CONFLICT (%s) DO UPDATE SET %s',
+    "INSERT INTO %s (%s) VALUES (%s) ON CONFLICT (%s) DO UPDATE SET %s",
     table,
-    Object.keys(row).join(','),
-    values.join(','),
-    Object.keys(conflict).join(','),
-    update.join(','),
+    Object.keys(row).join(","),
+    values.join(","),
+    Object.keys(conflict).join(","),
+    update.join(","),
   );
   return db.raw(
     query,
@@ -74,7 +74,7 @@ export async function upsertPlayer(db: Knex, player: Partial<User>) {
   if (!player.account_id || player.account_id === getAnonymousAccountId()) {
     return;
   }
-  return upsert(db, 'players', player, {
+  return upsert(db, "players", player, {
     account_id: player.account_id,
   });
 }

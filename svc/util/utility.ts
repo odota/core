@@ -1,35 +1,35 @@
-import config from '../../config.ts';
-import contributors from '../../CONTRIBUTORS.ts';
-import type QueryString from 'qs';
-import redis from '../store/redis.ts';
+import config from "../../config.ts";
+import contributors from "../../CONTRIBUTORS.ts";
+import type QueryString from "qs";
+import redis from "../store/redis.ts";
 
 /**
  * Tokenizes an input string.
  */
 export function tokenize(input: string) {
   return input
-    .replace(/[^a-zа-я- ]+/gi, '')
-    .replace('/ {2,}/', ' ')
+    .replace(/[^a-zа-я- ]+/gi, "")
+    .replace("/ {2,}/", " ")
     .toLowerCase()
-    .split(' ');
+    .split(" ");
 }
 
 /*
  * Converts a steamid 64 to a steamid 32
  */
 export function convert64to32(id: string): string {
-  return (BigInt(id) - BigInt('76561197960265728')).toString();
+  return (BigInt(id) - BigInt("76561197960265728")).toString();
 }
 
 /*
  * Converts a steamid 64 to a steamid 32
  */
 export function convert32to64(id: string): string {
-  return (BigInt(id) + BigInt('76561197960265728')).toString();
+  return (BigInt(id) + BigInt("76561197960265728")).toString();
 }
 
 export function isSteamID64(id: string): boolean {
-  return BigInt(id) >= BigInt('76561197960265728');
+  return BigInt(id) >= BigInt("76561197960265728");
 }
 
 export function randomInt(min: number, max: number) {
@@ -61,7 +61,7 @@ export function mergeObjects(merge: any, val: any) {
       merge[attr] = val[attr];
     } else if (val[attr] && val[attr].constructor === Array) {
       merge[attr] = merge[attr].concat(val[attr]);
-    } else if (typeof val[attr] === 'object') {
+    } else if (typeof val[attr] === "object") {
       mergeObjects(merge[attr], val[attr]);
     } else {
       merge[attr] += Number(val[attr]);
@@ -192,14 +192,14 @@ export function buildReplayUrl(
   replaySalt: number,
   meta?: boolean,
 ) {
-  let suffix = '.dem.bz2';
+  let suffix = ".dem.bz2";
   if (meta) {
-    suffix = '.meta.bz2';
+    suffix = ".meta.bz2";
   }
-  if (config.NODE_ENV === 'test') {
+  if (config.NODE_ENV === "test") {
     return `https://odota.github.io/testfiles/${matchId}_${replaySalt}${suffix.replace(
-      '.bz2',
-      '',
+      ".bz2",
+      "",
     )}`;
   } else if (cluster === 236) {
     return `http://replay${cluster}.wmsj.cn/570/${matchId}_${replaySalt}${suffix}`;
@@ -297,13 +297,13 @@ export function getAnonymousAccountId() {
  */
 export async function runInLoop(func: () => Promise<void>, delay: number) {
   while (true) {
-    console.log('running %s', func.name);
+    console.log("running %s", func.name);
     const start = Date.now();
     await func();
     const end = Date.now();
-    console.log('%s: %dms', func.name, end - start);
+    console.log("%s: %dms", func.name, end - start);
     await redis.setex(
-      'lastRun:' + config.APP_NAME,
+      "lastRun:" + config.APP_NAME,
       config.HEALTH_TIMEOUT,
       end - start,
     );
@@ -325,7 +325,7 @@ export async function eachLimitPromise<T>(
   let count = 0;
   return new Promise((resolve) => {
     Array(numWorkers)
-      .fill('')
+      .fill("")
       .forEach(async () => {
         for (let [i, item] of cursor) {
           try {
@@ -395,7 +395,7 @@ export function queryParamToArray(
   if (Array.isArray(input)) {
     return input as string[];
   }
-  if (typeof input === 'string') {
+  if (typeof input === "string") {
     return [input];
   }
   return [];

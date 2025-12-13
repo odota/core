@@ -1,16 +1,16 @@
-import moment from 'moment';
+import moment from "moment";
 
 export function getEndOfMonth() {
-  return moment.utc().endOf('month').unix();
+  return moment.utc().endOf("month").unix();
 }
 export function getEndOfWeek() {
-  return moment.utc().endOf('week').unix();
+  return moment.utc().endOf("week").unix();
 }
 export function getEndOfDay() {
-  return moment.utc().endOf('day').unix();
+  return moment.utc().endOf("day").unix();
 }
 export function getEndOfHour() {
-  return moment.utc().endOf('hour').unix();
+  return moment.utc().endOf("hour").unix();
 }
 
 /**

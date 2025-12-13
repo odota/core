@@ -1,12 +1,12 @@
 // Computes rank/mmr distributions and stores in Redis
-import fs from 'node:fs';
-import db from './store/db.ts';
-import redis from './store/redis.ts';
-import { runInLoop } from './util/utility.ts';
+import fs from "node:fs";
+import db from "./store/db.ts";
+import redis from "./store/redis.ts";
+import { runInLoop } from "./util/utility.ts";
 
 runInLoop(
   async function distributions() {
-    const results = await db.raw(fs.readFileSync(`./sql/ranks.sql`, 'utf8'));
+    const results = await db.raw(fs.readFileSync(`./sql/ranks.sql`, "utf8"));
     const ranks = mapMmr(results);
     await redis.set(`distribution:ranks`, JSON.stringify(ranks));
   },

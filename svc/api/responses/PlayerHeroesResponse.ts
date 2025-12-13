@@ -1,39 +1,39 @@
-import commonProperties from './properties/commonProperties.ts';
+import commonProperties from "./properties/commonProperties.ts";
 
 export default {
   PlayerHeroesResponse: {
-    title: 'PlayerHeroesResponse',
-    description: 'hero',
-    type: 'object',
+    title: "PlayerHeroesResponse",
+    description: "hero",
+    type: "object",
     properties: {
       hero_id: commonProperties.hero_id,
       last_played: {
-        description: 'last_played',
-        type: 'integer',
+        description: "last_played",
+        type: "integer",
       },
       games: {
-        description: 'games',
-        type: 'integer',
+        description: "games",
+        type: "integer",
       },
       win: {
-        description: 'win',
-        type: 'integer',
+        description: "win",
+        type: "integer",
       },
       with_games: {
-        description: 'with_games',
-        type: 'integer',
+        description: "with_games",
+        type: "integer",
       },
       with_win: {
-        description: 'with_win',
-        type: 'integer',
+        description: "with_win",
+        type: "integer",
       },
       against_games: {
-        description: 'against_games',
-        type: 'integer',
+        description: "against_games",
+        type: "integer",
       },
       against_win: {
-        description: 'against_win',
-        type: 'integer',
+        description: "against_win",
+        type: "integer",
       },
     },
   },

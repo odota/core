@@ -1,45 +1,45 @@
-import commonProperties from './properties/commonProperties.ts';
+import commonProperties from "./properties/commonProperties.ts";
 
 export default {
   PublicMatchesResponse: {
-    title: 'PublicMatchesResponse',
-    type: 'object',
+    title: "PublicMatchesResponse",
+    type: "object",
     properties: {
       match_id: commonProperties.match_id,
       match_seq_num: {
-        description: 'match_seq_num',
-        type: 'integer',
+        description: "match_seq_num",
+        type: "integer",
       },
       radiant_win: commonProperties.radiant_win,
       start_time: commonProperties.start_time,
       duration: commonProperties.duration,
       lobby_type: {
-        type: 'integer',
+        type: "integer",
       },
       game_mode: {
-        type: 'integer',
+        type: "integer",
       },
       avg_rank_tier: {
-        type: 'integer',
+        type: "integer",
       },
       num_rank_tier: {
-        type: 'integer',
+        type: "integer",
       },
       cluster: {
-        type: 'integer',
+        type: "integer",
       },
       radiant_team: {
-        description: 'radiant_team',
-        type: 'array',
+        description: "radiant_team",
+        type: "array",
         items: {
-          type: 'integer',
+          type: "integer",
         },
       },
       dire_team: {
-        description: 'dire_team',
-        type: 'array',
+        description: "dire_team",
+        type: "array",
         items: {
-          type: 'integer',
+          type: "integer",
         },
       },
     },

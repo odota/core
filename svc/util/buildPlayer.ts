@@ -1,13 +1,13 @@
-import util from 'node:util';
-import config from '../../config.ts';
-import { filterMatches } from './filter.ts';
-import redis, { redisCount, redisCountDistinct } from '../store/redis.ts';
-import cassandra, { getCassandraColumns } from '../store/cassandra.ts';
-import { deserialize, pick } from './utility.ts';
-import { zstdCompressSync, zstdDecompressSync } from 'node:zlib';
-import { cacheableCols } from '../api/playerFields.ts';
-import fs from 'node:fs/promises';
-import { playerArchive } from '../store/archive.ts';
+import util from "node:util";
+import config from "../../config.ts";
+import { filterMatches } from "./filter.ts";
+import redis, { redisCount, redisCountDistinct } from "../store/redis.ts";
+import cassandra, { getCassandraColumns } from "../store/cassandra.ts";
+import { deserialize, pick } from "./utility.ts";
+import { zstdCompressSync, zstdDecompressSync } from "node:zlib";
+import { cacheableCols } from "../api/playerFields.ts";
+import fs from "node:fs/promises";
+import { playerArchive } from "../store/archive.ts";
 
 export async function getPlayerMatches(
   accountId: number,
@@ -35,10 +35,10 @@ export async function getPlayerMatchesWithMetadata(
     // User disabled public match history from Dota, so don't return matches
     return [[], null];
   }
-  redisCount('player_matches');
-  const columns = await getCassandraColumns('player_caches');
+  redisCount("player_matches");
+  const columns = await getCassandraColumns("player_caches");
   const sanitizedProject = queryObj.project.filter((f: string) => columns[f]);
-  const projection = queryObj.projectAll ? ['*'] : sanitizedProject;
+  const projection = queryObj.projectAll ? ["*"] : sanitizedProject;
 
   // Archive model
   // For inactive, unvisited players with a large number of matches, get all columns for their player_caches and store in single blob in archive
@@ -144,13 +144,13 @@ async function readPlayerTemp(
 ): Promise<ParsedPlayerMatch[]> {
   let result = null;
   try {
-    result = await fs.readFile('./cache/' + accountId);
+    result = await fs.readFile("./cache/" + accountId);
   } catch {
     // Might not exist, so just ignore
   }
   if (result) {
-    redisCount('player_temp_hit');
-    redisCountDistinct('distinct_player_temp', accountId.toString());
+    redisCount("player_temp_hit");
+    redisCountDistinct("distinct_player_temp", accountId.toString());
     const decomp = zstdDecompressSync(result).toString();
     const output = JSON.parse(decomp);
     // Remove columns not asked for
@@ -161,14 +161,14 @@ async function readPlayerTemp(
     // This is because we use del to release rather than delete only if matches random value
     // But that's ok since this is just an optimization to reduce load
     const lock = await redis.set(
-      'player_temp_lock:' + accountId.toString(),
+      "player_temp_lock:" + accountId.toString(),
       Date.now().toString(),
-      'EX',
+      "EX",
       10,
-      'NX',
+      "NX",
     );
     if (!lock) {
-      redisCount('player_temp_wait');
+      redisCount("player_temp_wait");
       // console.log('[PLAYERCACHE] waiting for lock on %s', accountId);
       // Couldn't acquire the lock, wait and try again
       await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -176,13 +176,13 @@ async function readPlayerTemp(
     }
     const result = await populateTemp(accountId, project);
     // Release the lock
-    await redis.del('player_temp_lock:' + accountId.toString());
+    await redis.del("player_temp_lock:" + accountId.toString());
     if (result.length >= Number(config.PLAYER_CACHE_THRESHOLD)) {
       // Should have cached since large
-      redisCount('player_temp_miss');
+      redisCount("player_temp_miss");
     } else {
       // Small read anyway so don't need to use cache
-      redisCount('player_temp_skip');
+      redisCount("player_temp_skip");
     }
     return result;
   }
@@ -197,10 +197,10 @@ export async function populateTemp(
   if (all.length >= Number(config.PLAYER_CACHE_THRESHOLD)) {
     try {
       const comp = zstdCompressSync(JSON.stringify(all));
-      redisCount('player_temp_write');
-      redisCount('player_temp_write_bytes', comp.length);
-      await fs.mkdir('./cache', { recursive: true });
-      await fs.writeFile('./cache/' + accountId, comp);
+      redisCount("player_temp_write");
+      redisCount("player_temp_write_bytes", comp.length);
+      await fs.mkdir("./cache", { recursive: true });
+      await fs.writeFile("./cache/" + accountId, comp);
     } catch (e) {
       console.log(e);
       // We can ignore temp write exceptions
@@ -219,9 +219,9 @@ async function readPlayerCaches(
       SELECT %s FROM player_caches
       WHERE account_id = ?
       ORDER BY match_id DESC
-      ${limit ? `LIMIT ${limit}` : ''}
+      ${limit ? `LIMIT ${limit}` : ""}
     `,
-    project.join(','),
+    project.join(","),
   );
   return new Promise<ParsedPlayerMatch[]>((resolve, reject) => {
     let result: ParsedPlayerMatch[] = [];

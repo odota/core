@@ -25,9 +25,6 @@
     "madge": "npx madge everything.ts --image deptree.svg"
   },
   "type": "module",
-  "prettier": {
-    "singleQuote": true
-  },
   "repository": {
     "type": "git",
     "url": "http://github.com/odota/core"

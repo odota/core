@@ -1,6 +1,6 @@
-import config from '../config.ts';
-import cassandra, { getCassandraColumns } from '../svc/store/cassandra.ts';
-import redis from '../svc/store/redis.ts';
+import config from "../config.ts";
+import cassandra, { getCassandraColumns } from "../svc/store/cassandra.ts";
+import redis from "../svc/store/redis.ts";
 
 // const SCYLLA_URL = '';
 // const scylla = new scyllaDriver.Client({
@@ -9,14 +9,14 @@ import redis from '../svc/store/redis.ts';
 //   keyspace: 'yasp',
 // });
 
-const allFields = await getCassandraColumns('player_caches');
+const allFields = await getCassandraColumns("player_caches");
 // Estimate--approximately 25 billion rows to migrate?
 // Split the full token range so each chunk is reasonably sized (50k or so?)
 while (true) {
   const tokenRangeSize =
     (BigInt(2 ** 64) / BigInt(25000000000)) * BigInt(50000);
   const begin = BigInt(
-    (await redis.get('scyllaMigrateCheckpoint')) ?? '-9223372036854775808',
+    (await redis.get("scyllaMigrateCheckpoint")) ?? "-9223372036854775808",
   );
   const end = begin + BigInt(tokenRangeSize);
   console.log(begin, end, tokenRangeSize);
@@ -32,7 +32,7 @@ while (true) {
           autoPage: true,
         },
       )
-      .on('readable', function () {
+      .on("readable", function () {
         // readable is emitted as soon a row is received and parsed
         let row: any;
         //@ts-expect-error
@@ -63,12 +63,12 @@ while (true) {
               */
         }
       })
-      .on('end', resolve)
-      .on('error', () => {
-        throw new Error('error while reading');
+      .on("end", resolve)
+      .on("error", () => {
+        throw new Error("error while reading");
       });
   });
-  console.log('found %s matches in range', count);
+  console.log("found %s matches in range", count);
   console.log(end);
   // Checkpoint progress to redis
   // await redis.set('scyllaMigrateCheckpoint', end.toString());

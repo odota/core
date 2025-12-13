@@ -1,15 +1,15 @@
 // Processes a queue of full history/refresh requests for players
-import config from '../config.ts';
-import db from './store/db.ts';
-import { runReliableQueue } from './store/queue.ts';
-import { getPlayerMatches } from './util/buildPlayer.ts';
-import { redisCount } from './store/redis.ts';
-import { SteamAPIUrls, getSteamAPIDataWithRetry } from './util/http.ts';
+import config from "../config.ts";
+import db from "./store/db.ts";
+import { runReliableQueue } from "./store/queue.ts";
+import { getPlayerMatches } from "./util/buildPlayer.ts";
+import { redisCount } from "./store/redis.ts";
+import { SteamAPIUrls, getSteamAPIDataWithRetry } from "./util/http.ts";
 
 // Approximately 5 req/sec limit per apiHost
 // Short fullhistory uses 1 req, long 5 req, some percentage will need to query for up to 500 matches
 runReliableQueue(
-  'fhQueue',
+  "fhQueue",
   Number(config.FULLHISTORY_PARALLELISM) || 1,
   processFullHistory,
   // Currently not using proxy so don't need to throttle capacity
@@ -44,7 +44,7 @@ async function processFullHistory(job: FullHistoryJob, metadata: JobMetadata) {
     });
     // check for specific error code if user had a private account
     if (body?.result?.status === 15) {
-      console.log('player %s disabled match history', player.account_id);
+      console.log("player %s disabled match history", player.account_id);
       isMatchDataDisabled = true;
       break;
     } else if (body?.result?.matches) {
@@ -75,7 +75,7 @@ async function processFullHistory(job: FullHistoryJob, metadata: JobMetadata) {
     // check what matches the player is already associated with
     const docs =
       (await getPlayerMatches(player.account_id, {
-        project: ['match_id'],
+        project: ["match_id"],
         // Only need to check against recent matches since we get back the most recent 500 or 100 matches from Steam API
         dbLimit: 1000,
       })) ?? [];
@@ -87,7 +87,7 @@ async function processFullHistory(job: FullHistoryJob, metadata: JobMetadata) {
       delete matchesToProcess[matchId];
     }
     console.log(
-      '%s: %s matches found, diffing %s from db, %s to add',
+      "%s: %s matches found, diffing %s from db, %s to add",
       player.account_id,
       origCount,
       docs.length,
@@ -110,11 +110,11 @@ async function processFullHistory(job: FullHistoryJob, metadata: JobMetadata) {
       // Note: If an account ID shows up here that player is not anonymous anymore (could update fh_unavailable for other players)
       // Log the match IDs we should reconcile, we can query our own DB for data
       const { rows } = await db.raw(
-        'INSERT INTO player_match_history(account_id, match_id, player_slot) VALUES (?, ?, ?) ON CONFLICT DO NOTHING RETURNING *',
+        "INSERT INTO player_match_history(account_id, match_id, player_slot) VALUES (?, ?, ?) ON CONFLICT DO NOTHING RETURNING *",
         [row.account_id, row.match_id, row.player_slot],
       );
       if (rows?.length) {
-        redisCount('pmh_fullhistory');
+        redisCount("pmh_fullhistory");
       }
     }
   }
@@ -124,7 +124,7 @@ async function processFullHistory(job: FullHistoryJob, metadata: JobMetadata) {
   await updatePlayer(player);
   const end = Date.now();
   console.log(
-    'doFullHistory[%s] %s: %dms',
+    "doFullHistory[%s] %s: %dms",
     metadata.i,
     player.account_id.toString(),
     end - start,
@@ -134,7 +134,7 @@ async function processFullHistory(job: FullHistoryJob, metadata: JobMetadata) {
 
 async function updatePlayer(player: FullHistoryJob) {
   // done with this player, update
-  await db('players')
+  await db("players")
     .update({
       full_history_time: new Date(),
       fh_unavailable: player.fh_unavailable,
@@ -142,5 +142,5 @@ async function updatePlayer(player: FullHistoryJob) {
     .where({
       account_id: player.account_id,
     });
-  redisCount('fullhistory');
+  redisCount("fullhistory");
 }

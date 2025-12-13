@@ -1,4 +1,4 @@
-import { redisCount } from '../store/redis.ts';
+import { redisCount } from "../store/redis.ts";
 
 export abstract class MatchFetcherBase<T> {
   // Name of the counter to increment when we find saved data when getOrFetching
@@ -32,7 +32,7 @@ export abstract class MatchFetcherBase<T> {
     if (!matchId || !Number.isInteger(matchId) || matchId <= 0) {
       return {
         data: null,
-        error: '[FETCHER]: invalid match_id',
+        error: "[FETCHER]: invalid match_id",
         skipped: true,
       };
     }
@@ -71,7 +71,7 @@ export abstract class MatchFetcherBase<T> {
       if (!data) {
         tryCount += 1;
         console.log(
-          'matchId %s, error %s, attempt %s',
+          "matchId %s, error %s, attempt %s",
           matchId,
           error,
           tryCount,

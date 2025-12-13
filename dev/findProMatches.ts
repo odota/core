@@ -1,6 +1,6 @@
-import db from '../svc/store/db.ts';
-import { getSteamAPIData, SteamAPIUrls } from '../svc/util/http.ts';
-import { insertMatch } from '../svc/util/insert.ts';
+import db from "../svc/store/db.ts";
+import { getSteamAPIData, SteamAPIUrls } from "../svc/util/http.ts";
+import { insertMatch } from "../svc/util/insert.ts";
 
 async function getPage(url: string, leagueid: number) {
   const data = await getSteamAPIData<MatchHistory>({ url });
@@ -19,7 +19,7 @@ async function getPage(url: string, leagueid: number) {
     });
     if (body.result) {
       const match = body.result;
-      await insertMatch(match, { type: 'api' });
+      await insertMatch(match, { type: "api" });
     }
   }
   if (data.result.results_remaining) {
@@ -34,10 +34,10 @@ async function getPage(url: string, leagueid: number) {
 
 // From DB
 const data: any = await db
-  .select('leagueid')
-  .from('leagues')
-  .where('tier', 'professional')
-  .orWhere('tier', 'premium');
+  .select("leagueid")
+  .from("leagues")
+  .where("tier", "professional")
+  .orWhere("tier", "premium");
 const leagueIds = data.map((l: any) => l.leagueid);
 // NOTE: there could be a lot of leagueids
 leagueIds.forEach(async (leagueid: number) => {

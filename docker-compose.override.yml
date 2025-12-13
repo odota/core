@@ -9,9 +9,9 @@ services:
     container_name: odota-postgresinit
     entrypoint:
       [
-        'bash',
-        '-c',
-        'sleep 10 && psql --file /usr/src/sql/init.sql postgres://postgres:postgres@odota-postgres/postgres && psql --file /usr/src/sql/create_tables.sql postgres://postgres:postgres@odota-postgres/yasp',
+        "bash",
+        "-c",
+        "sleep 10 && psql --file /usr/src/sql/init.sql postgres://postgres:postgres@odota-postgres/postgres && psql --file /usr/src/sql/create_tables.sql postgres://postgres:postgres@odota-postgres/yasp",
       ]
   cassandrainit:
     image: cassandra
@@ -22,9 +22,9 @@ services:
     container_name: odota-cassandrainit
     entrypoint:
       [
-        'bash',
-        '-c',
-        'sleep 45 && cqlsh -f /usr/src/sql/init.cql odota-cassandra && cqlsh -f /usr/src/sql/create_tables.cql -k yasp odota-cassandra',
+        "bash",
+        "-c",
+        "sleep 45 && cqlsh -f /usr/src/sql/init.cql odota-cassandra && cqlsh -f /usr/src/sql/create_tables.cql -k yasp odota-cassandra",
       ]
   minioinit:
     image: minio/mc

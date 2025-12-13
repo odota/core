@@ -1,26 +1,26 @@
-import moment from 'moment';
-import { patch } from 'dotaconstants';
-import util from 'node:util';
-import fs from 'node:fs/promises';
-import config from '../../config.ts';
-import { addJob, addReliableJob } from '../store/queue.ts';
-import db, { upsert, upsertPlayer } from '../store/db.ts';
-import redis, { redisCount } from '../store/redis.ts';
+import moment from "moment";
+import { patch } from "dotaconstants";
+import util from "node:util";
+import fs from "node:fs/promises";
+import config from "../../config.ts";
+import { addJob, addReliableJob } from "../store/queue.ts";
+import db, { upsert, upsertPlayer } from "../store/db.ts";
+import redis, { redisCount } from "../store/redis.ts";
 import {
   getAnonymousAccountId,
   serialize,
   isRadiant,
   isRanked,
   isTurbo,
-} from './utility.ts';
+} from "./utility.ts";
 import {
   getMatchRankTier,
   isRecentVisitor,
   isRecentlyVisited,
-} from './queries.ts';
-import { getPGroup } from './pgroup.ts';
-import { blobArchive } from '../store/archive.ts';
-import cassandra, { getCassandraColumns } from '../store/cassandra.ts';
+} from "./queries.ts";
+import { getPGroup } from "./pgroup.ts";
+import { blobArchive } from "../store/archive.ts";
+import cassandra, { getCassandraColumns } from "../store/cassandra.ts";
 import {
   computeMatchData,
   createMatchCopy,
@@ -29,13 +29,13 @@ import {
   isProMatch,
   isSignificant,
   transformMatch,
-} from './compute.ts';
-import { benchmarks } from './benchmarksUtil.ts';
-import type knex from 'knex';
-import { PRIORITY } from './priority.ts';
-import { getEndOfWeek, getStartOfBlockMinutes } from './time.ts';
+} from "./compute.ts";
+import { benchmarks } from "./benchmarksUtil.ts";
+import type knex from "knex";
+import { PRIORITY } from "./priority.ts";
+import { getEndOfWeek, getStartOfBlockMinutes } from "./time.ts";
 
-moment.relativeTimeThreshold('ss', 0);
+moment.relativeTimeThreshold("ss", 0);
 
 /**
  * Inserts a piece of match data into storage
@@ -58,7 +58,7 @@ export async function insertMatch(
   const trx = await db.transaction();
   try {
     let isProTier = false;
-    if ('leagueid' in match && match.leagueid) {
+    if ("leagueid" in match && match.leagueid) {
       // Check if leagueid is premium/professional
       const { rows } = await trx.raw(
         `select leagueid from leagues where leagueid = ? and (tier = 'premium' OR tier = 'professional')`,
@@ -69,13 +69,13 @@ export async function insertMatch(
 
     // Index the matchid to the league
     if (
-      options.origin === 'scanner' &&
-      options.type === 'api' &&
-      'leagueid' in match &&
+      options.origin === "scanner" &&
+      options.type === "api" &&
+      "leagueid" in match &&
       match.leagueid
     ) {
       await trx.raw(
-        'INSERT INTO league_match(leagueid, match_id) VALUES(?, ?) ON CONFLICT DO NOTHING',
+        "INSERT INTO league_match(leagueid, match_id) VALUES(?, ?) ON CONFLICT DO NOTHING",
         [match.leagueid, match.match_id],
       );
     }
@@ -83,7 +83,7 @@ export async function insertMatch(
     let average_rank: number | undefined = undefined;
     let num_rank_tier: number | undefined = undefined;
     // Only fetch the average_rank if this is a fresh match since otherwise it won't be accurate
-    if (options.origin === 'scanner' && options.type === 'api') {
+    if (options.origin === "scanner" && options.type === "api") {
       let { avg, num, players } = await getMatchRankTier(trx, match.players);
       if (avg) {
         average_rank = avg;
@@ -120,7 +120,7 @@ export async function insertMatch(
     await trx.commit();
     return { parseJob, pgroup };
   } catch (e) {
-    console.log('[INSERTMATCH] rolling back transaction...');
+    console.log("[INSERTMATCH] rolling back transaction...");
     await trx.rollback();
     throw e;
   }
@@ -129,11 +129,11 @@ export async function insertMatch(
     trx: knex.Knex.Transaction,
     isProTier: boolean,
   ) {
-    if (options.type !== 'api' && options.type !== 'parsed') {
+    if (options.type !== "api" && options.type !== "parsed") {
       // Only if API or parse data
       return;
     }
-    if (options.type === 'api' && !isProMatch(match as ApiData)) {
+    if (options.type === "api" && !isProMatch(match as ApiData)) {
       // Check whether we care about this match for pro purposes
       // We need the basic match data to run the check, so only do it if type is api
       // console.log('[UPSERTMATCHPOSTGRES]: skipping due to check');
@@ -141,7 +141,7 @@ export async function insertMatch(
     }
     if (!isProTier) {
       // Skip if not in a pro league (premium or professional tier)
-      console.log('[UPSERTMATCHPOSTGRES]: skipping league match due to tier');
+      console.log("[UPSERTMATCHPOSTGRES]: skipping league match due to tier");
       return;
     }
     // If parsed data, we want to make sure the match exists in DB
@@ -149,9 +149,9 @@ export async function insertMatch(
     // We might want to switch the upsert to UPDATE instead for parsed case
     // That requires writing a new SQL query though
     // If we do that then we can put the NOT NULL constraint on hero_id
-    if (options.type === 'parsed') {
+    if (options.type === "parsed") {
       const { rows } = await trx.raw(
-        'select match_id from matches where match_id = ?',
+        "select match_id from matches where match_id = ?",
         [match.match_id],
       );
       if (!rows.length) {
@@ -160,7 +160,7 @@ export async function insertMatch(
     }
 
     // matches
-    await upsert(trx, 'matches', match, {
+    await upsert(trx, "matches", match, {
       match_id: match.match_id,
     });
 
@@ -175,7 +175,7 @@ export async function insertMatch(
           pm.lane_role = laneData.lane_role ?? null;
           pm.is_roaming = laneData.is_roaming ?? null;
         }
-        return upsert(trx, 'player_matches', pm, {
+        return upsert(trx, "player_matches", pm, {
           match_id: pm.match_id,
           player_slot: pm.player_slot,
         });
@@ -183,13 +183,13 @@ export async function insertMatch(
     );
 
     // picks_bans
-    if ('picks_bans' in match && match.picks_bans) {
+    if ("picks_bans" in match && match.picks_bans) {
       await Promise.all(
         match.picks_bans.map((p) => {
           // order is a reserved keyword in postgres
           return upsert(
             trx,
-            'picks_bans',
+            "picks_bans",
             { ...p, ord: p.order, match_id: match.match_id },
             {
               match_id: 1,
@@ -201,10 +201,10 @@ export async function insertMatch(
     }
 
     // match_patch
-    if ('start_time' in match && match.start_time) {
+    if ("start_time" in match && match.start_time) {
       await upsert(
         trx,
-        'match_patch',
+        "match_patch",
         {
           match_id: match.match_id,
           patch: patch[getPatchIndex(match.start_time)].name,
@@ -217,14 +217,14 @@ export async function insertMatch(
 
     // team_match
     const teamMatch = [];
-    if ('radiant_team_id' in match && match.radiant_team_id) {
+    if ("radiant_team_id" in match && match.radiant_team_id) {
       teamMatch.push({
         team_id: match.radiant_team_id,
         match_id: match.match_id,
         radiant: true,
       });
     }
-    if ('dire_team_id' in match && match.dire_team_id) {
+    if ("dire_team_id" in match && match.dire_team_id) {
       teamMatch.push({
         team_id: match.dire_team_id,
         match_id: match.match_id,
@@ -233,7 +233,7 @@ export async function insertMatch(
     }
     await Promise.all(
       teamMatch.map((tm) => {
-        return upsert(trx, 'team_match', tm, {
+        return upsert(trx, "team_match", tm, {
           team_id: tm.team_id,
           match_id: tm.match_id,
         });
@@ -242,10 +242,10 @@ export async function insertMatch(
 
     // Team ratings
     if (
-      options.origin === 'scanner' &&
-      options.type === 'api' &&
-      'radiant_team_id' in match &&
-      'dire_team_id' in match &&
+      options.origin === "scanner" &&
+      options.type === "api" &&
+      "radiant_team_id" in match &&
+      "dire_team_id" in match &&
       match.radiant_win !== undefined
     ) {
       const team1 = match.radiant_team_id;
@@ -253,12 +253,12 @@ export async function insertMatch(
       const team1Win = Number(match.radiant_win);
       const kFactor = 32;
       const data1 = await trx
-        .select('rating')
-        .from('team_rating')
+        .select("rating")
+        .from("team_rating")
         .where({ team_id: team1 });
       const data2 = await trx
-        .select('rating')
-        .from('team_rating')
+        .select("rating")
+        .from("team_rating")
         .where({ team_id: team2 });
       const currRating1 = Number(
         (data1 && data1[0] && data1[0].rating) || 1000,
@@ -329,12 +329,12 @@ export async function insertMatch(
     ) {
       const matchId = blob.match_id;
       await blobArchive.archivePut(
-        matchId + '_' + type,
+        matchId + "_" + type,
         Buffer.from(JSON.stringify(blob)),
       );
-      if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
+      if (config.NODE_ENV === "development" || config.NODE_ENV === "test") {
         await fs.writeFile(
-          './json/' + matchId + '_' + type + '.json',
+          "./json/" + matchId + "_" + type + ".json",
           JSON.stringify(blob, null, 2),
         );
       }
@@ -345,7 +345,7 @@ export async function insertMatch(
     // Publish to log stream
     const endedAt =
       options.endedAt ??
-      ('start_time' in match && 'duration' in match
+      ("start_time" in match && "duration" in match
         ? match.start_time + match.duration
         : 0);
     const name = process.env.APP_NAME || process.argv[1];
@@ -353,11 +353,11 @@ export async function insertMatch(
       options.type
     }] [ended: ${moment.unix(endedAt ?? 0).fromNow()}] ${match.match_id}`;
     redis?.publish(options.type, message);
-    if (options.type === 'parsed') {
-      redisCount('parser');
+    if (options.type === "parsed") {
+      redisCount("parser");
     }
-    if (options.origin === 'scanner' && options.type === 'api') {
-      redisCount('added_match');
+    if (options.origin === "scanner" && options.type === "api") {
+      redisCount("added_match");
       // match.players
       //   .filter((p) => p.account_id)
       //   .forEach(async (p) => {
@@ -396,7 +396,7 @@ export async function insertMatch(
           if (account_id) {
             try {
               // Try deleting the tempfile ince it's now out of date
-              await fs.unlink('./cache/' + account_id);
+              await fs.unlink("./cache/" + account_id);
             } catch (e) {
               // File didn't exist, ignore
             }
@@ -406,7 +406,7 @@ export async function insertMatch(
               // If OpenDota visitor or profile was recently visited by anyone, pre-compute the tempfile
               await addReliableJob(
                 {
-                  name: 'cacheQueue',
+                  name: "cacheQueue",
                   data: { account_id },
                 },
                 {},
@@ -425,7 +425,7 @@ export async function insertMatch(
     isProTier: boolean,
   ) {
     // Update temporary match counts/hero rankings
-    if (options.origin === 'scanner' && options.type === 'api') {
+    if (options.origin === "scanner" && options.type === "api") {
       await updateHeroRankings();
       await upsertMatchSample();
       await updateLastPlayed();
@@ -457,7 +457,7 @@ export async function insertMatch(
           // Treat the result as an Elo rating change where the opponent is the average rank tier of the match * 100
           const win = Number(isRadiant(player) === radiant_win);
           const kFactor = 100;
-          const data1 = await trx.select('score').from('hero_ranking').where({
+          const data1 = await trx.select("score").from("hero_ranking").where({
             account_id: player.account_id,
             hero_id: player.hero_id,
           });
@@ -470,7 +470,7 @@ export async function insertMatch(
           const ratingDiff1 = kFactor * (win - e1);
           const newScore = currRating1 + ratingDiff1;
           return trx.raw(
-            'INSERT INTO hero_ranking VALUES(?, ?, ?) ON CONFLICT(account_id, hero_id) DO UPDATE SET score = ?',
+            "INSERT INTO hero_ranking VALUES(?, ?, ?) ON CONFLICT(account_id, hero_id) DO UPDATE SET score = ?",
             [player.account_id, player.hero_id, newScore, newScore],
           );
         }),
@@ -492,7 +492,7 @@ export async function insertMatch(
           radiant_team,
           dire_team,
         };
-        await upsert(trx, 'public_matches', newMatch, {
+        await upsert(trx, "public_matches", newMatch, {
           match_id: newMatch.match_id,
         });
       }
@@ -506,28 +506,28 @@ export async function insertMatch(
         `records:${field}`,
         (match[field as keyof ApiData] ||
           player[field as keyof ApiDataPlayer]) as number,
-        [match.match_id, match.start_time, player.hero_id].join(':'),
+        [match.match_id, match.start_time, player.hero_id].join(":"),
       );
       // Keep only 100 top scores
-      redis.zremrangebyrank(`records:${field}`, '0', '-101');
+      redis.zremrangebyrank(`records:${field}`, "0", "-101");
       const expire = getEndOfWeek();
       redis.expireat(`records:${field}`, expire);
     }
 
     async function updateRecords() {
       if (isSignificant(match) && isRanked(match)) {
-        updateRecord('duration', {} as ApiDataPlayer);
+        updateRecord("duration", {} as ApiDataPlayer);
         match.players.forEach((player) => {
-          updateRecord('kills', player);
-          updateRecord('deaths', player);
-          updateRecord('assists', player);
-          updateRecord('last_hits', player);
-          updateRecord('denies', player);
-          updateRecord('gold_per_min', player);
-          updateRecord('xp_per_min', player);
-          updateRecord('hero_damage', player);
-          updateRecord('tower_damage', player);
-          updateRecord('hero_healing', player);
+          updateRecord("kills", player);
+          updateRecord("deaths", player);
+          updateRecord("assists", player);
+          updateRecord("last_hits", player);
+          updateRecord("denies", player);
+          updateRecord("gold_per_min", player);
+          updateRecord("xp_per_min", player);
+          updateRecord("hero_damage", player);
+          updateRecord("tower_damage", player);
+          updateRecord("hero_healing", player);
         });
       }
     }
@@ -559,11 +559,11 @@ export async function insertMatch(
       let tier: string | null = null;
       let rank: number | null = null;
       if (isProTier) {
-        tier = 'pro';
+        tier = "pro";
       } else if (isTurbo(match)) {
-        tier = 'turbo';
+        tier = "turbo";
       } else if (isSignificant(match)) {
-        tier = 'pub';
+        tier = "pub";
         if (avg) {
           rank = Math.floor(avg / 10);
         }
@@ -571,8 +571,8 @@ export async function insertMatch(
       if (!tier) {
         return;
       }
-      const timestamp = moment.utc().startOf('day').unix();
-      const expire = moment.utc().startOf('day').add(8, 'day').unix();
+      const timestamp = moment.utc().startOf("day").unix();
+      const expire = moment.utc().startOf("day").add(8, "day").unix();
       for (let player of match.players) {
         const heroId = player.hero_id;
         if (heroId) {
@@ -633,15 +633,15 @@ export async function insertMatch(
                 !Number.isNaN(Number(metric))
               ) {
                 const rkey = [
-                  'benchmarks',
+                  "benchmarks",
                   getStartOfBlockMinutes(
                     Number(config.BENCHMARK_RETENTION_MINUTES),
                     0,
                   ),
                   key,
                   p.hero_id,
-                  turbo ? 'turbo' : '',
-                ].join(':');
+                  turbo ? "turbo" : "",
+                ].join(":");
                 redis.zadd(rkey, metric, match.match_id);
                 // expire at time two epochs later (after prev/current cycle)
                 const expiretime = getStartOfBlockMinutes(
@@ -695,21 +695,21 @@ function updateMatchups(match) {
     await Promise.all(
       arr.map(async (p) => {
         const { rows } = await trx.raw(
-          'INSERT INTO players(account_id) VALUES(?) ON CONFLICT DO NOTHING RETURNING account_id',
+          "INSERT INTO players(account_id) VALUES(?) ON CONFLICT DO NOTHING RETURNING account_id",
           [p.account_id],
         );
         if (rows.length) {
-          redisCount('player_discover');
+          redisCount("player_discover");
           if (p.account_id) {
             await addJob({
-              name: 'profileQueue',
+              name: "profileQueue",
               data: {
                 account_id: p.account_id,
               },
             });
             // Also queue a refresh of the user's rank/medal
             await addJob({
-              name: 'mmrQueue',
+              name: "mmrQueue",
               data: {
                 account_id: p.account_id,
               },
@@ -723,9 +723,9 @@ function updateMatchups(match) {
     // Trigger an update for player rank_tier if ranked match
     const arr = match.players.filter<ApiDataPlayer>((p): p is ApiDataPlayer => {
       return Boolean(
-        options.origin === 'scanner' &&
-        options.type === 'api' &&
-        'lobby_type' in match &&
+        options.origin === "scanner" &&
+        options.type === "api" &&
+        "lobby_type" in match &&
         isRanked(match) &&
         p.account_id &&
         p.account_id !== getAnonymousAccountId() &&
@@ -735,7 +735,7 @@ function updateMatchups(match) {
     await Promise.all(
       arr.map((p) =>
         addJob({
-          name: 'mmrQueue',
+          name: "mmrQueue",
           data: {
             account_id: p.account_id,
           },
@@ -746,16 +746,16 @@ function updateMatchups(match) {
   async function queueGcData(trx: knex.Knex.Transaction) {
     // Trigger a request for gcdata
     if (
-      options.origin === 'scanner' &&
-      options.type === 'api' &&
-      'game_mode' in match &&
+      options.origin === "scanner" &&
+      options.type === "api" &&
+      "game_mode" in match &&
       // Don't get replay URLs for event matches
       match.game_mode !== 19 &&
       match.match_id % 100 < Number(config.GCDATA_PERCENT)
     ) {
       await addReliableJob(
         {
-          name: 'gcQueue',
+          name: "gcQueue",
           data: {
             match_id: match.match_id,
             pgroup,
@@ -772,16 +772,16 @@ function updateMatchups(match) {
     // Decide whether to rate the match
     // Rate a percentage of ranked matches
     if (
-      options.origin === 'scanner' &&
-      options.type === 'api' &&
-      'match_seq_num' in match &&
+      options.origin === "scanner" &&
+      options.type === "api" &&
+      "match_seq_num" in match &&
       ((isRanked(match) &&
         match.match_id % 100 < Number(config.RATING_PERCENT)) ||
         (isTurbo(match) &&
           match.match_id % 100 < Number(config.RATING_PERCENT_TURBO)))
     ) {
       await trx.raw(
-        'INSERT INTO rating_queue(match_seq_num, match_id, radiant_win, game_mode) VALUES(?, ?, ?, ?) ON CONFLICT DO NOTHING',
+        "INSERT INTO rating_queue(match_seq_num, match_id, radiant_win, game_mode) VALUES(?, ?, ?, ?) ON CONFLICT DO NOTHING",
         [
           match.match_seq_num,
           match.match_id,
@@ -791,7 +791,7 @@ function updateMatchups(match) {
       );
       await addReliableJob(
         {
-          name: 'gcQueue',
+          name: "gcQueue",
           data: {
             match_id: match.match_id,
             pgroup,
@@ -810,13 +810,13 @@ function updateMatchups(match) {
     // NOTE: This chooses from all matches that were auto-parsed, so not a random sample
     // If we want to random sample then we need to mark those matches for scenarios prior to parsing
     if (
-      options.origin === 'scanner' &&
-      options.type === 'parsed' &&
+      options.origin === "scanner" &&
+      options.type === "parsed" &&
       match.match_id % 100 < Number(config.SCENARIOS_SAMPLE_PERCENT)
     ) {
       await addReliableJob(
         {
-          name: 'scenariosQueue',
+          name: "scenariosQueue",
           data: { match_id: match.match_id },
         },
         {},
@@ -824,10 +824,10 @@ function updateMatchups(match) {
     }
   }
   async function postParsedMatch(trx: knex.Knex.Transaction) {
-    if (options.type === 'parsed') {
+    if (options.type === "parsed") {
       // Mark this match parsed
       await trx.raw(
-        'INSERT INTO parsed_matches(match_id) VALUES(?) ON CONFLICT DO NOTHING',
+        "INSERT INTO parsed_matches(match_id) VALUES(?) ON CONFLICT DO NOTHING",
         [Number(match.match_id)],
       );
     }
@@ -836,25 +836,25 @@ function updateMatchups(match) {
     if (options.skipParse) {
       return null;
     }
-    if ('game_mode' in match && match.game_mode === 19) {
+    if ("game_mode" in match && match.game_mode === 19) {
       // don't parse event matches
       return null;
     }
     // We only auto-parse if this is a fresh match from API
-    if (!(options.origin === 'scanner' && options.type === 'api')) {
+    if (!(options.origin === "scanner" && options.type === "api")) {
       return null;
     }
     // determine if any player in the match is tracked
     const trackedScores = await Promise.all(
       match.players.map((p) => {
-        return redis.zscore('tracked', String(p.account_id));
+        return redis.zscore("tracked", String(p.account_id));
       }),
     );
     let hasTrackedPlayer = trackedScores.filter(Boolean).length > 0;
-    const isLeagueMatch = Boolean('leagueid' in match && match.leagueid);
+    const isLeagueMatch = Boolean("leagueid" in match && match.leagueid);
     const doParse = hasTrackedPlayer || isLeagueMatch;
     if (doParse) {
-      redisCount('auto_parse');
+      redisCount("auto_parse");
       // By default, lower priority than requests
       let priority = PRIORITY.AUTO_DEFAULT;
       if (isLeagueMatch) {
@@ -867,7 +867,7 @@ function updateMatchups(match) {
       let attempts = 50;
       const job = await addReliableJob(
         {
-          name: 'parse',
+          name: "parse",
           data: {
             match_id: match.match_id,
             origin: options.origin,
@@ -897,7 +897,7 @@ export async function upsertPlayerCaches(
   if (averageRank) {
     copy.average_rank = averageRank;
   }
-  const columns = await getCassandraColumns('player_caches');
+  const columns = await getCassandraColumns("player_caches");
   return Promise.all(
     copy.players.map(async (p) => {
       // add account id to each player so we know what caches to update
@@ -915,7 +915,7 @@ export async function upsertPlayerCaches(
       ) {
         return false;
       }
-      if (type === 'api' || type === 'reconcile') {
+      if (type === "api" || type === "reconcile") {
         // We currently update this for the non-anonymous players in the match
         // It'll reflect the current anonymity state of the players at insertion time
         // This might lead to changes in peers counts after a fullhistory update or parse request
@@ -931,30 +931,30 @@ export async function upsertPlayerCaches(
       });
       const serializedMatch: any = serialize(playerMatch);
       if (
-        (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') &&
-        (playerMatch.player_slot === 0 || type === 'reconcile')
+        (config.NODE_ENV === "development" || config.NODE_ENV === "test") &&
+        (playerMatch.player_slot === 0 || type === "reconcile")
       ) {
         await fs.writeFile(
-          './json/' +
+          "./json/" +
             copy.match_id +
             `_playercache_${type}_${playerMatch.player_slot}.json`,
           JSON.stringify(serializedMatch, null, 2),
         );
       }
-      if (type === 'reconcile') {
+      if (type === "reconcile") {
         console.log(
           playerMatch.account_id,
           copy.match_id,
           playerMatch.player_slot,
         );
-        redisCount('reconcile');
+        redisCount("reconcile");
       }
       const query = util.format(
-        'INSERT INTO player_caches (%s) VALUES (%s)',
-        Object.keys(serializedMatch).join(','),
+        "INSERT INTO player_caches (%s) VALUES (%s)",
+        Object.keys(serializedMatch).join(","),
         Object.keys(serializedMatch)
-          .map(() => '?')
-          .join(','),
+          .map(() => "?")
+          .join(","),
       );
       const arr = Object.keys(serializedMatch).map((k) => serializedMatch[k]);
       await cassandra.execute(query, arr, {

@@ -1,20 +1,20 @@
 // Updates the heroes in the database
-import axios from 'axios';
-import db, { upsert } from './store/db.ts';
-import { runInLoop } from './util/utility.ts';
-import { getSteamAPIDataWithRetry, SteamAPIUrls } from './util/http.ts';
+import axios from "axios";
+import db, { upsert } from "./store/db.ts";
+import { runInLoop } from "./util/utility.ts";
+import { getSteamAPIDataWithRetry, SteamAPIUrls } from "./util/http.ts";
 
 runInLoop(
   async function heroes() {
     const url = SteamAPIUrls.api_heroes({
-      language: 'english',
+      language: "english",
     });
     const body = await getSteamAPIDataWithRetry<Heroes>({ url });
     if (!body || !body.result || !body.result.heroes) {
       return;
     }
     const heroResp = await axios.get(
-      'https://raw.githubusercontent.com/odota/dotaconstants/master/build/heroes.json',
+      "https://raw.githubusercontent.com/odota/dotaconstants/master/build/heroes.json",
     );
     const heroData = heroResp.data;
     if (!heroData) {
@@ -24,7 +24,7 @@ runInLoop(
       const heroDataHero = heroData[hero.id] || {};
       await upsert(
         db,
-        'heroes',
+        "heroes",
         {
           ...hero,
           primary_attr: heroDataHero.primary_attr,

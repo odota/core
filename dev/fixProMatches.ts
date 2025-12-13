@@ -1,7 +1,7 @@
-import db from '../svc/store/db.ts';
-import { isProMatch } from '../svc/util/compute.ts';
-import { getSteamAPIData, SteamAPIUrls } from '../svc/util/http.ts';
-import { insertMatch } from '../svc/util/insert.ts';
+import db from "../svc/store/db.ts";
+import { isProMatch } from "../svc/util/compute.ts";
+import { getSteamAPIData, SteamAPIUrls } from "../svc/util/http.ts";
+import { insertMatch } from "../svc/util/insert.ts";
 
 // From DB
 const { rows } = await db.raw(
@@ -18,9 +18,9 @@ for (let match of rows) {
   if (body.result) {
     const match = body.result;
     if (!isProMatch(match)) {
-      await db.raw('DELETE FROM matches WHERE match_id = ?', [match.match_id]);
+      await db.raw("DELETE FROM matches WHERE match_id = ?", [match.match_id]);
     } else {
-      await insertMatch(match, { type: 'api' });
+      await insertMatch(match, { type: "api" });
     }
   }
   await new Promise((resolve) => setTimeout(resolve, 500));

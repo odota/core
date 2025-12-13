@@ -1,15 +1,15 @@
-import config from '../../config.ts';
-import { matchArchive, playerArchive } from '../store/archive.ts';
-import QueryStream from 'pg-query-stream';
-import { Client } from 'pg';
-import db from '../store/db.ts';
-import { getFullPlayerMatchesWithMetadata } from './buildPlayer.ts';
-import { isDataComplete, randomInt } from './utility.ts';
-import { getMatchBlob } from './getMatchBlob.ts';
-import { ApiFetcher } from '../fetcher/ApiFetcher.ts';
-import { ParsedFetcher } from '../fetcher/ParsedFetcher.ts';
-import { GcdataFetcher } from '../fetcher/GcdataFetcher.ts';
-import { redisCount } from '../store/redis.ts';
+import config from "../../config.ts";
+import { matchArchive, playerArchive } from "../store/archive.ts";
+import QueryStream from "pg-query-stream";
+import { Client } from "pg";
+import db from "../store/db.ts";
+import { getFullPlayerMatchesWithMetadata } from "./buildPlayer.ts";
+import { isDataComplete, randomInt } from "./utility.ts";
+import { getMatchBlob } from "./getMatchBlob.ts";
+import { ApiFetcher } from "../fetcher/ApiFetcher.ts";
+import { ParsedFetcher } from "../fetcher/ParsedFetcher.ts";
+import { GcdataFetcher } from "../fetcher/GcdataFetcher.ts";
+import { redisCount } from "../store/redis.ts";
 
 // Don't include archive when archiving
 const fetchers = {
@@ -47,7 +47,7 @@ export async function archivePostgresStream() {
   await pg.connect();
   const stream = pg.query(query);
   let i = 0;
-  stream.on('readable', async () => {
+  stream.on("readable", async () => {
     let row;
     while ((row = stream.read())) {
       i += 1;
@@ -59,7 +59,7 @@ export async function archivePostgresStream() {
       }
     }
   });
-  stream.on('end', async () => {
+  stream.on("end", async () => {
     await pg.end();
   });
 }
@@ -88,7 +88,7 @@ async function archiveRandom(max: number) {
 }
 
 export async function getCurrentMaxArchiveID() {
-  const max = (await db.raw('select max(match_id) from public_matches'))
+  const max = (await db.raw("select max(match_id) from public_matches"))
     ?.rows?.[0]?.max;
   const limit = max - 100000000;
   return limit;
@@ -138,8 +138,8 @@ export async function doArchiveMatchFromBlobs(matchId: number) {
   if (match && metadata?.has_parsed) {
     // check data completeness with isDataComplete
     if (!isDataComplete(match as ParsedMatch)) {
-      redisCount('incomplete_archive');
-      console.log('INCOMPLETE skipping match %s', matchId);
+      redisCount("incomplete_archive");
+      console.log("INCOMPLETE skipping match %s", matchId);
       return;
     }
     // Archive the data since it's parsed. This might also contain api and gcdata
@@ -153,7 +153,7 @@ export async function doArchiveMatchFromBlobs(matchId: number) {
       );
       // TODO delete blobs
       // await deleteMatch(matchId);
-      console.log('ARCHIVE match %s, parsed', matchId);
+      console.log("ARCHIVE match %s, parsed", matchId);
     }
     return result;
   }

@@ -4,24 +4,24 @@
 */
 function generateOperationId(method: string, path: string) {
   // Split the path into segments
-  const pathSegments = path.split('/');
+  const pathSegments = path.split("/");
   // Remove the first segment if it's empty (because the path starts with a slash)
-  if (pathSegments[0] === '') {
+  if (pathSegments[0] === "") {
     pathSegments.shift();
   }
   // Convert path parameters to the format "by_{parameter}"
   const segmentsWithParametersReplaced = pathSegments.map((segment) =>
-    segment.replace(/{(.*?)}/g, 'by_$1'),
+    segment.replace(/{(.*?)}/g, "by_$1"),
   );
   // If there are 3 elements in the path, prefix the last one with "select_"
   if (segmentsWithParametersReplaced.length === 3) {
     segmentsWithParametersReplaced[2] = `select_${segmentsWithParametersReplaced[2]}`;
   }
   // Join all segments with underscores
-  const pathWithUnderscores = segmentsWithParametersReplaced.join('_');
+  const pathWithUnderscores = segmentsWithParametersReplaced.join("_");
   // Convert camelCase to snake_case
   const snakeCaseBase = pathWithUnderscores
-    .replace(/([A-Z])/g, '_$1')
+    .replace(/([A-Z])/g, "_$1")
     .toLowerCase();
   // Return the method and the path joined with underscores
   return `${method}_${snakeCaseBase}`;

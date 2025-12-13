@@ -1,10 +1,10 @@
-import { isRadiant } from './utility.ts';
+import { isRadiant } from "./utility.ts";
 
 /**
  * Converts a group of heroes to string
  * */
 export function groupToString(g: number[]) {
-  return g.sort((a, b) => a - b).join(',');
+  return g.sort((a, b) => a - b).join(",");
 }
 /**
  * Serialize a matchup/result of heroes to a string
@@ -13,12 +13,12 @@ export function matchupToString(t0: number[], t1: number[], t0win: boolean) {
   // create sorted strings of each team
   const rcg = groupToString(t0);
   const dcg = groupToString(t1);
-  let suffix = '0';
+  let suffix = "0";
   if (rcg <= dcg) {
-    suffix = t0win ? '0' : '1';
+    suffix = t0win ? "0" : "1";
     return `${rcg}:${dcg}:${suffix}`;
   }
-  suffix = t0win ? '1' : '0';
+  suffix = t0win ? "1" : "0";
   return `${dcg}:${rcg}:${suffix}`;
 }
 /**
@@ -89,10 +89,10 @@ export function generateMatchups(match: Match, max: number, oneSided: boolean) {
     rCombs.shift();
     dCombs.shift();
     rCombs.forEach((team) => {
-      result.push(`${groupToString(team)}:${match.radiant_win ? '1' : '0'}`);
+      result.push(`${groupToString(team)}:${match.radiant_win ? "1" : "0"}`);
     });
     dCombs.forEach((team) => {
-      result.push(`${groupToString(team)}:${match.radiant_win ? '0' : '1'}`);
+      result.push(`${groupToString(team)}:${match.radiant_win ? "0" : "1"}`);
     });
   } else {
     // iterate over combinations, increment count for unique key

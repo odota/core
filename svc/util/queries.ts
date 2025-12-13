@@ -1,10 +1,10 @@
-import { items as itemsConstants } from 'dotaconstants';
-import config from '../../config.ts';
-import { teamScenariosQueryParams, metadata } from './scenariosUtil.ts';
-import db from '../store/db.ts';
-import redis from '../store/redis.ts';
-import { benchmarks } from './benchmarksUtil.ts';
-import type { Request } from 'express';
+import { items as itemsConstants } from "dotaconstants";
+import config from "../../config.ts";
+import { teamScenariosQueryParams, metadata } from "./scenariosUtil.ts";
+import db from "../store/db.ts";
+import redis from "../store/redis.ts";
+import { benchmarks } from "./benchmarksUtil.ts";
+import type { Request } from "express";
 import {
   countItemPopularity,
   getAnonymousAccountId,
@@ -13,17 +13,17 @@ import {
   parallelPromise,
   isSteamID64,
   convert64to32,
-} from './utility.ts';
-import contributors from '../../CONTRIBUTORS.ts';
-import moment from 'moment';
-import { getStartOfBlockMinutes } from './time.ts';
+} from "./utility.ts";
+import contributors from "../../CONTRIBUTORS.ts";
+import moment from "moment";
+import { getStartOfBlockMinutes } from "./time.ts";
 
 export async function getDistributions() {
   const result = new Map<string, any>();
-  const keys = ['distribution:ranks'];
+  const keys = ["distribution:ranks"];
   for (let r of keys) {
     const blob = await redis.get(r);
-    result.set(r.split(':')[1], blob ? JSON.parse(blob) : null);
+    result.set(r.split(":")[1], blob ? JSON.parse(blob) : null);
   }
   return Object.fromEntries(result);
 }
@@ -122,17 +122,17 @@ export async function getHeroBenchmarks(heroId: string) {
     items.map(async ([metric, percentile]) => {
       // Use data from previous epoch
       let key = [
-        'benchmarks',
+        "benchmarks",
         getStartOfBlockMinutes(Number(config.BENCHMARK_RETENTION_MINUTES), -1),
         metric,
         heroId,
-      ].join(':');
+      ].join(":");
       const backupKey = [
-        'benchmarks',
+        "benchmarks",
         getStartOfBlockMinutes(Number(config.BENCHMARK_RETENTION_MINUTES), 0),
         metric,
         heroId,
-      ].join(':');
+      ].join(":");
       const exists = await redis.exists(key);
       if (exists === 0) {
         // No data, use backup key (current epoch)
@@ -140,7 +140,7 @@ export async function getHeroBenchmarks(heroId: string) {
       }
       const card = await redis.zcard(key);
       const position = Math.floor((card || 0) * percentile);
-      const result = await redis.zrange(key, position, position, 'WITHSCORES');
+      const result = await redis.zrange(key, position, position, "WITHSCORES");
       const obj = {
         percentile,
         value: Number(result?.[1]),
@@ -159,7 +159,7 @@ export async function getHeroBenchmarks(heroId: string) {
 
 export async function getPlayerRatings(accountId: string) {
   const { rows } = await db.raw(
-    'SELECT time, rank_tier FROM rank_tier_history WHERE account_id = ? ORDER BY time asc',
+    "SELECT time, rank_tier FROM rank_tier_history WHERE account_id = ? ORDER BY time asc",
     [accountId],
   );
   return rows;
@@ -183,30 +183,30 @@ export async function getPlayerHeroRankings(accountId: string): Promise<any[]> {
 export async function getPlayer(accountId: number): Promise<User | undefined> {
   const playerData = await db
     .first<User>(
-      'players.account_id',
-      'personaname',
-      'name',
-      'plus',
-      'cheese',
-      'steamid',
-      'avatar',
-      'avatarmedium',
-      'avatarfull',
-      'profileurl',
-      'last_login',
-      'loccountrycode',
-      'subscriber.status',
-      'fh_unavailable',
+      "players.account_id",
+      "personaname",
+      "name",
+      "plus",
+      "cheese",
+      "steamid",
+      "avatar",
+      "avatarmedium",
+      "avatarfull",
+      "profileurl",
+      "last_login",
+      "loccountrycode",
+      "subscriber.status",
+      "fh_unavailable",
     )
-    .from('players')
+    .from("players")
     .leftJoin(
-      'notable_players',
-      'players.account_id',
-      'notable_players.account_id',
+      "notable_players",
+      "players.account_id",
+      "notable_players.account_id",
     )
-    .leftJoin('subscriber', 'players.account_id', 'subscriber.account_id')
+    .leftJoin("subscriber", "players.account_id", "subscriber.account_id")
     .where({
-      'players.account_id': Number(accountId),
+      "players.account_id": Number(accountId),
     });
   if (playerData) {
     playerData.is_contributor = isContributor(accountId.toString());
@@ -240,23 +240,23 @@ export async function getPeers(
     teammatesArr.map(async (t) => {
       const row: AnyDict = await db
         .first(
-          'players.account_id',
-          'personaname',
-          'name',
-          'avatar',
-          'avatarfull',
-          'last_login',
-          'subscriber.status',
+          "players.account_id",
+          "personaname",
+          "name",
+          "avatar",
+          "avatarfull",
+          "last_login",
+          "subscriber.status",
         )
-        .from('players')
+        .from("players")
         .leftJoin(
-          'notable_players',
-          'players.account_id',
-          'notable_players.account_id',
+          "notable_players",
+          "players.account_id",
+          "notable_players.account_id",
         )
-        .leftJoin('subscriber', 'players.account_id', 'subscriber.account_id')
+        .leftJoin("subscriber", "players.account_id", "subscriber.account_id")
         .where({
-          'players.account_id': t.account_id,
+          "players.account_id": t.account_id,
         });
       if (!row) {
         return { ...t };
@@ -304,7 +304,7 @@ export async function getMatchRankTier(
       }
       const row = await db
         .first()
-        .from('rank_tier')
+        .from("rank_tier")
         .where({ account_id: player.account_id });
       return row ? row.rating : undefined;
     }),
@@ -324,7 +324,7 @@ export async function getMatchRankTier(
 
 export async function getItemTimings(req: Request): Promise<any[]> {
   const heroId = req.query.hero_id || 0;
-  const item = req.query.item || '';
+  const item = req.query.item || "";
   const result = await db.raw(
     `SELECT hero_id, item, time, sum(games) games, sum(wins) wins
      FROM scenarios
@@ -356,7 +356,7 @@ export async function getTeamScenarios(req: Request): Promise<any[]> {
   const scenario =
     (teamScenariosQueryParams.includes(req.query.scenario as string) &&
       req.query.scenario) ||
-    '';
+    "";
   const result = await db.raw(
     `SELECT scenario, is_radiant, region, sum(games) games, sum(wins) wins
      FROM team_scenarios
@@ -368,7 +368,7 @@ export async function getTeamScenarios(req: Request): Promise<any[]> {
   return result.rows;
 }
 
-const admins = config.ADMIN_ACCOUNT_IDS.split(',').map((e) => Number(e));
+const admins = config.ADMIN_ACCOUNT_IDS.split(",").map((e) => Number(e));
 
 export async function getMetadata(req: Request) {
   const obj = {
@@ -406,14 +406,14 @@ export async function isSubscriber(account_id: string) {
 
 export async function isRecentVisitor(accountId: number): Promise<boolean> {
   const visitTime = Number(
-    await redis.zscore('visitors', accountId.toString()),
+    await redis.zscore("visitors", accountId.toString()),
   );
   return Boolean(visitTime);
 }
 
 export async function isRecentlyVisited(accountId: number): Promise<boolean> {
   const visitTime = Number(
-    await redis.zscore('visitedIds', accountId.toString()),
+    await redis.zscore("visitedIds", accountId.toString()),
   );
   return Boolean(visitTime);
 }
@@ -423,8 +423,8 @@ export async function search(query: string) {
   if (Number.isInteger(Number(query))) {
     let query32 = isSteamID64(query) ? convert64to32(query) : query;
     accountIdMatch = await db
-      .select(['account_id', 'personaname', 'avatarfull'])
-      .from('players')
+      .select(["account_id", "personaname", "avatarfull"])
+      .from("players")
       .where({ account_id: Number(query32) });
   }
   // Set similarity threshold
@@ -441,7 +441,7 @@ export async function search(query: string) {
       LIMIT 50;
       `,
       // replace spaces with % so we trigram search around them
-      [trim, `%${trim.replaceAll(' ', '%')}%`],
+      [trim, `%${trim.replaceAll(" ", "%")}%`],
     );
     rows = personaNameMatch.rows;
   }
@@ -451,24 +451,24 @@ export async function search(query: string) {
 
 export async function cacheTrackedPlayers() {
   const subs = await db
-    .select<{ account_id: string }[]>(['account_id'])
-    .from('subscriber')
-    .where('status', '=', 'active');
+    .select<{ account_id: string }[]>(["account_id"])
+    .from("subscriber")
+    .where("status", "=", "active");
   const subIds = subs.map((sub) => sub.account_id);
   const contribs = Object.keys(contributors);
   console.log(
-    '[TRACKED] %s subscribers, %s contributors',
+    "[TRACKED] %s subscribers, %s contributors",
     subIds.length,
     contribs.length,
   );
   const tracked: string[] = [...subIds, ...contribs];
   const command = redis.multi();
-  command.del('tracked');
+  command.del("tracked");
   // Refresh tracked players with expire date in the future
   // At one point we tracked players based on visits to OpenDota and updated expire based on that
   await Promise.all(
     tracked.map((id) =>
-      command.zadd('tracked', moment.utc().add(1, 'day').format('X'), id),
+      command.zadd("tracked", moment.utc().add(1, "day").format("X"), id),
     ),
   );
   await command.exec();

@@ -1,4 +1,4 @@
-import fs from 'node:fs';
-import spec from '../svc/api/spec.ts';
+import fs from "node:fs";
+import spec from "../svc/api/spec.ts";
 
-fs.writeFileSync('./spec.json', JSON.stringify(spec, null, 2), 'utf-8');
+fs.writeFileSync("./spec.json", JSON.stringify(spec, null, 2), "utf-8");

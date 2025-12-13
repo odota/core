@@ -1,13 +1,13 @@
-import { heroes } from 'dotaconstants';
-import config from '../../config.ts';
-import { computeMatchData } from './compute.ts';
-import { buildReplayUrl, isContributor, isTurbo } from './utility.ts';
-import redis, { redisCount } from '../store/redis.ts';
-import db from '../store/db.ts';
-import { benchmarks } from './benchmarksUtil.ts';
-import * as allFetchers from '../fetcher/allFetchers.ts';
-import { getMatchBlob } from './getMatchBlob.ts';
-import { getStartOfBlockMinutes } from './time.ts';
+import { heroes } from "dotaconstants";
+import config from "../../config.ts";
+import { computeMatchData } from "./compute.ts";
+import { buildReplayUrl, isContributor, isTurbo } from "./utility.ts";
+import redis, { redisCount } from "../store/redis.ts";
+import db from "../store/db.ts";
+import { benchmarks } from "./benchmarksUtil.ts";
+import * as allFetchers from "../fetcher/allFetchers.ts";
+import { getMatchBlob } from "./getMatchBlob.ts";
+import { getStartOfBlockMinutes } from "./time.ts";
 
 const { metaFetcher } = allFetchers;
 
@@ -44,30 +44,28 @@ type ProMatchInfo = {
 };
 
 async function getProMatchInfo(match: Match): Promise<ProMatchInfo> {
-  const resultPromise =
-    match.leagueid
-      ? db
-          .first(['series_id', 'series_type', 'replay_salt'])
-          .from('matches')
-          .where({
-            match_id: match.match_id,
-          })
-      : Promise.resolve(undefined);
-  const leaguePromise =
-    match.leagueid
-      ? db.first().from('leagues').where({
-          leagueid: match.leagueid,
+  const resultPromise = match.leagueid
+    ? db
+        .first(["series_id", "series_type", "replay_salt"])
+        .from("matches")
+        .where({
+          match_id: match.match_id,
         })
-      : Promise.resolve(undefined);
+    : Promise.resolve(undefined);
+  const leaguePromise = match.leagueid
+    ? db.first().from("leagues").where({
+        leagueid: match.leagueid,
+      })
+    : Promise.resolve(undefined);
   const radiantTeamPromise =
-    'radiant_team_id' in match
-      ? db.first().from('teams').where({
+    "radiant_team_id" in match
+      ? db.first().from("teams").where({
           team_id: match.radiant_team_id,
         })
       : Promise.resolve(undefined);
   const direTeamPromise =
-    'dire_team_id' in match
-      ? db.first().from('teams').where({
+    "dire_team_id" in match
+      ? db.first().from("teams").where({
           team_id: match.dire_team_id,
         })
       : Promise.resolve(undefined);
@@ -107,22 +105,22 @@ export async function getPlayerBenchmarks(m: Match) {
         result[metric] = {};
         // Use data from previous epoch
         let key = [
-          'benchmarks',
+          "benchmarks",
           getStartOfBlockMinutes(
             Number(config.BENCHMARK_RETENTION_MINUTES),
             -1,
           ),
           metric,
           p.hero_id,
-          turbo ? 'turbo' : '',
-        ].join(':');
+          turbo ? "turbo" : "",
+        ].join(":");
         const backupKey = [
-          'benchmarks',
+          "benchmarks",
           getStartOfBlockMinutes(Number(config.BENCHMARK_RETENTION_MINUTES), 0),
           metric,
           p.hero_id,
-          turbo ? 'turbo' : '',
-        ].join(':');
+          turbo ? "turbo" : "",
+        ].join(":");
         const raw = benchmarks[metric](m, p);
         result[metric] = {
           raw,
@@ -134,7 +132,7 @@ export async function getPlayerBenchmarks(m: Match) {
         }
         const card = await redis.zcard(key);
         if (raw !== undefined && raw !== null && !Number.isNaN(Number(raw))) {
-          const count = await redis.zcount(key, '0', raw);
+          const count = await redis.zcount(key, "0", raw);
           const pct = count / card;
           result[metric].pct = pct;
         }
@@ -175,10 +173,10 @@ async function getPlayerDetails(match: Match | ParsedMatch) {
 }
 
 async function getCosmetics(match: Match | ParsedMatch) {
-  if ('cosmetics' in match && match.cosmetics) {
+  if ("cosmetics" in match && match.cosmetics) {
     return Promise.all(
       Object.keys(match.cosmetics).map((itemId) =>
-        db.first().from('cosmetics').where({
+        db.first().from("cosmetics").where({
           item_id: itemId,
         }),
       ),
@@ -205,13 +203,13 @@ export async function buildMatch(
   // track distribution of matches requested
   // const bucket = Math.floor(matchId / 1000000000);
   // redisCount((bucket + '_match_req') as MetricName);
-  redisCount('build_match');
+  redisCount("build_match");
 
   // Check for cache
   const key = `match:${matchId}`;
   const reply = await redis.get(key);
   if (reply) {
-    redisCount('match_cache_hit');
+    redisCount("match_cache_hit");
     return JSON.parse(reply);
   }
 
@@ -248,7 +246,7 @@ export async function buildMatch(
           .filter(
             (c) =>
               match &&
-              'cosmetics' in match &&
+              "cosmetics" in match &&
               match.cosmetics?.[c.item_id] === p.player_slot &&
               (!c.used_by_heroes || c.used_by_heroes === hero.name),
           );

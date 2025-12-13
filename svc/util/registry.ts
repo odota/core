@@ -1,5 +1,5 @@
-import config from '../../config.ts';
-import redis from '../store/redis.ts';
+import config from "../../config.ts";
+import redis from "../store/redis.ts";
 
 const RETRIEVER_ARRAY: string[] = makeUrlArray(config.RETRIEVER_HOST);
 const PARSER_ARRAY: string[] = makeUrlArray(config.PARSER_HOST);
@@ -11,15 +11,15 @@ const PARSER_ARRAY: string[] = makeUrlArray(config.PARSER_HOST);
  */
 function makeUrlArray(input: string) {
   const output: string[] = [];
-  const arr = input.split(',');
+  const arr = input.split(",");
   arr.forEach((element) => {
     if (!element) {
       return;
     }
-    const parsedUrl = new URL('http://' + element);
+    const parsedUrl = new URL("http://" + element);
     for (
       let i = 0;
-      i < (Number(parsedUrl.searchParams.get('size')) || 1);
+      i < (Number(parsedUrl.searchParams.get("size")) || 1);
       i += 1
     ) {
       output.push(parsedUrl.host as string);
@@ -30,14 +30,14 @@ function makeUrlArray(input: string) {
 
 export async function getParserCapacity() {
   if (config.USE_SERVICE_REGISTRY) {
-    return redis.zcard('registry:parser');
+    return redis.zcard("registry:parser");
   }
   return Number(config.PARSER_PARALLELISM);
 }
 
 export async function getRetrieverCapacity() {
   if (config.USE_SERVICE_REGISTRY) {
-    return redis.zcard('registry:retriever');
+    return redis.zcard("registry:retriever");
   }
   return RETRIEVER_ARRAY.length;
 }
@@ -48,7 +48,7 @@ export async function getRetrieverCapacity() {
  */
 export async function getRandomRetrieverUrl(path: string): Promise<string> {
   if (config.USE_SERVICE_REGISTRY) {
-    return getRegistryUrl('retriever', path);
+    return getRegistryUrl("retriever", path);
   }
   const urls = RETRIEVER_ARRAY.map((r) => {
     return `http://${r}${path}?key=${config.RETRIEVER_SECRET}`;
@@ -62,7 +62,7 @@ export async function getRandomRetrieverUrl(path: string): Promise<string> {
  */
 export async function getRandomParserUrl(path: string): Promise<string> {
   if (config.USE_SERVICE_REGISTRY) {
-    return getRegistryUrl('parser', path);
+    return getRegistryUrl("parser", path);
   }
   const urls = PARSER_ARRAY.map((r) => {
     return `http://${r}${path}`;
@@ -73,13 +73,13 @@ export async function getRandomParserUrl(path: string): Promise<string> {
 async function getRegistryUrl(service: string, path: string) {
   // Purge values older than 10 seconds (stale heartbeat)
   await redis.zremrangebyscore(
-    'registry:' + service,
-    '-inf',
+    "registry:" + service,
+    "-inf",
     Date.now() - 10000,
   );
-  const hostWithId = await redis.zrandmember('registry:' + service);
-  const host = hostWithId?.split('?')[0];
+  const hostWithId = await redis.zrandmember("registry:" + service);
+  const host = hostWithId?.split("?")[0];
   return `http://${host}${path}${
-    service === 'retriever' ? `?key=${config.RETRIEVER_SECRET}` : ''
+    service === "retriever" ? `?key=${config.RETRIEVER_SECRET}` : ""
   }`;
 }

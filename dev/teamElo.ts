@@ -1,7 +1,7 @@
 /**
  * Computes team Elo ratings by game
  * */
-import db from '../svc/store/db.ts';
+import db from "../svc/store/db.ts";
 
 // Keep each team's rating in memory and update
 const teams = new Map<string, number>();
@@ -22,7 +22,7 @@ ORDER BY match_id ASC
 `,
   )
   .stream();
-stream.on('data', (match) => {
+stream.on("data", (match) => {
   // console.log(JSON.stringify(match));
   if (!teams.has(match.team_id1)) {
     teams.set(match.team_id1, 1000);
@@ -61,7 +61,7 @@ stream.on('data', (match) => {
   losses.set(match.team_id1, losses.get(match.team_id1)! + Number(!win1));
   losses.set(match.team_id2, losses.get(match.team_id2)! + Number(!win2));
 });
-stream.on('end', () => {
+stream.on("end", () => {
   console.log(teams, wins, losses, startTimes);
   // Write the results to table
   Object.keys(teams).forEach((teamId) => {
@@ -85,6 +85,6 @@ stream.on('end', () => {
     );
   });
 });
-stream.on('error', (err) => {
+stream.on("error", (err) => {
   throw err;
 });

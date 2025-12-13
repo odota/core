@@ -1,21 +1,21 @@
 // Updates the list of teams in the database
-import axios from 'axios';
-import db, { upsert } from './store/db.ts';
-import { runInLoop } from './util/utility.ts';
-import JSONbig from 'json-bigint';
+import axios from "axios";
+import db, { upsert } from "./store/db.ts";
+import { runInLoop } from "./util/utility.ts";
+import JSONbig from "json-bigint";
 import {
   SteamAPIUrls,
   getSteamAPIDataWithRetry,
   getSteamAPIData,
-} from './util/http.ts';
+} from "./util/http.ts";
 
 runInLoop(
   async function doTeams() {
     const result = await db.raw(
-      'select distinct team_id from team_match TABLESAMPLE BERNOULLI(0.05)',
+      "select distinct team_id from team_match TABLESAMPLE BERNOULLI(0.05)",
     );
     const result2 = await db.raw(
-      'select team_id from (select distinct team_id from team_match) ids where team_id not in (select team_id from teams)',
+      "select team_id from (select distinct team_id from team_match) ids where team_id not in (select team_id from teams)",
     );
     const combined = [...result2.rows, ...result.rows];
     for (let m of combined) {
@@ -52,7 +52,7 @@ runInLoop(
         // console.log('[TEAMS] cdn: ', t);
       } catch {
         // This is fine, we failed to get CDN image info
-        console.log('failed to get image from cdn');
+        console.log("failed to get image from cdn");
       }
       if (!t.logo_url) {
         // The logo value is a 64 bit integer which is too large to represent in JSON
@@ -73,10 +73,10 @@ runInLoop(
           // console.log('[TEAMS] ugc: ', t);
         } catch (e) {
           // Continue even if we can't get a logo
-          console.log('failed to get image from ugc');
+          console.log("failed to get image from ugc");
         }
       }
-      await upsert(db, 'teams', t, {
+      await upsert(db, "teams", t, {
         team_id: m.team_id,
       });
     }

@@ -1,8 +1,8 @@
-import config from '../config.ts';
+import config from "../config.ts";
 
 const output: string[] = [];
 
-const arr = config.STEAM_API_KEY.split(',');
+const arr = config.STEAM_API_KEY.split(",");
 for (let key of arr) {
   const resp = await fetch(
     `http://api.steampowered.com/IDOTA2Match_570/GetMatchHistory/V001/?key=${key}`,
@@ -14,4 +14,4 @@ for (let key of arr) {
   }
   console.log(key, resp.status);
 }
-console.log(output.join(','));
+console.log(output.join(","));

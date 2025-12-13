@@ -1,4 +1,4 @@
-import db from '../svc/store/db.ts';
+import db from "../svc/store/db.ts";
 
 function randByCentralLimitTheorem() {
   let v = 0;
@@ -11,13 +11,13 @@ function randByCentralLimitTheorem() {
 function gaussianRandom(mean: number, std: number) {
   if (mean === undefined || std === undefined) {
     throw new Error(
-      'Gaussian random needs 2 arguments (mean, standard deviation)',
+      "Gaussian random needs 2 arguments (mean, standard deviation)",
     );
   }
   return randByCentralLimitTheorem() * std + mean;
 }
 
-const players = await db.from('players');
+const players = await db.from("players");
 players.forEach((p) => {
   const fake = {
     match_id: p.account_id,
@@ -27,5 +27,5 @@ players.forEach((p) => {
     time: new Date(),
   };
   console.log(fake.account_id, fake.solo_competitive_rank);
-  db.insert(fake).into('player_ratings');
+  db.insert(fake).into("player_ratings");
 });

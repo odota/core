@@ -1,11 +1,11 @@
 export default {
   scenarioParam: {
-    name: 'scenario',
-    in: 'query',
-    description: 'Name of the scenario (see teamScenariosQueryParams)',
+    name: "scenario",
+    in: "query",
+    description: "Name of the scenario (see teamScenariosQueryParams)",
     required: false,
     schema: {
-      type: 'string',
+      type: "string",
     },
   },
 };

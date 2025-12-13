@@ -1,25 +1,25 @@
-import commonProperties from './properties/commonProperties.ts';
+import commonProperties from "./properties/commonProperties.ts";
 
 export default {
   LeagueObjectResponse: {
-    title: 'LeagueObjectResponse',
-    type: 'object',
+    title: "LeagueObjectResponse",
+    type: "object",
     properties: {
       leagueid: {
-        description: 'leagueid',
-        type: 'integer',
+        description: "leagueid",
+        type: "integer",
       },
       ticket: {
-        description: 'ticket',
-        type: 'string',
+        description: "ticket",
+        type: "string",
       },
       banner: {
-        description: 'banner',
-        type: 'string',
+        description: "banner",
+        type: "string",
       },
       tier: {
-        description: 'tier',
-        type: 'string',
+        description: "tier",
+        type: "string",
       },
       name: commonProperties.league_name,
     },

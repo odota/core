@@ -1,31 +1,31 @@
-import { getPatchIndex, isSignificant } from './compute.ts';
-import { cluster } from 'dotaconstants';
-import { isRadiant } from './utility.ts';
+import { getPatchIndex, isSignificant } from "./compute.ts";
+import { cluster } from "dotaconstants";
+import { isRadiant } from "./utility.ts";
 
 type FilterType = keyof typeof filterDeps;
 /**
  * Object listing dependent columns for each filter
  * */
 export const filterDeps = {
-  win: ['player_slot', 'radiant_win'],
-  patch: ['start_time'],
-  leaver_status: ['leaver_status'],
-  game_mode: ['game_mode'],
-  lobby_type: ['lobby_type'],
-  region: ['cluster'],
-  date: ['start_time'],
-  lane_role: ['lane_role'],
-  hero_id: ['hero_id'],
-  is_radiant: ['player_slot'],
-  party_size: ['party_size'],
-  included_account_id: ['heroes'],
-  excluded_account_id: ['heroes'],
-  with_account_id: ['player_slot', 'heroes'],
-  against_account_id: ['player_slot', 'heroes'],
-  with_hero_id: ['player_slot', 'heroes'],
-  against_hero_id: ['player_slot', 'heroes'],
-  significant: ['duration', 'game_mode', 'lobby_type', 'radiant_win'],
-  leagueid: ['leagueid'],
+  win: ["player_slot", "radiant_win"],
+  patch: ["start_time"],
+  leaver_status: ["leaver_status"],
+  game_mode: ["game_mode"],
+  lobby_type: ["lobby_type"],
+  region: ["cluster"],
+  date: ["start_time"],
+  lane_role: ["lane_role"],
+  hero_id: ["hero_id"],
+  is_radiant: ["player_slot"],
+  party_size: ["party_size"],
+  included_account_id: ["heroes"],
+  excluded_account_id: ["heroes"],
+  with_account_id: ["player_slot", "heroes"],
+  against_account_id: ["player_slot", "heroes"],
+  with_hero_id: ["player_slot", "heroes"],
+  against_hero_id: ["player_slot", "heroes"],
+  significant: ["duration", "game_mode", "lobby_type", "radiant_win"],
+  leagueid: ["leagueid"],
 } as const;
 
 const filterFuncs: {

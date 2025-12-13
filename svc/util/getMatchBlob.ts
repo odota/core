@@ -1,5 +1,5 @@
-import { MatchFetcherBase } from '../fetcher/MatchFetcherBase.ts';
-import { redisCount } from '../store/redis.ts';
+import { MatchFetcherBase } from "../fetcher/MatchFetcherBase.ts";
+import { redisCount } from "../store/redis.ts";
 
 export async function getMatchBlob(
   matchId: number,
@@ -33,7 +33,7 @@ export async function getMatchBlob(
   if (!archived && !api) {
     // Use this event to count the number of failed requests
     // Could be due to missing data or invalid ID--need to analyze
-    redisCount('steam_api_backfill');
+    redisCount("steam_api_backfill");
     return [null, null];
   }
 

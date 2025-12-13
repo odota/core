@@ -1,13 +1,13 @@
-import { blobArchive } from '../store/archive.ts';
-import db from '../store/db.ts';
-import { insertMatch } from '../util/insert.ts';
-import axios from 'axios';
-import { MatchFetcherBase } from './MatchFetcherBase.ts';
-import config from '../../config.ts';
-import { getRandomParserUrl } from '../util/registry.ts';
+import { blobArchive } from "../store/archive.ts";
+import db from "../store/db.ts";
+import { insertMatch } from "../util/insert.ts";
+import axios from "axios";
+import { MatchFetcherBase } from "./MatchFetcherBase.ts";
+import config from "../../config.ts";
+import { getRandomParserUrl } from "../util/registry.ts";
 
 export class ParsedFetcher extends MatchFetcherBase<ParsedData> {
-  savedDataMetricName: MetricName = 'reparse';
+  savedDataMetricName: MetricName = "reparse";
   useSavedData = Boolean(config.DISABLE_REPARSE);
   getData = async (matchId: number): Promise<ParsedData | null> => {
     const isAvailable = await this.checkAvailable(matchId);
@@ -30,7 +30,7 @@ export class ParsedFetcher extends MatchFetcherBase<ParsedData> {
       if (axios.isAxiosError(e)) {
         console.log(e.message);
       }
-      return { data: null, error: 'Replay not found' };
+      return { data: null, error: "Replay not found" };
     }
 
     // Pipelined for efficiency, but timings:
@@ -39,10 +39,10 @@ export class ParsedFetcher extends MatchFetcherBase<ParsedData> {
     // parse: 9407ms (curl -X POST --data-binary "@7503212404_1277518156.dem" odota-parser:5600 > output.log)
     // process: 3278ms (node processors/createParsedDataBlob.mjs < output.log)
     const parseUrl = await getRandomParserUrl(`/blob?replay_url=${url}`);
-    console.log('[PARSER]', parseUrl);
+    console.log("[PARSER]", parseUrl);
     const resp = await axios.get<ParsedData>(parseUrl, { timeout: 150000 });
     if (!resp.data) {
-      return { data: null, error: 'Parse failed' };
+      return { data: null, error: "Parse failed" };
     }
     const result: ParsedData = {
       ...resp.data,
@@ -53,7 +53,7 @@ export class ParsedFetcher extends MatchFetcherBase<ParsedData> {
       duration,
     };
     await insertMatch(result, {
-      type: 'parsed',
+      type: "parsed",
       origin,
       pgroup,
       endedAt: start_time + duration,
@@ -63,7 +63,7 @@ export class ParsedFetcher extends MatchFetcherBase<ParsedData> {
   checkAvailable = async (matchId: number) => {
     return Boolean(
       (
-        await db.raw('select match_id from parsed_matches where match_id = ?', [
+        await db.raw("select match_id from parsed_matches where match_id = ?", [
           matchId,
         ])
       ).rows[0],

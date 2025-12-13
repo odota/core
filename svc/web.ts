@@ -2,31 +2,31 @@
  * Provides the OpenDota API and serves web requests
  * Also supports login through Steam
  * */
-import compression from 'compression';
-import session from 'cookie-session';
-import moment from 'moment';
-import express from 'express';
-import passport from 'passport';
-import { SteamOpenIdStrategy } from 'passport-steam-openid';
-import cors from 'cors';
-import bodyParser from 'body-parser';
-import { Redis } from 'ioredis';
-import keys from './api/keyManagement.ts';
-import api from './api/api.ts';
-import db, { upsertPlayer } from './store/db.ts';
+import compression from "compression";
+import session from "cookie-session";
+import moment from "moment";
+import express from "express";
+import passport from "passport";
+import { SteamOpenIdStrategy } from "passport-steam-openid";
+import cors from "cors";
+import bodyParser from "body-parser";
+import { Redis } from "ioredis";
+import keys from "./api/keyManagement.ts";
+import api from "./api/api.ts";
+import db, { upsertPlayer } from "./store/db.ts";
 import redis, {
   getRedisCountDayHash,
   redisCount,
   redisCountHash,
-} from './store/redis.ts';
-import config from '../config.ts';
-import stripe from './store/stripe.ts';
-import axios from 'axios';
-import { buildStatus } from './util/buildStatus.ts';
-import { getEndOfDay, getStartOfBlockMinutes } from './util/time.ts';
-import { convert64to32 } from './util/utility.ts';
+} from "./store/redis.ts";
+import config from "../config.ts";
+import stripe from "./store/stripe.ts";
+import axios from "axios";
+import { buildStatus } from "./util/buildStatus.ts";
+import { getEndOfDay, getStartOfBlockMinutes } from "./util/time.ts";
+import { convert64to32 } from "./util/utility.ts";
 
-const admins = config.ADMIN_ACCOUNT_IDS.split(',').map((e) => Number(e));
+const admins = config.ADMIN_ACCOUNT_IDS.split(",").map((e) => Number(e));
 export const app = express();
 const host = config.ROOT_URL;
 const sessOptions = {
@@ -35,8 +35,8 @@ const sessOptions = {
   secret: config.SESSION_SECRET,
 };
 const unlimitedPaths = [
-  '/api', // OpenAPI spec
-  '/api/metadata', // User metadata
+  "/api", // OpenAPI spec
+  "/api/metadata", // User metadata
 ];
 
 // PASSPORT config
@@ -56,7 +56,7 @@ passport.use(
       profile: false,
     },
     async (req, identifier, profile, cb) => {
-      redisCount('login');
+      redisCount("login");
       const steamid = profile.steamid;
       const player = {
         steamid,
@@ -78,21 +78,21 @@ const onResFinish = async (
 ) => {
   const timeEnd = Date.now();
   const elapsed = timeEnd - timeStart;
-  if (elapsed > 2000 || config.NODE_ENV === 'development') {
-    console.log('[SLOWLOG] %s, %s', req.originalUrl, elapsed);
-    redisCount('slow_api_hit');
+  if (elapsed > 2000 || config.NODE_ENV === "development") {
+    console.log("[SLOWLOG] %s, %s", req.originalUrl, elapsed);
+    redisCount("slow_api_hit");
   }
   if (
     res.statusCode !== 500 &&
     res.statusCode !== 429 &&
     res.statusCode !== 404 &&
-    !unlimitedPaths.includes(req.originalUrl.split('?')[0]) &&
+    !unlimitedPaths.includes(req.originalUrl.split("?")[0]) &&
     elapsed < 15000
   ) {
     if (res.locals.isAPIRequest) {
       const apiKey = res.locals.usageIdentifier;
-      const apiTimestamp = moment.utc().startOf('month');
-      const rows = await db.from('api_keys').where({
+      const apiTimestamp = moment.utc().startOf("month");
+      const rows = await db.from("api_keys").where({
         api_key: apiKey,
       });
       const [apiRecord] = rows;
@@ -109,41 +109,41 @@ const onResFinish = async (
             apiRecord.api_key,
             apiRecord.customer_id,
             apiTimestamp,
-            '',
+            "",
           ],
         );
       }
     }
   }
-  redisCount('api_hits');
+  redisCount("api_hits");
   if (req.headers.origin === config.UI_HOST) {
-    redisCount('api_hits_ui');
+    redisCount("api_hits_ui");
   }
   const normPath = req.route?.path;
-  redisCountHash('api_paths', req.method + ' ' + normPath);
-  redisCountHash('api_status', String(res.statusCode));
+  redisCountHash("api_paths", req.method + " " + normPath);
+  redisCountHash("api_status", String(res.statusCode));
   if (req.headers.origin) {
-    redisCountHash('api_origins', req.headers.origin);
+    redisCountHash("api_origins", req.headers.origin);
   }
   if (req.user && req.user.account_id) {
-    redis.zadd('visitors', moment.utc().format('X'), req.user.account_id);
+    redis.zadd("visitors", moment.utc().format("X"), req.user.account_id);
     redis.zremrangebyscore(
-      'visitors',
-      '-inf',
-      moment.utc().subtract(30, 'day').format('X'),
+      "visitors",
+      "-inf",
+      moment.utc().subtract(30, "day").format("X"),
     );
   }
-  await redis.lpush('load_times', elapsed);
-  await redis.ltrim('load_times', 0, 9999);
-  redis.setex('lastRun:' + config.APP_NAME, config.HEALTH_TIMEOUT, elapsed);
+  await redis.lpush("load_times", elapsed);
+  await redis.ltrim("load_times", 0, 9999);
+  redis.setex("lastRun:" + config.APP_NAME, config.HEALTH_TIMEOUT, elapsed);
 };
 
 // Dummy User ID for testing
-if (config.NODE_ENV === 'test') {
+if (config.NODE_ENV === "test") {
   app.use((req, res, next) => {
     if (req.query.loggedin) {
       req.user = {
-        account_id: '1',
+        account_id: "1",
       };
     }
     next();
@@ -172,7 +172,7 @@ app.use((req, res, next) => {
 });
 
 // This is for passing the IP through if behind load balancer https://expressjs.com/en/guide/behind-proxies.html
-app.set('trust proxy', true);
+app.set("trust proxy", true);
 
 // Compress everything after this
 app.use(compression());
@@ -189,30 +189,30 @@ app.use(
 // Reject request if not GET and Origin header is present and not an approved domain (prevent CSRF)
 app.use((req, res, next) => {
   if (
-    req.method !== 'GET' &&
-    req.header('Origin') &&
-    req.header('Origin') !== config.UI_HOST
+    req.method !== "GET" &&
+    req.header("Origin") &&
+    req.header("Origin") !== config.UI_HOST
   ) {
     // Make an exception for replay parse request
-    if (req.method === 'POST' && req.originalUrl.startsWith('/api/request/')) {
+    if (req.method === "POST" && req.originalUrl.startsWith("/api/request/")) {
       return next();
     }
-    return res.status(403).json({ error: 'Invalid Origin header' });
+    return res.status(403).json({ error: "Invalid Origin header" });
   }
   return next();
 });
 
 // Health check
-app.get('/healthz', (req, res) => {
-  res.end('ok');
+app.get("/healthz", (req, res) => {
+  res.end("ok");
 });
 
-app.get('/ip', (req, res) => {
+app.get("/ip", (req, res) => {
   // Echo back the client's ip
   res.end(req.ip);
 });
 
-app.post('/register/:service/:host', async (req, res, next) => {
+app.post("/register/:service/:host", async (req, res, next) => {
   // check secret matches
   if (config.RETRIEVER_SECRET && config.RETRIEVER_SECRET !== req.query.key) {
     return res.status(403).end();
@@ -225,7 +225,7 @@ app.post('/register/:service/:host', async (req, res, next) => {
     if (size) {
       for (let i = 0; i < size; i++) {
         keys.push(now);
-        keys.push(req.params.host + '?' + i);
+        keys.push(req.params.host + "?" + i);
       }
     } else {
       keys.push(now);
@@ -237,46 +237,46 @@ app.post('/register/:service/:host', async (req, res, next) => {
   return res.end();
 });
 
-app.get('/logs{/:jobId}', (req, res) => {
+app.get("/logs{/:jobId}", (req, res) => {
   let logSub = new Redis(config.REDIS_URL);
   if (req.params.jobId) {
     logSub.subscribe(req.params.jobId);
   } else {
-    logSub.subscribe('api', 'parsed', 'gcdata', 'queue');
+    logSub.subscribe("api", "parsed", "gcdata", "queue");
   }
   res.writeHead(200, {
-    'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache',
-    Connection: 'keep-alive',
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache",
+    Connection: "keep-alive",
   });
   const messageHandler = (channel: string, message: string) => {
     // Write as a Server Sent Event
-    res.write('data: ' + message + '\n\n');
+    res.write("data: " + message + "\n\n");
     // Flush needed when using with compression
     res.flush();
   };
-  logSub.on('message', messageHandler);
-  req.once('close', () => {
+  logSub.on("message", messageHandler);
+  req.once("close", () => {
     // Client disconnected, shut down the subscribe
-    logSub.off('message', messageHandler);
+    logSub.off("message", messageHandler);
     logSub.disconnect();
   });
 });
 
-app.get('/retrieverData', async (req, res, next) => {
+app.get("/retrieverData", async (req, res, next) => {
   // check secret matches
   if (config.RETRIEVER_SECRET && config.RETRIEVER_SECRET !== req.query.key) {
     return res.status(403).end();
   }
   const accountCount = Number(req.query.count) || 5;
-  if ((await redis.scard('retrieverDataSet')) < accountCount) {
+  if ((await redis.scard("retrieverDataSet")) < accountCount) {
     // Refill the set if running out of logins
     const resp = await axios.get<string>(config.STEAM_ACCOUNT_DATA, {
-      responseType: 'text',
+      responseType: "text",
     });
     const accountData = resp.data.split(/\r\n|\r|\n/g);
     // Store in redis set
-    const idReqs = await getRedisCountDayHash('retrieverSteamIDs');
+    const idReqs = await getRedisCountDayHash("retrieverSteamIDs");
     for (let line of accountData) {
       const accountName = line.split(/:|\t/)[0];
       const reqs = idReqs[accountName] || 0;
@@ -288,12 +288,12 @@ app.get('/retrieverData', async (req, res, next) => {
       // const isLowRatio = reqs > 25 && ratio <= 0;
       // Don't add high usage logons or high fail logons
       if (reqs < 200) {
-        await redis.sadd('retrieverDataSet', line);
+        await redis.sadd("retrieverDataSet", line);
       }
     }
   }
   // Pop random elements
-  const pop = await redis.spop('retrieverDataSet', accountCount);
+  const pop = await redis.spop("retrieverDataSet", accountCount);
   const logins = pop.map((login) => {
     const accountName = login.split(/:|\t/)[0];
     const password = login.split(/:|\t/)[1];
@@ -302,7 +302,7 @@ app.get('/retrieverData', async (req, res, next) => {
   return res.json(logins);
 });
 
-app.get('/status', async (req, res, next) => {
+app.get("/status", async (req, res, next) => {
   const isAdmin = Boolean(
     req.user && admins.includes(Number(req.user.account_id)),
   );
@@ -310,9 +310,9 @@ app.get('/status', async (req, res, next) => {
   return res.json(status);
 });
 
-app.get('/login', passport.authenticate('steam-openid'));
+app.get("/login", passport.authenticate("steam-openid"));
 
-app.get('/return', passport.authenticate('steam-openid'), (req, res) => {
+app.get("/return", passport.authenticate("steam-openid"), (req, res) => {
   if (config.UI_HOST) {
     return res.redirect(
       req.user
@@ -320,28 +320,28 @@ app.get('/return', passport.authenticate('steam-openid'), (req, res) => {
         : config.UI_HOST,
     );
   }
-  return res.redirect('/api');
+  return res.redirect("/api");
 });
 
-app.get('/logout', (req, res) => {
+app.get("/logout", (req, res) => {
   req.logout(() => {
     req.session = null;
     if (config.UI_HOST) {
       return res.redirect(config.UI_HOST);
     }
-    return res.redirect('/api');
+    return res.redirect("/api");
   });
 });
 
 // req.body available after this
 app.use(bodyParser.json());
 
-app.get('/subscribeSuccess', async (req, res, next) => {
+app.get("/subscribeSuccess", async (req, res, next) => {
   if (!req.query.session_id) {
-    return res.status(400).json({ error: 'no session ID' });
+    return res.status(400).json({ error: "no session ID" });
   }
   if (!req.user?.account_id) {
-    return res.status(400).json({ error: 'no account ID' });
+    return res.status(400).json({ error: "no account ID" });
   }
   // look up the checkout session id: https://stripe.com/docs/payments/checkout/custom-success-page
   const session = await stripe.checkout.sessions.retrieve(
@@ -351,16 +351,16 @@ app.get('/subscribeSuccess', async (req, res, next) => {
   const accountId = Number(req.user.account_id);
   // associate the customer id with the steam account ID (req.user.account_id)
   await db.raw(
-    'INSERT INTO subscriber(account_id, customer_id, status) VALUES (?, ?, ?) ON CONFLICT(account_id) DO UPDATE SET account_id = EXCLUDED.account_id, customer_id = EXCLUDED.customer_id, status = EXCLUDED.status',
-    [accountId, customer.id, 'active'],
+    "INSERT INTO subscriber(account_id, customer_id, status) VALUES (?, ?, ?) ON CONFLICT(account_id) DO UPDATE SET account_id = EXCLUDED.account_id, customer_id = EXCLUDED.customer_id, status = EXCLUDED.status",
+    [accountId, customer.id, "active"],
   );
   // Send the user back to the subscribe page
   return res.redirect(`${config.UI_HOST}/subscribe`);
 });
 
-app.post('/manageSub', async (req, res, next) => {
+app.post("/manageSub", async (req, res, next) => {
   if (!req.user?.account_id) {
-    return res.status(400).json({ error: 'no account ID' });
+    return res.status(400).json({ error: "no account ID" });
   }
   const result = await db.raw(
     "SELECT customer_id FROM subscriber where account_id = ? AND status = 'active'",
@@ -368,7 +368,7 @@ app.post('/manageSub', async (req, res, next) => {
   );
   const customer = result?.rows?.[0];
   if (!customer) {
-    return res.status(400).json({ error: 'customer not found' });
+    return res.status(400).json({ error: "customer not found" });
   }
   const session = await stripe.billingPortal.sessions.create({
     customer: customer.customer_id,
@@ -379,17 +379,17 @@ app.post('/manageSub', async (req, res, next) => {
 
 // CORS Preflight for API keys
 // NB: make sure UI_HOST is set e.g. http://localhost:3000 otherwise CSRF check above will stop preflight from working
-app.options('/keys', cors());
-app.use('/keys', keys);
+app.options("/keys", cors());
+app.use("/keys", keys);
 
 // Rate limiter and API key middleware
 // Everything after this is rate limited
 app.use(async (req, res, next) => {
   const timeStart = Date.now();
-  res.once('finish', () => onResFinish(req, res, timeStart));
+  res.once("finish", () => onResFinish(req, res, timeStart));
   const apiKey =
     (req.headers.authorization &&
-      req.headers.authorization.replace('Bearer ', '')) ||
+      req.headers.authorization.replace("Bearer ", "")) ||
     (req.query.api_key as string);
   if (
     apiKey &&
@@ -397,21 +397,21 @@ app.use(async (req, res, next) => {
       apiKey,
     )
   ) {
-    return res.status(400).json({ error: 'Invalid API key format' });
+    return res.status(400).json({ error: "Invalid API key format" });
   }
   if (config.ENABLE_API_LIMIT && apiKey) {
     const { rows } = await db.raw(
-      'select api_key from api_keys where api_key = ? and is_canceled IS NOT TRUE',
+      "select api_key from api_keys where api_key = ? and is_canceled IS NOT TRUE",
       [apiKey],
     );
     res.locals.isAPIRequest = Boolean(rows.length > 0);
   }
   const { ip } = req;
-  let rateLimit: number | string = '';
+  let rateLimit: number | string = "";
   if (res.locals.isAPIRequest) {
     const requestAPIKey =
       (req.headers.authorization &&
-        req.headers.authorization.replace('Bearer ', '')) ||
+        req.headers.authorization.replace("Bearer ", "")) ||
       req.query.api_key;
     res.locals.usageIdentifier = requestAPIKey;
     rateLimit = config.API_KEY_PER_MIN_LIMIT;
@@ -423,26 +423,26 @@ app.use(async (req, res, next) => {
   }
   if (
     config.ENABLE_API_LIMIT &&
-    !unlimitedPaths.includes(req.originalUrl.split('?')[0])
+    !unlimitedPaths.includes(req.originalUrl.split("?")[0])
   ) {
     let rateCost = 1;
-    if (req.method === 'POST' && req.route?.path === '/request/:match_id') {
+    if (req.method === "POST" && req.route?.path === "/request/:match_id") {
       rateCost = 10;
     }
     const command = redis.multi();
     command
-      .hincrby('rate_limit', res.locals.usageIdentifier, rateCost)
-      .expireat('rate_limit', getStartOfBlockMinutes(1, 1));
+      .hincrby("rate_limit", res.locals.usageIdentifier, rateCost)
+      .expireat("rate_limit", getStartOfBlockMinutes(1, 1));
     command
-      .hincrby('daily_rate_limit', res.locals.usageIdentifier, rateCost)
-      .expireat('daily_rate_limit', getEndOfDay());
+      .hincrby("daily_rate_limit", res.locals.usageIdentifier, rateCost)
+      .expireat("daily_rate_limit", getEndOfDay());
     const resp = await command.exec();
     const incrValue = resp?.[0]?.[1];
     const dailyIncrValue = resp?.[2]?.[1];
-    if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
+    if (config.NODE_ENV === "development" || config.NODE_ENV === "test") {
       // console.log(resp);
       console.log(
-        '[WEB] %s, minute: %s, day: %s',
+        "[WEB] %s, minute: %s, day: %s",
         req.originalUrl,
         incrValue,
         dailyIncrValue,
@@ -451,22 +451,22 @@ app.use(async (req, res, next) => {
     const remMinute = Number(rateLimit) - Number(incrValue);
     const remDay = Number(config.API_FREE_LIMIT) - Number(dailyIncrValue);
     res.set({
-      'X-Rate-Limit-Remaining-Minute': remMinute,
-      'X-IP-Address': ip,
+      "X-Rate-Limit-Remaining-Minute": remMinute,
+      "X-IP-Address": ip,
     });
     if (!res.locals.isAPIRequest) {
       res.set({
-        'X-Rate-Limit-Remaining-Day': remDay,
+        "X-Rate-Limit-Remaining-Day": remDay,
       });
     }
     if (remMinute < 0) {
       return res.status(429).json({
-        error: 'minute rate limit exceeded',
+        error: "minute rate limit exceeded",
       });
     }
     if (!res.locals.isAPIRequest && remDay < 0) {
       return res.status(429).json({
-        error: 'daily api limit exceeded',
+        error: "daily api limit exceeded",
       });
     }
   }
@@ -474,31 +474,31 @@ app.use(async (req, res, next) => {
 });
 
 // API data endpoints
-app.use('/api', api);
+app.use("/api", api);
 
-if (config.NODE_ENV === 'test') {
-  app.get('/gen429', (req, res) => res.status(429).end());
-  app.get('/gen500', (req, res) => res.status(500).end());
+if (config.NODE_ENV === "test") {
+  app.get("/gen429", (req, res) => res.status(429).end());
+  app.get("/gen500", (req, res) => res.status(500).end());
 }
 
 // 404 route
 app.use((req, res) =>
   res.status(404).json({
-    error: 'Not Found',
+    error: "Not Found",
   }),
 );
 
 // 500 route
 app.use(
   (err: Error, req: express.Request, res: express.Response, next: ErrorCb) => {
-    console.log('[ERR]', req.originalUrl, err);
-    redisCount('500_error');
-    if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
+    console.log("[ERR]", req.originalUrl, err);
+    redisCount("500_error");
+    if (config.NODE_ENV === "development" || config.NODE_ENV === "test") {
       // default express handler
       return next(err?.message || JSON.stringify(err));
     }
     return res.status(500).json({
-      error: 'Internal Server Error',
+      error: "Internal Server Error",
     });
   },
 );
@@ -506,11 +506,11 @@ app.use(
 // Start the server
 const port = config.PORT || config.FRONTEND_PORT;
 const server = app.listen(port, () => {
-  console.log('[WEB] listening on %s', port);
+  console.log("[WEB] listening on %s", port);
 });
 
-process.on('exit', (code) => {
+process.on("exit", (code) => {
   if (code > 0) {
-    redisCount('web_crash');
+    redisCount("web_crash");
   }
 });

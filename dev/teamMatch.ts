@@ -1,8 +1,8 @@
-import db, { upsert } from '../svc/store/db.ts';
+import db, { upsert } from "../svc/store/db.ts";
 
 const matches = await db
-  .select(['radiant_team_id', 'dire_team_id', 'match_id'])
-  .from('matches');
+  .select(["radiant_team_id", "dire_team_id", "match_id"])
+  .from("matches");
 matches.forEach((match: any) => {
   console.log(match.match_id);
   const arr: any[] = [];
@@ -21,7 +21,7 @@ matches.forEach((match: any) => {
     });
   }
   arr.forEach(async (tm) => {
-    await upsert(db, 'team_match', tm, {
+    await upsert(db, "team_match", tm, {
       team_id: tm.team_id,
       match_id: tm.match_id,
     });

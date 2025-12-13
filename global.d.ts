@@ -297,35 +297,35 @@ type ParseJob = {
   origin?: DataOrigin;
 };
 
-type QueueJob = QueueInput['data'];
-type QueueName = QueueInput['name'];
+type QueueJob = QueueInput["data"];
+type QueueName = QueueInput["name"];
 type QueueInput =
   | {
-      name: 'mmrQueue';
+      name: "mmrQueue";
       data: MmrJob;
     }
   | {
-      name: 'profileQueue';
+      name: "profileQueue";
       data: ProfileJob;
     }
   | {
-      name: 'fhQueue';
+      name: "fhQueue";
       data: FullHistoryJob;
     }
   | {
-      name: 'scenariosQueue';
+      name: "scenariosQueue";
       data: ScenariosJob;
     }
   | {
-      name: 'parse';
+      name: "parse";
       data: ParseJob;
     }
   | {
-      name: 'gcQueue';
+      name: "gcQueue";
       data: GcDataJob;
     }
   | {
-      name: 'cacheQueue';
+      name: "cacheQueue";
       data: CacheJob;
     };
 
@@ -341,7 +341,7 @@ type JobMetadata = {
   i: number;
 };
 
-type Knex = import('knex').Knex;
+type Knex = import("knex").Knex;
 type ReliableQueueOptions = {
   attempts?: number;
   priority?: number;
@@ -356,14 +356,14 @@ type ProPlayer = {
 };
 
 type DataType =
-  | 'api'
-  | 'parsed'
-  | 'gcdata'
-  | 'meta'
-  | 'identity'
-  | 'ranks'
-  | 'reconcile';
-type DataOrigin = 'scanner';
+  | "api"
+  | "parsed"
+  | "gcdata"
+  | "meta"
+  | "identity"
+  | "ranks"
+  | "reconcile";
+type DataOrigin = "scanner";
 
 type CommonInsertOptions = {
   origin?: DataOrigin;
@@ -373,7 +373,7 @@ type CommonInsertOptions = {
 };
 
 type ApiInsertOptions = {
-  type: 'api';
+  type: "api";
 } & CommonInsertOptions;
 
 type NonApiInsertOptions = {
@@ -399,13 +399,13 @@ type PathVerbSpec = {
   };
   route: () => string;
   func: (
-    req: import('express').Request,
-    res: import('express').Response,
+    req: import("express").Request,
+    res: import("express").Response,
     cb: ErrorCb,
   ) => Promise<any>;
 };
 
-type HttpVerb = 'get' | 'post';
+type HttpVerb = "get" | "post";
 type OpenAPISpec = {
   openapi: string;
   info: any;
@@ -419,89 +419,89 @@ type OpenAPISpec = {
 };
 
 type MetricName =
-  | 'parsed'
-  | 'steam_api_call'
-  | 'steam_proxy_call'
-  | 'steam_429'
-  | 'steam_403'
-  | 'web_crash'
-  | '500_error'
-  | 'api_hits_ui'
-  | 'api_hits'
-  | 'retriever_player'
-  | 'fullhistory'
-  | 'match_archive_read'
-  | 'match_archive_write'
-  | 'auto_parse'
-  | 'added_match'
-  | 'distinct_match_player'
-  | 'distinct_match_player_user'
-  | 'distinct_match_player_recent_user'
-  | 'parser'
-  | 'gcdata'
-  | 'meta_parse'
-  | 'retriever'
-  | 'build_match'
-  | 'player_matches'
-  | 'self_profile_view'
-  | 'match_cache_hit'
-  | 'player_temp_hit'
-  | 'player_temp_miss'
-  | 'player_temp_skip'
-  | 'player_temp_wait'
-  | 'player_temp_write'
-  | 'player_temp_write_bytes'
-  | 'distinct_player_temp'
-  | 'auto_player_temp'
-  | 'auto_player_temp_hit'
-  | 'auto_player_temp_miss'
-  | 'distinct_auto_player_temp'
-  | 'steam_api_backfill'
-  | 'steam_api_notfound'
-  | 'steam_gc_backfill'
-  | 'request_api_key'
-  | 'request_ui'
-  | 'request'
-  | 'distinct_request'
-  | 'reparse'
-  | 'regcdata'
-  | 'reapi'
-  | 'parser_fail'
-  | 'parser_crash'
-  | 'parser_skip'
-  | 'incomplete_archive'
-  | 'gen_api_key_invalid'
-  | 'parser_job'
-  | 'oldparse'
-  | 'secondary_scanner'
-  | 'archive_hit'
-  | 'archive_miss'
-  | 'archive_write_bytes'
-  | 'archive_read_bytes'
-  | 'archive_get_error'
-  | 'archive_put_error'
-  | 'slow_api_hit'
-  | 'request_api_fail'
-  | 'pmh_fullhistory'
-  | 'pmh_gcdata'
-  | 'pmh_parsed'
-  | 'reconcile'
-  | 'profiler'
-  | 'rater'
-  | 'rater_skip'
-  | 'backfill_success'
-  | 'backfill_fail'
-  | 'backfill_skip'
-  | 'backfill_page_back'
-  | 'cache_api_hit'
-  | 'cache_gcdata_hit'
-  | 'cache_parsed_hit'
-  | 'player_discover'
-  | 'scenario'
-  | 'dedupe_queue'
-  | 'add_queue_fail'
-  | 'login'
-  | 'alias';
+  | "parsed"
+  | "steam_api_call"
+  | "steam_proxy_call"
+  | "steam_429"
+  | "steam_403"
+  | "web_crash"
+  | "500_error"
+  | "api_hits_ui"
+  | "api_hits"
+  | "retriever_player"
+  | "fullhistory"
+  | "match_archive_read"
+  | "match_archive_write"
+  | "auto_parse"
+  | "added_match"
+  | "distinct_match_player"
+  | "distinct_match_player_user"
+  | "distinct_match_player_recent_user"
+  | "parser"
+  | "gcdata"
+  | "meta_parse"
+  | "retriever"
+  | "build_match"
+  | "player_matches"
+  | "self_profile_view"
+  | "match_cache_hit"
+  | "player_temp_hit"
+  | "player_temp_miss"
+  | "player_temp_skip"
+  | "player_temp_wait"
+  | "player_temp_write"
+  | "player_temp_write_bytes"
+  | "distinct_player_temp"
+  | "auto_player_temp"
+  | "auto_player_temp_hit"
+  | "auto_player_temp_miss"
+  | "distinct_auto_player_temp"
+  | "steam_api_backfill"
+  | "steam_api_notfound"
+  | "steam_gc_backfill"
+  | "request_api_key"
+  | "request_ui"
+  | "request"
+  | "distinct_request"
+  | "reparse"
+  | "regcdata"
+  | "reapi"
+  | "parser_fail"
+  | "parser_crash"
+  | "parser_skip"
+  | "incomplete_archive"
+  | "gen_api_key_invalid"
+  | "parser_job"
+  | "oldparse"
+  | "secondary_scanner"
+  | "archive_hit"
+  | "archive_miss"
+  | "archive_write_bytes"
+  | "archive_read_bytes"
+  | "archive_get_error"
+  | "archive_put_error"
+  | "slow_api_hit"
+  | "request_api_fail"
+  | "pmh_fullhistory"
+  | "pmh_gcdata"
+  | "pmh_parsed"
+  | "reconcile"
+  | "profiler"
+  | "rater"
+  | "rater_skip"
+  | "backfill_success"
+  | "backfill_fail"
+  | "backfill_skip"
+  | "backfill_page_back"
+  | "cache_api_hit"
+  | "cache_gcdata_hit"
+  | "cache_parsed_hit"
+  | "player_discover"
+  | "scenario"
+  | "dedupe_queue"
+  | "add_queue_fail"
+  | "login"
+  | "alias";
 
 // Object to map player_slot to basic info
 type PGroup = {
@@ -544,23 +544,23 @@ type HistoryType = {
   retries: number;
 };
 
-type MatchHistory = typeof import('./json/history_api.json');
-type MatchSequence = typeof import('./json/sequence_api.json');
-type RetrieverPlayer = typeof import('./json/retriever_player.json');
-type RetrieverMatch = typeof import('./json/retriever_match.json');
-type RetrieverAliases = typeof import('./json/retriever_aliases.json');
-type ProfileSummaries = typeof import('./json/summaries_api.json');
-type TopLiveGames = typeof import('./json/toplivegames_api.json');
-type Heroes = typeof import('./json/heroes_api.json');
-type Leagues = typeof import('./json/leagues_api.json');
-type LeagueToInsert = Omit<Leagues['infos'][number], 'tier'> & {
+type MatchHistory = typeof import("./json/history_api.json");
+type MatchSequence = typeof import("./json/sequence_api.json");
+type RetrieverPlayer = typeof import("./json/retriever_player.json");
+type RetrieverMatch = typeof import("./json/retriever_match.json");
+type RetrieverAliases = typeof import("./json/retriever_aliases.json");
+type ProfileSummaries = typeof import("./json/summaries_api.json");
+type TopLiveGames = typeof import("./json/toplivegames_api.json");
+type Heroes = typeof import("./json/heroes_api.json");
+type Leagues = typeof import("./json/leagues_api.json");
+type LeagueToInsert = Omit<Leagues["infos"][number], "tier"> & {
   tier: string | number;
   ticket?: null;
   banner?: null;
   leagueid?: number;
 };
-type MatchDetails = typeof import('./json/details_api.json');
-type ApiData = MatchDetails['result'] & {
+type MatchDetails = typeof import("./json/details_api.json");
+type ApiData = MatchDetails["result"] & {
   picks_bans?: {
     hero_id: number;
     order: number;
@@ -569,7 +569,7 @@ type ApiData = MatchDetails['result'] & {
   radiant_team_id?: number;
   dire_team_id?: number;
 };
-type ApiDataPlayer = ApiData['players'][number] & {
+type ApiDataPlayer = ApiData["players"][number] & {
   ability_upgrades_arr?: number[];
 };
 type InsertMatchInput = ApiData | GcData | ParsedData;

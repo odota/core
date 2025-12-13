@@ -1,10 +1,10 @@
 // Runs background processes related to API keys and billing/usage
-import moment from 'moment';
-import stripe from './store/stripe.ts';
-import db from './store/db.ts';
-import config from '../config.ts';
-import { runInLoop } from './util/utility.ts';
-import type Stripe from 'stripe';
+import moment from "moment";
+import stripe from "./store/stripe.ts";
+import db from "./store/db.ts";
+import config from "../config.ts";
+import { runInLoop } from "./util/utility.ts";
+import type Stripe from "stripe";
 
 runInLoop(
   async function apiAdmin() {
@@ -14,7 +14,7 @@ runInLoop(
       // From the docs:
       // By default, returns a list of subscriptions that have not been canceled.
       // In order to list canceled subscriptions, specify status=canceled. Use all for completeness.
-      status: 'all' as Stripe.Subscription.Status,
+      status: "all" as Stripe.Subscription.Status,
     };
     let num = 0;
     // https://stripe.com/docs/api/pagination/auto so we don't need to worry about cursors
@@ -22,8 +22,8 @@ runInLoop(
       num++;
       // Deactivate any keys which failed to bill
       // updateAPIKeysInRedis deletes the keys so just do that there
-      if (sub.status === 'canceled') {
-        console.log('updateStripeUsage CANCELED SUBSCRIPTION', sub.id);
+      if (sub.status === "canceled") {
+        console.log("updateStripeUsage CANCELED SUBSCRIPTION", sub.id);
         await db.raw(
           `
                 UPDATE api_keys SET is_canceled = true WHERE subscription_id = ?
@@ -34,8 +34,8 @@ runInLoop(
       }
       const startTime = moment
         .unix(sub.current_period_end - 1)
-        .startOf('month');
-      const endTime = moment.unix(sub.current_period_end - 1).endOf('month');
+        .startOf("month");
+      const endTime = moment.unix(sub.current_period_end - 1).endOf("month");
       const res = await db.raw(
         `
               SELECT
@@ -54,7 +54,7 @@ runInLoop(
                 GROUP BY api_key_usage.api_key, api_key_usage.ip
               ) as t1
             `,
-        [startTime.format('YYYY-MM-DD'), endTime.format('YYYY-MM-DD'), sub.id],
+        [startTime.format("YYYY-MM-DD"), endTime.format("YYYY-MM-DD"), sub.id],
       );
       if (res.rows.length > 0 && res.rows[0].usage_count) {
         const usageCount = res.rows[0].usage_count;
@@ -64,11 +64,11 @@ runInLoop(
         // but we'd have to make changes to web.js and metrics
         await stripe.subscriptionItems.createUsageRecord(sub.items.data[0].id, {
           quantity: Math.ceil(usageCount / Number(config.API_BILLING_UNIT)),
-          action: 'set',
+          action: "set",
           timestamp: sub.current_period_end - 1,
         });
         console.log(
-          'updateStripeUsage updated',
+          "updateStripeUsage updated",
           sub.id,
           usageCount,
           Math.ceil(usageCount / Number(config.API_BILLING_UNIT)),

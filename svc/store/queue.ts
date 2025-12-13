@@ -1,11 +1,11 @@
-import moment from 'moment';
-import redis, { redisCount } from './redis.ts';
-import db from './db.ts';
-import config from '../../config.ts';
-import { Client } from 'pg';
-import c from 'ansi-colors';
+import moment from "moment";
+import redis, { redisCount } from "./redis.ts";
+import db from "./db.ts";
+import config from "../../config.ts";
+import { Client } from "pg";
+import c from "ansi-colors";
 
-moment.relativeTimeThreshold('ss', 0);
+moment.relativeTimeThreshold("ss", 0);
 
 export async function runQueue<T>(
   queueName: QueueName,
@@ -35,7 +35,7 @@ export async function runQueue<T>(
       }
       const end = Date.now();
       await redis.setex(
-        'lastRun:' + config.APP_NAME,
+        "lastRun:" + config.APP_NAME,
         config.HEALTH_TIMEOUT,
         end - start,
       );
@@ -62,7 +62,7 @@ export async function runReliableQueue(
         continue;
       }
       const start = Date.now();
-      await consumer.query('BEGIN TRANSACTION');
+      await consumer.query("BEGIN TRANSACTION");
       const result = await consumer.query(
         `
       UPDATE queue SET attempts = attempts - 1, next_attempt_time = $1
@@ -77,7 +77,7 @@ export async function runReliableQueue(
       )
       RETURNING *
       `,
-        [moment.utc().add(3, 'minute'), queueName],
+        [moment.utc().add(3, "minute"), queueName],
       );
       const job = result?.rows?.[0];
       if (job) {
@@ -92,23 +92,23 @@ export async function runReliableQueue(
           // If the processor returns true or out of attempts, it's successful and we should delete the job and then commit
           // Otherwise, it's an expected failure and we should commit the transaction to consume an attempt
           if (success || job.attempts <= 0) {
-            await consumer.query('DELETE FROM queue WHERE id = $1', [job.id]);
+            await consumer.query("DELETE FROM queue WHERE id = $1", [job.id]);
           }
-          await consumer.query('COMMIT');
+          await consumer.query("COMMIT");
           const end = Date.now();
           await redis.setex(
-            'lastRun:' + config.APP_NAME,
+            "lastRun:" + config.APP_NAME,
             config.HEALTH_TIMEOUT,
             end - start,
           );
         } catch (e) {
           console.log(e);
           // If the processor crashes unexpectedly, we should rollback the transaction to not consume an attempt
-          await consumer.query('ROLLBACK');
+          await consumer.query("ROLLBACK");
           await new Promise((resolve) => setTimeout(resolve, 1000));
         }
       } else {
-        await consumer.query('COMMIT');
+        await consumer.query("COMMIT");
         // console.log('no job available, waiting');
         await new Promise((resolve) => setTimeout(resolve, 1000));
       }
@@ -125,7 +125,7 @@ export async function addJob(input: QueueInput) {
 }
 
 function exhaustive(name: never) {
-  console.log('Unhandled queue name case: %s', name);
+  console.log("Unhandled queue name case: %s", name);
 }
 
 export async function addReliableJob(
@@ -134,19 +134,19 @@ export async function addReliableJob(
 ): Promise<ReliableQueueRow | undefined> {
   const { name, data } = input;
   let jobKey;
-  if (name === 'parse') {
+  if (name === "parse") {
     jobKey = `${name}:${data.match_id}`;
-  } else if (name === 'fhQueue') {
+  } else if (name === "fhQueue") {
     jobKey = `${name}:${data.account_id}`;
-  } else if (name === 'gcQueue') {
+  } else if (name === "gcQueue") {
     jobKey = `${name}:${data.match_id}`;
-  } else if (name === 'scenariosQueue') {
+  } else if (name === "scenariosQueue") {
     jobKey = `${name}:${data.match_id}`;
-  } else if (name === 'profileQueue') {
+  } else if (name === "profileQueue") {
     jobKey = `${name}:${data.account_id}`;
-  } else if (name === 'mmrQueue') {
+  } else if (name === "mmrQueue") {
     jobKey = `${name}:${data.account_id}`;
-  } else if (name === 'cacheQueue') {
+  } else if (name === "cacheQueue") {
     jobKey = `${name}:${data.account_id}`;
   } else {
     exhaustive(name);
@@ -174,31 +174,31 @@ export async function addReliableJob(
   );
   let job = rows[0];
   const source = options.caller ?? config.APP_NAME;
-  if (job && source === 'web') {
+  if (job && source === "web") {
     const message = c.magenta(
       `[${new Date().toISOString()}] [${
         source
       }] [queue: ${name}] [pri: ${priority}] [att: ${attempts}] ${
-        name === 'parse' ? data.match_id : ''
+        name === "parse" ? data.match_id : ""
       }`,
     );
-    redis.publish('queue', message);
+    redis.publish("queue", message);
   }
   // This might be undefined if a job with the same key already exists. Try to find it
   // May not exist anymore if the job finished in the meantime
   // Note: In Postgres 18+ we can use RETURNING with OLD to fetch the old id and return it
   if (!job) {
-    redisCount('dedupe_queue');
+    redisCount("dedupe_queue");
     const { rows } = await dbToUse.raw<{
       rows: ReliableQueueRow[];
-    }>('SELECT id from queue WHERE job_key = ?', [jobKey]);
+    }>("SELECT id from queue WHERE job_key = ?", [jobKey]);
     job = rows[0];
   }
   return job;
 }
 
 export async function getReliableJob(jobId: string) {
-  const result = await db.raw('SELECT * FROM queue WHERE id = ?', [
+  const result = await db.raw("SELECT * FROM queue WHERE id = ?", [
     Number(jobId),
   ]);
   return result.rows[0];

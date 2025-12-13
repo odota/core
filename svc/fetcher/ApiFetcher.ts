@@ -1,11 +1,11 @@
-import { blobArchive } from '../store/archive.ts';
-import { MatchFetcherBase } from './MatchFetcherBase.ts';
-import { insertMatch } from '../util/insert.ts';
-import { config } from '../../config.ts';
-import db from '../store/db.ts';
-import { GcdataFetcher } from './GcdataFetcher.ts';
-import { redisCount } from '../store/redis.ts';
-import { SteamAPIUrls, getSteamAPIDataWithRetry } from '../util/http.ts';
+import { blobArchive } from "../store/archive.ts";
+import { MatchFetcherBase } from "./MatchFetcherBase.ts";
+import { insertMatch } from "../util/insert.ts";
+import { config } from "../../config.ts";
+import db from "../store/db.ts";
+import { GcdataFetcher } from "./GcdataFetcher.ts";
+import { redisCount } from "../store/redis.ts";
+import { SteamAPIUrls, getSteamAPIDataWithRetry } from "../util/http.ts";
 
 const gcFetcher = new GcdataFetcher();
 
@@ -35,16 +35,16 @@ export class ApiFetcher extends MatchFetcherBase<ApiData> {
         match = await this.backfillFromSeqNumApi_INTERNAL(matchId);
       }
     } catch (e: any) {
-      if (e?.result?.error === 'Match ID not found') {
+      if (e?.result?.error === "Match ID not found") {
         // Steam API reported this ID doesn't exist
-        redisCount('steam_api_notfound');
+        redisCount("steam_api_notfound");
       } else {
         console.log(e);
       }
     }
     if (match) {
       await insertMatch(match, {
-        type: 'api',
+        type: "api",
       });
       // insertMatch transforms the data before saving
       // So we need to read it back instead of returning match here
@@ -55,7 +55,7 @@ export class ApiFetcher extends MatchFetcherBase<ApiData> {
     }
     return {
       data: null,
-      error: '[APIDATA]: Could not get API data for match ' + matchId,
+      error: "[APIDATA]: Could not get API data for match " + matchId,
     };
   };
   backfillFromSeqNumApi_INTERNAL = async (matchId: number) => {
@@ -67,25 +67,25 @@ export class ApiFetcher extends MatchFetcherBase<ApiData> {
     // Insert the data normally as if API data from scanner
 
     // Don't try with recent matches since there might be gaps in match IDs
-    const max = (await db.raw('select max(match_id) from public_matches'))
+    const max = (await db.raw("select max(match_id) from public_matches"))
       ?.rows?.[0]?.max;
     const limit = max - 10000;
     if (matchId > limit) {
-      redisCount('backfill_skip');
+      redisCount("backfill_skip");
       return;
     }
     let earlierSeqNum;
     let pageBack = 0;
     while (!earlierSeqNum && pageBack <= 1000) {
-      console.log('looking back %s for matchId %s', pageBack, matchId);
+      console.log("looking back %s for matchId %s", pageBack, matchId);
       const data = await this.getData(matchId - pageBack);
       earlierSeqNum = data?.match_seq_num;
       pageBack += 1;
       await new Promise((resolve) => setTimeout(resolve, 1000));
     }
     if (!earlierSeqNum) {
-      redisCount('backfill_fail');
-      console.log('could not find approx seqnum for match %s', matchId);
+      redisCount("backfill_fail");
+      console.log("could not find approx seqnum for match %s", matchId);
       return;
     }
     const approxSeqNum = earlierSeqNum;
@@ -104,7 +104,7 @@ export class ApiFetcher extends MatchFetcherBase<ApiData> {
       const match = body.result.matches.find((m) => m.match_id === matchId);
       const first = body.result.matches[0];
       const last = body.result.matches[body.result.matches.length - 1];
-      redisCount('backfill_page_back');
+      redisCount("backfill_page_back");
       await new Promise((resolve) => setTimeout(resolve, 3000));
       return [
         match,
@@ -129,31 +129,31 @@ export class ApiFetcher extends MatchFetcherBase<ApiData> {
         await new Promise((resolve) => setTimeout(resolve, 1000));
       }
       if (!targetEndedAt) {
-        console.log('could not find %s targetEndedAt from retriever', matchId);
+        console.log("could not find %s targetEndedAt from retriever", matchId);
         return;
       }
       let backward = firstEndedAt > targetEndedAt;
       while (!match) {
         // Compare to the times from body.result.matches
         console.log(
-          'firstEndedAt: %s, lastEndedAt: %s, targetEndedAt: %s',
+          "firstEndedAt: %s, lastEndedAt: %s, targetEndedAt: %s",
           new Date(firstEndedAt * 1000).toISOString(),
           new Date(lastEndedAt * 1000).toISOString(),
           new Date(targetEndedAt * 1000).toISOString(),
         );
         if (Math.abs(earlierSeqNum - approxSeqNum) > 30000 && !match) {
           // Too far out of range
-          redisCount('backfill_fail');
-          console.log('could not find in seqnum response match %s', matchId);
+          redisCount("backfill_fail");
+          console.log("could not find in seqnum response match %s", matchId);
           return;
         }
         let bigStep = Math.abs(firstEndedAt - targetEndedAt) > 600;
         const stepSize = bigStep ? 1000 : 100;
         if (backward) {
-          console.log('go back %s', stepSize);
+          console.log("go back %s", stepSize);
           earlierSeqNum -= stepSize;
         } else {
-          console.log('go forward %s', stepSize);
+          console.log("go forward %s", stepSize);
           earlierSeqNum += stepSize;
         }
         let result = await getPageFindMatch(earlierSeqNum, matchId);
@@ -162,11 +162,11 @@ export class ApiFetcher extends MatchFetcherBase<ApiData> {
         lastEndedAt = result[2];
       }
     }
-    redisCount('backfill_success');
+    redisCount("backfill_success");
     console.log(match);
     return match;
   };
   checkAvailable = () => {
-    throw new Error('not implemented');
+    throw new Error("not implemented");
   };
 }
