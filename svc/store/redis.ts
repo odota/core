@@ -80,24 +80,32 @@ export async function redisCount(prefix: MetricName, incrBy = 1) {
   if (!redis) {
     return;
   }
-  const key = `${prefix}:v2:${moment.utc().startOf("hour").format("X")}`;
-  await redis.incrby(key, incrBy);
-  await redis.expireat(
-    key,
-    moment.utc().startOf("hour").add(1, "day").format("X"),
-  );
+  try {
+    const key = `${prefix}:v2:${moment.utc().startOf("hour").format("X")}`;
+    await redis.incrby(key, incrBy);
+    await redis.expireat(
+      key,
+      moment.utc().startOf("hour").add(1, "day").format("X"),
+    );
+  } catch (e) {
+    console.log(e);
+  }
 }
 
 export async function redisCountDistinct(prefix: MetricName, value: string) {
   if (!redis) {
     return;
   }
-  const key = `${prefix}:v2:${moment.utc().startOf("hour").format("X")}`;
-  await redis.pfadd(key, value);
-  await redis.expireat(
-    key,
-    moment.utc().startOf("hour").add(1, "day").format("X"),
-  );
+  try {
+    const key = `${prefix}:v2:${moment.utc().startOf("hour").format("X")}`;
+    await redis.pfadd(key, value);
+    await redis.expireat(
+      key,
+      moment.utc().startOf("hour").add(1, "day").format("X"),
+    );
+  } catch (e) {
+    console.log(e);
+  }
 }
 
 export async function redisCountHash(
@@ -108,12 +116,16 @@ export async function redisCountHash(
   if (!redis) {
     return;
   }
-  const key = `${prefix}:${moment.utc().startOf("hour").format("X")}`;
-  await redis.hincrby(key, field, incrBy);
-  await redis.expireat(
-    key,
-    moment.utc().startOf("hour").add(1, "day").format("X"),
-  );
+  try {
+    const key = `${prefix}:${moment.utc().startOf("hour").format("X")}`;
+    await redis.hincrby(key, field, incrBy);
+    await redis.expireat(
+      key,
+      moment.utc().startOf("hour").add(1, "day").format("X"),
+    );
+  } catch (e) {
+    console.log(e);
+  }
 }
 
 // This may be null if Redis is not configured

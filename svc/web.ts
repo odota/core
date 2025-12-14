@@ -126,8 +126,8 @@ const onResFinish = async (
     redisCountHash("api_origins", req.headers.origin);
   }
   if (req.user && req.user.account_id) {
-    redis.zadd("visitors", moment.utc().format("X"), req.user.account_id);
-    redis.zremrangebyscore(
+    await redis.zadd("visitors", moment.utc().format("X"), req.user.account_id);
+    await redis.zremrangebyscore(
       "visitors",
       "-inf",
       moment.utc().subtract(30, "day").format("X"),
