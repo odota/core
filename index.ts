@@ -32,7 +32,7 @@ if (process.env.ROLE) {
     () => {
       execSync("pm2 flush");
     },
-    24 * 60 * 60 * 1000,
+    12 * 60 * 60 * 1000,
   );
 } else {
   console.log("starting web");
@@ -41,7 +41,7 @@ if (process.env.ROLE) {
     () => {
       // execSync('pm2 flush');
     },
-    24 * 60 * 60 * 1000,
+    12 * 60 * 60 * 1000,
   );
 }
 
