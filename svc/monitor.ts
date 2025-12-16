@@ -6,12 +6,14 @@ import { runInLoop } from "./util/utility.ts";
 import { apps } from "../ecosystem.config.js";
 import { config } from "../config.ts";
 import { getSteamAPIData, SteamAPIUrls } from "./util/http.ts";
+import { statfs } from "node:fs/promises";
 
 const health: Record<string, () => Promise<Metric>> = {
   // steamApi,
   postgresUsage,
   redisUsage,
   cassandraUsage,
+  diskUsage,
   seqNumDelay,
   parseDelay,
   fhDelay,
@@ -166,6 +168,13 @@ WHERE keyspace_name = 'yasp';
     metric: result.rows[0]?.size,
     limit: 6 * 10 ** 12,
   };
+}
+async function diskUsage() {
+  const result = await statfs('/');
+  return {
+    metric: (result.blocks - result.bavail) * result.bsize,
+    limit: result.blocks * result.bsize,
+  }
 }
 async function redisUsage() {
   const info = await redis.info();
