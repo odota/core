@@ -33,7 +33,7 @@
     "compression": "^1.8.1",
     "cookie-session": "^2.1.1",
     "cors": "^2.8.5",
-    "dotaconstants": "^10.6.0",
+    "dotaconstants": "^10.7.0",
     "express": "^5.2.1",
     "http-proxy": "^1.18.1",
     "ioredis": "^5.8.2",
