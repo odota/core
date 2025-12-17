@@ -9,6 +9,7 @@ import redis, {
 import { parallelPromise } from "./utility.ts";
 import { game_mode, lobby_type, region, cluster } from "dotaconstants";
 import axios from "axios";
+import os from "node:os";
 
 function generatePercentiles(arr: string[]) {
   // sort the list
@@ -62,6 +63,7 @@ export async function buildStatus(isAdmin: boolean) {
     },
     counts: async () => {
       const counts = {
+        os_uptime: async () => os.uptime(),
         registry_proxy: async () => redis.zcard("registry:proxy"),
         registry_retriever: async () => redis.zcard("registry:retriever"),
         registry_parser: async () => redis.zcard("registry:parser"),
