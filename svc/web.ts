@@ -237,12 +237,12 @@ app.post("/register/:service/:host", async (req, res, next) => {
   return res.end();
 });
 
-app.get("/logs{/:jobId}", (req, res) => {
+app.get("/logs{/:jobId}", async (req, res) => {
   let logSub = new Redis(config.REDIS_URL);
   if (req.params.jobId) {
-    logSub.subscribe(req.params.jobId);
+    await logSub.subscribe(req.params.jobId);
   } else {
-    logSub.subscribe("api", "parsed", "gcdata", "queue");
+    await logSub.subscribe("api", "parsed", "gcdata", "queue");
   }
   res.writeHead(200, {
     "Content-Type": "text/event-stream",
@@ -256,10 +256,10 @@ app.get("/logs{/:jobId}", (req, res) => {
     res.flush();
   };
   logSub.on("message", messageHandler);
-  req.once("close", () => {
+  req.once("close", async () => {
     // Client disconnected, shut down the subscribe
     logSub.off("message", messageHandler);
-    logSub.disconnect();
+    await logSub.quit();
   });
 });
 

@@ -44,6 +44,7 @@ const defaults = {
   GCDATA_PERCENT: "0", // percent of inserted matches to randomly queue for GC data
   RATING_PERCENT: "0", // percent of ranked matches to update player ratings with
   RATING_PERCENT_TURBO: "0", // percent of turbo matches to update player ratings with
+  DYNAMIC_RATING_PERCENT: "", // Enable choosing a percentage of matches to rate based on queue length
   SCANNER_PERCENT: "100", // percent of matches to insert from scanner
   PUBLIC_SAMPLE_PERCENT: "100", // percent of public matches to sample in DB
   SCENARIOS_SAMPLE_PERCENT: "100", // percent of parsed matches to sample for scenarios
