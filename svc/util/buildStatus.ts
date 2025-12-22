@@ -79,7 +79,6 @@ export async function buildStatus(isAdmin: boolean) {
         retriever_matches_last_day: async () => getRedisCountDay("retriever"),
         // retriever_matches_current_hour: async () => countHour('retriever'),
         parsed_matches_last_day: async () => getRedisCountDay("parser"),
-        gcdata_matches_last_day: async () => getRedisCountDay("gcdata"),
         rated_matches_last_day: async () => getRedisCountDay("rater"),
         rated_skip_last_day: async () => getRedisCountDay("rater_skip"),
         scenario_last_day: async () => getRedisCountDay("scenario"),
