@@ -17,7 +17,6 @@ const health: Record<string, () => Promise<Metric>> = {
   seqNumDelay,
   parseDelay,
   fhDelay,
-  gcDelay,
   mmrDelay,
   cacheDelay,
   scenariosDelay,
@@ -92,15 +91,6 @@ async function parseDelay() {
     limit: 10000,
   };
 }
-async function gcDelay() {
-  const result = await db.raw(
-    "select count(*) from queue where type = 'gcQueue'",
-  );
-  return {
-    metric: result.rows[0]?.count,
-    limit: 100000,
-  };
-}
 async function fhDelay() {
   const result = await db.raw(
     "select count(*) from queue where type = 'fhQueue'",
@@ -170,11 +160,11 @@ WHERE keyspace_name = 'yasp';
   };
 }
 async function diskUsage() {
-  const result = await statfs('/');
+  const result = await statfs("/");
   return {
     metric: (result.blocks - result.bavail) * result.bsize,
     limit: result.blocks * result.bsize,
-  }
+  };
 }
 async function redisUsage() {
   const info = await redis.info();

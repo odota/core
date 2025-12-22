@@ -138,8 +138,6 @@ export async function addReliableJob(
     jobKey = `${name}:${data.match_id}`;
   } else if (name === "fhQueue") {
     jobKey = `${name}:${data.account_id}`;
-  } else if (name === "gcQueue") {
-    jobKey = `${name}:${data.match_id}`;
   } else if (name === "scenariosQueue") {
     jobKey = `${name}:${data.match_id}`;
   } else if (name === "profileQueue") {
@@ -182,7 +180,7 @@ export async function addReliableJob(
         name === "parse" ? data.match_id : ""
       }`,
     );
-    redis.publish("queue", message);
+    await redis.publish("queue", message);
   }
   // This might be undefined if a job with the same key already exists. Try to find it
   // May not exist anymore if the job finished in the meantime

@@ -104,10 +104,6 @@ let arr = [
     group: "backend",
   },
   {
-    name: "gcdata",
-    group: "backend",
-  },
-  {
     name: "buildsets",
     group: "backend",
   },

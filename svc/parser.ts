@@ -30,7 +30,7 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
   let parseTime = 0;
   try {
     redisCount("parser_job");
-    redis.publish(
+    await redis.publish(
       String(metadata.jobId),
       c.magenta(
         `Starting [job: ${metadata.jobId}] [match: ${job.match_id}] after ${Date.now() - Number(metadata.timestamp)}ms`,
@@ -50,7 +50,7 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
     }
 
     // Fetch the API data
-    redis.publish(String(metadata.jobId), c.blue(`Fetching API data...`));
+    await redis.publish(String(metadata.jobId), c.blue(`Fetching API data...`));
     const apiStart = Date.now();
     // The pgroup is used to update player_caches on insert.
     // Since currently gcdata and parse data have no knowledge of anonymity, we pass it from API data
@@ -73,7 +73,7 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
       return false;
     }
     apiTime = Date.now() - apiStart;
-    redis.publish(
+    await redis.publish(
       String(metadata.jobId),
       c.green(`Fetched API data in ${apiTime}ms`),
     );
@@ -90,7 +90,10 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
     // }
 
     // Fetch the gcdata and construct a replay URL
-    redis.publish(String(metadata.jobId), c.blue(`Fetching replay data...`));
+    await redis.publish(
+      String(metadata.jobId),
+      c.blue(`Fetching replay data...`),
+    );
     const gcStart = Date.now();
     const { data: gcMatch, error: gcError } =
       await gcFetcher.getOrFetchDataWithRetry(
@@ -107,17 +110,23 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
       return false;
     }
     gcTime = Date.now() - gcStart;
-    redis.publish(
+    await redis.publish(
       String(metadata.jobId),
       c.green(`Fetched replay data in ${gcTime}ms`),
     );
+
+    if (job.gcDataOnly) {
+      await log("skip", "Fetching replay data only, skipping parse");
+      return true;
+    }
+
     let url = buildReplayUrl(
       gcMatch.match_id,
       gcMatch.cluster,
       gcMatch.replay_salt,
     );
 
-    redis.publish(String(metadata.jobId), c.blue(`Parsing replay...`));
+    await redis.publish(String(metadata.jobId), c.blue(`Parsing replay...`));
     const parseStart = Date.now();
     const { error: parseError, skipped } = await parsedFetcher.getOrFetchData(
       matchId,
@@ -132,7 +141,7 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
       },
     );
     parseTime = Date.now() - parseStart;
-    redis.publish(
+    await redis.publish(
       String(metadata.jobId),
       c.green(`Parsed replay in ${parseTime}ms`),
     );
@@ -182,8 +191,8 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
         job.match_id
       } ${displayMsg ?? ""}`,
     );
-    redis.publish("parsed", message);
-    redis.publish(
+    await redis.publish("parsed", message);
+    await redis.publish(
       String(metadata.jobId),
       c[colors[type]](
         `[${type}] Finished [job: ${metadata.jobId}] [match: ${

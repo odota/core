@@ -56,6 +56,8 @@ export async function insertMatch(
   // Do this after removing anonymous account IDs
   const pgroup = options.pgroup ?? getPGroup(match as ApiData);
   const trx = await db.transaction();
+  let doGcData = false;
+
   try {
     let isProTier = false;
     if ("leagueid" in match && match.leagueid) {
@@ -743,28 +745,15 @@ function updateMatchups(match) {
       ),
     );
   }
+
   async function queueGcData(trx: knex.Knex.Transaction) {
     // Trigger a request for gcdata
     if (
       options.origin === "scanner" &&
       options.type === "api" &&
-      "game_mode" in match &&
-      // Don't get replay URLs for event matches
-      match.game_mode !== 19 &&
       match.match_id % 100 < Number(config.GCDATA_PERCENT)
     ) {
-      await addReliableJob(
-        {
-          name: "gcQueue",
-          data: {
-            match_id: match.match_id,
-            pgroup,
-          },
-        },
-        {
-          trx,
-        },
-      );
+      doGcData = true;
     }
   }
 
@@ -789,18 +778,7 @@ function updateMatchups(match) {
           match.game_mode,
         ],
       );
-      await addReliableJob(
-        {
-          name: "gcQueue",
-          data: {
-            match_id: match.match_id,
-            pgroup,
-          },
-        },
-        {
-          trx,
-        },
-      );
+      doGcData = true;
     }
   }
 
@@ -836,10 +814,6 @@ function updateMatchups(match) {
     if (options.skipParse) {
       return null;
     }
-    if ("game_mode" in match && match.game_mode === 19) {
-      // don't parse event matches
-      return null;
-    }
     // We only auto-parse if this is a fresh match from API
     if (!(options.origin === "scanner" && options.type === "api")) {
       return null;
@@ -855,6 +829,8 @@ function updateMatchups(match) {
     const doParse = hasTrackedPlayer || isLeagueMatch;
     if (doParse) {
       redisCount("auto_parse");
+    }
+    if (doGcData || doParse) {
       // By default, lower priority than requests
       let priority = PRIORITY.AUTO_DEFAULT;
       if (isLeagueMatch) {
@@ -862,6 +838,9 @@ function updateMatchups(match) {
       }
       if (hasTrackedPlayer) {
         priority = PRIORITY.AUTO_TRACKED_PLAYER;
+      }
+      if (doGcData && !doParse) {
+        priority = PRIORITY.AUTO_GCDATA;
       }
       // We might have to retry since it might be too soon for the replay
       let attempts = 50;
@@ -871,6 +850,7 @@ function updateMatchups(match) {
           data: {
             match_id: match.match_id,
             origin: options.origin,
+            gcDataOnly: doGcData && !doParse,
           },
         },
         {

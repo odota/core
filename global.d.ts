@@ -279,11 +279,6 @@ type ProfileJob = {
   account_id: number;
 };
 
-type GcDataJob = {
-  match_id: number;
-  pgroup: PGroup;
-};
-
 type CountsJob = ApiData;
 type ScenariosJob = {
   match_id: number;
@@ -295,6 +290,7 @@ type CacheJob = {
 type ParseJob = {
   match_id: number;
   origin?: DataOrigin;
+  gcDataOnly?: boolean;
 };
 
 type QueueJob = QueueInput["data"];
@@ -319,10 +315,6 @@ type QueueInput =
   | {
       name: "parse";
       data: ParseJob;
-    }
-  | {
-      name: "gcQueue";
-      data: GcDataJob;
     }
   | {
       name: "cacheQueue";
