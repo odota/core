@@ -1,9 +1,7 @@
-import fs from "node:fs";
 import { loadEnvFile } from "node:process";
+import { addReliableJob } from "../svc/store/queue.ts";
 
 loadEnvFile();
-
-const matchIds: number[] = [];
 
 let next = true;
 let last;
@@ -19,15 +17,15 @@ while (next) {
     },
     body: `{"query":"query Test {\\n player(steamAccountId: ${accountId}) {\\n matches(request: { take: 100, before: ${last ?? Number.MAX_SAFE_INTEGER} }) {\\n id\\n }}}","operationName":"Test"}`,
   });
-  const result = await resp.json();
-  result.data.player.matches.forEach((r: any) => {
+  const result: any = await resp.json();
+  for (let r of result.data.player.matches) {
+    await addReliableJob(
+      { name: "parse", data: { match_id: r.id } },
+      { priority: 0 },
+    );
     last = r.id;
-    matchIds.push(r.id);
     console.log(r.id);
-  });
+  }
   next = result.data.player.matches.length;
   await new Promise((resolve) => setTimeout(resolve, 1000));
 }
-
-// Output results
-fs.writeFileSync("./matchIds.txt", JSON.stringify(matchIds));
