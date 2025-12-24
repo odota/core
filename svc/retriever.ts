@@ -17,7 +17,7 @@ const failedLogin = new Map<string, string>();
 const numAccounts = Number(config.RETRIEVER_NUM_ACCOUNTS);
 const matchesPerAccount = 100;
 const accountAttemptMax = 10;
-const matchRequestInterval = Math.max(1000 / numAccounts, 250);
+const matchRequestInterval = Math.max(1000 / numAccounts, 200);
 const port = config.PORT || config.RETRIEVER_PORT;
 const noneReady = () => clientMap.size === 0;
 let lastMatchRequestTime: number | null = null;
