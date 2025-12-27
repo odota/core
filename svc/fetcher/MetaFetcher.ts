@@ -40,9 +40,9 @@ export class MetaFetcher extends MatchFetcherBase<Record<string, any>> {
     // If we want to cache meta files, we can cache the bz2 versions and it won't add very much parse time
     const start = Date.now();
     const resp = await fetch(url);
-    const inBuf = Buffer.from(await resp.arrayBuffer());
+    const bzIn = Buffer.from(await resp.arrayBuffer());
     const bz = spawn(`bunzip2`);
-    bz.stdin.write(inBuf);
+    bz.stdin.write(bzIn);
     bz.stdin.end();
     const outBuf = await buffer(bz.stdout);
     const message: any = CDOTAMatchMetadataFile.decode(outBuf);
