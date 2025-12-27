@@ -1,9 +1,25 @@
-import { metaFetcher } from "../svc/fetcher/allFetchers.ts";
+import { spawn } from "child_process";
+import { buffer } from "stream/consumers";
+import ProtoBuf from "protobufjs";
 
-const message = await metaFetcher.getData(7468445438);
-// 'http://replay117.valve.net/570/7468445438_1951738768.meta.bz2'
-// Stats: Original bzip2, 77kb, unzipped, 113kb, parsed JSON 816kb
-// fs.writeFileSync(
-//   './dev/7468445438_meta.json',
-//   JSON.stringify(message, null, 2)
-// );
+const url = "http://replay152.valve.net/570/7503212404_1277518156.meta.bz2";
+const root = new ProtoBuf.Root();
+const builder = root.loadSync("./proto/dota_match_metadata.proto", {
+  keepCase: true,
+});
+const CDOTAMatchMetadataFile = builder.lookupType("CDOTAMatchMetadataFile");
+
+console.time('fetch');
+const resp = await fetch(url);
+const inBuf = Buffer.from(await resp.arrayBuffer());
+console.timeEnd('fetch');
+console.time('bz');
+const bz = spawn(`bunzip2`);
+bz.stdin.write(inBuf);
+bz.stdin.end();
+const outBuf = await buffer(bz.stdout);
+console.timeEnd('bz');
+console.time('parse');
+const message: any = CDOTAMatchMetadataFile.decode(outBuf);
+console.timeEnd('parse');
+console.log(message);

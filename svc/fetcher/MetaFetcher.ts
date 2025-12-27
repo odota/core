@@ -1,11 +1,10 @@
 import ProtoBuf from "protobufjs";
-import { exec } from "node:child_process";
-import { promisify } from "node:util";
+import { spawn } from "node:child_process";
 import { buildReplayUrl } from "../util/utility.ts";
 import { MatchFetcherBase } from "./MatchFetcherBase.ts";
 import { GcdataFetcher } from "./GcdataFetcher.ts";
 import { redisCount } from "../store/redis.ts";
-const execPromise = promisify(exec);
+import { buffer } from "node:stream/consumers";
 
 const gcFetcher = new GcdataFetcher();
 
@@ -40,11 +39,13 @@ export class MetaFetcher extends MatchFetcherBase<Record<string, any>> {
     // parse: ~50ms
     // If we want to cache meta files, we can cache the bz2 versions and it won't add very much parse time
     const start = Date.now();
-    const { stdout } = await execPromise(`curl -L ${url} | bunzip2`, {
-      encoding: "buffer",
-      maxBuffer: 10 * 1024 * 1024,
-    });
-    const message: any = CDOTAMatchMetadataFile.decode(stdout);
+    const resp = await fetch(url);
+    const inBuf = Buffer.from(await resp.arrayBuffer());
+    const bz = spawn(`bunzip2`);
+    bz.stdin.write(inBuf);
+    bz.stdin.end();
+    const outBuf = await buffer(bz.stdout);
+    const message: any = CDOTAMatchMetadataFile.decode(outBuf);
     // message.metadata.teams.forEach((team) => {
     //   team.players.forEach((player) => {
     //     player.equipped_econ_items?.forEach((item) => {
