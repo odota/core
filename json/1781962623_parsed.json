@@ -1,7 +1,6 @@
 {
-  "version": 21,
+  "version": 22,
   "match_id": 1781962623,
-  "draft_timings": [],
   "teamfights": [
     {
       "start": 583,
@@ -12,16 +11,16 @@
         {
           "deaths_pos": {},
           "ability_uses": {
-            "tusk_ice_shards": 2,
             "tusk_snowball": 1,
-            "tusk_launch_snowball": 1,
-            "tusk_walrus_punch": 1
+            "tusk_walrus_punch": 1,
+            "tusk_ice_shards": 2,
+            "tusk_launch_snowball": 1
           },
           "ability_targets": {},
           "item_uses": {
-            "magic_wand": 1,
+            "clarity": 1,
             "flask": 1,
-            "clarity": 1
+            "magic_wand": 1
           },
           "killed": {
             "npc_dota_hero_huskar": 1
@@ -38,12 +37,12 @@
         {
           "deaths_pos": {
             "164": {
-              "79.2": 1
+              "79": 1
             }
           },
           "ability_uses": {
-            "alchemist_unstable_concoction": 1,
             "alchemist_unstable_concoction_throw": 1,
+            "alchemist_unstable_concoction": 1,
             "alchemist_acid_spray": 1
           },
           "ability_targets": {},
@@ -116,8 +115,8 @@
         },
         {
           "deaths_pos": {
-            "164.9": {
-              "80.3": 1
+            "165": {
+              "80": 1
             }
           },
           "ability_uses": {
@@ -155,13 +154,13 @@
         {
           "deaths_pos": {},
           "ability_uses": {
-            "leshrac_lightning_storm": 2,
-            "leshrac_pulse_nova": 4
+            "leshrac_pulse_nova": 4,
+            "leshrac_lightning_storm": 2
           },
           "ability_targets": {},
           "item_uses": {
-            "tpscroll": 1,
-            "arcane_boots": 1
+            "arcane_boots": 1,
+            "tpscroll": 1
           },
           "killed": {
             "npc_dota_hero_alchemist": 1
@@ -177,8 +176,8 @@
         },
         {
           "deaths_pos": {
-            "76.2": {
-              "149.8": 1
+            "76": {
+              "150": 1
             }
           },
           "ability_uses": {
@@ -225,15 +224,15 @@
       "players": [
         {
           "deaths_pos": {
-            "89.5": {
+            "90": {
               "136": 1
             }
           },
           "ability_uses": {
             "tusk_snowball": 1,
-            "tusk_launch_snowball": 1,
             "tusk_walrus_punch": 1,
-            "tusk_ice_shards": 1
+            "tusk_ice_shards": 1,
+            "tusk_launch_snowball": 1
           },
           "ability_targets": {},
           "item_uses": {
@@ -302,7 +301,7 @@
           "deaths": 0,
           "buybacks": 0,
           "damage": 0,
-          "healing": 1,
+          "healing": 0,
           "gold_delta": 257,
           "xp_delta": 383,
           "xp_start": 8728,
@@ -310,13 +309,13 @@
         },
         {
           "deaths_pos": {
-            "87.2": {
-              "160.3": 1
+            "87": {
+              "160": 1
             }
           },
           "ability_uses": {
-            "silencer_curse_of_the_silent": 1,
-            "silencer_last_word": 1
+            "silencer_last_word": 1,
+            "silencer_curse_of_the_silent": 1
           },
           "ability_targets": {},
           "item_uses": {},
@@ -367,9 +366,9 @@
         {
           "deaths_pos": {},
           "ability_uses": {
-            "leshrac_lightning_storm": 2,
+            "leshrac_pulse_nova": 2,
             "leshrac_split_earth": 2,
-            "leshrac_pulse_nova": 2
+            "leshrac_lightning_storm": 2
           },
           "ability_targets": {},
           "item_uses": {
@@ -377,13 +376,13 @@
             "bottle": 2
           },
           "killed": {
-            "npc_dota_hero_silencer": 1,
-            "npc_dota_hero_tusk": 1
+            "npc_dota_hero_tusk": 1,
+            "npc_dota_hero_silencer": 1
           },
           "deaths": 0,
           "buybacks": 0,
           "damage": 840,
-          "healing": 136,
+          "healing": 135,
           "gold_delta": 820,
           "xp_delta": 1147,
           "xp_start": 7433,
@@ -411,8 +410,8 @@
         },
         {
           "deaths_pos": {
-            "78.1": {
-              "159.1": 1
+            "78": {
+              "159": 1
             }
           },
           "ability_uses": {
@@ -440,15 +439,15 @@
       "players": [
         {
           "deaths_pos": {
-            "111.5": {
-              "116.3": 1
+            "112": {
+              "116": 1
             }
           },
           "ability_uses": {
             "tusk_snowball": 1,
-            "tusk_launch_snowball": 1,
+            "tusk_walrus_punch": 1,
             "tusk_ice_shards": 1,
-            "tusk_walrus_punch": 1
+            "tusk_launch_snowball": 1
           },
           "ability_targets": {},
           "item_uses": {
@@ -504,10 +503,10 @@
         {
           "deaths_pos": {},
           "ability_uses": {
-            "templar_assassin_psionic_trap": 1,
             "templar_assassin_refraction": 1,
+            "templar_assassin_trap": 1,
             "templar_assassin_meld": 1,
-            "templar_assassin_trap": 1
+            "templar_assassin_psionic_trap": 1
           },
           "ability_targets": {},
           "item_uses": {
@@ -528,12 +527,12 @@
         {
           "deaths_pos": {
             "113": {
-              "112.3": 1
+              "112": 1
             }
           },
           "ability_uses": {
-            "silencer_curse_of_the_silent": 2,
-            "silencer_last_word": 1
+            "silencer_last_word": 1,
+            "silencer_curse_of_the_silent": 2
           },
           "ability_targets": {},
           "item_uses": {},
@@ -562,7 +561,7 @@
           "damage": 369,
           "healing": 0,
           "gold_delta": 921,
-          "xp_delta": 1703,
+          "xp_delta": 1702,
           "xp_start": 5160,
           "xp_end": 6800
         },
@@ -587,13 +586,13 @@
         },
         {
           "deaths_pos": {
-            "127.7": {
+            "128": {
               "130": 1
             }
           },
           "ability_uses": {
-            "leshrac_diabolic_edict": 1,
-            "leshrac_pulse_nova": 1
+            "leshrac_pulse_nova": 1,
+            "leshrac_diabolic_edict": 1
           },
           "ability_targets": {},
           "item_uses": {
@@ -605,14 +604,14 @@
           "damage": 598,
           "healing": 0,
           "gold_delta": -229,
-          "xp_delta": 82,
+          "xp_delta": 81,
           "xp_start": 9054,
           "xp_end": 9135
         },
         {
           "deaths_pos": {
-            "112.2": {
-              "115.7": 1
+            "112": {
+              "116": 1
             }
           },
           "ability_uses": {
@@ -631,7 +630,7 @@
           "damage": 1531,
           "healing": 667,
           "gold_delta": 424,
-          "xp_delta": 757,
+          "xp_delta": 756,
           "xp_start": 5821,
           "xp_end": 6577
         },
@@ -663,10 +662,10 @@
         {
           "deaths_pos": {},
           "ability_uses": {
-            "tusk_ice_shards": 2,
             "tusk_snowball": 1,
-            "tusk_launch_snowball": 1,
-            "tusk_walrus_punch": 1
+            "tusk_walrus_punch": 1,
+            "tusk_ice_shards": 2,
+            "tusk_launch_snowball": 1
           },
           "ability_targets": {},
           "item_uses": {
@@ -720,9 +719,9 @@
         {
           "deaths_pos": {},
           "ability_uses": {
-            "templar_assassin_psionic_trap": 3,
+            "templar_assassin_refraction": 1,
             "templar_assassin_meld": 1,
-            "templar_assassin_refraction": 1
+            "templar_assassin_psionic_trap": 3
           },
           "ability_targets": {},
           "item_uses": {
@@ -742,8 +741,8 @@
         },
         {
           "deaths_pos": {
-            "174.8": {
-              "103.4": 1
+            "175": {
+              "103": 1
             }
           },
           "ability_uses": {
@@ -764,8 +763,8 @@
         },
         {
           "deaths_pos": {
-            "172.8": {
-              "108.8": 1
+            "173": {
+              "109": 1
             }
           },
           "ability_uses": {},
@@ -803,8 +802,8 @@
         {
           "deaths_pos": {},
           "ability_uses": {
-            "leshrac_lightning_storm": 1,
-            "leshrac_pulse_nova": 2
+            "leshrac_pulse_nova": 2,
+            "leshrac_lightning_storm": 1
           },
           "ability_targets": {},
           "item_uses": {},
@@ -820,8 +819,8 @@
         },
         {
           "deaths_pos": {
-            "117.2": {
-              "152.3": 1
+            "117": {
+              "152": 1
             }
           },
           "ability_uses": {},
@@ -866,10 +865,10 @@
           "deaths_pos": {},
           "ability_uses": {
             "tusk_snowball": 1,
-            "tusk_launch_snowball": 1,
-            "tusk_ice_shards": 2,
             "tusk_walrus_punch": 1,
-            "tusk_frozen_sigil": 1
+            "tusk_ice_shards": 2,
+            "tusk_frozen_sigil": 1,
+            "tusk_launch_snowball": 1
           },
           "ability_targets": {},
           "item_uses": {
@@ -907,13 +906,13 @@
         {
           "deaths_pos": {},
           "ability_uses": {
-            "legion_commander_overwhelming_odds": 1,
-            "legion_commander_duel": 1
+            "legion_commander_duel": 1,
+            "legion_commander_overwhelming_odds": 1
           },
           "ability_targets": {},
           "item_uses": {
-            "blink": 2,
-            "blade_mail": 2
+            "blade_mail": 2,
+            "blink": 2
           },
           "killed": {
             "npc_dota_hero_drow_ranger": 1,
@@ -931,10 +930,10 @@
         {
           "deaths_pos": {},
           "ability_uses": {
-            "templar_assassin_psionic_trap": 3,
             "templar_assassin_trap": 3,
             "templar_assassin_refraction": 1,
-            "templar_assassin_meld": 1
+            "templar_assassin_meld": 1,
+            "templar_assassin_psionic_trap": 3
           },
           "ability_targets": {},
           "item_uses": {
@@ -955,9 +954,9 @@
         {
           "deaths_pos": {},
           "ability_uses": {
-            "silencer_global_silence": 1,
+            "silencer_last_word": 1,
             "silencer_curse_of_the_silent": 1,
-            "silencer_last_word": 1
+            "silencer_global_silence": 1
           },
           "ability_targets": {},
           "item_uses": {},
@@ -973,8 +972,8 @@
         },
         {
           "deaths_pos": {
-            "152.2": {
-              "98.6": 1
+            "152": {
+              "99": 1
             }
           },
           "ability_uses": {
@@ -982,8 +981,8 @@
           },
           "ability_targets": {},
           "item_uses": {
-            "ward_observer": 1,
-            "power_treads": 2
+            "power_treads": 2,
+            "ward_observer": 1
           },
           "killed": {},
           "deaths": 1,
@@ -1002,9 +1001,9 @@
           },
           "ability_targets": {},
           "item_uses": {
+            "arcane_boots": 1,
             "clarity": 1,
-            "soul_ring": 1,
-            "arcane_boots": 1
+            "soul_ring": 1
           },
           "killed": {},
           "deaths": 0,
@@ -1018,8 +1017,8 @@
         },
         {
           "deaths_pos": {
-            "157.6": {
-              "89.7": 1
+            "158": {
+              "90": 1
             }
           },
           "ability_uses": {},
@@ -1056,8 +1055,8 @@
         },
         {
           "deaths_pos": {
-            "156.3": {
-              "100.3": 1
+            "156": {
+              "100": 1
             }
           },
           "ability_uses": {
@@ -1085,15 +1084,15 @@
       "players": [
         {
           "deaths_pos": {
-            "145.5": {
-              "135.9": 1
+            "146": {
+              "136": 1
             }
           },
           "ability_uses": {
-            "tusk_ice_shards": 3,
             "tusk_snowball": 2,
-            "tusk_launch_snowball": 2,
-            "tusk_walrus_punch": 1
+            "tusk_walrus_punch": 1,
+            "tusk_ice_shards": 3,
+            "tusk_launch_snowball": 2
           },
           "ability_targets": {},
           "item_uses": {
@@ -1133,18 +1132,18 @@
         },
         {
           "deaths_pos": {
-            "147.1": {
-              "137.3": 1
+            "147": {
+              "137": 1
             }
           },
           "ability_uses": {
-            "legion_commander_overwhelming_odds": 1,
-            "legion_commander_duel": 1
+            "legion_commander_duel": 1,
+            "legion_commander_overwhelming_odds": 1
           },
           "ability_targets": {},
           "item_uses": {
-            "blink": 1,
-            "blade_mail": 1
+            "blade_mail": 1,
+            "blink": 1
           },
           "killed": {},
           "deaths": 1,
@@ -1173,8 +1172,8 @@
         },
         {
           "deaths_pos": {
-            "144.7": {
-              "134.2": 1
+            "145": {
+              "134": 1
             }
           },
           "ability_uses": {
@@ -1194,8 +1193,8 @@
         },
         {
           "deaths_pos": {
-            "147.1": {
-              "138.4": 1
+            "147": {
+              "138": 1
             }
           },
           "ability_uses": {
@@ -1237,14 +1236,14 @@
         },
         {
           "deaths_pos": {
-            "145.7": {
-              "137.8": 1
+            "146": {
+              "138": 1
             }
           },
           "ability_uses": {
+            "leshrac_pulse_nova": 3,
             "leshrac_split_earth": 2,
             "leshrac_lightning_storm": 2,
-            "leshrac_pulse_nova": 3,
             "leshrac_diabolic_edict": 1
           },
           "ability_targets": {},
@@ -1310,8 +1309,8 @@
           "deaths_pos": {},
           "ability_uses": {
             "tusk_snowball": 1,
-            "tusk_launch_snowball": 1,
-            "tusk_ice_shards": 2
+            "tusk_ice_shards": 2,
+            "tusk_launch_snowball": 1
           },
           "ability_targets": {},
           "item_uses": {
@@ -1337,8 +1336,8 @@
           },
           "ability_targets": {},
           "item_uses": {
-            "invis_sword": 1,
             "mjollnir": 1,
+            "invis_sword": 1,
             "travel_boots": 1
           },
           "killed": {
@@ -1372,9 +1371,9 @@
           "deaths_pos": {},
           "ability_uses": {
             "templar_assassin_refraction": 3,
-            "templar_assassin_psionic_trap": 4,
             "templar_assassin_trap": 4,
-            "templar_assassin_meld": 3
+            "templar_assassin_meld": 3,
+            "templar_assassin_psionic_trap": 4
           },
           "ability_targets": {},
           "item_uses": {
@@ -1382,13 +1381,13 @@
             "blink": 3
           },
           "killed": {
-            "npc_dota_hero_leshrac": 1,
-            "npc_dota_hero_drow_ranger": 1
+            "npc_dota_hero_drow_ranger": 1,
+            "npc_dota_hero_leshrac": 1
           },
           "deaths": 0,
           "buybacks": 0,
           "damage": 2971,
-          "healing": 1,
+          "healing": 0,
           "gold_delta": 1132,
           "xp_delta": 2260,
           "xp_start": 21828,
@@ -1413,8 +1412,8 @@
         },
         {
           "deaths_pos": {
-            "156.5": {
-              "149.4": 1
+            "157": {
+              "149": 1
             }
           },
           "ability_uses": {
@@ -1452,7 +1451,7 @@
         {
           "deaths_pos": {
             "163": {
-              "130.6": 1
+              "131": 1
             }
           },
           "ability_uses": {
@@ -1475,8 +1474,8 @@
         },
         {
           "deaths_pos": {
-            "156.7": {
-              "134.3": 1
+            "157": {
+              "134": 1
             }
           },
           "ability_uses": {
@@ -1510,7 +1509,7 @@
           "damage": 336,
           "healing": 0,
           "gold_delta": 539,
-          "xp_delta": 976,
+          "xp_delta": 975,
           "xp_start": 13453,
           "xp_end": 14428
         }
@@ -1524,16 +1523,16 @@
       "players": [
         {
           "deaths_pos": {
-            "176.9": {
-              "141.2": 1
+            "177": {
+              "141": 1
             }
           },
           "ability_uses": {
-            "tusk_ice_shards": 2,
             "tusk_snowball": 1,
-            "tusk_launch_snowball": 1,
+            "tusk_walrus_punch": 1,
+            "tusk_ice_shards": 2,
             "tusk_frozen_sigil": 1,
-            "tusk_walrus_punch": 1
+            "tusk_launch_snowball": 1
           },
           "ability_targets": {},
           "item_uses": {
@@ -1557,8 +1556,8 @@
           },
           "ability_targets": {},
           "item_uses": {
-            "travel_boots": 1,
-            "hand_of_midas": 1
+            "hand_of_midas": 1,
+            "travel_boots": 1
           },
           "killed": {},
           "deaths": 0,
@@ -1589,9 +1588,9 @@
           "deaths_pos": {},
           "ability_uses": {
             "templar_assassin_refraction": 2,
-            "templar_assassin_psionic_trap": 3,
             "templar_assassin_trap": 3,
-            "templar_assassin_meld": 3
+            "templar_assassin_meld": 3,
+            "templar_assassin_psionic_trap": 3
           },
           "ability_targets": {},
           "item_uses": {
@@ -1605,7 +1604,7 @@
           "deaths": 0,
           "buybacks": 0,
           "damage": 3512,
-          "healing": 1,
+          "healing": 0,
           "gold_delta": 1066,
           "xp_delta": 2108,
           "xp_start": 26888,
@@ -1613,19 +1612,19 @@
         },
         {
           "deaths_pos": {
-            "176.7": {
-              "140.8": 1
+            "177": {
+              "141": 1
             }
           },
           "ability_uses": {
-            "silencer_global_silence": 1,
+            "silencer_last_word": 1,
             "silencer_curse_of_the_silent": 1,
-            "silencer_last_word": 1
+            "silencer_global_silence": 1
           },
           "ability_targets": {},
           "item_uses": {
-            "mekansm": 1,
-            "arcane_boots": 1
+            "arcane_boots": 1,
+            "mekansm": 1
           },
           "killed": {},
           "deaths": 1,
@@ -1639,8 +1638,8 @@
         },
         {
           "deaths_pos": {
-            "180.2": {
-              "141.1": 1
+            "180": {
+              "141": 1
             }
           },
           "ability_uses": {
@@ -1663,10 +1662,10 @@
         {
           "deaths_pos": {},
           "ability_uses": {
+            "techies_suicide": 1,
             "techies_stasis_trap": 1,
             "techies_remote_mines": 1,
-            "techies_land_mines": 1,
-            "techies_suicide": 1
+            "techies_land_mines": 1
           },
           "ability_targets": {},
           "item_uses": {
@@ -1696,8 +1695,8 @@
             "blink": 1
           },
           "killed": {
-            "npc_dota_hero_silencer": 1,
-            "npc_dota_hero_tusk": 1
+            "npc_dota_hero_tusk": 1,
+            "npc_dota_hero_silencer": 1
           },
           "deaths": 0,
           "buybacks": 0,
@@ -1710,8 +1709,8 @@
         },
         {
           "deaths_pos": {
-            "178.6": {
-              "139.8": 1
+            "179": {
+              "140": 1
             }
           },
           "ability_uses": {
@@ -1759,15 +1758,15 @@
         {
           "deaths_pos": {},
           "ability_uses": {
-            "tusk_launch_snowball": 2,
+            "tusk_snowball": 1,
             "tusk_ice_shards": 3,
-            "tusk_snowball": 1
+            "tusk_launch_snowball": 2
           },
           "ability_targets": {},
           "item_uses": {
+            "sheepstick": 1,
             "phase_boots": 1,
             "invis_sword": 1,
-            "sheepstick": 1,
             "magic_wand": 1
           },
           "killed": {},
@@ -1783,8 +1782,8 @@
         {
           "deaths_pos": {},
           "ability_uses": {
-            "alchemist_chemical_rage": 1,
-            "alchemist_acid_spray": 1
+            "alchemist_acid_spray": 1,
+            "alchemist_chemical_rage": 1
           },
           "ability_targets": {},
           "item_uses": {},
@@ -1794,25 +1793,25 @@
           "damage": 0,
           "healing": 0,
           "gold_delta": 1540,
-          "xp_delta": 448,
+          "xp_delta": 446,
           "xp_start": 29121,
           "xp_end": 29557
         },
         {
           "deaths_pos": {},
           "ability_uses": {
-            "legion_commander_press_the_attack": 1,
             "legion_commander_duel": 1,
+            "legion_commander_press_the_attack": 1,
             "legion_commander_overwhelming_odds": 1
           },
           "ability_targets": {},
           "item_uses": {
-            "blink": 2,
-            "blade_mail": 2
+            "blade_mail": 2,
+            "blink": 2
           },
           "killed": {
-            "npc_dota_hero_techies": 1,
-            "npc_dota_hero_drow_ranger": 1
+            "npc_dota_hero_drow_ranger": 1,
+            "npc_dota_hero_techies": 1
           },
           "deaths": 0,
           "buybacks": 0,
@@ -1827,19 +1826,19 @@
           "deaths_pos": {},
           "ability_uses": {
             "templar_assassin_refraction": 3,
-            "templar_assassin_psionic_trap": 3,
             "templar_assassin_trap": 2,
-            "templar_assassin_meld": 3
+            "templar_assassin_meld": 3,
+            "templar_assassin_psionic_trap": 3
           },
           "ability_targets": {},
           "item_uses": {
-            "blink": 2,
+            "power_treads": 1,
             "black_king_bar": 1,
-            "power_treads": 1
+            "blink": 2
           },
           "killed": {
-            "npc_dota_hero_leshrac": 1,
-            "npc_dota_hero_huskar": 1
+            "npc_dota_hero_huskar": 1,
+            "npc_dota_hero_leshrac": 1
           },
           "deaths": 0,
           "buybacks": 0,
@@ -1853,9 +1852,9 @@
         {
           "deaths_pos": {},
           "ability_uses": {
-            "silencer_global_silence": 1,
+            "silencer_last_word": 1,
             "silencer_curse_of_the_silent": 2,
-            "silencer_last_word": 1
+            "silencer_global_silence": 1
           },
           "ability_targets": {},
           "item_uses": {
@@ -1875,8 +1874,8 @@
         },
         {
           "deaths_pos": {
-            "155.9": {
-              "169.6": 1
+            "156": {
+              "170": 1
             }
           },
           "ability_uses": {
@@ -1896,8 +1895,8 @@
         },
         {
           "deaths_pos": {
-            "154.4": {
-              "167.9": 1
+            "154": {
+              "168": 1
             }
           },
           "ability_uses": {},
@@ -1912,20 +1911,20 @@
           "damage": 680,
           "healing": 0,
           "gold_delta": -244,
-          "xp_delta": 228,
+          "xp_delta": 227,
           "xp_start": 6375,
           "xp_end": 6602
         },
         {
           "deaths_pos": {
-            "152.3": {
-              "170.6": 1
+            "152": {
+              "171": 1
             }
           },
           "ability_uses": {
-            "leshrac_lightning_storm": 1,
-            "leshrac_split_earth": 1,
             "leshrac_pulse_nova": 7,
+            "leshrac_split_earth": 1,
+            "leshrac_lightning_storm": 1,
             "leshrac_diabolic_edict": 1
           },
           "ability_targets": {},
@@ -1945,8 +1944,8 @@
         },
         {
           "deaths_pos": {
-            "160.2": {
-              "174.7": 1
+            "160": {
+              "175": 1
             }
           },
           "ability_uses": {
@@ -1970,7 +1969,7 @@
         {
           "deaths_pos": {
             "153": {
-              "171.6": 1
+              "172": 1
             }
           },
           "ability_uses": {
@@ -1994,20 +1993,21 @@
       ]
     }
   ],
+  "pauses": [],
   "objectives": [
     {
       "time": 395,
       "type": "CHAT_MESSAGE_COURIER_LOST",
+      "team": -1,
       "value": 0,
-      "killer": 3,
-      "team": -1
+      "killer": 3
     },
     {
       "time": 982,
       "type": "CHAT_MESSAGE_COURIER_LOST",
+      "team": -1,
       "value": 0,
-      "killer": 3,
-      "team": -1
+      "killer": 3
     },
     {
       "time": 1314,
@@ -3075,6 +3075,7 @@
     "10368": 4,
     "11127": 132
   },
+  "draft_timings": [],
   "players": [
     {
       "player_slot": 0,
@@ -3082,14 +3083,14 @@
       "roshans_killed": 0,
       "stuns": 35.72107,
       "max_hero_hit": {
-        "type": "max_hero_hit",
         "time": 1028,
-        "max": true,
+        "type": "max_hero_hit",
         "unit": "npc_dota_hero_tusk",
         "key": "npc_dota_hero_huskar",
         "value": 356,
         "slot": 0,
-        "player_slot": 0
+        "player_slot": 0,
+        "max": true
       },
       "times": [
         0,
@@ -3499,11 +3500,11 @@
       "runes_log": [
         {
           "time": 851,
-          "key": 5
+          "key": "5"
         },
         {
           "time": 2067,
-          "key": 3
+          "key": "3"
         }
       ],
       "connection_log": [
@@ -3511,15 +3512,15 @@
           "time": 102,
           "type": "connection_log",
           "slot": 0,
-          "event": "disconnect",
-          "player_slot": 0
+          "player_slot": 0,
+          "event": "disconnect"
         },
         {
           "time": 130,
           "type": "connection_log",
           "slot": 0,
-          "event": "reconnect",
-          "player_slot": 0
+          "player_slot": 0,
+          "event": "reconnect"
         }
       ],
       "lane_pos": {
@@ -3837,24 +3838,24 @@
         "0": 34
       },
       "purchase": {
-        "tango": 1,
-        "flask": 5,
-        "clarity": 6,
+        "tpscroll": 13,
+        "claymore": 1,
+        "void_stone": 1,
+        "blades_of_attack": 2,
         "branches": 2,
         "circlet": 1,
-        "magic_stick": 1,
         "magic_wand": 1,
-        "boots": 1,
-        "tpscroll": 13,
-        "blades_of_attack": 2,
-        "phase_boots": 1,
-        "claymore": 1,
-        "shadow_amulet": 1,
         "invis_sword": 1,
-        "ultimate_orb": 1,
-        "void_stone": 1,
+        "mystic_staff": 1,
+        "shadow_amulet": 1,
+        "clarity": 6,
         "sheepstick": 1,
-        "mystic_staff": 1
+        "magic_stick": 1,
+        "boots": 1,
+        "tango": 1,
+        "phase_boots": 1,
+        "flask": 5,
+        "ultimate_orb": 1
       },
       "gold_reasons": {
         "0": 922,
@@ -3866,139 +3867,139 @@
         "15": 325
       },
       "xp_reasons": {
-        "0": 813,
+        "0": 812,
         "1": 10792,
         "2": 7927
       },
       "killed": {
-        "npc_dota_creep_badguys_melee": 46,
-        "npc_dota_creep_goodguys_ranged": 1,
-        "npc_dota_creep_badguys_ranged": 16,
-        "npc_dota_hero_huskar": 3,
         "npc_dota_hero_antimage": 2,
-        "npc_dota_badguys_siege": 3,
-        "npc_dota_hero_drow_ranger": 2,
+        "npc_dota_creep_badguys_melee": 46,
         "npc_dota_creep_goodguys_melee": 1,
-        "npc_dota_hero_leshrac": 1,
-        "npc_dota_neutral_satyr_trickster": 1,
+        "npc_dota_hero_drow_ranger": 2,
+        "npc_dota_creep_badguys_ranged": 16,
         "npc_dota_neutral_satyr_hellcaller": 1,
+        "npc_dota_creep_goodguys_ranged": 1,
         "npc_dota_neutral_satyr_soulstealer": 1,
+        "npc_dota_badguys_siege": 3,
+        "npc_dota_neutral_satyr_trickster": 1,
+        "npc_dota_hero_huskar": 3,
+        "npc_dota_hero_leshrac": 1,
         "npc_dota_badguys_fillers": 1
       },
       "item_uses": {
-        "flask": 5,
-        "tango": 4,
-        "clarity": 6,
-        "magic_wand": 15,
         "tpscroll": 12,
+        "clarity": 6,
+        "sheepstick": 1,
+        "tango": 4,
         "phase_boots": 58,
-        "invis_sword": 7,
-        "sheepstick": 1
+        "flask": 5,
+        "magic_wand": 15,
+        "invis_sword": 7
       },
       "ability_uses": {
-        "tusk_ice_shards": 55,
         "tusk_snowball": 27,
-        "tusk_launch_snowball": 27,
         "tusk_walrus_punch": 13,
-        "tusk_frozen_sigil": 3
+        "tusk_ice_shards": 55,
+        "tusk_frozen_sigil": 3,
+        "tusk_launch_snowball": 27
       },
       "ability_targets": {
         "tusk_snowball": {
-          "npc_dota_hero_huskar": 8,
           "npc_dota_hero_antimage": 8,
-          "npc_dota_hero_leshrac": 3,
-          "npc_dota_hero_drow_ranger": 5
+          "npc_dota_hero_drow_ranger": 5,
+          "npc_dota_hero_huskar": 8,
+          "npc_dota_hero_leshrac": 3
         },
         "tusk_launch_snowball": {
-          "npc_dota_hero_huskar": 3,
           "npc_dota_hero_antimage": 5,
           "npc_dota_hero_drow_ranger": 2,
+          "npc_dota_hero_huskar": 3,
           "npc_dota_hero_leshrac": 1
         }
       },
       "damage_targets": {
-        "undefined": {
-          "npc_dota_hero_leshrac": 2327,
-          "npc_dota_hero_huskar": 2066,
+        "null": {
           "npc_dota_hero_antimage": 911,
           "npc_dota_hero_drow_ranger": 1196,
-          "npc_dota_hero_techies": 101
-        },
-        "tusk_ice_shards": {
-          "npc_dota_hero_huskar": 1280,
-          "npc_dota_hero_antimage": 1672,
-          "npc_dota_hero_leshrac": 840,
-          "npc_dota_hero_drow_ranger": 1260,
-          "npc_dota_hero_techies": 420
+          "npc_dota_hero_huskar": 2066,
+          "npc_dota_hero_techies": 101,
+          "npc_dota_hero_leshrac": 2327
         },
         "tusk_snowball": {
-          "npc_dota_hero_huskar": 696,
           "npc_dota_hero_antimage": 852,
-          "npc_dota_hero_leshrac": 450,
-          "npc_dota_hero_drow_ranger": 300
+          "npc_dota_hero_drow_ranger": 300,
+          "npc_dota_hero_huskar": 696,
+          "npc_dota_hero_leshrac": 450
+        },
+        "tusk_ice_shards": {
+          "npc_dota_hero_antimage": 1672,
+          "npc_dota_hero_drow_ranger": 1260,
+          "npc_dota_hero_huskar": 1280,
+          "npc_dota_hero_techies": 420,
+          "npc_dota_hero_leshrac": 840
         }
       },
       "hero_hits": {
-        "undefined": 48,
-        "tusk_ice_shards": 33,
-        "tusk_snowball": 21
+        "null": 48,
+        "tusk_snowball": 21,
+        "tusk_ice_shards": 33
       },
       "damage": {
-        "npc_dota_hero_leshrac": 3617,
-        "npc_dota_creep_badguys_melee": 34263,
-        "npc_dota_hero_huskar": 4042,
-        "npc_dota_creep_badguys_ranged": 8711,
         "npc_dota_hero_antimage": 3435,
-        "npc_dota_badguys_siege": 1107,
-        "npc_dota_creep_goodguys_ranged": 63,
-        "npc_dota_hero_drow_ranger": 2756,
-        "npc_dota_badguys_tower1_top": 138,
-        "npc_dota_neutral_kobold": 400,
-        "npc_dota_neutral_kobold_tunneler": 200,
-        "npc_dota_neutral_kobold_taskmaster": 200,
-        "npc_dota_badguys_tower1_bot": 37,
+        "npc_dota_creep_badguys_melee": 34263,
         "npc_dota_creep_goodguys_melee": 123,
-        "npc_dota_badguys_tower2_mid": 236,
+        "npc_dota_hero_drow_ranger": 2756,
+        "npc_dota_badguys_fort": 184,
+        "npc_dota_badguys_tower1_bot": 37,
         "npc_dota_hero_techies": 521,
-        "npc_dota_neutral_satyr_trickster": 480,
-        "npc_dota_neutral_satyr_soulstealer": 630,
+        "npc_dota_creep_badguys_ranged": 8711,
+        "npc_dota_neutral_kobold": 400,
         "npc_dota_neutral_satyr_hellcaller": 1265,
-        "illusion_npc_dota_hero_antimage": 734,
+        "npc_dota_creep_goodguys_ranged": 63,
+        "npc_dota_neutral_satyr_soulstealer": 630,
+        "npc_dota_badguys_siege": 1107,
+        "npc_dota_badguys_tower2_mid": 236,
+        "npc_dota_neutral_satyr_trickster": 480,
+        "npc_dota_hero_huskar": 4042,
+        "npc_dota_neutral_kobold_tunneler": 200,
+        "npc_dota_badguys_tower1_top": 138,
+        "npc_dota_neutral_kobold_taskmaster": 200,
+        "npc_dota_hero_leshrac": 3617,
         "npc_dota_badguys_fillers": 550,
-        "npc_dota_badguys_tower4": 298,
-        "npc_dota_badguys_fort": 184
+        "illusion_npc_dota_hero_antimage": 734,
+        "npc_dota_badguys_tower4": 298
       },
       "damage_taken": {
-        "npc_dota_hero_leshrac": 5152,
-        "npc_dota_hero_huskar": 4487,
-        "npc_dota_creep_badguys_melee": 738,
-        "npc_dota_creep_badguys_ranged": 559,
-        "npc_dota_badguys_siege": 80,
         "npc_dota_hero_antimage": 942,
-        "npc_dota_badguys_tower1_top": 403,
+        "npc_dota_creep_badguys_melee": 738,
         "npc_dota_hero_drow_ranger": 892,
         "npc_dota_badguys_tower1_bot": 293,
         "npc_dota_hero_techies": 3273,
+        "npc_dota_creep_badguys_ranged": 559,
         "npc_dota_neutral_kobold": 25,
-        "npc_dota_neutral_kobold_taskmaster": 7,
-        "npc_dota_badguys_tower2_mid": 501,
         "npc_dota_neutral_satyr_hellcaller": 65,
         "npc_dota_neutral_satyr_soulstealer": 34,
+        "npc_dota_badguys_siege": 80,
+        "npc_dota_badguys_tower2_mid": 501,
+        "npc_dota_hero_huskar": 4487,
+        "npc_dota_badguys_tower1_top": 403,
+        "npc_dota_neutral_kobold_taskmaster": 7,
+        "npc_dota_hero_leshrac": 5152,
         "npc_dota_badguys_tower4": 168
       },
       "damage_inflictor": {
-        "undefined": 6601,
-        "tusk_ice_shards": 5472,
-        "tusk_snowball": 2298
+        "null": 6601,
+        "tusk_snowball": 2298,
+        "tusk_ice_shards": 5472
       },
       "runes": {
         "3": 1,
         "5": 1
       },
       "killed_by": {
-        "npc_dota_hero_leshrac": 3,
+        "npc_dota_creep_badguys_melee": 1,
         "npc_dota_hero_huskar": 2,
-        "npc_dota_creep_badguys_melee": 1
+        "npc_dota_hero_leshrac": 3
       },
       "kill_streaks": {
         "3": 2
@@ -4012,43 +4013,47 @@
         "2": 280
       },
       "healing": {
-        "npc_dota_hero_tusk": 2201
+        "npc_dota_hero_tusk": 2200
       },
       "damage_inflictor_received": {
-        "undefined": 4227,
+        "null": 4227,
         "huskar_burning_spear": 1486,
-        "leshrac_lightning_storm": 1230,
-        "leshrac_split_earth": 855,
         "leshrac_pulse_nova": 2030,
         "huskar_life_break": 690,
-        "antimage_mana_void": 192,
-        "urn_of_shadows": 270,
-        "leshrac_diabolic_edict": 361,
+        "leshrac_lightning_storm": 1230,
         "techies_land_mines": 2448,
+        "bfury": 132,
+        "cyclone": 37,
         "techies_suicide": 563,
         "techies_remote_mines": 225,
-        "bfury": 132,
-        "cyclone": 37
+        "leshrac_split_earth": 855,
+        "leshrac_diabolic_edict": 361,
+        "urn_of_shadows": 270,
+        "antimage_mana_void": 192
       },
       "randomed": false,
       "repicked": false,
       "pred_vict": true,
-      "neutral_tokens_log": []
+      "neutral_tokens_log": [],
+      "neutral_item_history": []
     },
     {
       "player_slot": 1,
       "towers_killed": 3,
       "roshans_killed": 0,
       "stuns": 24.890646,
+      "performance_others": {
+        "greevils_greed_gold": 5463
+      },
       "max_hero_hit": {
-        "type": "max_hero_hit",
         "time": 2085,
-        "max": true,
+        "type": "max_hero_hit",
         "unit": "npc_dota_hero_alchemist",
         "key": "npc_dota_hero_drow_ranger",
         "value": 246,
         "slot": 1,
-        "player_slot": 1
+        "player_slot": 1,
+        "max": true
       },
       "times": [
         0,
@@ -4442,11 +4447,11 @@
       "runes_log": [
         {
           "time": 1,
-          "key": 5
+          "key": "5"
         },
         {
           "time": 124,
-          "key": 2
+          "key": "2"
         }
       ],
       "connection_log": [],
@@ -4895,43 +4900,43 @@
         "0": 10
       },
       "purchase": {
-        "stout_shield": 1,
-        "tango": 1,
-        "flask": 2,
-        "clarity": 2,
-        "quelling_blade": 1,
-        "recipe_hand_of_midas": 1,
-        "hand_of_midas": 1,
-        "gloves": 2,
-        "tpscroll": 5,
-        "boots": 1,
-        "shadow_amulet": 1,
-        "claymore": 1,
-        "invis_sword": 1,
-        "mithril_hammer": 1,
-        "maelstrom": 1,
-        "recipe_maelstrom": 1,
-        "recipe_mjollnir": 1,
-        "hyperstone": 4,
-        "mjollnir": 1,
-        "recipe_travel_boots": 1,
-        "travel_boots": 1,
-        "belt_of_strength": 2,
-        "javelin": 1,
-        "basher": 1,
-        "recipe_basher": 1,
-        "chainmail": 1,
-        "recipe_assault": 1,
-        "platemail": 1,
         "assault": 1,
         "relic": 1,
-        "abyssal_blade": 1,
-        "ogre_axe": 1,
-        "sange": 1,
+        "basher": 1,
+        "mithril_hammer": 1,
         "recipe_sange": 1,
-        "recipe_silver_edge": 1,
+        "invis_sword": 1,
+        "recipe_hand_of_midas": 1,
+        "shadow_amulet": 1,
+        "ogre_axe": 1,
+        "gloves": 2,
+        "maelstrom": 1,
+        "boots": 1,
+        "recipe_mjollnir": 1,
+        "tango": 1,
+        "recipe_moon_shard": 1,
+        "recipe_maelstrom": 1,
+        "recipe_travel_boots": 1,
+        "tpscroll": 5,
+        "claymore": 1,
         "silver_edge": 1,
-        "recipe_moon_shard": 1
+        "hyperstone": 4,
+        "javelin": 1,
+        "chainmail": 1,
+        "mjollnir": 1,
+        "quelling_blade": 1,
+        "recipe_silver_edge": 1,
+        "recipe_basher": 1,
+        "platemail": 1,
+        "belt_of_strength": 2,
+        "recipe_assault": 1,
+        "hand_of_midas": 1,
+        "clarity": 2,
+        "stout_shield": 1,
+        "flask": 2,
+        "sange": 1,
+        "abyssal_blade": 1,
+        "travel_boots": 1
       },
       "gold_reasons": {
         "0": 9932,
@@ -4944,211 +4949,211 @@
         "15": 150
       },
       "xp_reasons": {
-        "0": 1555,
+        "0": 1550,
         "1": 7823,
         "2": 20296
       },
       "killed": {
-        "npc_dota_creep_badguys_melee": 153,
-        "npc_dota_creep_badguys_ranged": 46,
-        "npc_dota_creep_goodguys_melee": 2,
-        "npc_dota_badguys_siege": 10,
-        "npc_dota_hero_drow_ranger": 3,
-        "npc_dota_neutral_forest_troll_berserker": 12,
-        "npc_dota_neutral_forest_troll_high_priest": 3,
-        "npc_dota_neutral_polar_furbolg_ursa_warrior": 4,
-        "npc_dota_neutral_polar_furbolg_champion": 4,
-        "npc_dota_neutral_alpha_wolf": 2,
-        "npc_dota_neutral_giant_wolf": 4,
-        "npc_dota_neutral_enraged_wildkin": 4,
-        "npc_dota_neutral_wildkin": 7,
-        "npc_dota_courier": 1,
-        "npc_dota_neutral_centaur_khan": 3,
-        "npc_dota_neutral_centaur_outrunner": 3,
-        "npc_dota_neutral_kobold_taskmaster": 3,
-        "npc_dota_neutral_small_thunder_lizard": 4,
-        "npc_dota_neutral_big_thunder_lizard": 2,
-        "npc_dota_neutral_dark_troll_warlord": 2,
-        "npc_dota_neutral_dark_troll": 4,
-        "npc_dota_badguys_tower2_top": 1,
-        "npc_dota_neutral_harpy_storm": 1,
-        "npc_dota_neutral_harpy_scout": 2,
-        "npc_dota_dark_troll_warlord_skeleton_warrior": 2,
         "npc_dota_neutral_mud_golem": 4,
-        "npc_dota_neutral_mud_golem_split": 8,
-        "npc_dota_neutral_ogre_mauler": 2,
-        "npc_dota_hero_huskar": 1,
-        "npc_dota_badguys_tower3_top": 1,
-        "npc_dota_neutral_satyr_soulstealer": 2,
-        "npc_dota_neutral_satyr_trickster": 2,
-        "npc_dota_badguys_melee_rax_top": 1,
-        "npc_dota_hero_antimage": 1,
-        "npc_dota_hero_techies": 1,
-        "npc_dota_techies_land_mine": 1,
         "npc_dota_badguys_tower3_mid": 1,
+        "npc_dota_neutral_wildkin": 7,
+        "npc_dota_neutral_ogre_mauler": 2,
+        "npc_dota_neutral_forest_troll_high_priest": 3,
+        "npc_dota_creep_badguys_ranged": 46,
+        "npc_dota_neutral_alpha_wolf": 2,
+        "npc_dota_badguys_melee_rax_top": 1,
+        "npc_dota_neutral_polar_furbolg_champion": 4,
+        "npc_dota_badguys_tower3_top": 1,
+        "npc_dota_neutral_dark_troll": 4,
+        "npc_dota_neutral_harpy_scout": 2,
+        "npc_dota_hero_huskar": 1,
+        "npc_dota_techies_land_mine": 1,
+        "npc_dota_neutral_small_thunder_lizard": 4,
+        "npc_dota_neutral_enraged_wildkin": 4,
         "npc_dota_badguys_melee_rax_mid": 1,
+        "npc_dota_hero_antimage": 1,
+        "npc_dota_neutral_polar_furbolg_ursa_warrior": 4,
+        "npc_dota_creep_badguys_melee": 153,
         "npc_dota_badguys_range_rax_mid": 1,
-        "npc_dota_badguys_fillers": 3
+        "npc_dota_creep_goodguys_melee": 2,
+        "npc_dota_hero_drow_ranger": 3,
+        "npc_dota_neutral_giant_wolf": 4,
+        "npc_dota_badguys_tower2_top": 1,
+        "npc_dota_hero_techies": 1,
+        "npc_dota_neutral_centaur_outrunner": 3,
+        "npc_dota_neutral_dark_troll_warlord": 2,
+        "npc_dota_neutral_mud_golem_split": 8,
+        "npc_dota_neutral_satyr_soulstealer": 2,
+        "npc_dota_badguys_siege": 10,
+        "npc_dota_neutral_satyr_trickster": 2,
+        "npc_dota_dark_troll_warlord_skeleton_warrior": 2,
+        "npc_dota_neutral_forest_troll_berserker": 12,
+        "npc_dota_neutral_harpy_storm": 1,
+        "npc_dota_neutral_kobold_taskmaster": 3,
+        "npc_dota_courier": 1,
+        "npc_dota_badguys_fillers": 3,
+        "npc_dota_neutral_centaur_khan": 3,
+        "npc_dota_neutral_big_thunder_lizard": 2
       },
       "item_uses": {
-        "flask": 1,
-        "tango": 4,
         "tpscroll": 5,
         "hand_of_midas": 14,
-        "invis_sword": 11,
-        "travel_boots": 7,
         "mjollnir": 2,
-        "abyssal_blade": 1
+        "tango": 4,
+        "flask": 1,
+        "abyssal_blade": 1,
+        "invis_sword": 11,
+        "travel_boots": 7
       },
       "ability_uses": {
-        "alchemist_chemical_rage": 19,
-        "alchemist_unstable_concoction": 8,
         "alchemist_unstable_concoction_throw": 7,
-        "alchemist_acid_spray": 20
+        "alchemist_unstable_concoction": 8,
+        "alchemist_acid_spray": 20,
+        "alchemist_chemical_rage": 19
       },
       "ability_targets": {
         "alchemist_unstable_concoction_throw": {
+          "npc_dota_hero_antimage": 2,
           "npc_dota_hero_drow_ranger": 3,
-          "npc_dota_hero_huskar": 2,
-          "npc_dota_hero_antimage": 2
+          "npc_dota_hero_huskar": 2
         }
       },
       "damage_targets": {
         "alchemist_unstable_concoction_throw": {
-          "npc_dota_hero_drow_ranger": 143,
-          "npc_dota_hero_huskar": 133,
           "npc_dota_hero_antimage": 218,
-          "npc_dota_hero_alchemist": 289
+          "npc_dota_hero_drow_ranger": 143,
+          "npc_dota_hero_alchemist": 289,
+          "npc_dota_hero_huskar": 133
         },
-        "undefined": {
+        "null": {
+          "npc_dota_hero_antimage": 2253,
           "npc_dota_hero_drow_ranger": 1539,
           "npc_dota_hero_huskar": 578,
-          "npc_dota_hero_antimage": 2253,
-          "npc_dota_hero_leshrac": 775,
-          "npc_dota_hero_techies": 296
-        },
-        "alchemist_acid_spray": {
-          "npc_dota_hero_drow_ranger": 119,
-          "npc_dota_hero_leshrac": 93,
-          "npc_dota_hero_huskar": 111,
-          "npc_dota_hero_techies": 80,
-          "npc_dota_hero_antimage": 106
+          "npc_dota_hero_techies": 296,
+          "npc_dota_hero_leshrac": 775
         },
         "mjollnir": {
           "npc_dota_hero_antimage": 280,
-          "npc_dota_hero_leshrac": 224,
+          "npc_dota_hero_drow_ranger": 224,
           "npc_dota_hero_huskar": 97,
           "npc_dota_hero_techies": 336,
-          "npc_dota_hero_drow_ranger": 224
+          "npc_dota_hero_leshrac": 224
+        },
+        "alchemist_acid_spray": {
+          "npc_dota_hero_antimage": 106,
+          "npc_dota_hero_drow_ranger": 119,
+          "npc_dota_hero_huskar": 111,
+          "npc_dota_hero_techies": 80,
+          "npc_dota_hero_leshrac": 93
         }
       },
       "hero_hits": {
+        "null": 47,
         "alchemist_unstable_concoction_throw": 8,
-        "undefined": 47,
-        "alchemist_acid_spray": 36,
-        "mjollnir": 13
+        "mjollnir": 13,
+        "alchemist_acid_spray": 36
       },
       "damage": {
-        "npc_dota_creep_badguys_melee": 76023,
-        "npc_dota_creep_goodguys_melee": 275,
-        "npc_dota_creep_badguys_ranged": 18207,
-        "npc_dota_hero_drow_ranger": 2025,
-        "npc_dota_badguys_siege": 3967,
-        "npc_dota_hero_leshrac": 1092,
-        "npc_dota_hero_huskar": 919,
-        "npc_dota_neutral_forest_troll_berserker": 7195,
-        "npc_dota_neutral_forest_troll_high_priest": 1849,
-        "npc_dota_neutral_polar_furbolg_ursa_warrior": 3994,
-        "npc_dota_neutral_polar_furbolg_champion": 2677,
-        "npc_dota_neutral_giant_wolf": 2164,
-        "npc_dota_neutral_alpha_wolf": 1225,
-        "npc_dota_neutral_enraged_wildkin": 3933,
-        "npc_dota_neutral_wildkin": 3026,
-        "npc_dota_neutral_centaur_khan": 3402,
-        "npc_dota_neutral_centaur_outrunner": 1829,
-        "npc_dota_hero_techies": 712,
-        "npc_dota_courier": 229,
-        "npc_dota_hero_antimage": 2857,
-        "npc_dota_neutral_kobold_taskmaster": 1259,
-        "npc_dota_neutral_small_thunder_lizard": 3519,
-        "npc_dota_neutral_big_thunder_lizard": 2871,
-        "npc_dota_hero_alchemist": 289,
-        "npc_dota_neutral_dark_troll": 2315,
-        "npc_dota_neutral_dark_troll_warlord": 2470,
-        "npc_dota_badguys_tower2_top": 951,
-        "npc_dota_neutral_harpy_storm": 592,
-        "npc_dota_neutral_harpy_scout": 917,
-        "npc_dota_dark_troll_warlord_skeleton_warrior": 613,
         "npc_dota_neutral_mud_golem": 3700,
-        "npc_dota_neutral_mud_golem_split": 2342,
-        "npc_dota_neutral_ogre_mauler": 1781,
-        "npc_dota_neutral_ogre_magi": 150,
-        "npc_dota_badguys_tower3_top": 1144,
-        "npc_dota_badguys_melee_rax_top": 1575,
-        "npc_dota_neutral_satyr_soulstealer": 1408,
-        "npc_dota_neutral_satyr_trickster": 811,
-        "npc_dota_techies_land_mine": 200,
-        "npc_dota_badguys_range_rax_top": 347,
         "npc_dota_badguys_tower3_mid": 1564,
+        "npc_dota_badguys_fort": 231,
+        "npc_dota_neutral_wildkin": 3026,
+        "npc_dota_neutral_ogre_mauler": 1781,
+        "npc_dota_neutral_forest_troll_high_priest": 1849,
+        "npc_dota_creep_badguys_ranged": 18207,
+        "npc_dota_neutral_alpha_wolf": 1225,
+        "npc_dota_badguys_melee_rax_top": 1575,
+        "npc_dota_neutral_polar_furbolg_champion": 2677,
+        "npc_dota_badguys_tower3_top": 1144,
+        "npc_dota_neutral_dark_troll": 2315,
+        "npc_dota_hero_alchemist": 289,
+        "npc_dota_neutral_harpy_scout": 917,
+        "npc_dota_badguys_range_rax_top": 347,
+        "npc_dota_hero_huskar": 919,
+        "npc_dota_techies_land_mine": 200,
+        "npc_dota_hero_leshrac": 1092,
+        "npc_dota_neutral_small_thunder_lizard": 3519,
+        "npc_dota_neutral_enraged_wildkin": 3933,
         "npc_dota_badguys_melee_rax_mid": 1543,
+        "npc_dota_hero_antimage": 2857,
+        "npc_dota_neutral_polar_furbolg_ursa_warrior": 3994,
+        "npc_dota_creep_badguys_melee": 76023,
         "npc_dota_badguys_range_rax_mid": 1162,
+        "npc_dota_creep_goodguys_melee": 275,
+        "npc_dota_hero_drow_ranger": 2025,
+        "npc_dota_neutral_giant_wolf": 2164,
+        "npc_dota_hero_techies": 712,
+        "npc_dota_badguys_tower2_top": 951,
+        "npc_dota_neutral_centaur_outrunner": 1829,
+        "npc_dota_neutral_dark_troll_warlord": 2470,
+        "npc_dota_neutral_mud_golem_split": 2342,
+        "npc_dota_neutral_satyr_soulstealer": 1408,
+        "npc_dota_neutral_ogre_magi": 150,
+        "npc_dota_badguys_siege": 3967,
+        "npc_dota_neutral_satyr_trickster": 811,
+        "npc_dota_dark_troll_warlord_skeleton_warrior": 613,
+        "npc_dota_neutral_forest_troll_berserker": 7195,
+        "npc_dota_neutral_harpy_storm": 592,
+        "npc_dota_neutral_kobold_taskmaster": 1259,
+        "npc_dota_courier": 229,
         "npc_dota_badguys_fillers": 1588,
-        "npc_dota_badguys_tower4": 1441,
-        "npc_dota_badguys_fort": 231
+        "npc_dota_neutral_centaur_khan": 3402,
+        "npc_dota_neutral_big_thunder_lizard": 2871,
+        "npc_dota_badguys_tower4": 1441
       },
       "damage_taken": {
-        "npc_dota_hero_techies": 4310,
-        "npc_dota_hero_drow_ranger": 4505,
-        "npc_dota_creep_badguys_ranged": 1327,
-        "npc_dota_creep_badguys_melee": 2166,
-        "npc_dota_hero_leshrac": 2489,
-        "npc_dota_badguys_siege": 147,
-        "npc_dota_hero_huskar": 4090,
-        "npc_dota_neutral_forest_troll_berserker": 408,
-        "npc_dota_neutral_forest_troll_high_priest": 117,
-        "npc_dota_neutral_polar_furbolg_champion": 795,
-        "npc_dota_neutral_polar_furbolg_ursa_warrior": 784,
-        "npc_dota_neutral_giant_wolf": 149,
-        "npc_dota_neutral_alpha_wolf": 131,
-        "npc_dota_neutral_wildkin": 303,
-        "npc_dota_neutral_enraged_wildkin": 407,
-        "npc_dota_neutral_centaur_khan": 572,
-        "npc_dota_neutral_centaur_outrunner": 149,
-        "npc_dota_neutral_small_thunder_lizard": 180,
-        "npc_dota_neutral_big_thunder_lizard": 353,
-        "npc_dota_hero_alchemist": 289,
-        "npc_dota_neutral_dark_troll": 85,
-        "npc_dota_neutral_dark_troll_warlord": 103,
-        "npc_dota_neutral_kobold_taskmaster": 8,
-        "npc_dota_neutral_harpy_storm": 12,
-        "npc_dota_neutral_harpy_scout": 37,
-        "npc_dota_dark_troll_warlord_skeleton_warrior": 22,
-        "npc_dota_hero_antimage": 506,
         "npc_dota_neutral_mud_golem": 157,
-        "npc_dota_neutral_mud_golem_split": 35,
-        "npc_dota_neutral_ogre_mauler": 11,
-        "npc_dota_neutral_ogre_magi": 39,
-        "npc_dota_badguys_tower3_top": 1145,
-        "npc_dota_neutral_satyr_soulstealer": 25,
-        "npc_dota_neutral_satyr_trickster": 5,
         "npc_dota_badguys_tower3_mid": 285,
-        "npc_dota_badguys_tower4": 764,
-        "dota_fountain": 411
+        "npc_dota_neutral_wildkin": 303,
+        "npc_dota_neutral_ogre_mauler": 11,
+        "npc_dota_neutral_forest_troll_high_priest": 117,
+        "npc_dota_creep_badguys_ranged": 1327,
+        "npc_dota_neutral_alpha_wolf": 131,
+        "npc_dota_neutral_polar_furbolg_champion": 795,
+        "npc_dota_badguys_tower3_top": 1145,
+        "npc_dota_neutral_dark_troll": 85,
+        "npc_dota_hero_alchemist": 289,
+        "npc_dota_neutral_harpy_scout": 37,
+        "npc_dota_hero_huskar": 4090,
+        "npc_dota_hero_leshrac": 2489,
+        "npc_dota_neutral_small_thunder_lizard": 180,
+        "dota_fountain": 411,
+        "npc_dota_neutral_enraged_wildkin": 407,
+        "npc_dota_hero_antimage": 506,
+        "npc_dota_neutral_polar_furbolg_ursa_warrior": 784,
+        "npc_dota_creep_badguys_melee": 2166,
+        "npc_dota_hero_drow_ranger": 4505,
+        "npc_dota_neutral_giant_wolf": 149,
+        "npc_dota_hero_techies": 4310,
+        "npc_dota_neutral_centaur_outrunner": 149,
+        "npc_dota_neutral_dark_troll_warlord": 103,
+        "npc_dota_neutral_mud_golem_split": 35,
+        "npc_dota_neutral_satyr_soulstealer": 25,
+        "npc_dota_neutral_ogre_magi": 39,
+        "npc_dota_badguys_siege": 147,
+        "npc_dota_neutral_satyr_trickster": 5,
+        "npc_dota_dark_troll_warlord_skeleton_warrior": 22,
+        "npc_dota_neutral_forest_troll_berserker": 408,
+        "npc_dota_neutral_harpy_storm": 12,
+        "npc_dota_neutral_kobold_taskmaster": 8,
+        "npc_dota_neutral_centaur_khan": 572,
+        "npc_dota_neutral_big_thunder_lizard": 353,
+        "npc_dota_badguys_tower4": 764
       },
       "damage_inflictor": {
+        "null": 5441,
         "alchemist_unstable_concoction_throw": 494,
-        "undefined": 5441,
-        "alchemist_acid_spray": 509,
-        "mjollnir": 1161
+        "mjollnir": 1161,
+        "alchemist_acid_spray": 509
       },
       "runes": {
         "2": 1,
         "5": 1
       },
       "killed_by": {
-        "npc_dota_hero_leshrac": 4,
         "npc_dota_hero_techies": 1,
-        "npc_dota_hero_huskar": 1
+        "npc_dota_hero_huskar": 1,
+        "npc_dota_hero_leshrac": 4
       },
       "kill_streaks": {
         "3": 1,
@@ -5166,23 +5171,21 @@
         "npc_dota_hero_alchemist": 400
       },
       "damage_inflictor_received": {
-        "techies_land_mines": 3997,
-        "undefined": 7382,
-        "leshrac_lightning_storm": 930,
-        "leshrac_split_earth": 585,
-        "huskar_life_break": 916,
+        "null": 7382,
         "huskar_burning_spear": 1200,
-        "bfury": 74,
+        "huskar_life_break": 916,
         "leshrac_pulse_nova": 480,
+        "leshrac_split_earth": 585,
+        "leshrac_lightning_storm": 930,
+        "techies_land_mines": 3997,
+        "bfury": 74,
         "antimage_mana_void": 336
       },
       "randomed": false,
       "repicked": false,
       "pred_vict": false,
       "neutral_tokens_log": [],
-      "performance_others": {
-        "greevils_greed_gold": 5463
-      }
+      "neutral_item_history": []
     },
     {
       "player_slot": 2,
@@ -5190,14 +5193,14 @@
       "roshans_killed": 0,
       "stuns": 0,
       "max_hero_hit": {
-        "type": "max_hero_hit",
         "time": 2173,
-        "max": true,
+        "type": "max_hero_hit",
         "unit": "npc_dota_hero_legion_commander",
         "key": "npc_dota_hero_antimage",
         "value": 645,
         "slot": 2,
-        "player_slot": 2
+        "player_slot": 2,
+        "max": true
       },
       "times": [
         0,
@@ -5403,480 +5406,480 @@
         {
           "time": 8,
           "type": "obs_log",
+          "key": "[148,106]",
           "slot": 2,
+          "player_slot": 2,
           "x": 148.4,
           "y": 106.1,
           "z": 131,
           "entityleft": false,
-          "ehandle": 15810761,
-          "key": "[148,106]",
-          "player_slot": 2
+          "ehandle": 15810761
         },
         {
           "time": 402,
           "type": "obs_log",
+          "key": "[159,102]",
           "slot": 2,
+          "player_slot": 2,
           "x": 159.4,
           "y": 101.8,
           "z": 131,
           "entityleft": false,
-          "ehandle": 10388783,
-          "key": "[159,102]",
-          "player_slot": 2
+          "ehandle": 10388783
         },
         {
           "time": 1216,
           "type": "obs_log",
+          "key": "[165,94]",
           "slot": 2,
+          "player_slot": 2,
           "x": 165.1,
           "y": 94.1,
           "z": 131,
           "entityleft": false,
-          "ehandle": 2245560,
-          "key": "[165,94]",
-          "player_slot": 2
+          "ehandle": 2245560
         },
         {
           "time": 1357,
           "type": "obs_log",
+          "key": "[126,142]",
           "slot": 2,
+          "player_slot": 2,
           "x": 125.9,
           "y": 142.3,
           "z": 131,
           "entityleft": false,
-          "ehandle": 8503541,
-          "key": "[126,142]",
-          "player_slot": 2
+          "ehandle": 8503541
         },
         {
           "time": 1371,
           "type": "obs_log",
+          "key": "[131,131]",
           "slot": 2,
+          "player_slot": 2,
           "x": 130.5,
           "y": 131.4,
           "z": 130,
           "entityleft": false,
-          "ehandle": 279607,
-          "key": "[131,131]",
-          "player_slot": 2
+          "ehandle": 279607
         },
         {
           "time": 1454,
           "type": "obs_log",
+          "key": "[149,106]",
           "slot": 2,
+          "player_slot": 2,
           "x": 148.7,
           "y": 105.9,
           "z": 131,
           "entityleft": false,
-          "ehandle": 11994365,
-          "key": "[149,106]",
-          "player_slot": 2
+          "ehandle": 11994365
         },
         {
           "time": 1463,
           "type": "obs_log",
+          "key": "[145,94]",
           "slot": 2,
+          "player_slot": 2,
           "x": 144.6,
           "y": 94,
           "z": 131,
           "entityleft": false,
-          "ehandle": 1361324,
-          "key": "[145,94]",
-          "player_slot": 2
+          "ehandle": 1361324
         },
         {
           "time": 1540,
           "type": "obs_log",
+          "key": "[148,118]",
           "slot": 2,
+          "player_slot": 2,
           "x": 148.4,
           "y": 118.4,
           "z": 130,
           "entityleft": false,
-          "ehandle": 9962998,
-          "key": "[148,118]",
-          "player_slot": 2
+          "ehandle": 9962998
         },
         {
           "time": 1559,
           "type": "obs_log",
+          "key": "[126,143]",
           "slot": 2,
+          "player_slot": 2,
           "x": 126.1,
           "y": 142.5,
           "z": 131,
           "entityleft": false,
-          "ehandle": 5555406,
-          "key": "[126,143]",
-          "player_slot": 2
+          "ehandle": 5555406
         },
         {
           "time": 1592,
           "type": "obs_log",
+          "key": "[135,146]",
           "slot": 2,
+          "player_slot": 2,
           "x": 135.4,
           "y": 145.7,
           "z": 131,
           "entityleft": false,
-          "ehandle": 8177002,
-          "key": "[135,146]",
-          "player_slot": 2
+          "ehandle": 8177002
         },
         {
           "time": 1616,
           "type": "obs_log",
+          "key": "[153,126]",
           "slot": 2,
+          "player_slot": 2,
           "x": 153.1,
           "y": 126.4,
           "z": 131,
           "entityleft": false,
-          "ehandle": 16089293,
-          "key": "[153,126]",
-          "player_slot": 2
+          "ehandle": 16089293
         },
         {
           "time": 2200,
           "type": "obs_log",
+          "key": "[165,158]",
           "slot": 2,
+          "player_slot": 2,
           "x": 164.9,
           "y": 157.7,
           "z": 131,
           "entityleft": false,
-          "ehandle": 12453038,
-          "key": "[165,158]",
-          "player_slot": 2
+          "ehandle": 12453038
         }
       ],
       "sen_log": [
         {
           "time": 509,
           "type": "sen_log",
+          "key": "[177,95]",
           "slot": 2,
+          "player_slot": 2,
           "x": 176.5,
           "y": 95.4,
           "z": 131,
           "entityleft": false,
-          "ehandle": 11830751,
-          "key": "[177,95]",
-          "player_slot": 2
+          "ehandle": 11830751
         },
         {
           "time": 523,
           "type": "sen_log",
+          "key": "[144,108]",
           "slot": 2,
+          "player_slot": 2,
           "x": 144.4,
           "y": 108.2,
           "z": 130,
           "entityleft": false,
-          "ehandle": 14336125,
-          "key": "[144,108]",
-          "player_slot": 2
+          "ehandle": 14336125
         },
         {
           "time": 586,
           "type": "sen_log",
+          "key": "[125,130]",
           "slot": 2,
+          "player_slot": 2,
           "x": 124.6,
           "y": 130.2,
           "z": 130,
           "entityleft": false,
-          "ehandle": 13714467,
-          "key": "[125,130]",
-          "player_slot": 2
+          "ehandle": 13714467
         },
         {
           "time": 826,
           "type": "sen_log",
+          "key": "[168,94]",
           "slot": 2,
+          "player_slot": 2,
           "x": 167.7,
           "y": 94,
           "z": 131,
           "entityleft": false,
-          "ehandle": 4392285,
-          "key": "[168,94]",
-          "player_slot": 2
+          "ehandle": 4392285
         },
         {
           "time": 1428,
           "type": "sen_log",
+          "key": "[172,106]",
           "slot": 2,
+          "player_slot": 2,
           "x": 172.1,
           "y": 106,
           "z": 131,
           "entityleft": false,
-          "ehandle": 5080415,
-          "key": "[172,106]",
-          "player_slot": 2
+          "ehandle": 5080415
         },
         {
           "time": 1529,
           "type": "sen_log",
+          "key": "[162,129]",
           "slot": 2,
+          "player_slot": 2,
           "x": 162.4,
           "y": 128.5,
           "z": 131,
           "entityleft": false,
-          "ehandle": 12649262,
-          "key": "[162,129]",
-          "player_slot": 2
+          "ehandle": 12649262
         },
         {
           "time": 2063,
           "type": "sen_log",
+          "key": "[155,152]",
           "slot": 2,
+          "player_slot": 2,
           "x": 155.3,
           "y": 151.6,
           "z": 130.1,
           "entityleft": false,
-          "ehandle": 3032459,
-          "key": "[155,152]",
-          "player_slot": 2
+          "ehandle": 3032459
         },
         {
           "time": 2181,
           "type": "sen_log",
+          "key": "[158,172]",
           "slot": 2,
+          "player_slot": 2,
           "x": 158.1,
           "y": 172,
           "z": 131,
           "entityleft": false,
-          "ehandle": 8291356,
-          "key": "[158,172]",
-          "player_slot": 2
+          "ehandle": 8291356
         },
         {
           "time": 2193,
           "type": "sen_log",
+          "key": "[163,157]",
           "slot": 2,
+          "player_slot": 2,
           "x": 162.6,
           "y": 156.7,
           "z": 131,
           "entityleft": false,
-          "ehandle": 6930657,
-          "key": "[163,157]",
-          "player_slot": 2
+          "ehandle": 6930657
         }
       ],
       "obs_left_log": [
         {
           "time": 429,
           "type": "obs_left_log",
+          "key": "[148,106]",
           "slot": 2,
+          "player_slot": 2,
           "x": 148.4,
           "y": 106.1,
           "z": 131,
           "entityleft": true,
-          "ehandle": 15810761,
-          "key": "[148,106]",
-          "player_slot": 2
+          "ehandle": 15810761
         },
         {
           "time": 822,
           "type": "obs_left_log",
+          "key": "[159,102]",
           "slot": 2,
+          "player_slot": 2,
           "x": 159.4,
           "y": 101.8,
           "z": 131,
           "entityleft": true,
-          "ehandle": 10388783,
-          "key": "[159,102]",
-          "player_slot": 2
+          "ehandle": 10388783
         },
         {
           "time": 1636,
           "type": "obs_left_log",
+          "key": "[165,94]",
           "slot": 2,
+          "player_slot": 2,
           "x": 165.1,
           "y": 94.1,
           "z": 131,
           "entityleft": true,
-          "ehandle": 2245560,
-          "key": "[165,94]",
-          "player_slot": 2
+          "ehandle": 2245560
         },
         {
           "time": 1756,
           "type": "obs_left_log",
+          "key": "[135,146]",
           "slot": 2,
+          "player_slot": 2,
           "attackername": "npc_dota_hero_antimage",
           "x": 135.4,
           "y": 145.7,
           "z": 131,
           "entityleft": true,
-          "ehandle": 8177002,
-          "key": "[135,146]",
-          "player_slot": 2
+          "ehandle": 8177002
         },
         {
           "time": 1760,
           "type": "obs_left_log",
+          "key": "[126,142]",
           "slot": 2,
+          "player_slot": 2,
           "attackername": "npc_dota_hero_antimage",
           "x": 125.9,
           "y": 142.3,
           "z": 131,
           "entityleft": true,
-          "ehandle": 8503541,
-          "key": "[126,142]",
-          "player_slot": 2
+          "ehandle": 8503541
         },
         {
           "time": 1791,
           "type": "obs_left_log",
+          "key": "[131,131]",
           "slot": 2,
+          "player_slot": 2,
           "x": 130.5,
           "y": 131.4,
           "z": 130,
           "entityleft": true,
-          "ehandle": 279607,
-          "key": "[131,131]",
-          "player_slot": 2
+          "ehandle": 279607
         },
         {
           "time": 1874,
           "type": "obs_left_log",
+          "key": "[149,106]",
           "slot": 2,
+          "player_slot": 2,
           "x": 148.7,
           "y": 105.9,
           "z": 131,
           "entityleft": true,
-          "ehandle": 11994365,
-          "key": "[149,106]",
-          "player_slot": 2
+          "ehandle": 11994365
         },
         {
           "time": 1883,
           "type": "obs_left_log",
+          "key": "[145,94]",
           "slot": 2,
+          "player_slot": 2,
           "x": 144.6,
           "y": 94,
           "z": 131,
           "entityleft": true,
-          "ehandle": 1361324,
-          "key": "[145,94]",
-          "player_slot": 2
+          "ehandle": 1361324
         },
         {
           "time": 1960,
           "type": "obs_left_log",
+          "key": "[148,118]",
           "slot": 2,
+          "player_slot": 2,
           "x": 148.4,
           "y": 118.4,
           "z": 130,
           "entityleft": true,
-          "ehandle": 9962998,
-          "key": "[148,118]",
-          "player_slot": 2
+          "ehandle": 9962998
         },
         {
           "time": 1979,
           "type": "obs_left_log",
+          "key": "[126,143]",
           "slot": 2,
+          "player_slot": 2,
           "x": 126.1,
           "y": 142.5,
           "z": 131,
           "entityleft": true,
-          "ehandle": 5555406,
-          "key": "[126,143]",
-          "player_slot": 2
+          "ehandle": 5555406
         },
         {
           "time": 2036,
           "type": "obs_left_log",
+          "key": "[153,126]",
           "slot": 2,
+          "player_slot": 2,
           "x": 153.1,
           "y": 126.4,
           "z": 131,
           "entityleft": true,
-          "ehandle": 16089293,
-          "key": "[153,126]",
-          "player_slot": 2
+          "ehandle": 16089293
         }
       ],
       "sen_left_log": [
         {
           "time": 749,
           "type": "sen_left_log",
+          "key": "[177,95]",
           "slot": 2,
+          "player_slot": 2,
           "x": 176.5,
           "y": 95.4,
           "z": 131,
           "entityleft": true,
-          "ehandle": 11830751,
-          "key": "[177,95]",
-          "player_slot": 2
+          "ehandle": 11830751
         },
         {
           "time": 763,
           "type": "sen_left_log",
+          "key": "[144,108]",
           "slot": 2,
+          "player_slot": 2,
           "x": 144.4,
           "y": 108.2,
           "z": 130,
           "entityleft": true,
-          "ehandle": 14336125,
-          "key": "[144,108]",
-          "player_slot": 2
+          "ehandle": 14336125
         },
         {
           "time": 826,
           "type": "sen_left_log",
+          "key": "[125,130]",
           "slot": 2,
+          "player_slot": 2,
           "x": 124.6,
           "y": 130.2,
           "z": 130,
           "entityleft": true,
-          "ehandle": 13714467,
-          "key": "[125,130]",
-          "player_slot": 2
+          "ehandle": 13714467
         },
         {
           "time": 1066,
           "type": "sen_left_log",
+          "key": "[168,94]",
           "slot": 2,
+          "player_slot": 2,
           "x": 167.7,
           "y": 94,
           "z": 131,
           "entityleft": true,
-          "ehandle": 4392285,
-          "key": "[168,94]",
-          "player_slot": 2
+          "ehandle": 4392285
         },
         {
           "time": 1629,
           "type": "sen_left_log",
+          "key": "[162,129]",
           "slot": 2,
+          "player_slot": 2,
           "attackername": "npc_dota_hero_drow_ranger",
           "x": 162.4,
           "y": 128.5,
           "z": 131,
           "entityleft": true,
-          "ehandle": 12649262,
-          "key": "[162,129]",
-          "player_slot": 2
+          "ehandle": 12649262
         },
         {
           "time": 1668,
           "type": "sen_left_log",
+          "key": "[172,106]",
           "slot": 2,
+          "player_slot": 2,
           "x": 172.1,
           "y": 106,
           "z": 131,
           "entityleft": true,
-          "ehandle": 5080415,
-          "key": "[172,106]",
-          "player_slot": 2
+          "ehandle": 5080415
         },
         {
           "time": 2155,
           "type": "sen_left_log",
+          "key": "[155,152]",
           "slot": 2,
+          "player_slot": 2,
           "attackername": "npc_dota_hero_techies",
           "x": 155.3,
           "y": 151.6,
           "z": 130.1,
           "entityleft": true,
-          "ehandle": 3032459,
-          "key": "[155,152]",
-          "player_slot": 2
+          "ehandle": 3032459
         }
       ],
       "purchase_log": [
@@ -6015,7 +6018,7 @@
       "runes_log": [
         {
           "time": 482,
-          "key": 0
+          "key": "0"
         }
       ],
       "connection_log": [
@@ -6023,15 +6026,15 @@
           "time": 2086,
           "type": "connection_log",
           "slot": 2,
-          "event": "disconnect",
-          "player_slot": 2
+          "player_slot": 2,
+          "event": "disconnect"
         },
         {
           "time": 2129,
           "type": "connection_log",
           "slot": 2,
-          "event": "reconnect",
-          "player_slot": 2
+          "player_slot": 2,
+          "event": "reconnect"
         }
       ],
       "lane_pos": {
@@ -6413,29 +6416,29 @@
         "0": 40
       },
       "purchase": {
-        "stout_shield": 1,
-        "quelling_blade": 1,
-        "tango": 1,
-        "blink": 1,
-        "boots": 1,
-        "broadsword": 2,
-        "chainmail": 1,
-        "blade_mail": 1,
-        "robe": 1,
-        "tpscroll": 2,
-        "clarity": 1,
-        "gloves": 1,
         "power_treads": 1,
-        "belt_of_strength": 1,
-        "mithril_hammer": 2,
-        "desolator": 1,
-        "recipe_desolator": 1,
-        "blades_of_attack": 1,
-        "lesser_crit": 1,
+        "tpscroll": 2,
+        "chainmail": 1,
+        "quelling_blade": 1,
         "recipe_lesser_crit": 1,
-        "demon_edge": 1,
         "recipe_greater_crit": 1,
-        "greater_crit": 1
+        "mithril_hammer": 2,
+        "blades_of_attack": 1,
+        "blink": 1,
+        "desolator": 1,
+        "belt_of_strength": 1,
+        "recipe_desolator": 1,
+        "lesser_crit": 1,
+        "demon_edge": 1,
+        "gloves": 1,
+        "clarity": 1,
+        "robe": 1,
+        "stout_shield": 1,
+        "greater_crit": 1,
+        "boots": 1,
+        "tango": 1,
+        "blade_mail": 1,
+        "broadsword": 2
       },
       "gold_reasons": {
         "0": 625,
@@ -6448,178 +6451,178 @@
         "15": 325
       },
       "xp_reasons": {
-        "0": 92,
+        "0": 89,
         "1": 10370,
         "2": 8048
       },
       "killed": {
         "npc_dota_neutral_mud_golem": 8,
-        "npc_dota_neutral_mud_golem_split": 16,
-        "npc_dota_neutral_kobold_taskmaster": 4,
-        "npc_dota_neutral_forest_troll_berserker": 12,
-        "npc_dota_neutral_satyr_soulstealer": 8,
-        "npc_dota_neutral_satyr_trickster": 8,
-        "npc_dota_neutral_gnoll_assassin": 3,
-        "npc_dota_neutral_centaur_khan": 4,
-        "npc_dota_neutral_centaur_outrunner": 4,
-        "npc_dota_neutral_enraged_wildkin": 1,
         "npc_dota_neutral_wildkin": 2,
-        "npc_dota_neutral_alpha_wolf": 1,
-        "npc_dota_neutral_giant_wolf": 2,
-        "npc_dota_neutral_forest_troll_high_priest": 3,
         "npc_dota_neutral_ogre_mauler": 2,
-        "npc_dota_neutral_ogre_magi": 1,
-        "npc_dota_creep_badguys_melee": 46,
-        "npc_dota_hero_huskar": 3,
+        "npc_dota_neutral_forest_troll_high_priest": 3,
         "npc_dota_creep_badguys_ranged": 6,
+        "npc_dota_neutral_alpha_wolf": 1,
         "npc_dota_neutral_dark_troll": 2,
-        "npc_dota_neutral_dark_troll_warlord": 1,
-        "npc_dota_dark_troll_warlord_skeleton_warrior": 2,
-        "npc_dota_hero_techies": 2,
-        "npc_dota_neutral_kobold": 5,
-        "npc_dota_neutral_kobold_tunneler": 2,
-        "npc_dota_hero_drow_ranger": 2,
+        "npc_dota_hero_huskar": 3,
         "npc_dota_hero_leshrac": 2,
         "npc_dota_badguys_melee_rax_bot": 1,
+        "npc_dota_neutral_enraged_wildkin": 1,
+        "npc_dota_creep_badguys_melee": 46,
         "npc_dota_badguys_range_rax_bot": 1,
+        "npc_dota_hero_drow_ranger": 2,
+        "npc_dota_neutral_giant_wolf": 2,
+        "npc_dota_hero_techies": 2,
+        "npc_dota_neutral_kobold": 5,
+        "npc_dota_neutral_mud_golem_split": 16,
+        "npc_dota_neutral_centaur_outrunner": 4,
+        "npc_dota_neutral_dark_troll_warlord": 1,
+        "npc_dota_neutral_satyr_soulstealer": 8,
+        "npc_dota_neutral_ogre_magi": 1,
+        "npc_dota_neutral_satyr_trickster": 8,
+        "npc_dota_dark_troll_warlord_skeleton_warrior": 2,
+        "npc_dota_neutral_gnoll_assassin": 3,
+        "npc_dota_neutral_forest_troll_berserker": 12,
+        "npc_dota_neutral_kobold_tunneler": 2,
+        "npc_dota_neutral_kobold_taskmaster": 4,
+        "npc_dota_neutral_centaur_khan": 4,
         "npc_dota_badguys_tower4": 1
       },
       "item_uses": {
-        "tango": 4,
-        "quelling_blade": 5,
-        "blink": 32,
         "tpscroll": 2,
-        "blade_mail": 10
+        "quelling_blade": 5,
+        "tango": 4,
+        "blade_mail": 10,
+        "blink": 32
       },
       "ability_uses": {
-        "legion_commander_press_the_attack": 15,
         "legion_commander_duel": 12,
+        "legion_commander_press_the_attack": 15,
         "legion_commander_overwhelming_odds": 6
       },
       "ability_targets": {
-        "legion_commander_press_the_attack": {
-          "npc_dota_hero_legion_commander": 13,
-          "npc_dota_hero_silencer": 1,
-          "npc_dota_hero_tusk": 1
-        },
         "legion_commander_duel": {
-          "npc_dota_hero_leshrac": 3,
+          "npc_dota_hero_antimage": 1,
           "npc_dota_hero_drow_ranger": 3,
           "npc_dota_hero_huskar": 4,
-          "npc_dota_hero_antimage": 1,
-          "npc_dota_hero_techies": 1
+          "npc_dota_hero_techies": 1,
+          "npc_dota_hero_leshrac": 3
+        },
+        "legion_commander_press_the_attack": {
+          "npc_dota_hero_tusk": 1,
+          "npc_dota_hero_legion_commander": 13,
+          "npc_dota_hero_silencer": 1
         }
       },
       "damage_targets": {
-        "undefined": {
+        "null": {
           "npc_dota_hero_antimage": 1748,
-          "npc_dota_hero_leshrac": 1612,
           "npc_dota_hero_drow_ranger": 1653,
           "npc_dota_hero_huskar": 2436,
-          "npc_dota_hero_techies": 1053
-        },
-        "legion_commander_overwhelming_odds": {
-          "npc_dota_hero_leshrac": 213,
-          "npc_dota_hero_antimage": 353,
-          "npc_dota_hero_drow_ranger": 430,
-          "npc_dota_hero_huskar": 62
+          "npc_dota_hero_techies": 1053,
+          "npc_dota_hero_leshrac": 1612
         },
         "blade_mail": {
           "npc_dota_hero_antimage": 358,
+          "npc_dota_hero_drow_ranger": 236,
           "npc_dota_hero_techies": 40,
           "npc_dota_hero_huskar": 291,
-          "npc_dota_hero_leshrac": 468,
-          "npc_dota_hero_drow_ranger": 236
+          "npc_dota_hero_leshrac": 468
+        },
+        "legion_commander_overwhelming_odds": {
+          "npc_dota_hero_antimage": 353,
+          "npc_dota_hero_drow_ranger": 430,
+          "npc_dota_hero_huskar": 62,
+          "npc_dota_hero_leshrac": 213
         }
       },
       "hero_hits": {
-        "undefined": 58,
-        "legion_commander_overwhelming_odds": 7,
-        "blade_mail": 21
+        "null": 58,
+        "blade_mail": 21,
+        "legion_commander_overwhelming_odds": 7
       },
       "damage": {
-        "npc_dota_hero_antimage": 2459,
         "npc_dota_neutral_mud_golem": 6715,
-        "npc_dota_neutral_mud_golem_split": 4320,
-        "npc_dota_neutral_kobold_taskmaster": 1726,
-        "npc_dota_neutral_forest_troll_berserker": 7278,
-        "npc_dota_neutral_satyr_soulstealer": 5425,
-        "npc_dota_neutral_satyr_trickster": 3085,
-        "npc_dota_neutral_gnoll_assassin": 1172,
-        "npc_dota_neutral_centaur_khan": 4717,
-        "npc_dota_neutral_centaur_outrunner": 2451,
-        "npc_dota_neutral_enraged_wildkin": 1047,
+        "npc_dota_badguys_fort": 1803,
         "npc_dota_neutral_wildkin": 838,
-        "npc_dota_neutral_alpha_wolf": 646,
-        "npc_dota_neutral_giant_wolf": 1084,
-        "npc_dota_neutral_forest_troll_high_priest": 1603,
-        "npc_dota_hero_leshrac": 2293,
         "npc_dota_neutral_ogre_mauler": 1847,
-        "npc_dota_neutral_ogre_magi": 658,
-        "npc_dota_hero_drow_ranger": 2319,
+        "npc_dota_neutral_forest_troll_high_priest": 1603,
         "npc_dota_creep_badguys_ranged": 2929,
-        "npc_dota_creep_badguys_melee": 33707,
-        "npc_dota_hero_huskar": 2789,
+        "npc_dota_neutral_alpha_wolf": 646,
         "npc_dota_neutral_dark_troll": 1014,
-        "npc_dota_neutral_dark_troll_warlord": 1111,
-        "npc_dota_dark_troll_warlord_skeleton_warrior": 631,
+        "npc_dota_hero_huskar": 2789,
+        "npc_dota_hero_leshrac": 2293,
+        "npc_dota_badguys_melee_rax_bot": 357,
+        "npc_dota_neutral_enraged_wildkin": 1047,
+        "npc_dota_hero_antimage": 2459,
+        "npc_dota_creep_badguys_melee": 33707,
+        "npc_dota_badguys_range_rax_bot": 1190,
+        "npc_dota_hero_drow_ranger": 2319,
+        "npc_dota_neutral_giant_wolf": 1084,
         "npc_dota_hero_techies": 1093,
         "npc_dota_neutral_kobold": 2097,
-        "npc_dota_neutral_kobold_tunneler": 682,
+        "npc_dota_neutral_mud_golem_split": 4320,
+        "npc_dota_neutral_centaur_outrunner": 2451,
+        "npc_dota_neutral_dark_troll_warlord": 1111,
+        "npc_dota_neutral_satyr_soulstealer": 5425,
+        "npc_dota_neutral_ogre_magi": 658,
         "npc_dota_badguys_tower2_bot": 750,
-        "npc_dota_badguys_melee_rax_bot": 357,
-        "npc_dota_badguys_range_rax_bot": 1190,
-        "npc_dota_badguys_tower4": 306,
-        "npc_dota_badguys_fort": 1803
+        "npc_dota_neutral_satyr_trickster": 3085,
+        "npc_dota_dark_troll_warlord_skeleton_warrior": 631,
+        "npc_dota_neutral_gnoll_assassin": 1172,
+        "npc_dota_neutral_forest_troll_berserker": 7278,
+        "npc_dota_neutral_kobold_tunneler": 682,
+        "npc_dota_neutral_kobold_taskmaster": 1726,
+        "npc_dota_neutral_centaur_khan": 4717,
+        "npc_dota_badguys_tower4": 306
       },
       "damage_taken": {
-        "npc_dota_hero_antimage": 798,
-        "npc_dota_hero_drow_ranger": 446,
+        "null": 16,
         "npc_dota_neutral_mud_golem": 1166,
-        "npc_dota_neutral_mud_golem_split": 433,
-        "npc_dota_neutral_forest_troll_berserker": 660,
-        "npc_dota_neutral_kobold_taskmaster": 32,
-        "npc_dota_neutral_satyr_soulstealer": 441,
-        "npc_dota_neutral_satyr_trickster": 126,
-        "npc_dota_neutral_gnoll_assassin": 229,
-        "undefined": 16,
-        "npc_dota_neutral_centaur_khan": 950,
-        "npc_dota_neutral_centaur_outrunner": 253,
         "npc_dota_neutral_wildkin": 317,
-        "npc_dota_neutral_enraged_wildkin": 480,
-        "npc_dota_neutral_giant_wolf": 175,
-        "npc_dota_neutral_alpha_wolf": 77,
-        "npc_dota_neutral_forest_troll_high_priest": 74,
-        "npc_dota_hero_leshrac": 3452,
-        "npc_dota_creep_badguys_ranged": 589,
         "npc_dota_neutral_ogre_mauler": 176,
-        "npc_dota_neutral_ogre_magi": 166,
-        "npc_dota_neutral_harpy_storm": 36,
-        "npc_dota_neutral_harpy_scout": 55,
-        "npc_dota_creep_badguys_melee": 917,
-        "npc_dota_hero_techies": 1086,
-        "npc_dota_hero_huskar": 980,
-        "npc_dota_neutral_dark_troll_warlord": 85,
+        "npc_dota_neutral_forest_troll_high_priest": 74,
+        "npc_dota_badguys_tower3_bot": 380,
+        "npc_dota_creep_badguys_ranged": 589,
+        "npc_dota_neutral_alpha_wolf": 77,
         "npc_dota_neutral_dark_troll": 69,
-        "npc_dota_dark_troll_warlord_skeleton_warrior": 97,
+        "npc_dota_neutral_harpy_scout": 55,
+        "npc_dota_hero_huskar": 980,
+        "npc_dota_hero_leshrac": 3452,
+        "npc_dota_neutral_enraged_wildkin": 480,
+        "npc_dota_hero_antimage": 798,
+        "npc_dota_creep_badguys_melee": 917,
+        "npc_dota_hero_drow_ranger": 446,
+        "npc_dota_neutral_giant_wolf": 175,
+        "npc_dota_hero_techies": 1086,
         "npc_dota_neutral_kobold": 8,
-        "npc_dota_neutral_kobold_tunneler": 18,
-        "npc_dota_badguys_tower2_bot": 452,
+        "npc_dota_neutral_mud_golem_split": 433,
+        "npc_dota_neutral_centaur_outrunner": 253,
+        "npc_dota_neutral_dark_troll_warlord": 85,
+        "npc_dota_neutral_satyr_soulstealer": 441,
+        "npc_dota_neutral_ogre_magi": 166,
         "npc_dota_badguys_siege": 38,
+        "npc_dota_badguys_tower2_bot": 452,
+        "npc_dota_neutral_satyr_trickster": 126,
         "npc_dota_badguys_tower2_mid": 319,
-        "npc_dota_badguys_tower3_bot": 380
+        "npc_dota_dark_troll_warlord_skeleton_warrior": 97,
+        "npc_dota_neutral_gnoll_assassin": 229,
+        "npc_dota_neutral_forest_troll_berserker": 660,
+        "npc_dota_neutral_harpy_storm": 36,
+        "npc_dota_neutral_kobold_tunneler": 18,
+        "npc_dota_neutral_kobold_taskmaster": 32,
+        "npc_dota_neutral_centaur_khan": 950
       },
       "damage_inflictor": {
-        "undefined": 8502,
-        "legion_commander_overwhelming_odds": 1058,
-        "blade_mail": 1393
+        "null": 8502,
+        "blade_mail": 1393,
+        "legion_commander_overwhelming_odds": 1058
       },
       "runes": {
         "0": 1
       },
       "killed_by": {
-        "npc_dota_hero_leshrac": 1,
-        "npc_dota_badguys_tower2_mid": 1
+        "npc_dota_badguys_tower2_mid": 1,
+        "npc_dota_hero_leshrac": 1
       },
       "kill_streaks": {
         "3": 2,
@@ -6639,21 +6642,22 @@
         "npc_dota_hero_legion_commander": 8251
       },
       "damage_inflictor_received": {
-        "undefined": 2370,
-        "leshrac_split_earth": 450,
-        "leshrac_pulse_nova": 855,
-        "leshrac_lightning_storm": 1365,
-        "techies_land_mines": 242,
-        "antimage_mana_void": 247,
+        "null": 2370,
         "techies_suicide": 765,
-        "bfury": 171,
+        "huskar_burning_spear": 120,
+        "leshrac_pulse_nova": 855,
+        "leshrac_split_earth": 450,
+        "leshrac_lightning_storm": 1365,
         "leshrac_diabolic_edict": 177,
-        "huskar_burning_spear": 120
+        "techies_land_mines": 242,
+        "bfury": 171,
+        "antimage_mana_void": 247
       },
       "randomed": false,
       "repicked": false,
       "pred_vict": false,
-      "neutral_tokens_log": []
+      "neutral_tokens_log": [],
+      "neutral_item_history": []
     },
     {
       "player_slot": 3,
@@ -6661,14 +6665,14 @@
       "roshans_killed": 1,
       "stuns": 0,
       "max_hero_hit": {
-        "type": "max_hero_hit",
         "time": 2164,
-        "max": true,
+        "type": "max_hero_hit",
         "unit": "npc_dota_hero_templar_assassin",
         "key": "npc_dota_hero_leshrac",
         "value": 1209,
         "slot": 3,
-        "player_slot": 3
+        "player_slot": 3,
+        "max": true
       },
       "times": [
         0,
@@ -7106,71 +7110,71 @@
       "runes_log": [
         {
           "time": 125,
-          "key": 5
+          "key": "5"
         },
         {
           "time": 367,
-          "key": 3
+          "key": "3"
         },
         {
           "time": 482,
-          "key": 5
+          "key": "5"
         },
         {
           "time": 609,
-          "key": 2
+          "key": "2"
         },
         {
           "time": 631,
-          "key": 5
+          "key": "5"
         },
         {
           "time": 723,
-          "key": 5
+          "key": "5"
         },
         {
           "time": 812,
-          "key": 0
+          "key": "0"
         },
         {
           "time": 869,
-          "key": 2
+          "key": "2"
         },
         {
           "time": 963,
-          "key": 5
+          "key": "5"
         },
         {
           "time": 1255,
-          "key": 5
+          "key": "5"
         },
         {
           "time": 1355,
-          "key": 5
+          "key": "5"
         },
         {
           "time": 1360,
-          "key": 0
+          "key": "0"
         },
         {
           "time": 1443,
-          "key": 5
+          "key": "5"
         },
         {
           "time": 1562,
-          "key": 5
+          "key": "5"
         },
         {
           "time": 1654,
-          "key": 0
+          "key": "0"
         },
         {
           "time": 1847,
-          "key": 3
+          "key": "3"
         },
         {
           "time": 1935,
-          "key": 1
+          "key": "1"
         }
       ],
       "connection_log": [],
@@ -7665,33 +7669,33 @@
         "0": 61
       },
       "purchase": {
-        "branches": 2,
-        "bottle": 1,
-        "boots": 1,
-        "tpscroll": 7,
-        "flying_courier": 1,
-        "blink": 1,
-        "gloves": 1,
-        "belt_of_strength": 1,
         "power_treads": 1,
+        "assault": 1,
+        "recipe_greater_crit": 1,
         "mithril_hammer": 3,
-        "recipe_desolator": 1,
+        "bottle": 1,
+        "blink": 1,
         "desolator": 1,
-        "broadsword": 1,
-        "blades_of_attack": 1,
-        "recipe_lesser_crit": 1,
+        "recipe_desolator": 1,
         "lesser_crit": 1,
         "demon_edge": 1,
-        "recipe_greater_crit": 1,
-        "greater_crit": 1,
-        "chainmail": 1,
-        "recipe_assault": 1,
-        "platemail": 1,
-        "hyperstone": 1,
-        "assault": 1,
         "ogre_axe": 1,
+        "gloves": 1,
+        "flying_courier": 1,
+        "boots": 1,
+        "broadsword": 1,
+        "tpscroll": 7,
+        "chainmail": 1,
+        "hyperstone": 1,
+        "recipe_black_king_bar": 1,
+        "recipe_lesser_crit": 1,
+        "blades_of_attack": 1,
+        "branches": 2,
+        "platemail": 1,
+        "belt_of_strength": 1,
+        "recipe_assault": 1,
         "black_king_bar": 1,
-        "recipe_black_king_bar": 1
+        "greater_crit": 1
       },
       "gold_reasons": {
         "0": 1793,
@@ -7704,121 +7708,121 @@
         "15": 175
       },
       "xp_reasons": {
-        "0": 1818,
+        "0": 1817,
         "1": 21972,
         "2": 8266,
         "3": 1789
       },
       "killed": {
-        "npc_dota_creep_goodguys_melee": 5,
+        "npc_dota_hero_antimage": 1,
         "npc_dota_creep_badguys_melee": 77,
-        "npc_dota_creep_badguys_ranged": 32,
-        "npc_dota_courier": 1,
-        "npc_dota_badguys_siege": 4,
+        "npc_dota_badguys_tower1_mid": 1,
+        "npc_dota_creep_goodguys_melee": 5,
         "npc_dota_hero_drow_ranger": 6,
-        "npc_dota_hero_leshrac": 7,
+        "npc_dota_neutral_ogre_mauler": 4,
+        "npc_dota_badguys_tower1_bot": 1,
+        "npc_dota_hero_techies": 4,
+        "npc_dota_badguys_tower3_bot": 1,
+        "npc_dota_creep_badguys_ranged": 32,
+        "npc_dota_neutral_ogre_magi": 2,
+        "npc_dota_badguys_siege": 4,
+        "npc_dota_badguys_tower2_mid": 1,
         "npc_dota_neutral_harpy_scout": 2,
         "npc_dota_neutral_harpy_storm": 1,
         "npc_dota_hero_huskar": 7,
-        "npc_dota_hero_techies": 4,
-        "npc_dota_badguys_tower1_mid": 1,
-        "npc_dota_neutral_ogre_magi": 2,
-        "npc_dota_neutral_ogre_mauler": 4,
-        "npc_dota_hero_antimage": 1,
-        "npc_dota_badguys_tower1_bot": 1,
-        "npc_dota_roshan": 1,
-        "npc_dota_badguys_tower2_mid": 1,
-        "npc_dota_badguys_tower3_bot": 1,
         "npc_dota_techies_land_mine": 1,
+        "npc_dota_courier": 1,
+        "npc_dota_hero_leshrac": 7,
+        "npc_dota_roshan": 1,
         "npc_dota_badguys_tower4": 1
       },
       "item_uses": {
-        "bottle": 90,
-        "tango_single": 1,
-        "tpscroll": 6,
-        "blink": 45,
         "power_treads": 9,
-        "black_king_bar": 1
+        "tpscroll": 6,
+        "black_king_bar": 1,
+        "tango_single": 1,
+        "bottle": 90,
+        "blink": 45
       },
       "ability_uses": {
         "templar_assassin_refraction": 62,
+        "templar_assassin_trap": 43,
         "templar_assassin_meld": 42,
-        "templar_assassin_psionic_trap": 57,
-        "templar_assassin_trap": 43
+        "templar_assassin_psionic_trap": 57
       },
       "ability_targets": {},
       "damage_targets": {
-        "templar_assassin_psi_blades": {
-          "npc_dota_hero_leshrac": 484,
-          "npc_dota_hero_techies": 419,
-          "npc_dota_hero_antimage": 395,
-          "npc_dota_hero_huskar": 378
-        },
-        "undefined": {
-          "npc_dota_hero_leshrac": 6643,
-          "npc_dota_hero_huskar": 6989,
+        "null": {
+          "npc_dota_hero_antimage": 1903,
           "npc_dota_hero_drow_ranger": 6187,
+          "npc_dota_hero_huskar": 6989,
           "npc_dota_hero_techies": 3074,
-          "npc_dota_hero_antimage": 1903
+          "npc_dota_hero_leshrac": 6643
         },
         "templar_assassin_meld": {
-          "npc_dota_hero_huskar": 1633,
+          "npc_dota_hero_antimage": 500,
           "npc_dota_hero_drow_ranger": 1272,
-          "npc_dota_hero_leshrac": 2054,
+          "npc_dota_hero_huskar": 1633,
           "npc_dota_hero_techies": 1035,
-          "npc_dota_hero_antimage": 500
+          "npc_dota_hero_leshrac": 2054
+        },
+        "templar_assassin_psi_blades": {
+          "npc_dota_hero_antimage": 395,
+          "npc_dota_hero_techies": 419,
+          "npc_dota_hero_huskar": 378,
+          "npc_dota_hero_leshrac": 484
         }
       },
       "hero_hits": {
-        "templar_assassin_psi_blades": 11,
-        "undefined": 90,
-        "templar_assassin_meld": 29
+        "null": 90,
+        "templar_assassin_meld": 29,
+        "templar_assassin_psi_blades": 11
       },
       "damage": {
-        "npc_dota_creep_goodguys_melee": 507,
-        "npc_dota_hero_leshrac": 9181,
-        "npc_dota_creep_badguys_melee": 49508,
-        "npc_dota_creep_badguys_ranged": 14141,
-        "npc_dota_courier": 126,
-        "npc_dota_hero_huskar": 9000,
-        "npc_dota_badguys_siege": 1951,
-        "npc_dota_hero_drow_ranger": 7459,
-        "npc_dota_badguys_tower1_mid": 641,
-        "npc_dota_neutral_harpy_scout": 416,
-        "npc_dota_neutral_harpy_storm": 346,
-        "npc_dota_hero_techies": 4528,
         "npc_dota_hero_antimage": 2798,
+        "npc_dota_creep_badguys_melee": 49508,
+        "npc_dota_badguys_tower1_mid": 641,
+        "npc_dota_creep_goodguys_melee": 507,
+        "npc_dota_hero_drow_ranger": 7459,
         "npc_dota_neutral_ogre_mauler": 4460,
-        "npc_dota_neutral_ogre_magi": 1654,
         "npc_dota_badguys_tower1_bot": 149,
-        "npc_dota_badguys_tower2_bot": 469,
-        "npc_dota_roshan": 11442,
-        "npc_dota_badguys_tower2_mid": 558,
+        "npc_dota_hero_techies": 4528,
         "npc_dota_badguys_tower3_bot": 1119,
-        "npc_dota_badguys_melee_rax_bot": 1227,
-        "illusion_npc_dota_hero_antimage": 736,
+        "npc_dota_creep_badguys_ranged": 14141,
+        "npc_dota_neutral_ogre_magi": 1654,
+        "npc_dota_badguys_siege": 1951,
+        "npc_dota_badguys_tower2_bot": 469,
+        "npc_dota_badguys_tower2_mid": 558,
+        "npc_dota_neutral_harpy_scout": 416,
+        "npc_dota_hero_huskar": 9000,
+        "npc_dota_neutral_harpy_storm": 346,
         "npc_dota_techies_land_mine": 485,
+        "npc_dota_hero_leshrac": 9181,
+        "npc_dota_courier": 126,
+        "npc_dota_badguys_melee_rax_bot": 1227,
+        "npc_dota_roshan": 11442,
+        "illusion_npc_dota_hero_antimage": 736,
         "npc_dota_badguys_tower4": 634
       },
       "damage_taken": {
-        "npc_dota_hero_leshrac": 2993,
-        "npc_dota_creep_badguys_ranged": 359,
+        "npc_dota_hero_antimage": 1218,
         "npc_dota_creep_badguys_melee": 693,
         "npc_dota_badguys_tower1_mid": 330,
+        "npc_dota_hero_drow_ranger": 840,
+        "npc_dota_neutral_ogre_mauler": 10,
+        "npc_dota_hero_techies": 3675,
+        "npc_dota_creep_badguys_ranged": 359,
+        "npc_dota_badguys_tower2_mid": 54,
+        "npc_dota_neutral_harpy_scout": 43,
         "npc_dota_hero_huskar": 1072,
         "npc_dota_neutral_harpy_storm": 56,
-        "npc_dota_neutral_harpy_scout": 43,
-        "npc_dota_hero_drow_ranger": 840,
-        "npc_dota_hero_techies": 3675,
-        "npc_dota_neutral_ogre_mauler": 10,
-        "npc_dota_badguys_tower2_mid": 54,
-        "npc_dota_roshan": 622,
-        "npc_dota_hero_antimage": 1218
+        "npc_dota_hero_leshrac": 2993,
+        "npc_dota_roshan": 622
       },
       "damage_inflictor": {
-        "templar_assassin_psi_blades": 1676,
-        "undefined": 24796,
-        "templar_assassin_meld": 6494
+        "null": 24796,
+        "templar_assassin_meld": 6494,
+        "templar_assassin_psi_blades": 1676
       },
       "runes": {
         "0": 3,
@@ -7828,8 +7832,8 @@
         "5": 9
       },
       "killed_by": {
-        "npc_dota_hero_techies": 1,
-        "npc_dota_hero_drow_ranger": 1
+        "npc_dota_hero_drow_ranger": 1,
+        "npc_dota_hero_techies": 1
       },
       "kill_streaks": {
         "3": 2,
@@ -7857,23 +7861,24 @@
         "2": 167
       },
       "healing": {
-        "npc_dota_hero_templar_assassin": 2547
+        "npc_dota_hero_templar_assassin": 2519
       },
       "damage_inflictor_received": {
-        "leshrac_lightning_storm": 750,
-        "undefined": 2724,
-        "huskar_burning_spear": 486,
-        "leshrac_diabolic_edict": 1056,
-        "leshrac_pulse_nova": 794,
-        "techies_land_mines": 1776,
+        "null": 2724,
         "techies_suicide": 386,
+        "huskar_burning_spear": 486,
+        "leshrac_pulse_nova": 794,
         "techies_remote_mines": 1462,
+        "leshrac_lightning_storm": 750,
+        "leshrac_diabolic_edict": 1056,
+        "techies_land_mines": 1776,
         "antimage_mana_void": 364
       },
       "randomed": false,
       "repicked": false,
       "pred_vict": false,
-      "neutral_tokens_log": []
+      "neutral_tokens_log": [],
+      "neutral_item_history": []
     },
     {
       "player_slot": 4,
@@ -7881,15 +7886,15 @@
       "roshans_killed": 0,
       "stuns": 0,
       "max_hero_hit": {
-        "type": "max_hero_hit",
         "time": 1476,
-        "max": true,
-        "inflictor": "silencer_last_word",
+        "type": "max_hero_hit",
         "unit": "npc_dota_hero_silencer",
         "key": "npc_dota_hero_leshrac",
         "value": 225,
         "slot": 4,
-        "player_slot": 4
+        "player_slot": 4,
+        "inflictor": "silencer_last_word",
+        "max": true
       },
       "times": [
         0,
@@ -8319,7 +8324,7 @@
       "runes_log": [
         {
           "time": 1883,
-          "key": 5
+          "key": "5"
         }
       ],
       "connection_log": [],
@@ -8856,34 +8861,34 @@
         "0": 75
       },
       "purchase": {
-        "flask": 1,
-        "courier": 1,
-        "clarity": 1,
-        "tango": 1,
-        "ward_observer": 10,
-        "mantle": 1,
-        "circlet": 1,
-        "recipe_null_talisman": 1,
-        "tpscroll": 7,
         "ward_sentry": 5,
-        "null_talisman": 1,
-        "boots": 2,
-        "gloves": 1,
-        "belt_of_strength": 1,
         "power_treads": 1,
-        "ring_of_regen": 1,
-        "branches": 2,
-        "recipe_headdress": 1,
-        "headdress": 1,
-        "ward_dispenser": 6,
-        "recipe_buckler": 1,
-        "chainmail": 1,
-        "recipe_mekansm": 1,
-        "buckler": 1,
-        "mekansm": 1,
         "arcane_boots": 1,
-        "energy_booster": 1,
         "void_stone": 1,
+        "circlet": 1,
+        "null_talisman": 1,
+        "recipe_null_talisman": 1,
+        "recipe_headdress": 1,
+        "buckler": 1,
+        "ward_observer": 10,
+        "gloves": 1,
+        "energy_booster": 1,
+        "boots": 2,
+        "ring_of_regen": 1,
+        "recipe_buckler": 1,
+        "tango": 1,
+        "mantle": 1,
+        "tpscroll": 7,
+        "chainmail": 1,
+        "ward_dispenser": 6,
+        "mekansm": 1,
+        "branches": 2,
+        "headdress": 1,
+        "belt_of_strength": 1,
+        "recipe_mekansm": 1,
+        "clarity": 1,
+        "courier": 1,
+        "flask": 1,
         "ultimate_orb": 1
       },
       "gold_reasons": {
@@ -8897,35 +8902,35 @@
         "15": 325
       },
       "xp_reasons": {
-        "0": 664,
+        "0": 663,
         "1": 6675,
         "2": 5762
       },
       "killed": {
-        "npc_dota_creep_goodguys_ranged": 1,
-        "npc_dota_creep_goodguys_melee": 5,
-        "npc_dota_neutral_kobold_taskmaster": 1,
+        "npc_dota_hero_antimage": 1,
         "npc_dota_creep_badguys_melee": 21,
-        "npc_dota_creep_badguys_ranged": 10,
-        "npc_dota_badguys_siege": 1,
-        "npc_dota_hero_huskar": 1,
-        "npc_dota_techies_land_mine": 6,
-        "npc_dota_hero_leshrac": 1,
         "npc_dota_techies_remote_mine": 3,
-        "npc_dota_hero_antimage": 1
+        "npc_dota_creep_goodguys_melee": 5,
+        "npc_dota_hero_huskar": 1,
+        "npc_dota_neutral_kobold_taskmaster": 1,
+        "npc_dota_techies_land_mine": 6,
+        "npc_dota_creep_badguys_ranged": 10,
+        "npc_dota_hero_leshrac": 1,
+        "npc_dota_creep_goodguys_ranged": 1,
+        "npc_dota_badguys_siege": 1
       },
       "item_uses": {
-        "courier": 1,
-        "tango": 4,
+        "ward_sentry": 4,
+        "power_treads": 7,
+        "arcane_boots": 2,
+        "tpscroll": 7,
         "ward_observer": 7,
         "clarity": 1,
-        "tpscroll": 7,
-        "ward_sentry": 4,
-        "flask": 1,
-        "power_treads": 7,
+        "courier": 1,
         "ward_dispenser": 7,
         "mekansm": 3,
-        "arcane_boots": 2
+        "tango": 4,
+        "flask": 1
       },
       "ability_uses": {
         "silencer_last_word": 16,
@@ -8936,94 +8941,94 @@
         "silencer_last_word": {
           "npc_dota_hero_antimage": 3,
           "npc_dota_hero_drow_ranger": 5,
-          "npc_dota_hero_leshrac": 4,
-          "npc_dota_hero_huskar": 3
+          "npc_dota_hero_huskar": 3,
+          "npc_dota_hero_leshrac": 4
         }
       },
       "damage_targets": {
-        "undefined": {
+        "null": {
           "npc_dota_hero_antimage": 29,
           "npc_dota_hero_drow_ranger": 332,
           "npc_dota_hero_huskar": 256,
           "npc_dota_hero_leshrac": 652
         },
+        "silencer_glaives_of_wisdom": {
+          "npc_dota_hero_antimage": 81,
+          "npc_dota_hero_drow_ranger": 44,
+          "npc_dota_hero_huskar": 60,
+          "npc_dota_hero_leshrac": 309
+        },
         "silencer_last_word": {
           "npc_dota_hero_antimage": 224,
           "npc_dota_hero_drow_ranger": 560,
-          "npc_dota_hero_leshrac": 562,
-          "npc_dota_hero_huskar": 352
+          "npc_dota_hero_huskar": 352,
+          "npc_dota_hero_leshrac": 562
         },
         "silencer_curse_of_the_silent": {
+          "npc_dota_hero_antimage": 276,
           "npc_dota_hero_drow_ranger": 1110,
-          "npc_dota_hero_leshrac": 1160,
           "npc_dota_hero_huskar": 708,
           "npc_dota_hero_techies": 37,
-          "npc_dota_hero_antimage": 276
-        },
-        "silencer_glaives_of_wisdom": {
-          "npc_dota_hero_drow_ranger": 44,
-          "npc_dota_hero_huskar": 60,
-          "npc_dota_hero_leshrac": 309,
-          "npc_dota_hero_antimage": 81
+          "npc_dota_hero_leshrac": 1160
         }
       },
       "hero_hits": {
-        "undefined": 22,
+        "null": 22,
+        "silencer_glaives_of_wisdom": 16,
         "silencer_last_word": 13,
-        "silencer_curse_of_the_silent": 104,
-        "silencer_glaives_of_wisdom": 16
+        "silencer_curse_of_the_silent": 104
       },
       "damage": {
         "npc_dota_hero_antimage": 610,
-        "npc_dota_hero_drow_ranger": 2046,
-        "npc_dota_creep_goodguys_melee": 988,
-        "npc_dota_creep_goodguys_ranged": 153,
         "npc_dota_creep_badguys_melee": 8792,
-        "npc_dota_creep_badguys_ranged": 4032,
-        "npc_dota_neutral_gnoll_assassin": 50,
-        "npc_dota_neutral_kobold_taskmaster": 334,
-        "npc_dota_neutral_forest_troll_berserker": 50,
+        "npc_dota_techies_remote_mine": 493,
+        "npc_dota_creep_goodguys_melee": 988,
+        "npc_dota_hero_drow_ranger": 2046,
+        "npc_dota_badguys_fort": 416,
         "npc_dota_badguys_tower1_bot": 87,
-        "npc_dota_hero_leshrac": 2683,
-        "npc_dota_hero_huskar": 1376,
         "npc_dota_hero_techies": 37,
+        "npc_dota_creep_badguys_ranged": 4032,
+        "npc_dota_creep_goodguys_ranged": 153,
         "npc_dota_badguys_siege": 399,
+        "npc_dota_neutral_gnoll_assassin": 50,
+        "npc_dota_neutral_forest_troll_berserker": 50,
+        "npc_dota_hero_huskar": 1376,
+        "npc_dota_neutral_kobold_taskmaster": 334,
         "npc_dota_badguys_tower1_top": 253,
         "npc_dota_techies_land_mine": 898,
-        "npc_dota_techies_remote_mine": 493,
-        "illusion_npc_dota_hero_antimage": 1673,
+        "npc_dota_hero_leshrac": 2683,
         "npc_dota_badguys_fillers": 49,
-        "npc_dota_badguys_tower4": 173,
-        "npc_dota_badguys_fort": 416
+        "illusion_npc_dota_hero_antimage": 1673,
+        "npc_dota_badguys_tower4": 173
       },
       "damage_taken": {
-        "npc_dota_creep_badguys_ranged": 395,
-        "npc_dota_hero_drow_ranger": 2189,
+        "npc_dota_hero_antimage": 725,
         "npc_dota_creep_badguys_melee": 643,
-        "npc_dota_neutral_forest_troll_berserker": 44,
+        "npc_dota_hero_drow_ranger": 2189,
         "npc_dota_badguys_tower1_bot": 134,
-        "npc_dota_hero_leshrac": 4842,
-        "npc_dota_badguys_siege": 107,
-        "npc_dota_hero_techies": 1488,
         "npc_dota_neutral_harpy_scout": 51,
+        "npc_dota_neutral_forest_troll_berserker": 44,
+        "npc_dota_hero_techies": 1488,
         "npc_dota_hero_huskar": 1402,
-        "npc_dota_hero_antimage": 725
+        "npc_dota_creep_badguys_ranged": 395,
+        "npc_dota_hero_leshrac": 4842,
+        "npc_dota_badguys_siege": 107
       },
       "damage_inflictor": {
-        "undefined": 1269,
+        "null": 1269,
+        "silencer_glaives_of_wisdom": 494,
         "silencer_last_word": 1698,
-        "silencer_curse_of_the_silent": 3291,
-        "silencer_glaives_of_wisdom": 494
+        "silencer_curse_of_the_silent": 3291
       },
       "runes": {
         "5": 1
       },
       "killed_by": {
-        "npc_dota_hero_leshrac": 5,
-        "npc_dota_hero_techies": 1,
+        "npc_dota_hero_antimage": 1,
         "npc_dota_creep_badguys_melee": 1,
         "npc_dota_hero_drow_ranger": 1,
-        "npc_dota_hero_antimage": 1
+        "npc_dota_hero_techies": 1,
+        "npc_dota_hero_leshrac": 5
       },
       "kill_streaks": {},
       "multi_kills": {},
@@ -9033,28 +9038,29 @@
         "2": 321
       },
       "healing": {
-        "npc_dota_hero_silencer": 343,
-        "npc_dota_hero_alchemist": 485,
-        "npc_dota_hero_templar_assassin": 460,
         "npc_dota_hero_tusk": 500,
+        "npc_dota_hero_templar_assassin": 460,
+        "npc_dota_hero_alchemist": 485,
+        "npc_dota_hero_silencer": 343,
         "npc_dota_hero_legion_commander": 250
       },
       "damage_inflictor_received": {
-        "undefined": 3698,
-        "leshrac_lightning_storm": 1710,
-        "leshrac_split_earth": 1035,
-        "leshrac_pulse_nova": 1065,
-        "techies_land_mines": 1144,
-        "huskar_life_break": 203,
+        "null": 3698,
+        "techies_suicide": 344,
         "huskar_burning_spear": 240,
+        "leshrac_pulse_nova": 1065,
+        "huskar_life_break": 203,
+        "leshrac_split_earth": 1035,
+        "leshrac_lightning_storm": 1710,
         "leshrac_diabolic_edict": 482,
-        "antimage_mana_void": 725,
-        "techies_suicide": 344
+        "techies_land_mines": 1144,
+        "antimage_mana_void": 725
       },
       "randomed": false,
       "repicked": false,
       "pred_vict": false,
-      "neutral_tokens_log": []
+      "neutral_tokens_log": [],
+      "neutral_item_history": []
     },
     {
       "player_slot": 128,
@@ -9062,14 +9068,14 @@
       "roshans_killed": 0,
       "stuns": 0,
       "max_hero_hit": {
-        "type": "max_hero_hit",
         "time": 2018,
-        "max": true,
+        "type": "max_hero_hit",
         "unit": "npc_dota_hero_drow_ranger",
         "key": "npc_dota_hero_templar_assassin",
         "value": 183,
         "slot": 5,
-        "player_slot": 128
+        "player_slot": 128,
+        "max": true
       },
       "times": [
         0,
@@ -9419,15 +9425,15 @@
       "runes_log": [
         {
           "time": 972,
-          "key": 1
+          "key": "1"
         },
         {
           "time": 1101,
-          "key": 4
+          "key": "4"
         },
         {
           "time": 1450,
-          "key": 3
+          "key": "3"
         }
       ],
       "connection_log": [],
@@ -9785,31 +9791,31 @@
         "0": 20
       },
       "purchase": {
-        "slippers": 2,
-        "ring_of_protection": 1,
-        "tango": 1,
-        "flask": 1,
-        "courier": 1,
-        "circlet": 3,
-        "recipe_wraith_band": 2,
-        "wraith_band": 2,
-        "ring_of_basilius": 1,
-        "ring_of_aquila": 1,
-        "sobi_mask": 1,
-        "tpscroll": 4,
-        "boots": 1,
-        "belt_of_strength": 1,
-        "gloves": 1,
-        "claymore": 1,
         "power_treads": 1,
-        "ward_observer": 4,
-        "gem": 1,
-        "gauntlets": 1,
-        "bracer": 1,
-        "recipe_bracer": 1,
-        "robe": 1,
+        "recipe_wraith_band": 2,
         "recipe_ancient_janggo": 1,
-        "ancient_janggo": 1
+        "gauntlets": 1,
+        "circlet": 3,
+        "gem": 1,
+        "ward_observer": 4,
+        "gloves": 1,
+        "ring_of_basilius": 1,
+        "sobi_mask": 1,
+        "recipe_bracer": 1,
+        "boots": 1,
+        "tango": 1,
+        "ring_of_protection": 1,
+        "tpscroll": 4,
+        "claymore": 1,
+        "ancient_janggo": 1,
+        "slippers": 2,
+        "belt_of_strength": 1,
+        "bracer": 1,
+        "courier": 1,
+        "robe": 1,
+        "ring_of_aquila": 1,
+        "flask": 1,
+        "wraith_band": 2
       },
       "gold_reasons": {
         "0": 766,
@@ -9819,31 +9825,31 @@
         "13": 2595
       },
       "xp_reasons": {
-        "0": 438,
+        "0": 433,
         "1": 5551,
         "2": 7186
       },
       "killed": {
-        "npc_dota_creep_goodguys_melee": 46,
-        "npc_dota_creep_goodguys_ranged": 12,
+        "npc_dota_neutral_rock_golem": 1,
         "npc_dota_creep_badguys_melee": 2,
-        "npc_dota_creep_badguys_ranged": 2,
-        "npc_dota_templar_assassin_psionic_trap": 4,
+        "npc_dota_hero_templar_assassin": 1,
+        "npc_dota_creep_goodguys_melee": 46,
+        "npc_dota_sentry_wards": 1,
         "npc_dota_goodguys_siege": 2,
         "npc_dota_hero_silencer": 1,
-        "npc_dota_sentry_wards": 1,
+        "npc_dota_creep_badguys_ranged": 2,
+        "npc_dota_templar_assassin_psionic_trap": 4,
+        "npc_dota_creep_goodguys_ranged": 12,
         "npc_dota_neutral_granite_golem": 1,
-        "npc_dota_neutral_rock_golem": 1,
-        "npc_dota_neutral_black_drake": 1,
-        "npc_dota_hero_templar_assassin": 1
+        "npc_dota_neutral_black_drake": 1
       },
       "item_uses": {
-        "tango": 4,
-        "flask": 1,
-        "tpscroll": 4,
         "power_treads": 11,
+        "tpscroll": 4,
         "ward_observer": 4,
-        "ancient_janggo": 1
+        "ancient_janggo": 1,
+        "tango": 4,
+        "flask": 1
       },
       "ability_uses": {
         "drow_ranger_wave_of_silence": 19,
@@ -9851,57 +9857,57 @@
       },
       "ability_targets": {},
       "damage_targets": {
-        "undefined": {
-          "npc_dota_hero_legion_commander": 446,
-          "npc_dota_hero_alchemist": 4505,
-          "npc_dota_hero_silencer": 2189,
+        "null": {
           "npc_dota_hero_tusk": 892,
-          "npc_dota_hero_templar_assassin": 840
+          "npc_dota_hero_templar_assassin": 840,
+          "npc_dota_hero_alchemist": 4505,
+          "npc_dota_hero_legion_commander": 446,
+          "npc_dota_hero_silencer": 2189
         }
       },
       "hero_hits": {
-        "undefined": 80
+        "null": 80
       },
       "damage": {
-        "npc_dota_hero_legion_commander": 446,
-        "npc_dota_hero_alchemist": 4505,
-        "npc_dota_creep_goodguys_melee": 17941,
-        "npc_dota_hero_silencer": 2189,
-        "npc_dota_creep_goodguys_ranged": 3740,
-        "npc_dota_creep_badguys_melee": 486,
-        "npc_dota_creep_badguys_ranged": 197,
-        "illusion_npc_dota_hero_alchemist": 570,
         "npc_dota_hero_tusk": 892,
-        "npc_dota_goodguys_tower1_mid": 222,
-        "npc_dota_templar_assassin_psionic_trap": 876,
-        "npc_dota_goodguys_siege": 728,
-        "npc_dota_goodguys_tower2_mid": 42,
-        "npc_dota_hero_templar_assassin": 840,
         "npc_dota_neutral_rock_golem": 1974,
-        "npc_dota_neutral_granite_golem": 2451,
+        "npc_dota_creep_badguys_melee": 486,
+        "npc_dota_hero_templar_assassin": 840,
+        "npc_dota_creep_goodguys_melee": 17941,
         "npc_dota_sentry_wards": 236,
-        "npc_dota_neutral_black_drake": 1094
+        "npc_dota_hero_silencer": 2189,
+        "npc_dota_goodguys_siege": 728,
+        "npc_dota_goodguys_tower1_mid": 222,
+        "npc_dota_creep_badguys_ranged": 197,
+        "npc_dota_templar_assassin_psionic_trap": 876,
+        "illusion_npc_dota_hero_alchemist": 570,
+        "npc_dota_creep_goodguys_ranged": 3740,
+        "npc_dota_neutral_black_drake": 1094,
+        "npc_dota_goodguys_tower2_mid": 42,
+        "npc_dota_hero_alchemist": 4505,
+        "npc_dota_hero_legion_commander": 446,
+        "npc_dota_neutral_granite_golem": 2451
       },
       "damage_taken": {
-        "npc_dota_creep_goodguys_melee": 385,
-        "npc_dota_creep_goodguys_ranged": 195,
-        "npc_dota_hero_silencer": 2046,
-        "npc_dota_hero_alchemist": 2025,
-        "npc_dota_hero_templar_assassin": 7459,
-        "npc_dota_goodguys_tower1_bot": 652,
-        "npc_dota_hero_legion_commander": 2319,
         "npc_dota_hero_tusk": 2756,
-        "npc_dota_goodguys_tower1_mid": 90,
-        "npc_dota_goodguys_siege": 16,
-        "npc_dota_neutral_kobold": 8,
-        "npc_dota_neutral_black_drake": 49,
-        "npc_dota_neutral_granite_golem": 73,
-        "npc_dota_neutral_black_dragon": 69,
+        "npc_dota_creep_goodguys_melee_upgraded": 15,
         "npc_dota_neutral_rock_golem": 31,
-        "npc_dota_creep_goodguys_melee_upgraded": 15
+        "npc_dota_hero_templar_assassin": 7459,
+        "npc_dota_creep_goodguys_melee": 385,
+        "npc_dota_hero_silencer": 2046,
+        "npc_dota_goodguys_tower1_bot": 652,
+        "npc_dota_goodguys_siege": 16,
+        "npc_dota_goodguys_tower1_mid": 90,
+        "npc_dota_neutral_kobold": 8,
+        "npc_dota_creep_goodguys_ranged": 195,
+        "npc_dota_neutral_black_dragon": 69,
+        "npc_dota_neutral_black_drake": 49,
+        "npc_dota_hero_alchemist": 2025,
+        "npc_dota_hero_legion_commander": 2319,
+        "npc_dota_neutral_granite_golem": 73
       },
       "damage_inflictor": {
-        "undefined": 8872
+        "null": 8872
       },
       "runes": {
         "1": 1,
@@ -9909,9 +9915,9 @@
         "4": 1
       },
       "killed_by": {
+        "npc_dota_hero_tusk": 2,
         "npc_dota_hero_templar_assassin": 6,
         "npc_dota_hero_alchemist": 3,
-        "npc_dota_hero_tusk": 2,
         "npc_dota_hero_legion_commander": 2
       },
       "kill_streaks": {},
@@ -9925,23 +9931,24 @@
         "npc_dota_hero_drow_ranger": 90
       },
       "damage_inflictor_received": {
-        "undefined": 10907,
+        "null": 10907,
+        "alchemist_unstable_concoction_throw": 143,
+        "tusk_snowball": 300,
+        "templar_assassin_meld": 1272,
+        "mjollnir": 224,
+        "silencer_glaives_of_wisdom": 44,
+        "tusk_ice_shards": 1260,
+        "blade_mail": 236,
+        "alchemist_acid_spray": 119,
         "silencer_last_word": 560,
         "silencer_curse_of_the_silent": 1110,
-        "silencer_glaives_of_wisdom": 44,
-        "alchemist_unstable_concoction_throw": 143,
-        "alchemist_acid_spray": 119,
-        "templar_assassin_meld": 1272,
-        "tusk_ice_shards": 1260,
-        "tusk_snowball": 300,
-        "legion_commander_overwhelming_odds": 430,
-        "blade_mail": 236,
-        "mjollnir": 224
+        "legion_commander_overwhelming_odds": 430
       },
       "randomed": false,
       "repicked": false,
       "pred_vict": true,
-      "neutral_tokens_log": []
+      "neutral_tokens_log": [],
+      "neutral_item_history": []
     },
     {
       "player_slot": 129,
@@ -9949,15 +9956,15 @@
       "roshans_killed": 0,
       "stuns": 5.01709,
       "max_hero_hit": {
-        "type": "max_hero_hit",
         "time": 1180,
-        "max": true,
-        "inflictor": "techies_suicide",
+        "type": "max_hero_hit",
         "unit": "npc_dota_hero_techies",
         "key": "npc_dota_hero_legion_commander",
         "value": 392,
         "slot": 6,
-        "player_slot": 129
+        "player_slot": 129,
+        "inflictor": "techies_suicide",
+        "max": true
       },
       "times": [
         0,
@@ -10287,11 +10294,11 @@
       "runes_log": [
         {
           "time": 248,
-          "key": 1
+          "key": "1"
         },
         {
           "time": 1744,
-          "key": 5
+          "key": "5"
         }
       ],
       "connection_log": [],
@@ -10649,19 +10656,19 @@
         "0": 5
       },
       "purchase": {
+        "arcane_boots": 1,
         "tpscroll": 8,
+        "void_stone": 1,
+        "soul_ring": 1,
+        "staff_of_wizardry": 1,
+        "cyclone": 1,
         "clarity": 7,
         "sobi_mask": 3,
-        "ring_of_regen": 1,
-        "soul_ring": 1,
-        "recipe_soul_ring": 1,
-        "boots": 1,
-        "arcane_boots": 1,
         "energy_booster": 1,
-        "staff_of_wizardry": 1,
-        "void_stone": 1,
+        "ring_of_regen": 1,
+        "boots": 1,
         "recipe_cyclone": 1,
-        "cyclone": 1
+        "recipe_soul_ring": 1
       },
       "gold_reasons": {
         "0": 801,
@@ -10672,106 +10679,106 @@
         "13": 1165
       },
       "xp_reasons": {
-        "0": 284,
+        "0": 283,
         "1": 2803,
         "2": 3516
       },
       "killed": {
-        "npc_dota_hero_silencer": 1,
-        "npc_dota_creep_goodguys_melee": 20,
-        "npc_dota_creep_goodguys_ranged": 7,
-        "npc_dota_hero_alchemist": 1,
-        "npc_dota_hero_templar_assassin": 1,
-        "npc_dota_goodguys_siege": 1,
         "npc_dota_creep_goodguys_melee_upgraded": 2,
-        "npc_dota_sentry_wards": 1
+        "npc_dota_hero_templar_assassin": 1,
+        "npc_dota_creep_goodguys_melee": 20,
+        "npc_dota_hero_alchemist": 1,
+        "npc_dota_sentry_wards": 1,
+        "npc_dota_hero_silencer": 1,
+        "npc_dota_goodguys_siege": 1,
+        "npc_dota_creep_goodguys_ranged": 7
       },
       "item_uses": {
+        "arcane_boots": 14,
         "tpscroll": 6,
         "clarity": 7,
         "soul_ring": 19,
-        "arcane_boots": 14,
         "cyclone": 1
       },
       "ability_uses": {
-        "techies_land_mines": 68,
         "techies_suicide": 3,
+        "techies_stasis_trap": 5,
         "techies_remote_mines": 14,
         "techies_focused_detonate": 1,
-        "techies_stasis_trap": 5
+        "techies_land_mines": 68
       },
       "ability_targets": {
         "techies_suicide": {
-          "npc_dota_hero_legion_commander": 2,
-          "npc_dota_hero_tusk": 1
+          "npc_dota_hero_tusk": 1,
+          "npc_dota_hero_legion_commander": 2
         }
       },
       "damage_targets": {
-        "techies_land_mines": {
-          "npc_dota_hero_alchemist": 3997,
-          "npc_dota_hero_silencer": 1144,
-          "npc_dota_hero_legion_commander": 242,
-          "npc_dota_hero_templar_assassin": 1776,
-          "npc_dota_hero_tusk": 2448
-        },
-        "undefined": {
-          "npc_dota_hero_alchemist": 313,
-          "npc_dota_hero_legion_commander": 79,
-          "npc_dota_hero_techies": 1336,
-          "npc_dota_hero_templar_assassin": 51
-        },
         "techies_suicide": {
+          "npc_dota_hero_tusk": 563,
           "npc_dota_hero_templar_assassin": 386,
           "npc_dota_hero_legion_commander": 765,
-          "npc_dota_hero_tusk": 563,
           "npc_dota_hero_silencer": 344
         },
+        "null": {
+          "npc_dota_hero_templar_assassin": 51,
+          "npc_dota_hero_alchemist": 313,
+          "npc_dota_hero_legion_commander": 79,
+          "npc_dota_hero_techies": 1336
+        },
         "techies_remote_mines": {
-          "npc_dota_hero_templar_assassin": 1462,
-          "npc_dota_hero_tusk": 225
+          "npc_dota_hero_tusk": 225,
+          "npc_dota_hero_templar_assassin": 1462
+        },
+        "techies_land_mines": {
+          "npc_dota_hero_tusk": 2448,
+          "npc_dota_hero_templar_assassin": 1776,
+          "npc_dota_hero_alchemist": 3997,
+          "npc_dota_hero_silencer": 1144,
+          "npc_dota_hero_legion_commander": 242
         },
         "cyclone": {
           "npc_dota_hero_tusk": 37
         }
       },
       "hero_hits": {
-        "techies_land_mines": 39,
-        "undefined": 15,
+        "null": 15,
         "techies_suicide": 7,
         "techies_remote_mines": 7,
+        "techies_land_mines": 39,
         "cyclone": 1
       },
       "damage": {
-        "npc_dota_hero_alchemist": 4310,
-        "npc_dota_hero_silencer": 1488,
-        "npc_dota_creep_goodguys_melee": 13514,
-        "npc_dota_hero_legion_commander": 1086,
-        "npc_dota_creep_goodguys_ranged": 4184,
-        "npc_dota_goodguys_siege": 814,
-        "npc_dota_hero_templar_assassin": 3675,
-        "npc_dota_hero_techies": 1336,
         "npc_dota_hero_tusk": 3273,
         "npc_dota_creep_goodguys_melee_upgraded": 2276,
-        "npc_dota_creep_goodguys_ranged_upgraded": 494,
-        "npc_dota_sentry_wards": 237
+        "npc_dota_hero_templar_assassin": 3675,
+        "npc_dota_creep_goodguys_melee": 13514,
+        "npc_dota_hero_alchemist": 4310,
+        "npc_dota_sentry_wards": 237,
+        "npc_dota_hero_silencer": 1488,
+        "npc_dota_hero_legion_commander": 1086,
+        "npc_dota_goodguys_siege": 814,
+        "npc_dota_hero_techies": 1336,
+        "npc_dota_creep_goodguys_ranged": 4184,
+        "npc_dota_creep_goodguys_ranged_upgraded": 494
       },
       "damage_taken": {
-        "npc_dota_hero_silencer": 37,
-        "npc_dota_hero_alchemist": 712,
-        "npc_dota_creep_goodguys_melee": 226,
-        "npc_dota_creep_goodguys_ranged": 149,
-        "npc_dota_hero_templar_assassin": 4528,
-        "npc_dota_hero_techies": 1336,
-        "npc_dota_hero_legion_commander": 1093,
         "npc_dota_hero_tusk": 521,
-        "npc_dota_creep_goodguys_ranged_upgraded": 122,
-        "npc_dota_creep_goodguys_melee_upgraded": 186
+        "npc_dota_creep_goodguys_melee_upgraded": 186,
+        "npc_dota_hero_templar_assassin": 4528,
+        "npc_dota_creep_goodguys_melee": 226,
+        "npc_dota_hero_alchemist": 712,
+        "npc_dota_hero_silencer": 37,
+        "npc_dota_hero_legion_commander": 1093,
+        "npc_dota_hero_techies": 1336,
+        "npc_dota_creep_goodguys_ranged": 149,
+        "npc_dota_creep_goodguys_ranged_upgraded": 122
       },
       "damage_inflictor": {
-        "techies_land_mines": 9607,
-        "undefined": 443,
+        "null": 443,
         "techies_suicide": 2058,
         "techies_remote_mines": 1687,
+        "techies_land_mines": 9607,
         "cyclone": 37
       },
       "runes": {
@@ -10780,8 +10787,8 @@
       },
       "killed_by": {
         "npc_dota_hero_templar_assassin": 4,
-        "npc_dota_hero_legion_commander": 2,
-        "npc_dota_hero_alchemist": 1
+        "npc_dota_hero_alchemist": 1,
+        "npc_dota_hero_legion_commander": 2
       },
       "kill_streaks": {},
       "multi_kills": {},
@@ -10792,19 +10799,20 @@
       },
       "healing": {},
       "damage_inflictor_received": {
-        "silencer_curse_of_the_silent": 37,
-        "alchemist_acid_spray": 80,
+        "null": 4524,
         "templar_assassin_meld": 1035,
-        "undefined": 4524,
+        "mjollnir": 336,
         "templar_assassin_psi_blades": 419,
         "blade_mail": 40,
         "tusk_ice_shards": 420,
-        "mjollnir": 336
+        "alchemist_acid_spray": 80,
+        "silencer_curse_of_the_silent": 37
       },
       "randomed": false,
       "repicked": false,
       "pred_vict": false,
-      "neutral_tokens_log": []
+      "neutral_tokens_log": [],
+      "neutral_item_history": []
     },
     {
       "player_slot": 130,
@@ -10812,15 +10820,15 @@
       "roshans_killed": 0,
       "stuns": 30.577148,
       "max_hero_hit": {
-        "type": "max_hero_hit",
         "time": 622,
-        "max": true,
-        "inflictor": "leshrac_split_earth",
+        "type": "max_hero_hit",
         "unit": "npc_dota_hero_leshrac",
         "key": "npc_dota_hero_silencer",
         "value": 225,
         "slot": 7,
-        "player_slot": 130
+        "player_slot": 130,
+        "inflictor": "leshrac_split_earth",
+        "max": true
       },
       "times": [
         0,
@@ -11210,15 +11218,15 @@
       "runes_log": [
         {
           "time": 1,
-          "key": 5
+          "key": "5"
         },
         {
           "time": 241,
-          "key": 5
+          "key": "5"
         },
         {
           "time": 367,
-          "key": 5
+          "key": "5"
         }
       ],
       "connection_log": [],
@@ -11754,31 +11762,31 @@
         "0": 53
       },
       "purchase": {
+        "arcane_boots": 1,
+        "point_booster": 1,
+        "bloodstone": 1,
+        "mithril_hammer": 1,
+        "bottle": 1,
+        "blink": 1,
         "circlet": 1,
-        "mantle": 1,
         "null_talisman": 1,
         "recipe_null_talisman": 1,
-        "tango": 1,
-        "bottle": 1,
-        "boots": 1,
-        "arcane_boots": 1,
-        "energy_booster": 1,
-        "tpscroll": 9,
-        "flying_courier": 1,
-        "ring_of_regen": 2,
-        "sobi_mask": 2,
-        "point_booster": 1,
         "soul_booster": 1,
-        "vitality_booster": 1,
-        "recipe_soul_ring": 1,
-        "soul_ring": 1,
         "recipe_bloodstone": 1,
-        "bloodstone": 1,
-        "blink": 1,
         "ogre_axe": 1,
-        "mithril_hammer": 1,
-        "black_king_bar": 1,
-        "recipe_black_king_bar": 1
+        "flying_courier": 1,
+        "sobi_mask": 2,
+        "energy_booster": 1,
+        "boots": 1,
+        "ring_of_regen": 2,
+        "mantle": 1,
+        "tango": 1,
+        "recipe_soul_ring": 1,
+        "vitality_booster": 1,
+        "tpscroll": 9,
+        "recipe_black_king_bar": 1,
+        "soul_ring": 1,
+        "black_king_bar": 1
       },
       "gold_reasons": {
         "0": 917,
@@ -11789,75 +11797,75 @@
         "13": 4859
       },
       "xp_reasons": {
-        "0": 802,
+        "0": 800,
         "1": 14610,
         "2": 9612
       },
       "killed": {
-        "npc_dota_creep_goodguys_melee": 81,
-        "npc_dota_creep_badguys_melee": 9,
-        "npc_dota_creep_badguys_ranged": 4,
-        "npc_dota_creep_goodguys_ranged": 33,
-        "npc_dota_hero_silencer": 5,
-        "npc_dota_hero_alchemist": 4,
         "npc_dota_hero_tusk": 3,
+        "npc_dota_creep_goodguys_melee_upgraded": 5,
+        "npc_dota_creep_badguys_melee": 9,
+        "npc_dota_creep_goodguys_melee": 81,
+        "npc_dota_hero_alchemist": 4,
+        "npc_dota_hero_silencer": 5,
         "npc_dota_hero_legion_commander": 1,
         "npc_dota_goodguys_siege": 1,
+        "npc_dota_creep_badguys_ranged": 4,
         "npc_dota_templar_assassin_psionic_trap": 1,
-        "npc_dota_creep_goodguys_ranged_upgraded": 2,
-        "npc_dota_creep_goodguys_melee_upgraded": 5
+        "npc_dota_creep_goodguys_ranged": 33,
+        "npc_dota_creep_goodguys_ranged_upgraded": 2
       },
       "item_uses": {
-        "tango": 4,
-        "bottle": 33,
         "arcane_boots": 4,
         "tpscroll": 9,
+        "black_king_bar": 3,
         "soul_ring": 5,
-        "blink": 16,
-        "black_king_bar": 3
+        "tango": 4,
+        "bottle": 33,
+        "blink": 16
       },
       "ability_uses": {
-        "leshrac_lightning_storm": 54,
-        "leshrac_split_earth": 23,
         "leshrac_pulse_nova": 70,
+        "leshrac_split_earth": 23,
+        "leshrac_lightning_storm": 54,
         "leshrac_diabolic_edict": 10
       },
       "ability_targets": {
         "leshrac_lightning_storm": {
           "npc_dota_hero_tusk": 6,
           "npc_dota_hero_templar_assassin": 12,
-          "npc_dota_hero_silencer": 5,
           "npc_dota_hero_alchemist": 5,
+          "npc_dota_hero_silencer": 5,
           "npc_dota_hero_legion_commander": 1
         }
       },
       "damage_targets": {
-        "undefined": {
+        "null": {
           "npc_dota_hero_tusk": 676,
           "npc_dota_hero_templar_assassin": 393,
-          "npc_dota_hero_silencer": 550,
           "npc_dota_hero_alchemist": 494,
+          "npc_dota_hero_silencer": 550,
           "npc_dota_hero_legion_commander": 605
+        },
+        "leshrac_pulse_nova": {
+          "npc_dota_hero_tusk": 2030,
+          "npc_dota_hero_templar_assassin": 794,
+          "npc_dota_hero_alchemist": 480,
+          "npc_dota_hero_silencer": 1065,
+          "npc_dota_hero_legion_commander": 855
+        },
+        "leshrac_split_earth": {
+          "npc_dota_hero_tusk": 855,
+          "npc_dota_hero_alchemist": 585,
+          "npc_dota_hero_silencer": 1035,
+          "npc_dota_hero_legion_commander": 450
         },
         "leshrac_lightning_storm": {
           "npc_dota_hero_tusk": 1230,
           "npc_dota_hero_templar_assassin": 750,
-          "npc_dota_hero_silencer": 1710,
           "npc_dota_hero_alchemist": 930,
+          "npc_dota_hero_silencer": 1710,
           "npc_dota_hero_legion_commander": 1365
-        },
-        "leshrac_split_earth": {
-          "npc_dota_hero_silencer": 1035,
-          "npc_dota_hero_alchemist": 585,
-          "npc_dota_hero_tusk": 855,
-          "npc_dota_hero_legion_commander": 450
-        },
-        "leshrac_pulse_nova": {
-          "npc_dota_hero_silencer": 1065,
-          "npc_dota_hero_tusk": 2030,
-          "npc_dota_hero_legion_commander": 855,
-          "npc_dota_hero_templar_assassin": 794,
-          "npc_dota_hero_alchemist": 480
         },
         "leshrac_diabolic_edict": {
           "npc_dota_hero_tusk": 361,
@@ -11867,64 +11875,64 @@
         }
       },
       "hero_hits": {
-        "undefined": 41,
-        "leshrac_lightning_storm": 33,
-        "leshrac_split_earth": 14,
+        "null": 41,
         "leshrac_pulse_nova": 49,
+        "leshrac_split_earth": 14,
+        "leshrac_lightning_storm": 33,
         "leshrac_diabolic_edict": 109
       },
       "damage": {
         "npc_dota_hero_tusk": 5152,
-        "npc_dota_creep_goodguys_melee": 47208,
+        "npc_dota_creep_goodguys_melee_upgraded": 7186,
+        "illusion_npc_dota_hero_templar_assassin": 2074,
         "npc_dota_creep_badguys_melee": 1210,
         "npc_dota_hero_templar_assassin": 2993,
-        "npc_dota_creep_goodguys_ranged": 14910,
-        "npc_dota_creep_badguys_ranged": 537,
-        "npc_dota_goodguys_tower1_mid": 428,
+        "npc_dota_creep_goodguys_melee": 47208,
         "npc_dota_goodguys_siege": 847,
         "npc_dota_hero_silencer": 4842,
+        "npc_dota_goodguys_tower1_bot": 17,
+        "npc_dota_goodguys_tower1_mid": 428,
+        "npc_dota_creep_badguys_ranged": 537,
+        "npc_dota_templar_assassin_psionic_trap": 129,
+        "npc_dota_creep_goodguys_ranged": 14910,
+        "npc_dota_creep_goodguys_ranged_upgraded": 1000,
         "npc_dota_hero_alchemist": 2489,
         "npc_dota_hero_legion_commander": 3452,
         "npc_dota_neutral_harpy_scout": 520,
-        "npc_dota_neutral_harpy_storm": 260,
-        "illusion_npc_dota_hero_templar_assassin": 2074,
-        "npc_dota_goodguys_tower1_bot": 17,
-        "npc_dota_templar_assassin_psionic_trap": 129,
-        "npc_dota_creep_goodguys_melee_upgraded": 7186,
-        "npc_dota_creep_goodguys_ranged_upgraded": 1000
+        "npc_dota_neutral_harpy_storm": 260
       },
       "damage_taken": {
         "npc_dota_hero_tusk": 3617,
+        "npc_dota_creep_goodguys_melee_upgraded": 303,
         "npc_dota_hero_templar_assassin": 9181,
-        "npc_dota_creep_goodguys_ranged": 506,
         "npc_dota_creep_goodguys_melee": 508,
         "npc_dota_goodguys_siege": 126,
         "npc_dota_hero_silencer": 2683,
-        "npc_dota_hero_legion_commander": 2293,
-        "npc_dota_hero_alchemist": 1092,
-        "npc_dota_neutral_harpy_scout": 12,
-        "npc_dota_neutral_harpy_storm": 13,
-        "npc_dota_goodguys_tower1_top": 429,
-        "npc_dota_goodguys_tower1_mid": 378,
         "npc_dota_goodguys_tower1_bot": 485,
-        "npc_dota_creep_goodguys_melee_upgraded": 303,
-        "npc_dota_creep_goodguys_ranged_upgraded": 47
+        "npc_dota_goodguys_tower1_mid": 378,
+        "npc_dota_goodguys_tower1_top": 429,
+        "npc_dota_creep_goodguys_ranged": 506,
+        "npc_dota_creep_goodguys_ranged_upgraded": 47,
+        "npc_dota_hero_alchemist": 1092,
+        "npc_dota_hero_legion_commander": 2293,
+        "npc_dota_neutral_harpy_scout": 12,
+        "npc_dota_neutral_harpy_storm": 13
       },
       "damage_inflictor": {
-        "undefined": 2718,
-        "leshrac_lightning_storm": 5985,
-        "leshrac_split_earth": 2925,
+        "null": 2718,
         "leshrac_pulse_nova": 5224,
+        "leshrac_split_earth": 2925,
+        "leshrac_lightning_storm": 5985,
         "leshrac_diabolic_edict": 2076
       },
       "runes": {
         "5": 3
       },
       "killed_by": {
+        "npc_dota_hero_tusk": 1,
         "npc_dota_hero_templar_assassin": 7,
         "npc_dota_hero_legion_commander": 2,
-        "npc_dota_hero_silencer": 1,
-        "npc_dota_hero_tusk": 1
+        "npc_dota_hero_silencer": 1
       },
       "kill_streaks": {
         "3": 3
@@ -11938,28 +11946,29 @@
         "2": 497
       },
       "healing": {
-        "npc_dota_hero_leshrac": 1536,
+        "npc_dota_hero_drow_ranger": 213,
         "npc_dota_hero_huskar": 669,
-        "npc_dota_hero_drow_ranger": 213
+        "npc_dota_hero_leshrac": 1526
       },
       "damage_inflictor_received": {
-        "undefined": 12009,
-        "templar_assassin_psi_blades": 484,
-        "silencer_curse_of_the_silent": 1160,
+        "null": 12009,
+        "tusk_snowball": 450,
         "templar_assassin_meld": 2054,
+        "mjollnir": 224,
+        "templar_assassin_psi_blades": 484,
+        "silencer_glaives_of_wisdom": 309,
+        "tusk_ice_shards": 840,
+        "blade_mail": 468,
         "alchemist_acid_spray": 93,
         "silencer_last_word": 562,
-        "tusk_ice_shards": 840,
-        "tusk_snowball": 450,
-        "legion_commander_overwhelming_odds": 213,
-        "silencer_glaives_of_wisdom": 309,
-        "blade_mail": 468,
-        "mjollnir": 224
+        "silencer_curse_of_the_silent": 1160,
+        "legion_commander_overwhelming_odds": 213
       },
       "randomed": false,
       "repicked": false,
       "pred_vict": false,
-      "neutral_tokens_log": []
+      "neutral_tokens_log": [],
+      "neutral_item_history": []
     },
     {
       "player_slot": 131,
@@ -11967,15 +11976,15 @@
       "roshans_killed": 0,
       "stuns": 0,
       "max_hero_hit": {
-        "type": "max_hero_hit",
         "time": 1518,
-        "max": true,
-        "inflictor": "huskar_life_break",
+        "type": "max_hero_hit",
         "unit": "npc_dota_hero_huskar",
         "key": "npc_dota_hero_alchemist",
         "value": 303,
         "slot": 8,
-        "player_slot": 131
+        "player_slot": 131,
+        "inflictor": "huskar_life_break",
+        "max": true
       },
       "times": [
         0,
@@ -12337,7 +12346,7 @@
       "runes_log": [
         {
           "time": 1103,
-          "key": 5
+          "key": "5"
         }
       ],
       "connection_log": [],
@@ -12724,29 +12733,29 @@
         "0": 209
       },
       "purchase": {
-        "gauntlets": 3,
-        "circlet": 2,
-        "branches": 2,
-        "tango": 1,
-        "flask": 1,
-        "sobi_mask": 2,
-        "recipe_urn_of_shadows": 1,
-        "recipe_bracer": 1,
-        "urn_of_shadows": 1,
-        "bracer": 1,
+        "power_treads": 1,
         "tpscroll": 10,
-        "boots": 1,
-        "magic_stick": 1,
+        "chainmail": 1,
+        "gauntlets": 3,
+        "solar_crest": 1,
+        "branches": 2,
+        "circlet": 2,
         "magic_wand": 1,
         "belt_of_strength": 1,
-        "gloves": 1,
-        "power_treads": 1,
-        "chainmail": 1,
-        "recipe_medallion_of_courage": 1,
         "medallion_of_courage": 1,
+        "recipe_urn_of_shadows": 1,
+        "bracer": 1,
+        "talisman_of_evasion": 1,
+        "gloves": 1,
+        "sobi_mask": 2,
+        "recipe_bracer": 1,
+        "magic_stick": 1,
+        "boots": 1,
+        "tango": 1,
+        "urn_of_shadows": 1,
+        "flask": 1,
         "dust": 1,
-        "solar_crest": 1,
-        "talisman_of_evasion": 1
+        "recipe_medallion_of_courage": 1
       },
       "gold_reasons": {
         "0": 1007,
@@ -12756,39 +12765,39 @@
         "13": 2910
       },
       "xp_reasons": {
-        "0": 759,
+        "0": 756,
         "1": 4891,
         "2": 6322
       },
       "killed": {
+        "npc_dota_hero_tusk": 2,
+        "npc_dota_creep_goodguys_melee_upgraded": 3,
+        "npc_dota_goodguys_siege_upgraded": 1,
+        "npc_dota_neutral_polar_furbolg_ursa_warrior": 1,
         "npc_dota_creep_badguys_melee": 2,
         "npc_dota_creep_goodguys_melee": 42,
-        "npc_dota_creep_goodguys_ranged": 17,
-        "npc_dota_creep_badguys_ranged": 3,
         "npc_dota_goodguys_siege": 3,
-        "npc_dota_hero_tusk": 2,
-        "npc_dota_badguys_siege": 1,
-        "npc_dota_hero_alchemist": 1,
-        "npc_dota_neutral_enraged_wildkin": 1,
         "npc_dota_neutral_wildkin": 2,
+        "npc_dota_creep_badguys_ranged": 3,
         "npc_dota_neutral_satyr_hellcaller": 1,
+        "npc_dota_creep_goodguys_ranged": 17,
         "npc_dota_neutral_satyr_soulstealer": 1,
-        "npc_dota_neutral_satyr_trickster": 1,
-        "npc_dota_neutral_polar_furbolg_ursa_warrior": 1,
-        "npc_dota_neutral_polar_furbolg_champion": 1,
-        "npc_dota_creep_goodguys_melee_upgraded": 3,
         "npc_dota_creep_goodguys_ranged_upgraded": 1,
-        "npc_dota_goodguys_siege_upgraded": 1
+        "npc_dota_badguys_siege": 1,
+        "npc_dota_neutral_satyr_trickster": 1,
+        "npc_dota_neutral_polar_furbolg_champion": 1,
+        "npc_dota_hero_alchemist": 1,
+        "npc_dota_neutral_enraged_wildkin": 1
       },
       "item_uses": {
-        "flask": 1,
-        "tango": 4,
         "tpscroll": 10,
+        "tango": 4,
         "urn_of_shadows": 7,
-        "magic_wand": 4,
-        "medallion_of_courage": 2,
+        "solar_crest": 5,
+        "flask": 1,
         "dust": 1,
-        "solar_crest": 5
+        "magic_wand": 4,
+        "medallion_of_courage": 2
       },
       "ability_uses": {
         "huskar_life_break": 14,
@@ -12797,9 +12806,9 @@
       "ability_targets": {
         "huskar_life_break": {
           "npc_dota_hero_tusk": 4,
+          "npc_dota_hero_templar_assassin": 4,
           "npc_dota_hero_alchemist": 4,
-          "npc_dota_hero_silencer": 1,
-          "npc_dota_hero_templar_assassin": 4
+          "npc_dota_hero_silencer": 1
         },
         "huskar_inner_vitality": {
           "npc_dota_hero_huskar": 1
@@ -12807,87 +12816,87 @@
       },
       "damage_targets": {
         "huskar_burning_spear": {
-          "npc_dota_hero_huskar": 2325,
           "npc_dota_hero_tusk": 1486,
           "npc_dota_hero_templar_assassin": 486,
           "npc_dota_hero_alchemist": 1200,
           "npc_dota_hero_silencer": 240,
-          "npc_dota_hero_legion_commander": 120
+          "npc_dota_hero_legion_commander": 120,
+          "npc_dota_hero_huskar": 2325
         },
-        "undefined": {
+        "null": {
           "npc_dota_hero_tusk": 2041,
+          "npc_dota_hero_templar_assassin": 586,
           "npc_dota_hero_alchemist": 1974,
           "npc_dota_hero_legion_commander": 860,
-          "npc_dota_hero_silencer": 959,
-          "npc_dota_hero_templar_assassin": 586
+          "npc_dota_hero_silencer": 959
         },
         "huskar_life_break": {
           "npc_dota_hero_tusk": 690,
-          "npc_dota_hero_huskar": 3368,
           "npc_dota_hero_alchemist": 916,
-          "npc_dota_hero_silencer": 203
+          "npc_dota_hero_silencer": 203,
+          "npc_dota_hero_huskar": 3368
         },
         "urn_of_shadows": {
           "npc_dota_hero_tusk": 270
         }
       },
       "hero_hits": {
+        "null": 80,
         "huskar_burning_spear": 306,
-        "undefined": 80,
         "huskar_life_break": 23,
         "urn_of_shadows": 15
       },
       "damage": {
-        "npc_dota_hero_huskar": 5693,
-        "npc_dota_hero_tusk": 4487,
-        "npc_dota_creep_goodguys_melee": 17018,
-        "npc_dota_creep_badguys_melee": 111,
-        "npc_dota_creep_goodguys_ranged": 6128,
-        "npc_dota_creep_badguys_ranged": 364,
-        "npc_dota_goodguys_tower1_top": 123,
-        "npc_dota_goodguys_siege": 1752,
-        "npc_dota_hero_templar_assassin": 1072,
+        "npc_dota_creep_goodguys_melee_upgraded": 3712,
         "illusion_npc_dota_hero_templar_assassin": 824,
-        "npc_dota_badguys_siege": 102,
+        "npc_dota_goodguys_siege": 1752,
+        "npc_dota_hero_silencer": 1402,
+        "npc_dota_neutral_wildkin": 732,
+        "npc_dota_creep_badguys_ranged": 364,
+        "npc_dota_creep_goodguys_ranged_upgraded": 626,
+        "npc_dota_neutral_polar_furbolg_champion": 757,
         "npc_dota_hero_alchemist": 4090,
         "npc_dota_hero_legion_commander": 980,
-        "npc_dota_hero_silencer": 1402,
-        "npc_dota_goodguys_tower1_mid": 196,
-        "npc_dota_goodguys_tower1_bot": 175,
+        "npc_dota_hero_huskar": 5693,
         "npc_dota_neutral_enraged_wildkin": 1001,
-        "npc_dota_neutral_wildkin": 732,
-        "npc_dota_neutral_satyr_hellcaller": 1166,
-        "npc_dota_neutral_satyr_soulstealer": 712,
-        "npc_dota_neutral_satyr_trickster": 310,
-        "npc_dota_neutral_polar_furbolg_champion": 757,
+        "npc_dota_hero_tusk": 4487,
+        "npc_dota_goodguys_siege_upgraded": 239,
         "npc_dota_neutral_polar_furbolg_ursa_warrior": 1019,
-        "npc_dota_creep_goodguys_melee_upgraded": 3712,
-        "npc_dota_creep_goodguys_ranged_upgraded": 626,
-        "npc_dota_goodguys_siege_upgraded": 239
+        "npc_dota_creep_badguys_melee": 111,
+        "npc_dota_hero_templar_assassin": 1072,
+        "npc_dota_creep_goodguys_melee": 17018,
+        "npc_dota_goodguys_tower1_bot": 175,
+        "npc_dota_goodguys_tower1_mid": 196,
+        "npc_dota_neutral_satyr_hellcaller": 1166,
+        "npc_dota_goodguys_tower1_top": 123,
+        "npc_dota_creep_goodguys_ranged": 6128,
+        "npc_dota_neutral_satyr_soulstealer": 712,
+        "npc_dota_badguys_siege": 102,
+        "npc_dota_neutral_satyr_trickster": 310
       },
       "damage_taken": {
-        "npc_dota_hero_huskar": 5693,
-        "npc_dota_creep_goodguys_melee": 1581,
-        "npc_dota_creep_goodguys_ranged": 1318,
         "npc_dota_hero_tusk": 4042,
-        "npc_dota_goodguys_tower1_top": 363,
+        "npc_dota_creep_goodguys_melee_upgraded": 437,
+        "npc_dota_neutral_polar_furbolg_ursa_warrior": 109,
         "npc_dota_hero_templar_assassin": 9000,
+        "npc_dota_creep_goodguys_melee": 1581,
         "npc_dota_hero_silencer": 1376,
-        "npc_dota_hero_alchemist": 919,
-        "npc_dota_hero_legion_commander": 2789,
         "npc_dota_goodguys_tower1_bot": 799,
         "npc_dota_goodguys_siege": 101,
-        "npc_dota_neutral_enraged_wildkin": 124,
         "npc_dota_neutral_wildkin": 78,
-        "npc_dota_neutral_satyr_trickster": 8,
         "npc_dota_neutral_satyr_hellcaller": 109,
+        "npc_dota_goodguys_tower1_top": 363,
+        "npc_dota_creep_goodguys_ranged": 1318,
         "npc_dota_neutral_satyr_soulstealer": 46,
+        "npc_dota_neutral_satyr_trickster": 8,
         "npc_dota_neutral_polar_furbolg_champion": 42,
-        "npc_dota_neutral_polar_furbolg_ursa_warrior": 109,
-        "npc_dota_creep_goodguys_melee_upgraded": 437
+        "npc_dota_hero_alchemist": 919,
+        "npc_dota_hero_legion_commander": 2789,
+        "npc_dota_hero_huskar": 5693,
+        "npc_dota_neutral_enraged_wildkin": 124
       },
       "damage_inflictor": {
-        "undefined": 6420,
+        "null": 6420,
         "huskar_burning_spear": 3532,
         "huskar_life_break": 1809,
         "urn_of_shadows": 270
@@ -12898,9 +12907,9 @@
       "killed_by": {
         "npc_dota_hero_tusk": 3,
         "npc_dota_hero_templar_assassin": 7,
+        "npc_dota_hero_alchemist": 1,
         "npc_dota_hero_legion_commander": 3,
-        "npc_dota_hero_silencer": 1,
-        "npc_dota_hero_alchemist": 1
+        "npc_dota_hero_silencer": 1
       },
       "kill_streaks": {},
       "multi_kills": {},
@@ -12910,30 +12919,31 @@
         "2": 578
       },
       "healing": {
-        "npc_dota_hero_huskar": 1657,
         "npc_dota_hero_antimage": 264,
-        "npc_dota_hero_leshrac": 350,
-        "npc_dota_hero_drow_ranger": 400
+        "npc_dota_hero_drow_ranger": 400,
+        "npc_dota_hero_huskar": 1657,
+        "npc_dota_hero_leshrac": 350
       },
       "damage_inflictor_received": {
-        "tusk_ice_shards": 1280,
-        "tusk_snowball": 696,
-        "undefined": 12325,
-        "templar_assassin_meld": 1633,
-        "silencer_curse_of_the_silent": 708,
-        "silencer_last_word": 352,
-        "alchemist_acid_spray": 111,
+        "null": 12325,
         "alchemist_unstable_concoction_throw": 133,
-        "silencer_glaives_of_wisdom": 60,
-        "blade_mail": 291,
+        "templar_assassin_meld": 1633,
         "mjollnir": 97,
         "templar_assassin_psi_blades": 378,
-        "legion_commander_overwhelming_odds": 62
+        "silencer_glaives_of_wisdom": 60,
+        "tusk_ice_shards": 1280,
+        "legion_commander_overwhelming_odds": 62,
+        "tusk_snowball": 696,
+        "blade_mail": 291,
+        "alchemist_acid_spray": 111,
+        "silencer_last_word": 352,
+        "silencer_curse_of_the_silent": 708
       },
       "randomed": false,
       "repicked": false,
       "pred_vict": false,
-      "neutral_tokens_log": []
+      "neutral_tokens_log": [],
+      "neutral_item_history": []
     },
     {
       "player_slot": 132,
@@ -12941,15 +12951,15 @@
       "roshans_killed": 0,
       "stuns": 1.0690918,
       "max_hero_hit": {
-        "type": "max_hero_hit",
         "time": 1700,
-        "max": true,
-        "inflictor": "antimage_mana_void",
+        "type": "max_hero_hit",
         "unit": "npc_dota_hero_antimage",
         "key": "npc_dota_hero_silencer",
         "value": 725,
         "slot": 9,
-        "player_slot": 132
+        "player_slot": 132,
+        "inflictor": "antimage_mana_void",
+        "max": true
       },
       "times": [
         0,
@@ -13267,7 +13277,7 @@
       "runes_log": [
         {
           "time": 1210,
-          "key": 3
+          "key": "3"
         }
       ],
       "connection_log": [],
@@ -13807,28 +13817,28 @@
         "0": 71
       },
       "purchase": {
-        "quelling_blade": 1,
-        "tango": 1,
-        "stout_shield": 1,
-        "branches": 1,
+        "power_treads": 1,
         "tpscroll": 6,
-        "ring_of_health": 1,
-        "boots": 1,
+        "claymore": 1,
         "pers": 1,
         "void_stone": 1,
-        "broadsword": 1,
-        "claymore": 1,
+        "quelling_blade": 1,
+        "recipe_manta": 1,
+        "recipe_yasha": 1,
+        "manta": 1,
+        "branches": 1,
         "bfury": 1,
-        "belt_of_strength": 1,
-        "power_treads": 1,
-        "gloves": 1,
         "blade_of_alacrity": 1,
         "boots_of_elves": 1,
-        "recipe_yasha": 1,
+        "belt_of_strength": 1,
+        "ring_of_health": 1,
         "yasha": 1,
-        "ultimate_orb": 1,
-        "recipe_manta": 1,
-        "manta": 1
+        "gloves": 1,
+        "stout_shield": 1,
+        "boots": 1,
+        "tango": 1,
+        "broadsword": 1,
+        "ultimate_orb": 1
       },
       "gold_reasons": {
         "0": 1084,
@@ -13839,53 +13849,53 @@
         "13": 6975
       },
       "xp_reasons": {
-        "0": 641,
+        "0": 636,
         "1": 6949,
         "2": 12623
       },
       "killed": {
-        "npc_dota_neutral_forest_troll_berserker": 4,
-        "npc_dota_neutral_forest_troll_high_priest": 2,
-        "npc_dota_creep_goodguys_ranged": 39,
-        "npc_dota_creep_goodguys_melee": 87,
-        "npc_dota_neutral_harpy_scout": 4,
-        "npc_dota_creep_badguys_melee": 3,
-        "npc_dota_neutral_harpy_storm": 2,
-        "npc_dota_creep_badguys_ranged": 2,
-        "npc_dota_goodguys_siege": 4,
-        "npc_dota_neutral_satyr_soulstealer": 4,
-        "npc_dota_neutral_satyr_trickster": 4,
-        "npc_dota_neutral_centaur_khan": 2,
-        "npc_dota_neutral_centaur_outrunner": 2,
-        "npc_dota_neutral_mud_golem": 2,
-        "npc_dota_neutral_mud_golem_split": 4,
-        "npc_dota_neutral_kobold": 1,
-        "npc_dota_neutral_wildkin": 2,
-        "npc_dota_neutral_enraged_wildkin": 1,
-        "npc_dota_neutral_dark_troll": 2,
-        "npc_dota_dark_troll_warlord_skeleton_warrior": 2,
-        "npc_dota_neutral_dark_troll_warlord": 1,
-        "npc_dota_hero_silencer": 1,
-        "npc_dota_templar_assassin_psionic_trap": 5,
-        "npc_dota_observer_wards": 2,
-        "npc_dota_neutral_ogre_magi": 1,
-        "npc_dota_neutral_giant_wolf": 2,
-        "npc_dota_neutral_alpha_wolf": 1,
-        "npc_dota_neutral_fel_beast": 2,
-        "npc_dota_neutral_ghost": 1,
-        "npc_dota_neutral_rock_golem": 1,
-        "npc_dota_neutral_black_drake": 1,
-        "npc_dota_neutral_black_dragon": 1,
         "npc_dota_creep_goodguys_melee_upgraded": 9,
+        "npc_dota_neutral_mud_golem": 2,
+        "npc_dota_neutral_rock_golem": 1,
+        "npc_dota_goodguys_siege": 4,
+        "npc_dota_neutral_wildkin": 2,
+        "npc_dota_hero_silencer": 1,
+        "npc_dota_neutral_forest_troll_high_priest": 2,
+        "npc_dota_creep_badguys_ranged": 2,
+        "npc_dota_neutral_alpha_wolf": 1,
+        "npc_dota_neutral_black_dragon": 1,
+        "npc_dota_neutral_black_drake": 1,
+        "npc_dota_creep_goodguys_ranged_upgraded": 1,
+        "npc_dota_neutral_dark_troll": 2,
+        "npc_dota_neutral_harpy_scout": 4,
+        "npc_dota_observer_wards": 2,
+        "npc_dota_neutral_ghost": 1,
+        "npc_dota_neutral_enraged_wildkin": 1,
         "npc_dota_goodguys_siege_upgraded": 1,
-        "npc_dota_creep_goodguys_ranged_upgraded": 1
+        "npc_dota_creep_badguys_melee": 3,
+        "npc_dota_creep_goodguys_melee": 87,
+        "npc_dota_neutral_giant_wolf": 2,
+        "npc_dota_neutral_kobold": 1,
+        "npc_dota_neutral_centaur_outrunner": 2,
+        "npc_dota_neutral_mud_golem_split": 4,
+        "npc_dota_neutral_dark_troll_warlord": 1,
+        "npc_dota_templar_assassin_psionic_trap": 5,
+        "npc_dota_creep_goodguys_ranged": 39,
+        "npc_dota_neutral_satyr_soulstealer": 4,
+        "npc_dota_neutral_ogre_magi": 1,
+        "npc_dota_neutral_satyr_trickster": 4,
+        "npc_dota_neutral_fel_beast": 2,
+        "npc_dota_dark_troll_warlord_skeleton_warrior": 2,
+        "npc_dota_neutral_forest_troll_berserker": 4,
+        "npc_dota_neutral_harpy_storm": 2,
+        "npc_dota_neutral_centaur_khan": 2
       },
       "item_uses": {
-        "tango": 4,
-        "quelling_blade": 3,
+        "power_treads": 24,
         "tpscroll": 6,
         "courier": 1,
-        "power_treads": 24,
+        "quelling_blade": 3,
+        "tango": 4,
         "manta": 1
       },
       "ability_uses": {
@@ -13895,132 +13905,132 @@
       "ability_targets": {
         "antimage_mana_void": {
           "npc_dota_hero_tusk": 1,
-          "npc_dota_hero_legion_commander": 1,
-          "npc_dota_hero_silencer": 1,
+          "npc_dota_hero_templar_assassin": 2,
           "npc_dota_hero_alchemist": 1,
-          "npc_dota_hero_templar_assassin": 2
+          "npc_dota_hero_legion_commander": 1,
+          "npc_dota_hero_silencer": 1
         }
       },
       "damage_targets": {
-        "undefined": {
-          "npc_dota_hero_legion_commander": 380,
+        "null": {
           "npc_dota_hero_tusk": 618,
           "npc_dota_hero_templar_assassin": 854,
-          "npc_dota_hero_alchemist": 96
+          "npc_dota_hero_alchemist": 96,
+          "npc_dota_hero_legion_commander": 380
+        },
+        "bfury": {
+          "npc_dota_hero_tusk": 132,
+          "npc_dota_hero_alchemist": 74,
+          "npc_dota_hero_legion_commander": 171
         },
         "antimage_mana_void": {
           "npc_dota_hero_tusk": 192,
-          "npc_dota_hero_legion_commander": 247,
-          "npc_dota_hero_silencer": 725,
+          "npc_dota_hero_templar_assassin": 364,
           "npc_dota_hero_alchemist": 336,
-          "npc_dota_hero_templar_assassin": 364
-        },
-        "bfury": {
-          "npc_dota_hero_legion_commander": 171,
-          "npc_dota_hero_alchemist": 74,
-          "npc_dota_hero_tusk": 132
+          "npc_dota_hero_legion_commander": 247,
+          "npc_dota_hero_silencer": 725
         }
       },
       "hero_hits": {
-        "undefined": 35,
-        "antimage_mana_void": 6,
-        "bfury": 6
+        "null": 35,
+        "bfury": 6,
+        "antimage_mana_void": 6
       },
       "damage": {
-        "npc_dota_hero_legion_commander": 798,
-        "npc_dota_neutral_forest_troll_berserker": 1360,
-        "npc_dota_creep_badguys_melee": 455,
-        "npc_dota_neutral_forest_troll_high_priest": 545,
-        "npc_dota_creep_goodguys_ranged": 14209,
-        "npc_dota_creep_badguys_ranged": 314,
-        "npc_dota_creep_goodguys_melee": 34210,
-        "npc_dota_neutral_harpy_scout": 1176,
-        "npc_dota_neutral_harpy_storm": 653,
-        "npc_dota_hero_tusk": 942,
-        "npc_dota_goodguys_siege": 1845,
-        "npc_dota_neutral_polar_furbolg_champion": 76,
-        "npc_dota_goodguys_tower1_top": 176,
-        "npc_dota_neutral_satyr_trickster": 1306,
-        "npc_dota_neutral_satyr_soulstealer": 2722,
-        "npc_dota_neutral_centaur_outrunner": 1234,
-        "npc_dota_neutral_centaur_khan": 2323,
-        "npc_dota_neutral_mud_golem": 1743,
-        "npc_dota_neutral_mud_golem_split": 1547,
-        "npc_dota_neutral_kobold": 47,
-        "npc_dota_neutral_wildkin": 706,
-        "npc_dota_neutral_enraged_wildkin": 1021,
-        "npc_dota_neutral_dark_troll_warlord": 1200,
-        "npc_dota_neutral_dark_troll": 1229,
-        "npc_dota_dark_troll_warlord_skeleton_warrior": 615,
-        "npc_dota_hero_alchemist": 506,
-        "npc_dota_hero_silencer": 725,
-        "npc_dota_templar_assassin_psionic_trap": 814,
-        "npc_dota_observer_wards": 656,
-        "npc_dota_neutral_ogre_magi": 536,
-        "npc_dota_neutral_giant_wolf": 1038,
-        "npc_dota_neutral_alpha_wolf": 628,
-        "npc_dota_neutral_ghost": 577,
-        "npc_dota_neutral_fel_beast": 1034,
-        "npc_dota_neutral_rock_golem": 80,
-        "npc_dota_neutral_black_drake": 994,
-        "npc_dota_neutral_black_dragon": 2092,
-        "npc_dota_hero_templar_assassin": 1218,
         "npc_dota_creep_goodguys_melee_upgraded": 4506,
+        "npc_dota_neutral_mud_golem": 1743,
+        "npc_dota_neutral_rock_golem": 80,
+        "npc_dota_goodguys_siege": 1845,
+        "npc_dota_neutral_wildkin": 706,
+        "npc_dota_hero_silencer": 725,
+        "npc_dota_neutral_forest_troll_high_priest": 545,
+        "npc_dota_creep_badguys_ranged": 314,
+        "npc_dota_neutral_alpha_wolf": 628,
+        "npc_dota_neutral_black_dragon": 2092,
+        "npc_dota_neutral_black_drake": 994,
         "npc_dota_creep_goodguys_ranged_upgraded": 659,
-        "npc_dota_goodguys_siege_upgraded": 855
+        "npc_dota_neutral_polar_furbolg_champion": 76,
+        "npc_dota_neutral_dark_troll": 1229,
+        "npc_dota_hero_alchemist": 506,
+        "npc_dota_hero_legion_commander": 798,
+        "npc_dota_neutral_harpy_scout": 1176,
+        "npc_dota_observer_wards": 656,
+        "npc_dota_neutral_ghost": 577,
+        "npc_dota_neutral_enraged_wildkin": 1021,
+        "npc_dota_hero_tusk": 942,
+        "npc_dota_goodguys_siege_upgraded": 855,
+        "npc_dota_creep_badguys_melee": 455,
+        "npc_dota_hero_templar_assassin": 1218,
+        "npc_dota_creep_goodguys_melee": 34210,
+        "npc_dota_neutral_giant_wolf": 1038,
+        "npc_dota_neutral_kobold": 47,
+        "npc_dota_neutral_centaur_outrunner": 1234,
+        "npc_dota_neutral_mud_golem_split": 1547,
+        "npc_dota_neutral_dark_troll_warlord": 1200,
+        "npc_dota_templar_assassin_psionic_trap": 814,
+        "npc_dota_goodguys_tower1_top": 176,
+        "npc_dota_creep_goodguys_ranged": 14209,
+        "npc_dota_neutral_satyr_soulstealer": 2722,
+        "npc_dota_neutral_ogre_magi": 536,
+        "npc_dota_neutral_satyr_trickster": 1306,
+        "npc_dota_neutral_fel_beast": 1034,
+        "npc_dota_dark_troll_warlord_skeleton_warrior": 615,
+        "npc_dota_neutral_forest_troll_berserker": 1360,
+        "npc_dota_neutral_harpy_storm": 653,
+        "npc_dota_neutral_centaur_khan": 2323
       },
       "damage_taken": {
-        "npc_dota_hero_legion_commander": 2459,
-        "npc_dota_hero_silencer": 610,
-        "npc_dota_neutral_forest_troll_berserker": 64,
-        "npc_dota_neutral_forest_troll_high_priest": 31,
-        "npc_dota_goodguys_tower1_top": 122,
-        "npc_dota_neutral_harpy_storm": 23,
-        "npc_dota_neutral_harpy_scout": 49,
-        "npc_dota_hero_tusk": 3435,
-        "npc_dota_creep_goodguys_melee": 1666,
-        "npc_dota_creep_goodguys_ranged": 853,
-        "npc_dota_goodguys_siege": 25,
-        "npc_dota_neutral_centaur_khan": 409,
-        "npc_dota_neutral_centaur_outrunner": 59,
-        "npc_dota_neutral_wildkin": 48,
-        "npc_dota_neutral_polar_furbolg_champion": 63,
-        "npc_dota_neutral_polar_furbolg_ursa_warrior": 28,
-        "npc_dota_hero_alchemist": 2857,
-        "npc_dota_neutral_satyr_trickster": 26,
-        "npc_dota_neutral_satyr_soulstealer": 100,
+        "npc_dota_creep_goodguys_melee_upgraded": 69,
         "npc_dota_neutral_mud_golem": 100,
-        "npc_dota_neutral_mud_golem_split": 24,
-        "npc_dota_hero_templar_assassin": 2798,
-        "npc_dota_neutral_kobold": 10,
-        "npc_dota_neutral_kobold_tunneler": 7,
-        "npc_dota_neutral_enraged_wildkin": 87,
-        "npc_dota_neutral_dark_troll": 30,
-        "npc_dota_neutral_dark_troll_warlord": 68,
-        "npc_dota_dark_troll_warlord_skeleton_warrior": 18,
-        "npc_dota_neutral_ogre_magi": 11,
-        "npc_dota_neutral_giant_wolf": 39,
+        "npc_dota_hero_silencer": 610,
+        "npc_dota_goodguys_siege": 25,
+        "npc_dota_neutral_wildkin": 48,
+        "npc_dota_neutral_forest_troll_high_priest": 31,
         "npc_dota_neutral_alpha_wolf": 41,
-        "npc_dota_neutral_fel_beast": 12,
-        "npc_dota_neutral_ghost": 31,
         "npc_dota_neutral_black_dragon": 153,
         "npc_dota_neutral_black_drake": 43,
         "npc_dota_creep_goodguys_ranged_upgraded": 37,
-        "npc_dota_creep_goodguys_melee_upgraded": 69,
-        "npc_dota_goodguys_siege_upgraded": 34
+        "npc_dota_neutral_polar_furbolg_champion": 63,
+        "npc_dota_neutral_dark_troll": 30,
+        "npc_dota_hero_alchemist": 2857,
+        "npc_dota_hero_legion_commander": 2459,
+        "npc_dota_neutral_harpy_scout": 49,
+        "npc_dota_neutral_ghost": 31,
+        "npc_dota_neutral_enraged_wildkin": 87,
+        "npc_dota_hero_tusk": 3435,
+        "npc_dota_goodguys_siege_upgraded": 34,
+        "npc_dota_neutral_polar_furbolg_ursa_warrior": 28,
+        "npc_dota_hero_templar_assassin": 2798,
+        "npc_dota_creep_goodguys_melee": 1666,
+        "npc_dota_neutral_giant_wolf": 39,
+        "npc_dota_neutral_kobold": 10,
+        "npc_dota_neutral_centaur_outrunner": 59,
+        "npc_dota_neutral_mud_golem_split": 24,
+        "npc_dota_neutral_dark_troll_warlord": 68,
+        "npc_dota_goodguys_tower1_top": 122,
+        "npc_dota_creep_goodguys_ranged": 853,
+        "npc_dota_neutral_satyr_soulstealer": 100,
+        "npc_dota_neutral_ogre_magi": 11,
+        "npc_dota_neutral_satyr_trickster": 26,
+        "npc_dota_neutral_fel_beast": 12,
+        "npc_dota_dark_troll_warlord_skeleton_warrior": 18,
+        "npc_dota_neutral_forest_troll_berserker": 64,
+        "npc_dota_neutral_harpy_storm": 23,
+        "npc_dota_neutral_kobold_tunneler": 7,
+        "npc_dota_neutral_centaur_khan": 409
       },
       "damage_inflictor": {
-        "undefined": 1948,
-        "antimage_mana_void": 1864,
-        "bfury": 377
+        "null": 1948,
+        "bfury": 377,
+        "antimage_mana_void": 1864
       },
       "runes": {
         "3": 1
       },
       "killed_by": {
         "npc_dota_hero_tusk": 2,
-        "npc_dota_creep_goodguys_melee": 1,
         "npc_dota_hero_templar_assassin": 1,
+        "npc_dota_creep_goodguys_melee": 1,
         "npc_dota_hero_alchemist": 1,
         "npc_dota_hero_silencer": 1
       },
@@ -14033,24 +14043,25 @@
       },
       "healing": {},
       "damage_inflictor_received": {
-        "undefined": 6844,
-        "silencer_last_word": 224,
-        "tusk_ice_shards": 1672,
-        "tusk_snowball": 852,
-        "silencer_curse_of_the_silent": 276,
-        "alchemist_acid_spray": 106,
+        "null": 6844,
         "alchemist_unstable_concoction_throw": 218,
-        "blade_mail": 358,
-        "legion_commander_overwhelming_odds": 353,
         "templar_assassin_meld": 500,
         "mjollnir": 280,
         "templar_assassin_psi_blades": 395,
-        "silencer_glaives_of_wisdom": 81
+        "silencer_glaives_of_wisdom": 81,
+        "tusk_ice_shards": 1672,
+        "legion_commander_overwhelming_odds": 353,
+        "tusk_snowball": 852,
+        "blade_mail": 358,
+        "alchemist_acid_spray": 106,
+        "silencer_last_word": 224,
+        "silencer_curse_of_the_silent": 276
       },
       "randomed": false,
       "repicked": false,
       "pred_vict": true,
-      "neutral_tokens_log": []
+      "neutral_tokens_log": [],
+      "neutral_item_history": []
     }
   ],
   "leagueid": 5399,

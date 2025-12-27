@@ -33,6 +33,7 @@ services:
     container_name: odota-minioinit
     entrypoint: >
       /bin/sh -c "
+      sleep 30;
       /usr/bin/mc mb opendota-blobs;
       /usr/bin/mc mb opendota;
       /usr/bin/mc mb opendota-players;
