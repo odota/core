@@ -95,6 +95,10 @@ let arr = [
       SCANNER_OFFSET: "50000",
     },
   },
+  {
+    name: "inserter",
+    group: "backend",
+  },
   // {
   //   name: 'cacher',
   //   group: 'backend',

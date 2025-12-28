@@ -441,11 +441,6 @@ CREATE TABLE IF NOT EXISTS subscriber (
   status text
 );
 
-CREATE TABLE IF NOT EXISTS last_seq_num (
-  PRIMARY KEY (match_seq_num),
-  match_seq_num bigint
-);
-
 --Stores matches that the user has played in but might be previously anonymous in API data
 --We might want to fetch the data from our own DB and fill player_caches
 CREATE TABLE IF NOT EXISTS player_match_history(
@@ -482,6 +477,14 @@ CREATE TABLE IF NOT EXISTS rating_queue(
   radiant_win boolean,
   game_mode int
 );
+
+CREATE TABLE IF NOT EXISTS insert_queue(
+  PRIMARY KEY(match_seq_num),
+  match_seq_num bigint,
+  data json,
+  inserted boolean DEFAULT false
+);
+CREATE INDEX IF NOT EXISTS insert_queue_inserted_match_seq_num_idx ON insert_queue(inserted, match_seq_num);
 
 CREATE TABLE IF NOT EXISTS league_match(
   PRIMARY KEY (leagueid, match_id),

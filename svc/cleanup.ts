@@ -28,7 +28,7 @@ runInLoop(
       "DELETE from public_matches where start_time < extract(epoch from now() - interval '12 month')::int",
     );
     await db.raw(
-      "DELETE from last_seq_num where match_seq_num < (select max(match_seq_num) from last_seq_num)",
+      "DELETE from insert_queue where match_seq_num < (select max(match_seq_num) - 100000 from insert_queue) AND processed = TRUE",
     );
     let files: string[] = [];
     try {

@@ -22,6 +22,7 @@ const health: Record<string, () => Promise<Metric>> = {
   scenariosDelay,
   profileDelay,
   rateDelay,
+  insertDelay,
 };
 
 // Get list of backend processes
@@ -68,7 +69,7 @@ async function seqNumDelay() {
   const url = SteamAPIUrls.api_history({});
   const body = await getSteamAPIData<MatchHistory>({ url });
   const currSeqNum = body.result.matches[0]?.match_seq_num;
-  const { rows } = await db.raw("select max(match_seq_num) from last_seq_num;");
+  const { rows } = await db.raw("select max(match_seq_num) from insert_queue;");
   const numResult = Number(rows[0]?.max) || 0;
   let metric;
   if (!currSeqNum || !numResult) {
@@ -134,6 +135,13 @@ async function profileDelay() {
 }
 async function rateDelay() {
   const result = await db.raw("select count(*) from rating_queue");
+  return {
+    metric: result.rows[0]?.count,
+    limit: 100000,
+  };
+}
+async function insertDelay() {
+  const result = await db.raw("select count(*) from insert_queue WHERE processed = FALSE");
   return {
     metric: result.rows[0]?.count,
     limit: 100000,
