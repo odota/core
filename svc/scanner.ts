@@ -25,13 +25,14 @@ if (config.NODE_ENV === "development" && !nextSeqNum) {
 runInLoop(async function scanApi() {
   if (isSecondary) {
     const currSeqNum = await getCurrentSeqNum();
+    console.log(
+      "secondary scanner offset %s/%s",
+      currSeqNum - nextSeqNum,
+      offset,
+    );
     if (currSeqNum - nextSeqNum < offset) {
       // Secondary scanner is catching up too much. Wait and try again
-      console.log(
-        "secondary scanner waiting, offset %s/%s",
-        currSeqNum - nextSeqNum,
-        offset,
-      );
+      console.log("secondary scanner waiting");
       await new Promise((resolve) => setTimeout(resolve, SCANNER_WAIT));
       return;
     }
