@@ -60,7 +60,7 @@ runInLoop(async function scanApi() {
     })
   );
   const end = Date.now();
-  console.log("scan: %dms", end - start);
+  console.log("write: %dms", end - start);
   if (resp.length) {
     nextSeqNum = resp[resp.length - 1].match_seq_num + 1;
     console.log("next_seq_num: %s", nextSeqNum);

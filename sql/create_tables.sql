@@ -482,9 +482,9 @@ CREATE TABLE IF NOT EXISTS insert_queue(
   PRIMARY KEY(match_seq_num),
   match_seq_num bigint,
   data json,
-  inserted boolean DEFAULT false
+  processed boolean DEFAULT false
 );
-CREATE INDEX IF NOT EXISTS insert_queue_inserted_match_seq_num_idx ON insert_queue(inserted, match_seq_num);
+CREATE INDEX IF NOT EXISTS insert_queue_processed_match_seq_num_idx ON insert_queue(processed, match_seq_num);
 
 CREATE TABLE IF NOT EXISTS league_match(
   PRIMARY KEY (leagueid, match_id),

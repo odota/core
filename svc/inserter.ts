@@ -20,13 +20,13 @@ runInLoop(async function insert() {
   }
   await Promise.all(rows.map(async (r: any) => {
     const match = r.data;
-    if (!match) {
-        return;
+    if (match) {
+      // console.log(match);
+      await insertMatch(match, {
+          type: "api",
+          origin: "scanner",
+      });
     }
-    await insertMatch(match, {
-        type: "api",
-        origin: "scanner",
-    });
     await db.raw("UPDATE insert_queue SET processed = TRUE WHERE match_seq_num = ?", [match.match_seq_num]);
   }));
 }, 0);
