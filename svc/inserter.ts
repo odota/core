@@ -18,15 +18,20 @@ runInLoop(async function insert() {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     return;
   }
-  await Promise.all(rows.map(async (r: any) => {
-    const match = r.data;
-    if (match) {
-      // console.log(match);
-      await insertMatch(match, {
+  await Promise.all(
+    rows.map(async (r: any) => {
+      const match = r.data;
+      if (match) {
+        // console.log(match);
+        await insertMatch(match, {
           type: "api",
           origin: "scanner",
-      });
-    }
-    await db.raw("UPDATE insert_queue SET processed = TRUE WHERE match_seq_num = ?", [r.match_seq_num]);
-  }));
+        });
+      }
+      await db.raw(
+        "UPDATE insert_queue SET processed = TRUE WHERE match_seq_num = ?",
+        [r.match_seq_num],
+      );
+    }),
+  );
 }, 0);

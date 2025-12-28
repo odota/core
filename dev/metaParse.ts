@@ -9,17 +9,17 @@ const builder = root.loadSync("./proto/dota_match_metadata.proto", {
 });
 const CDOTAMatchMetadataFile = builder.lookupType("CDOTAMatchMetadataFile");
 
-console.time('fetch');
+console.time("fetch");
 const resp = await fetch(url);
 const inBuf = Buffer.from(await resp.arrayBuffer());
-console.timeEnd('fetch');
-console.time('bz');
+console.timeEnd("fetch");
+console.time("bz");
 const bz = spawn(`bunzip2`);
 bz.stdin.write(inBuf);
 bz.stdin.end();
 const outBuf = await buffer(bz.stdout);
-console.timeEnd('bz');
-console.time('parse');
+console.timeEnd("bz");
+console.time("parse");
 const message: any = CDOTAMatchMetadataFile.decode(outBuf);
-console.timeEnd('parse');
+console.timeEnd("parse");
 console.log(message);

@@ -141,7 +141,9 @@ async function rateDelay() {
   };
 }
 async function insertDelay() {
-  const result = await db.raw("select count(*) from insert_queue WHERE processed = FALSE");
+  const result = await db.raw(
+    "select count(*) from insert_queue WHERE processed = FALSE",
+  );
   return {
     metric: result.rows[0]?.count,
     limit: 100000,

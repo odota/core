@@ -10,7 +10,9 @@ const PAGE_SIZE = 100;
 const SCANNER_WAIT = 5000;
 const isSecondary = Boolean(Number(config.SCANNER_OFFSET));
 const offset = Number(config.SCANNER_OFFSET);
-let nextSeqNum = isSecondary ? await getTrailingSeqNum() : await getCurrentSeqNum();
+let nextSeqNum = isSecondary
+  ? await getTrailingSeqNum()
+  : await getCurrentSeqNum();
 
 if (config.NODE_ENV === "development" && !nextSeqNum) {
   // Never do this in production to avoid skipping sequence number if we didn't pull .env properly
@@ -23,9 +25,13 @@ if (config.NODE_ENV === "development" && !nextSeqNum) {
 runInLoop(async function scanApi() {
   if (isSecondary) {
     const currSeqNum = await getCurrentSeqNum();
-    if ((currSeqNum - nextSeqNum) < offset) {
+    if (currSeqNum - nextSeqNum < offset) {
       // Secondary scanner is catching up too much. Wait and try again
-      console.log("secondary scanner waiting, offset %s/%s", currSeqNum - nextSeqNum, offset);
+      console.log(
+        "secondary scanner waiting, offset %s/%s",
+        currSeqNum - nextSeqNum,
+        offset,
+      );
       await new Promise((resolve) => setTimeout(resolve, SCANNER_WAIT));
       return;
     }
@@ -48,16 +54,16 @@ runInLoop(async function scanApi() {
       if (match.match_id % 100 >= Number(config.SCANNER_PERCENT)) {
         return;
       }
-      const { rows } = await db.raw('INSERT INTO insert_queue(match_seq_num, data) VALUES(?, ?) ON CONFLICT DO NOTHING RETURNING match_seq_num', [
-        match.match_seq_num,
-        JSON.stringify(match),
-      ]);
+      const { rows } = await db.raw(
+        "INSERT INTO insert_queue(match_seq_num, data) VALUES(?, ?) ON CONFLICT DO NOTHING RETURNING match_seq_num",
+        [match.match_seq_num, JSON.stringify(match)],
+      );
       if (rows[0]) {
         if (isSecondary) {
           redisCount("secondary_scanner");
         }
       }
-    })
+    }),
   );
   const end = Date.now();
   console.log("write: %dms", end - start);
@@ -80,4 +86,3 @@ async function getTrailingSeqNum(): Promise<number> {
   const result = await db.raw("select min(match_seq_num) from insert_queue;");
   return Number(result.rows[0]?.min) || 0;
 }
-
