@@ -27,6 +27,6 @@ runInLoop(async function insert() {
           origin: "scanner",
       });
     }
-    await db.raw("UPDATE insert_queue SET processed = TRUE WHERE match_seq_num = ?", [match.match_seq_num]);
+    await db.raw("UPDATE insert_queue SET processed = TRUE WHERE match_seq_num = ?", [r.match_seq_num]);
   }));
 }, 0);
