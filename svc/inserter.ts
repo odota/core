@@ -12,7 +12,7 @@ if (!trackedExists) {
 
 await runInLoop(async function insert() {
   const { rows } = await db.raw(
-    "SELECT match_seq_num, data FROM insert_queue WHERE processed = FALSE ORDER BY match_seq_num ASC LIMIT 100",
+    "SELECT match_seq_num, data FROM insert_queue WHERE processed = FALSE ORDER BY match_seq_num ASC LIMIT 150",
   );
   if (!rows.length) {
     await new Promise((resolve) => setTimeout(resolve, 1000));
