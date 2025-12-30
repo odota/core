@@ -6,6 +6,9 @@ import { getSteamAPIDataWithRetry, SteamAPIUrls } from "./util/http.ts";
 
 await runInLoop(
   async function heroes() {
+    await new Promise((resolve, reject) => {
+      setTimeout(reject, 1000);
+    });
     const url = SteamAPIUrls.api_heroes({
       language: "english",
     });
