@@ -157,8 +157,8 @@ async function initMinio() {
 
 async function startServices() {
   console.log("starting services");
-  await import("../svc/parser.ts");
-  await import("../svc/mmr.ts");
+  import("../svc/parser.ts");
+  import("../svc/mmr.ts");
   const web = await import("../svc/web.ts");
   app = web.app;
 }
