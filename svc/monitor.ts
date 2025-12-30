@@ -89,7 +89,7 @@ async function parseDelay() {
   );
   return {
     metric: result.rows[0]?.count,
-    limit: 10000,
+    limit: 50000,
   };
 }
 async function fhDelay() {
@@ -98,14 +98,14 @@ async function fhDelay() {
   );
   return {
     metric: result.rows[0]?.count,
-    limit: 100000,
+    limit: 50000,
   };
 }
 async function mmrDelay() {
   const result = await redis.scard("mmrQueue");
   return {
     metric: result,
-    limit: 100000,
+    limit: 50000,
   };
 }
 async function cacheDelay() {
@@ -114,7 +114,7 @@ async function cacheDelay() {
   );
   return {
     metric: result.rows[0]?.count,
-    limit: 100000,
+    limit: 50000,
   };
 }
 async function scenariosDelay() {
@@ -123,21 +123,21 @@ async function scenariosDelay() {
   );
   return {
     metric: result.rows[0]?.count,
-    limit: 100000,
+    limit: 50000,
   };
 }
 async function profileDelay() {
   const result = await redis.scard("profileQueue");
   return {
     metric: result,
-    limit: 100000,
+    limit: 50000,
   };
 }
 async function rateDelay() {
   const result = await db.raw("select count(*) from rating_queue");
   return {
     metric: result.rows[0]?.count,
-    limit: 100000,
+    limit: 50000,
   };
 }
 async function insertDelay() {
@@ -146,7 +146,7 @@ async function insertDelay() {
   );
   return {
     metric: result.rows[0]?.count,
-    limit: 100000,
+    limit: 50000,
   };
 }
 async function postgresUsage() {
