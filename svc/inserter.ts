@@ -18,7 +18,7 @@ await runInLoop(async function insert() {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     return;
   }
-  await race(Promise.all(
+  await Promise.all(
     rows.map(async (r: any) => {
       const match = r.data;
       if (match) {
@@ -33,20 +33,5 @@ await runInLoop(async function insert() {
         [r.match_seq_num],
       );
     }),
-  ), 15000, new Error("Request timed out"));
+  );
 }, 0);
-
-export function race( promise: Promise<any>, timeout: number, error: Error) {
-  let timer: NodeJS.Timeout | undefined;
-
-  return Promise.race([
-    new Promise((resolve, reject) => {
-      timer = setTimeout(reject, timeout, error);
-      return timer;
-    }),
-    promise.then((value) => {
-      clearTimeout(timer);
-      return value;
-    })
-  ]);
-}
