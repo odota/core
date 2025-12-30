@@ -10,9 +10,7 @@ const PAGE_SIZE = 100;
 const SCANNER_WAIT = 5000;
 const isSecondary = Boolean(Number(config.SCANNER_OFFSET));
 const offset = Number(config.SCANNER_OFFSET);
-let nextSeqNum = isSecondary
-  ? await getTrailingSeqNum()
-  : await getCurrentSeqNum();
+let nextSeqNum = Math.max(await getCurrentSeqNum() - (isSecondary ? offset : 0), 0);
 
 if (config.NODE_ENV === "development" && !nextSeqNum) {
   // Never do this in production to avoid skipping sequence number if we didn't pull .env properly
@@ -37,7 +35,6 @@ await runInLoop(async function scanApi() {
       return;
     }
   }
-  // const start = Date.now();
   const url = SteamAPIUrls.api_sequence({
     start_at_match_seq_num: nextSeqNum,
     matches_requested: PAGE_SIZE,
@@ -81,9 +78,4 @@ await runInLoop(async function scanApi() {
 async function getCurrentSeqNum(): Promise<number> {
   const result = await db.raw("select max(match_seq_num) from insert_queue;");
   return Number(result.rows[0]?.max) || 0;
-}
-
-async function getTrailingSeqNum(): Promise<number> {
-  const result = await db.raw("select min(match_seq_num) from insert_queue;");
-  return Number(result.rows[0]?.min) || 0;
 }
