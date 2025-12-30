@@ -12,28 +12,28 @@ if (!trackedExists) {
 
 await runInLoop(async function insert() {
   const { rows } = await db.raw(
-    "SELECT match_seq_num, data FROM insert_queue WHERE processed = FALSE ORDER BY match_seq_num ASC LIMIT 150",
+    "SELECT match_seq_num, data FROM insert_queue WHERE processed = FALSE ORDER BY match_seq_num ASC LIMIT 100",
   );
   if (!rows.length) {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     return;
   }
   await race(Promise.all(
-      rows.map(async (r: any) => {
-        const match = r.data;
-        if (match) {
-          // console.log(match);
-          await insertMatch(match, {
-            type: "api",
-            origin: "scanner",
-          });
-        }
-        await db.raw(
-          "UPDATE insert_queue SET processed = TRUE WHERE match_seq_num = ?",
-          [r.match_seq_num],
-        );
-      }),
-    ), 10000, new Error("Request timed out"));
+    rows.map(async (r: any) => {
+      const match = r.data;
+      if (match) {
+        // console.log(match);
+        await insertMatch(match, {
+          type: "api",
+          origin: "scanner",
+        });
+      }
+      await db.raw(
+        "UPDATE insert_queue SET processed = TRUE WHERE match_seq_num = ?",
+        [r.match_seq_num],
+      );
+    }),
+  ), 10000, new Error("Request timed out"));
 }, 0);
 
 export function race( promise: Promise<any>, timeout: number, error: Error) {
