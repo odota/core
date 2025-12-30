@@ -18,20 +18,26 @@ await runInLoop(async function insert() {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     return;
   }
-  await Promise.all(
-    rows.map(async (r: any) => {
-      const match = r.data;
-      if (match) {
-        // console.log(match);
-        await insertMatch(match, {
-          type: "api",
-          origin: "scanner",
-        });
-      }
-      await db.raw(
-        "UPDATE insert_queue SET processed = TRUE WHERE match_seq_num = ?",
-        [r.match_seq_num],
-      );
+  await Promise.race([
+    Promise.all(
+      rows.map(async (r: any) => {
+        const match = r.data;
+        if (match) {
+          // console.log(match);
+          await insertMatch(match, {
+            type: "api",
+            origin: "scanner",
+          });
+        }
+        await db.raw(
+          "UPDATE insert_queue SET processed = TRUE WHERE match_seq_num = ?",
+          [r.match_seq_num],
+        );
+      }),
+    ),
+    new Promise((resolve, reject) => {
+      // Reject after 5 seconds
+      setTimeout(() => reject(new Error("Request timed out")), 10000);
     }),
-  );
+  ]);
 }, 0);
