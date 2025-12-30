@@ -49,13 +49,3 @@ if (process.env.ROLE) {
     12 * 60 * 60 * 1000,
   );
 }
-
-// process.on("uncaughtException", async (err) => {
-//   console.error(err);
-//   process.exit(1);
-// });
-// process.on("unhandledRejection", async (reason, p) => {
-//   // In production pm2 doesn't appear to auto restart unless we exit the process here
-//   console.error("Unhandled Rejection at: Promise", p, "reason:", reason);
-//   process.exit(1);
-// });

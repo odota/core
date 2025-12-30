@@ -25,10 +25,13 @@ export async function runQueue<T>(
       const batch = resp.map((el) => JSON.parse(el) as T);
       const start = Date.now();
       if (batch?.length) {
-        // Note: If we fail here we will crash the process and possibly interrupt other parallel workers
-        // Handle errors in the processor to mitigate this
-        // The job will not be retried since this is an unreliable queue
-        await processor(batch, i);
+        try {
+          // NOTE: If we fail here we will not retry the job since this is an unreliable queue
+          // Just log the error and continue
+          await processor(batch, i);
+        } catch (e) {
+          console.log(e);
+        }
       } else {
         // Wait before trying again
         await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -41,9 +44,7 @@ export async function runQueue<T>(
       );
     }
   };
-  for (let i = 0; i < parallelism; i++) {
-    executor(i);
-  }
+  await Promise.all([...Array(parallelism).keys()].map((_, i) => executor(i)));
 }
 
 export async function runReliableQueue(
@@ -114,9 +115,7 @@ export async function runReliableQueue(
       }
     }
   };
-  for (let i = 0; i < parallelism; i++) {
-    executor(i);
-  }
+  await Promise.all([...Array(parallelism).keys()].map((_, i) => executor(i)));
 }
 
 export async function addJob(input: QueueInput) {
