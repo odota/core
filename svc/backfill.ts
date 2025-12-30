@@ -15,7 +15,7 @@ import { transformMatch } from "./util/compute.ts";
 // current run started at 5000000000
 const stop = Number(process.env.BACKFILL_STOP) || 6200000000;
 
-runInLoop(async function backfill() {
+await runInLoop(async function backfill() {
   // This endpoint is limited to something like 1 request every 5 seconds
   // get progress from redis if available, if not, fallback to file
   let seqNum;

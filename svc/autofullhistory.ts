@@ -3,7 +3,7 @@ import db from "./store/db.ts";
 import { addReliableJob } from "./store/queue.ts";
 import { runInLoop } from "./util/utility.ts";
 
-runInLoop(async function autoFh() {
+await runInLoop(async function autoFh() {
   const { rows } = await db.raw(
     "SELECT account_id from players ORDER BY full_history_time ASC NULLS FIRST LIMIT 5",
   );

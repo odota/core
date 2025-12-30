@@ -16,7 +16,7 @@ import moment from "moment";
 import db from "./store/db.ts";
 import { getParserCapacity } from "./util/registry.ts";
 
-runReliableQueue(
+await runReliableQueue(
   "parse",
   Number(config.PARSER_PARALLELISM),
   parseProcessor,

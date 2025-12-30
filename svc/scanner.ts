@@ -22,7 +22,7 @@ if (config.NODE_ENV === "development" && !nextSeqNum) {
   nextSeqNum = data.result.matches[0].match_seq_num;
 }
 
-runInLoop(async function scanApi() {
+await runInLoop(async function scanApi() {
   if (isSecondary) {
     const currSeqNum = await getCurrentSeqNum();
     console.log(

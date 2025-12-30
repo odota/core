@@ -5,7 +5,7 @@ import db from "./store/db.ts";
 import { reconcileMatch } from "./util/reconcileUtil.ts";
 import { runInLoop } from "./util/utility.ts";
 
-runInLoop(async function repair() {
+await runInLoop(async function repair() {
   const { rows } = await db.raw(
     "select match_id, retries from player_match_history WHERE retries >= 5 ORDER BY retries DESC NULLS LAST LIMIT 1",
   );

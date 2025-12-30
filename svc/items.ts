@@ -4,7 +4,7 @@ import db, { upsert } from "./store/db.ts";
 import { runInLoop } from "./util/utility.ts";
 import axios from "axios";
 
-runInLoop(
+await runInLoop(
   async function doItems() {
     const url = `https://www.dota2.com/datafeed/itemlist?language=english`;
     const resp = await axios.get(url);

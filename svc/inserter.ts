@@ -10,7 +10,7 @@ if (!trackedExists) {
   await cacheTrackedPlayers();
 }
 
-runInLoop(async function insert() {
+await runInLoop(async function insert() {
   const { rows } = await db.raw(
     "SELECT match_seq_num, data FROM insert_queue WHERE processed = FALSE ORDER BY match_seq_num ASC LIMIT 100",
   );

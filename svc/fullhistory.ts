@@ -8,7 +8,7 @@ import { SteamAPIUrls, getSteamAPIDataWithRetry } from "./util/http.ts";
 
 // Approximately 5 req/sec limit per apiHost
 // Short fullhistory uses 1 req, long 5 req, some percentage will need to query for up to 500 matches
-runReliableQueue(
+await runReliableQueue(
   "fhQueue",
   Number(config.FULLHISTORY_PARALLELISM) || 1,
   processFullHistory,

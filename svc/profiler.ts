@@ -7,7 +7,7 @@ import { getRandomRetrieverUrl } from "./util/registry.ts";
 import axios from "axios";
 import { runQueue } from "./store/queue.ts";
 
-runQueue<ProfileJob>("profileQueue", 1, 100, profile);
+await runQueue<ProfileJob>("profileQueue", 1, 100, profile);
 
 async function profile(batch: ProfileJob[]) {
   const steamids = batch.map((j) => convert32to64(String(j.account_id)));

@@ -6,7 +6,7 @@ import { average, isRadiant, isTurbo, runInLoop } from "./util/utility.ts";
 const DEFAULT_RATING = 4000;
 const kFactor = 50;
 
-runInLoop(async function rate() {
+await runInLoop(async function rate() {
   const { rows } = await db.raw<{
     rows: {
       match_seq_num: number;

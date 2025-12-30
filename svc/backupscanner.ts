@@ -12,7 +12,7 @@ import {
 const parallelism = 1;
 const delay = 1000;
 
-runInLoop(async function backupScan() {
+await runInLoop(async function backupScan() {
   const ids = await redis.zrange('tracked', 0, -1);
   processPlayer(id[0]);
 }, 1000);

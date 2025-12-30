@@ -5,7 +5,7 @@ import db from "./store/db.ts";
 import { runInLoop } from "./util/utility.ts";
 import { getSteamAPIDataWithRetry, SteamAPIUrls } from "./util/http.ts";
 
-runInLoop(async function liveGames() {
+await runInLoop(async function liveGames() {
   // Get the list of pro players
   const proPlayers: ProPlayer[] = await db.select().from("notable_players");
   // Get the list of live games

@@ -4,7 +4,7 @@ import db, { upsert } from "./store/db.ts";
 import { runInLoop } from "./util/utility.ts";
 import axios from "axios";
 
-runInLoop(
+await runInLoop(
   async function cosmetics() {
     const itemsResp = await axios.get(
       "https://raw.githubusercontent.com/dotabuff/d2vpkr/master/dota/scripts/items/items_game.txt",

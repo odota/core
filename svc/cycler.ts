@@ -15,7 +15,7 @@ console.log(zones, zones.length);
 shuffle(zones);
 let i = 0;
 
-runInLoop(async function cycler() {
+await runInLoop(async function cycler() {
   // Fetch config on each run so we can update without restarting
   let resp = await fetch(
     "http://metadata.google.internal/computeMetadata/v1/project/attributes/env",

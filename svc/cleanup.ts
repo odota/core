@@ -5,7 +5,7 @@ import { epochWeek, runInLoop } from "./util/utility.ts";
 import fs from "node:fs/promises";
 import { isRecentVisitor, isRecentlyVisited } from "./util/queries.ts";
 
-runInLoop(
+await runInLoop(
   async function cleanup() {
     const currentWeek = epochWeek();
     await db("team_scenarios")

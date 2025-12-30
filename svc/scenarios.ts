@@ -10,7 +10,7 @@ import { epochWeek } from "./util/utility.ts";
 import { runReliableQueue } from "./store/queue.ts";
 import { redisCount } from "./store/redis.ts";
 
-runReliableQueue("scenariosQueue", 1, processScenarios);
+await runReliableQueue("scenariosQueue", 1, processScenarios);
 
 // Processors generally get back job objects but this one uses a string
 async function processScenarios(job: ScenariosJob) {

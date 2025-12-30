@@ -3,7 +3,7 @@ import axios from "axios";
 import db, { upsert } from "./store/db.ts";
 import { runInLoop } from "./util/utility.ts";
 
-runInLoop(
+await runInLoop(
   async function proPlayers() {
     const url =
       "http://www.dota2.com/webapi/IDOTA2Fantasy/GetProPlayerInfo/v001";

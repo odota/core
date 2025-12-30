@@ -44,7 +44,7 @@ apps.forEach((app) => {
   }
 });
 
-runInLoop(async function monitor() {
+await runInLoop(async function monitor() {
   const result: Record<string, Metric> = {};
   for (let [key, value] of Object.entries(health)) {
     let final: Metric = {

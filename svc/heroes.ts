@@ -4,7 +4,7 @@ import db, { upsert } from "./store/db.ts";
 import { runInLoop } from "./util/utility.ts";
 import { getSteamAPIDataWithRetry, SteamAPIUrls } from "./util/http.ts";
 
-runInLoop(
+await runInLoop(
   async function heroes() {
     const url = SteamAPIUrls.api_heroes({
       language: "english",

@@ -24,7 +24,7 @@ if (!fs.existsSync(".env") || process.env.GROUP) {
 
 if (process.env.ROLE) {
   // if role variable is set just run that script
-  import("./svc/" + process.env.ROLE + ".ts");
+  await import("./svc/" + process.env.ROLE + ".ts");
 } else if (process.env.GROUP) {
   console.log("running group %s", process.env.GROUP);
   execSync("pm2 start ecosystem.config.js");

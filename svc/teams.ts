@@ -9,7 +9,7 @@ import {
   getSteamAPIData,
 } from "./util/http.ts";
 
-runInLoop(
+await runInLoop(
   async function doTeams() {
     const result = await db.raw(
       "select distinct team_id from team_match TABLESAMPLE BERNOULLI(0.05)",

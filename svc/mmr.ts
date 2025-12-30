@@ -6,7 +6,7 @@ import axios from "axios";
 import { redisCount } from "./store/redis.ts";
 import { getRandomRetrieverUrl } from "./util/registry.ts";
 
-runQueue<MmrJob>(
+await runQueue<MmrJob>(
   "mmrQueue",
   Number(config.MMR_PARALLELISM) || 1,
   1,

@@ -2,7 +2,7 @@ import db from "./store/db.ts";
 import { runInLoop, randomInt } from "./util/utility.ts";
 import { addReliableJob } from "./store/queue.ts";
 
-runInLoop(async function autoReconcile() {
+await runInLoop(async function autoReconcile() {
   // We don't have a full listing of valid match IDs
   // Randomly guess IDs (about 1/2 will be valid) and try to parse them
   // This will get gcdata and reconcile

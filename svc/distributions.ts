@@ -4,7 +4,7 @@ import db from "./store/db.ts";
 import redis from "./store/redis.ts";
 import { runInLoop } from "./util/utility.ts";
 
-runInLoop(
+await runInLoop(
   async function distributions() {
     const results = await db.raw(fs.readFileSync(`./sql/ranks.sql`, "utf8"));
     const ranks = mapMmr(results);

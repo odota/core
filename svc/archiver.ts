@@ -2,6 +2,6 @@
 
 import { runInLoop } from "./util/utility.ts";
 
-runInLoop(async function archive() {
+await runInLoop(async function archive() {
   // archiveToken();
 }, 1000);

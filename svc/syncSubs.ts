@@ -3,7 +3,7 @@ import db from "./store/db.ts";
 import stripe from "./store/stripe.ts";
 import { runInLoop } from "./util/utility.ts";
 
-runInLoop(async function doSyncSubs() {
+await runInLoop(async function doSyncSubs() {
   // Get list of current subscribers
   const result = [];
   for await (const sub of stripe.subscriptions.list({

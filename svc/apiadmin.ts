@@ -6,7 +6,7 @@ import config from "../config.ts";
 import { runInLoop } from "./util/utility.ts";
 import type Stripe from "stripe";
 
-runInLoop(
+await runInLoop(
   async function apiAdmin() {
     const options = {
       plan: config.STRIPE_API_PLAN,
