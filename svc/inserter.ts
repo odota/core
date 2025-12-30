@@ -5,6 +5,8 @@ import { cacheTrackedPlayers } from "./util/queries.ts";
 import { runInLoop } from "./util/utility.ts";
 
 // Make sure we have tracked players loaded
+// Wait to avoid excessively fast restart loop if services aren't up yet
+await new Promise(resolve => setTimeout(resolve, 500));
 const trackedExists = await redis.exists("tracked");
 if (!trackedExists) {
   await cacheTrackedPlayers();
