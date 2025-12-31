@@ -206,7 +206,7 @@ export async function buildStatus(isAdmin: boolean) {
     relTuples: async () => {
       if (isAdmin) {
         const { rows } = await db.raw(
-          `select relname, reltuples::bigint from pg_class order by reltuples desc`,
+          `select relname, reltuples::bigint from pg_class WHERE relname NOT LIKE '%_pkey' AND relname NOT LIKE '%_idx' AND relname NOT LIKE '%_idx_gin' AND relname NOT LIKE '%_index' order by reltuples desc`,
         );
         const result: any[] = rows.map((r: any) => [r.relname, r.reltuples]);
         return Object.fromEntries(result);
