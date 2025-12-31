@@ -354,7 +354,7 @@ export async function getLaneRoles(req: Request): Promise<any[]> {
 }
 export async function getTeamScenarios(req: Request): Promise<any[]> {
   const scenario =
-    (teamScenariosQueryParams.includes(req.query.scenario as string) &&
+    (teamScenariosQueryParams.includes(String(req.query.scenario)) &&
       req.query.scenario) ||
     "";
   const result = await db.raw(

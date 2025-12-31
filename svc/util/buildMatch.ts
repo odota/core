@@ -194,7 +194,7 @@ async function getMeta(matchId: number | undefined) {
 
 export async function buildMatch(
   matchId: number,
-  options: { meta?: string },
+  options: { meta?: boolean },
 ): Promise<Match | ParsedMatch | null> {
   if (!matchId || !Number.isInteger(matchId) || matchId <= 0) {
     return null;

@@ -22,7 +22,7 @@ function makeUrlArray(input: string) {
       i < (Number(parsedUrl.searchParams.get("size")) || 1);
       i += 1
     ) {
-      output.push(parsedUrl.host as string);
+      output.push(String(parsedUrl.host));
     }
   });
   return output;

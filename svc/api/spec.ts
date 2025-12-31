@@ -225,7 +225,7 @@ You can use the API without a key, but registering for a key allows increased ra
         route: () => "/matches/:match_id",
         func: async (req, res, next) => {
           const match = await buildMatch(Number(req.params.match_id), {
-            meta: req.query.meta as string,
+            meta: Boolean(req.query.meta),
           });
           if (!match) {
             // 404 for match not found
