@@ -203,6 +203,16 @@ export async function buildStatus(isAdmin: boolean) {
       const sorted = Object.entries(result).sort((a, b) => b[1] - a[1]);
       return Object.fromEntries(sorted);
     },
+    relTuples: async () => {
+      if (isAdmin) {
+        const { rows } = await db.raw(
+          `select relname, reltuples::bigint from pg_class order by reltuples desc`,
+        );
+        const result: any[] = rows.map((r: any) => [r.relname, r.reltuples]);
+        return Object.fromEntries(result);
+      }
+      return {};
+    },
     api_status: async () => {
       const result = await getRedisCountDayHash("api_status");
       // Sorting won't do anything here because JS always puts numeric keys in numeric order

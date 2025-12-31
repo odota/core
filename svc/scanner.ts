@@ -10,7 +10,10 @@ const PAGE_SIZE = 100;
 const SCANNER_WAIT = 5000;
 const isSecondary = Boolean(Number(config.SCANNER_OFFSET));
 const offset = Number(config.SCANNER_OFFSET);
-let nextSeqNum = Math.max(await getCurrentSeqNum() - (isSecondary ? offset : 0), 0);
+let nextSeqNum = Math.max(
+  (await getCurrentSeqNum()) - (isSecondary ? offset : 0),
+  0,
+);
 
 if (config.NODE_ENV === "development" && !nextSeqNum) {
   // Never do this in production to avoid skipping sequence number if we didn't pull .env properly

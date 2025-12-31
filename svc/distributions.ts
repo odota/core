@@ -10,7 +10,7 @@ await runInLoop(
     const ranks = mapMmr(results);
     await redis.set(`distribution:ranks`, JSON.stringify(ranks));
   },
-  6 * 60 * 60 * 1000,
+  1 * 60 * 60 * 1000,
 );
 
 function mapMmr(results: { rows: any[]; sum?: number }) {
