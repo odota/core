@@ -1,6 +1,5 @@
 // Cleans up old data from Cassandra and optionally archives it
-
-import { runInLoop } from "./util/utility.ts";
+import { runInLoop } from "./store/queue.ts";
 
 await runInLoop(async function archive() {
   // archiveToken();

@@ -6,7 +6,7 @@
  */
 import db from "./store/db.ts";
 import { reconcileMatch } from "./util/reconcileUtil.ts";
-import { runInLoop } from "./util/utility.ts";
+import { runInLoop } from "./store/queue.ts";
 
 await runInLoop(async function reconcile() {
   const result = await db.raw(

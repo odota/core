@@ -1,7 +1,7 @@
 // Syncs the list of subscribers from Stripe to the database
 import db from "./store/db.ts";
 import stripe from "./store/stripe.ts";
-import { runInLoop } from "./util/utility.ts";
+import { runInLoop } from "./store/queue.ts";
 
 await runInLoop(async function doSyncSubs() {
   // Get list of current subscribers

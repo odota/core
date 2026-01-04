@@ -1,7 +1,6 @@
 // Updates rank tier data for players periodically
 import db from "./store/db.ts";
-import { runInLoop } from "./util/utility.ts";
-import { addJob } from "./store/queue.ts";
+import { addJob, runInLoop } from "./store/queue.ts";
 
 await runInLoop(async function autoMmr() {
   const { rows } = await db.raw(

@@ -8,13 +8,12 @@ import type { Request } from "express";
 import {
   countItemPopularity,
   getAnonymousAccountId,
-  isContributor,
   averageMedal,
   parallelPromise,
   isSteamID64,
   convert64to32,
 } from "./utility.ts";
-import contributors from "../../CONTRIBUTORS.ts";
+import contributors, { isContributor } from "../../CONTRIBUTORS.ts";
 import moment from "moment";
 import { getStartOfBlockMinutes } from "./time.ts";
 

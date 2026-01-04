@@ -1,7 +1,4 @@
 import config from "../../config.ts";
-import contributors from "../../CONTRIBUTORS.ts";
-import type QueryString from "qs";
-import redis from "../store/redis.ts";
 
 /**
  * Tokenizes an input string.
@@ -34,13 +31,6 @@ export function isSteamID64(id: string): boolean {
 
 export function randomInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min) + min);
-}
-
-/**
- * Determines if a player has contributed to the development of OpenDota
- */
-export function isContributor(accountId: string | number) {
-  return accountId in contributors;
 }
 
 /**
@@ -291,27 +281,6 @@ export function getAnonymousAccountId() {
 }
 
 /**
- * Runs an async function on a loop, waiting the delay between each iteration
- * @param func
- * @param delay
- */
-export async function runInLoop(func: () => Promise<void>, delay: number) {
-  while (true) {
-    console.log("running %s", func.name);
-    const start = Date.now();
-    await func();
-    const end = Date.now();
-    console.log("%s: %dms", func.name, end - start);
-    await redis.setex(
-      "lastRun:" + config.APP_NAME,
-      config.HEALTH_TIMEOUT,
-      end - start,
-    );
-    await new Promise((resolve) => setTimeout(resolve, delay));
-  }
-}
-
-/**
  * Runs a function on each element of an array with the specified concurrency
  */
 export async function eachLimitPromise<T>(
@@ -385,13 +354,7 @@ export function pick(obj: any, keys: string[]) {
   return pick;
 }
 
-export function queryParamToArray(
-  input:
-    | string
-    | QueryString.ParsedQs
-    | (string | QueryString.ParsedQs)[]
-    | undefined,
-): string[] {
+export function queryParamToArray(input: any): string[] {
   if (Array.isArray(input)) {
     return input as string[];
   }
@@ -454,4 +417,8 @@ export function isDataComplete(match: Partial<ParsedMatch>) {
     // Looks like some ability draft matches also don't have this data (not sure if present in source)
     match.players?.some((p) => p.ability_upgrades_arr),
   );
+}
+
+export function exhaustive(name: never) {
+  console.error("Unhandled case: %s", name);
 }

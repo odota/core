@@ -7,8 +7,9 @@ import config from '../config.ts';
 import {
   generateJob,
   getSteamAPIDataWithRetry,
-  runInLoop,
 } from '../util/utility.ts';
+import { runInLoop } from "./store/queue.ts";
+
 const parallelism = 1;
 const delay = 1000;
 

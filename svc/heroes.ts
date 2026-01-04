@@ -1,7 +1,7 @@
 // Updates the heroes in the database
 import axios from "axios";
 import db, { upsert } from "./store/db.ts";
-import { runInLoop } from "./util/utility.ts";
+import { runInLoop } from "./store/queue.ts";
 import { getSteamAPIDataWithRetry, SteamAPIUrls } from "./util/http.ts";
 
 await runInLoop(

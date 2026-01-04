@@ -1,7 +1,7 @@
 // Updates game items in the database
 import { items } from "dotaconstants";
 import db, { upsert } from "./store/db.ts";
-import { runInLoop } from "./util/utility.ts";
+import { runInLoop } from "./store/queue.ts";
 import axios from "axios";
 
 await runInLoop(

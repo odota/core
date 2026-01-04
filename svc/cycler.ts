@@ -1,6 +1,7 @@
 import config from "../config.ts";
 import { parseEnv } from "node:util";
-import { runInLoop, shuffle } from "./util/utility.ts";
+import { shuffle } from "./util/utility.ts";
+import { runInLoop } from "./store/queue.ts";
 
 const resp = await fetch(
   `https://compute.googleapis.com/compute/v1/projects/${config.GOOGLE_CLOUD_PROJECT_ID}/zones`,

@@ -1,7 +1,8 @@
 // Cleans up old data from the database (originally used for scenarios but now also does other cleanup)
 import db from "./store/db.ts";
 import config from "../config.ts";
-import { epochWeek, runInLoop } from "./util/utility.ts";
+import { epochWeek } from "./util/utility.ts";
+import { runInLoop } from "./store/queue.ts";
 import fs from "node:fs/promises";
 import { isRecentVisitor, isRecentlyVisited } from "./util/queries.ts";
 

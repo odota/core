@@ -388,7 +388,8 @@ app.use(async (req, res, next) => {
   const timeStart = Date.now();
   res.once("finish", () => onResFinish(req, res, timeStart));
   const apiKey =
-    req.headers.authorization?.replace("Bearer ", "") || (req.query.api_key ? String(req.query.api_key) : "");
+    req.headers.authorization?.replace("Bearer ", "") ||
+    (req.query.api_key ? String(req.query.api_key) : "");
   if (
     apiKey &&
     !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
@@ -398,7 +399,7 @@ app.use(async (req, res, next) => {
     return res.status(400).json({ error: "Invalid API key format" });
   }
   if (config.ENABLE_API_LIMIT && apiKey) {
-    let isValidKey = Boolean(await redis.get('apiKeyCache:' + apiKey));
+    let isValidKey = Boolean(await redis.get("apiKeyCache:" + apiKey));
     if (!isValidKey) {
       // Check DB for key
       const { rows } = await db.raw(
@@ -406,12 +407,17 @@ app.use(async (req, res, next) => {
         [apiKey],
       );
       if (rows[0]) {
-        await redis.setex('apiKeyCache:' + apiKey, 60, '1');
+        await redis.setex("apiKeyCache:" + apiKey, 60, "1");
         isValidKey = true;
       }
     }
     if (!isValidKey) {
-      return res.status(400).json({ error: "API key invalid. Please check the API dashboard or email support@opendota.com." });
+      return res
+        .status(400)
+        .json({
+          error:
+            "API key invalid. Please check the API dashboard or email support@opendota.com.",
+        });
     }
     res.locals.isAPIRequest = true;
   }

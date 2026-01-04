@@ -1,7 +1,7 @@
 // Fetches new matches from the Steam API using the sequential endpoint
 import config from "../config.ts";
 import { redisCount } from "./store/redis.ts";
-import { runInLoop } from "./util/utility.ts";
+import { runInLoop } from "./store/queue.ts";
 import db from "./store/db.ts";
 import { getSteamAPIDataWithRetry, SteamAPIUrls } from "./util/http.ts";
 

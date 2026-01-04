@@ -1,7 +1,6 @@
 // Requests history refreshes for users to fill in missing matches and update privacy setting
 import db from "./store/db.ts";
-import { addReliableJob } from "./store/queue.ts";
-import { runInLoop } from "./util/utility.ts";
+import { addReliableJob, runInLoop } from "./store/queue.ts";
 
 await runInLoop(async function autoFh() {
   const { rows } = await db.raw(

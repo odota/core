@@ -2,7 +2,7 @@
 import JSONbig from "json-bigint";
 import redis from "./store/redis.ts";
 import db from "./store/db.ts";
-import { runInLoop } from "./util/utility.ts";
+import { runInLoop } from "./store/queue.ts";
 import { getSteamAPIDataWithRetry, SteamAPIUrls } from "./util/http.ts";
 
 await runInLoop(async function liveGames() {

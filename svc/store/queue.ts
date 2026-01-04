@@ -4,6 +4,7 @@ import db from "./db.ts";
 import config from "../../config.ts";
 import { Client } from "pg";
 import c from "ansi-colors";
+import { exhaustive } from "../util/utility.ts";
 
 moment.relativeTimeThreshold("ss", 0);
 
@@ -118,13 +119,30 @@ export async function runReliableQueue(
   await Promise.all([...Array(parallelism).keys()].map((_, i) => executor(i)));
 }
 
+/**
+ * Runs an async function on a loop, waiting the delay between each iteration
+ * @param func
+ * @param delay
+ */
+export async function runInLoop(func: () => Promise<void>, delay: number) {
+  while (true) {
+    console.log("running %s", func.name);
+    const start = Date.now();
+    await func();
+    const end = Date.now();
+    console.log("%s: %dms", func.name, end - start);
+    await redis.setex(
+      "lastRun:" + config.APP_NAME,
+      config.HEALTH_TIMEOUT,
+      end - start,
+    );
+    await new Promise((resolve) => setTimeout(resolve, delay));
+  }
+}
+
 export async function addJob(input: QueueInput) {
   const { name, data } = input;
   return redis.sadd(name, JSON.stringify(data));
-}
-
-function exhaustive(name: never) {
-  console.log("Unhandled queue name case: %s", name);
 }
 
 export async function addReliableJob(

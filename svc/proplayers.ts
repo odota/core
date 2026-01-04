@@ -1,7 +1,7 @@
 // Updates the list of pro players in the database
 import axios from "axios";
 import db, { upsert } from "./store/db.ts";
-import { runInLoop } from "./util/utility.ts";
+import { runInLoop } from "./store/queue.ts";
 
 await runInLoop(
   async function proPlayers() {

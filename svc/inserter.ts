@@ -2,7 +2,7 @@ import db from "./store/db.ts";
 import redis from "./store/redis.ts";
 import { insertMatch } from "./util/insert.ts";
 import { cacheTrackedPlayers } from "./util/queries.ts";
-import { runInLoop } from "./util/utility.ts";
+import { runInLoop } from "./store/queue.ts";
 
 // Make sure we have tracked players loaded
 // Wait to avoid excessively fast restart loop if services aren't up yet

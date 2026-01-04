@@ -1,6 +1,6 @@
 import db from "./store/db.ts";
-import { runInLoop, randomInt } from "./util/utility.ts";
-import { addReliableJob } from "./store/queue.ts";
+import { randomInt } from "./util/utility.ts";
+import { addReliableJob, runInLoop } from "./store/queue.ts";
 
 await runInLoop(async function autoReconcile() {
   // We don't have a full listing of valid match IDs

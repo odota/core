@@ -1,6 +1,6 @@
 // Updates Steam profile data for players periodically
 import db, { upsertPlayer } from "./store/db.ts";
-import { convert32to64, convert64to32, runInLoop } from "./util/utility.ts";
+import { convert32to64, convert64to32 } from "./util/utility.ts";
 import { redisCount } from "./store/redis.ts";
 import { SteamAPIUrls, getSteamAPIDataWithRetry } from "./util/http.ts";
 import { getRandomRetrieverUrl } from "./util/registry.ts";

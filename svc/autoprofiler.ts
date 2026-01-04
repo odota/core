@@ -1,7 +1,6 @@
 // Updates Steam profile data for players periodically
 import db from "./store/db.ts";
-import { runInLoop } from "./util/utility.ts";
-import { addJob } from "./store/queue.ts";
+import { addJob, runInLoop } from "./store/queue.ts";
 
 await runInLoop(async function autoProfile() {
   // To optimize the api call we need to do 100 players at a time

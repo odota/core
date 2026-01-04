@@ -4,7 +4,7 @@
   Currently this will cause the /players/:id endpoint to return is_contributor = true for your profile
 */
 
-export default {
+const contributors = {
   88367253: {}, // howardchung
   102344608: {}, // albertcui
   9977887: {}, // gu3st
@@ -29,3 +29,12 @@ export default {
   83615933: {}, // kshammer
   52369498: {}, // ff137
 };
+
+export default contributors;
+
+/**
+ * Determines if a player has contributed to the development of OpenDota
+ */
+export function isContributor(accountId: string | number) {
+  return accountId in contributors;
+}

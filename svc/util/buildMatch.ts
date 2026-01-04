@@ -1,13 +1,14 @@
 import { heroes } from "dotaconstants";
 import config from "../../config.ts";
 import { computeMatchData } from "./compute.ts";
-import { buildReplayUrl, isContributor, isTurbo } from "./utility.ts";
+import { buildReplayUrl, isTurbo } from "./utility.ts";
 import redis, { redisCount } from "../store/redis.ts";
 import db from "../store/db.ts";
 import { benchmarks } from "./benchmarksUtil.ts";
 import * as allFetchers from "../fetcher/allFetchers.ts";
 import { getMatchBlob } from "./getMatchBlob.ts";
 import { getStartOfBlockMinutes } from "./time.ts";
+import { isContributor } from "../../CONTRIBUTORS.ts";
 
 const { metaFetcher } = allFetchers;
 

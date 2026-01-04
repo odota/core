@@ -506,8 +506,9 @@ export async function insertMatch(
     ) {
       redis.zadd(
         `records:${field}`,
-        Number(match[field as keyof ApiData] ||
-          player[field as keyof ApiDataPlayer]),
+        Number(
+          match[field as keyof ApiData] || player[field as keyof ApiDataPlayer],
+        ),
         [match.match_id, match.start_time, player.hero_id].join(":"),
       );
       // Keep only 100 top scores
