@@ -360,6 +360,7 @@ type DataOrigin = "scanner";
 type CommonInsertOptions = {
   origin?: DataOrigin;
   skipParse?: boolean;
+  skipRating?: boolean;
   pgroup?: PGroup;
   endedAt?: number;
 };

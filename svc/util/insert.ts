@@ -764,6 +764,7 @@ function updateMatchups(match) {
     if (
       options.origin === "scanner" &&
       options.type === "api" &&
+      !options.skipRating &&
       "match_seq_num" in match &&
       ((isRanked(match) &&
         match.match_id % 100 < Number(config.RATING_PERCENT)) ||

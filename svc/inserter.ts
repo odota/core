@@ -20,6 +20,10 @@ await runInLoop(async function insert() {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     return;
   }
+  // Check if we should do rating (if parse queue isn't long)
+  const threshold = 1000;
+  const cappedCount = await db.raw(`SELECT COUNT(*) FROM (SELECT 1 FROM queue WHERE type = 'parse' LIMIT ?);`, [threshold]);
+  const skipRating = cappedCount.rows[0].count >= threshold;
   await Promise.all(
     rows.map(async (r: any) => {
       const match = r.data;
@@ -28,6 +32,7 @@ await runInLoop(async function insert() {
         await insertMatch(match, {
           type: "api",
           origin: "scanner",
+          skipRating,
         });
       }
       await db.raw(
