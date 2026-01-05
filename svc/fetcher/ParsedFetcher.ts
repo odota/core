@@ -40,7 +40,7 @@ export class ParsedFetcher extends MatchFetcherBase<ParsedData> {
     // process: 3278ms (node processors/createParsedDataBlob.mjs < output.log)
     const parseUrl = await getRandomParserUrl(`/blob?replay_url=${url}`);
     console.log("[PARSER]", parseUrl);
-    const resp = await axios.get<ParsedData>(parseUrl, { timeout: 300000 });
+    const resp = await axios.get<ParsedData>(parseUrl, { timeout: 900000 });
     if (!resp.data) {
       return { data: null, error: "Parse failed" };
     }

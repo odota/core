@@ -20,7 +20,10 @@ await runReliableQueue(
   "parse",
   Number(config.PARSER_PARALLELISM),
   parseProcessor,
-  getParserCapacity,
+  async () => {
+    const cap = await getParserCapacity();
+    return cap * 2;
+  },
 );
 
 async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
