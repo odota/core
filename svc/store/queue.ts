@@ -175,7 +175,7 @@ export async function addReliableJob(
   }>(
     `INSERT INTO queue(type, timestamp, attempts, data, next_attempt_time, priority, job_key)
     VALUES (?, ?, ?, ?, ?, ?, ?)
-    ON CONFLICT DO NOTHING
+    ON CONFLICT(job_key) DO UPDATE priority = EXCLUDED.priority
     RETURNING id`,
     [
       name,
