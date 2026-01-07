@@ -40,7 +40,7 @@ export class ParsedFetcher extends MatchFetcherBase<ParsedData> {
     // process: 3278ms (node processors/createParsedDataBlob.mjs < output.log)
     const parseUrl = await getRandomParserUrl(`/blob?replay_url=${url}`);
     console.log("[PARSER]", parseUrl);
-    const resp = await axios.get<ParsedData>(parseUrl, { timeout: 900000 });
+    const resp = await axios.get<ParsedData>(parseUrl, { timeout: 605000 });
     // This will throw if the http response is 4xx or 5xx (and not consume an attempt)
     if (!resp.data) {
       // Otherwise, it's an expected error so we should use an attempt
