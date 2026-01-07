@@ -125,12 +125,14 @@ export async function getHeroBenchmarks(heroId: string) {
         getStartOfBlockMinutes(Number(config.BENCHMARK_RETENTION_MINUTES), -1),
         metric,
         heroId,
+        "",
       ].join(":");
       const backupKey = [
         "benchmarks",
         getStartOfBlockMinutes(Number(config.BENCHMARK_RETENTION_MINUTES), 0),
         metric,
         heroId,
+        "",
       ].join(":");
       const exists = await redis.exists(key);
       if (exists === 0) {
