@@ -16,9 +16,16 @@ async function profile(batch: ProfileJob[]) {
   });
   const body = await getSteamAPIDataWithRetry<ProfileSummaries>({ url });
   const results = body.response.players.filter((player) => player.steamid);
+  const map = new Map<string, typeof results[number]>();
   const now = new Date();
   for (let player of results) {
-    await upsertPlayer(db, { ...player, profile_time: now });
+    map.set(player.steamid, player);
+  }
+  for (let steamid of steamids) {
+    // Some players may be missing if the player's profile is private
+    // Update the profile_time anyway
+    const player = map.get(steamid);
+    await upsertPlayer(db, { ...player, steamid, profile_time: now });
   }
   redisCount("profiler", batch.length);
 
