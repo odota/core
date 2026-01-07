@@ -412,12 +412,10 @@ app.use(async (req, res, next) => {
       }
     }
     if (!isValidKey) {
-      return res
-        .status(400)
-        .json({
-          error:
-            "API key invalid. Please check the API dashboard or email support@opendota.com.",
-        });
+      return res.status(400).json({
+        error:
+          "API key invalid. Please check the API dashboard or email support@opendota.com.",
+      });
     }
     res.locals.isAPIRequest = true;
   }

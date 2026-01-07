@@ -52,12 +52,40 @@ export async function insertMatch(
 ) {
   // Make a copy of the match with some modifications (only applicable to api matches)
   const match = transformMatch(origMatch);
+
   // Use the passed pgroup if gcdata or parsed, otherwise build it
   // Do this after removing anonymous account IDs
   const pgroup = options.pgroup ?? getPGroup(match as ApiData);
-  const trx = await db.transaction();
-  let doGcData = false;
 
+  let average_rank: number | undefined = undefined;
+  let num_rank_tier: number | undefined = undefined;
+  // Only fetch the average_rank if this is a fresh match since otherwise it won't be accurate
+  if (options.origin === "scanner" && options.type === "api") {
+    let { avg, num, players } = await getMatchRankTier(db, match.players);
+    if (avg) {
+      average_rank = avg;
+    }
+    if (num) {
+      num_rank_tier = num;
+    }
+    // average_rank should be stored in a new blob column too since it's not part of API data
+    // We could also store the ranks of the players here rather than looking up their current rank on view
+    // That's probably better anyway since it's more accurate to show their rank at the time of the match
+    // let ranksBlob = { match_id: match.match_id, average_rank, players };
+    // await upsertBlob('ranks', ranksBlob);
+  }
+
+  // Write to non-postgres stores outside transaction
+  await Promise.all([
+    upsertMatchBlobs(match, options.type),
+    upsertPlayerCaches(match, average_rank, pgroup, options.type),
+    resetMatchCache(match),
+    resetPlayerTemp(match, pgroup),
+    telemetry(match, options),
+  ]);
+
+  let doGcData = false;
+  const trx = await db.transaction();
   try {
     let isProTier = false;
     if ("leagueid" in match && match.leagueid) {
@@ -82,29 +110,7 @@ export async function insertMatch(
       );
     }
 
-    let average_rank: number | undefined = undefined;
-    let num_rank_tier: number | undefined = undefined;
-    // Only fetch the average_rank if this is a fresh match since otherwise it won't be accurate
-    if (options.origin === "scanner" && options.type === "api") {
-      let { avg, num, players } = await getMatchRankTier(trx, match.players);
-      if (avg) {
-        average_rank = avg;
-      }
-      if (num) {
-        num_rank_tier = num;
-      }
-      // average_rank should be stored in a new blob column too since it's not part of API data
-      // We could also store the ranks of the players here rather than looking up their current rank on view
-      // That's probably better anyway since it's more accurate to show their rank at the time of the match
-      // let ranksBlob = { match_id: match.match_id, average_rank, players };
-      // await upsertBlob('ranks', ranksBlob);
-    }
     await upsertMatchPostgres(trx, isProTier);
-    await upsertPlayerCaches(match, average_rank, pgroup, options.type);
-    await upsertMatchBlobs();
-    await resetMatchCache();
-    await resetPlayerTemp();
-    await telemetry();
     await updateCounts(
       trx,
       match as ApiData,
@@ -120,6 +126,7 @@ export async function insertMatch(
     await postParsedMatch(trx);
     const parseJob = await queueParse(trx);
     await trx.commit();
+
     return { parseJob, pgroup };
   } catch (e) {
     console.log("[INSERTMATCH] rolling back transaction...");
@@ -312,113 +319,7 @@ export async function insertMatch(
       ]);
     }
   }
-  async function upsertMatchBlobs() {
-    // The table holds data for each possible stage of ingestion, api/gcdata/replay/meta etc.
-    // We store a match blob in the row for each stage
-    // in buildMatch we can assemble the data from all these pieces
-    // After some retention period we stick the assembled blob in match archive and delete it
 
-    // NOTE: apparently the Steam API started deleting some fields on old matches, like HD/TD/ability builds
-    // Currently this means fullhistory could overwrite the blob later and we could lose some data
-    // Implement "ifNotExists" behavior if we need to avoid overwriting
-
-    let copy = createMatchCopy<typeof match>(match);
-    await upsertBlob(options.type, copy);
-
-    async function upsertBlob(
-      type: DataType,
-      blob: { match_id: number; players: { player_slot: number }[] },
-    ) {
-      const matchId = blob.match_id;
-      await blobArchive.archivePut(
-        matchId + "_" + type,
-        Buffer.from(JSON.stringify(blob)),
-      );
-      if (config.NODE_ENV === "development" || config.NODE_ENV === "test") {
-        await fs.writeFile(
-          "./json/" + matchId + "_" + type + ".json",
-          JSON.stringify(blob, null, 2),
-        );
-      }
-    }
-  }
-
-  async function telemetry() {
-    // Publish to log stream
-    const endedAt =
-      options.endedAt ??
-      ("start_time" in match && "duration" in match
-        ? match.start_time + match.duration
-        : 0);
-    const name = process.env.APP_NAME || process.argv[1];
-    const message = `[${new Date().toISOString()}] [${name}] [insert: ${
-      options.type
-    }] [ended: ${moment.unix(endedAt ?? 0).fromNow()}] ${match.match_id}`;
-    redis?.publish(options.type, message);
-    if (options.type === "parsed") {
-      redisCount("parser");
-    }
-    if (options.origin === "scanner" && options.type === "api") {
-      redisCount("added_match");
-      // match.players
-      //   .filter((p) => p.account_id)
-      //   .forEach(async (p) => {
-      // if (p.account_id) {
-      //   redisCountDistinct(
-      //     'distinct_match_player',
-      //     p.account_id.toString(),
-      //   );
-      // const visitTime = Number(await redis.zscore('visitors', p.account_id.toString()));
-      // if (visitTime) {
-      //   redisCountDistinct(
-      //     'distinct_match_player_user',
-      //     p.account_id.toString(),
-      //   );
-      //   if (visitTime > Number(moment.utc().subtract(30, 'day').format('X'))) {
-      //     redisCountDistinct(
-      //       'distinct_match_player_recent_user',
-      //       p.account_id.toString(),
-      //     );
-      //   }
-      // }
-      // }
-      // });
-    }
-  }
-  async function resetMatchCache() {
-    if (config.ENABLE_MATCH_CACHE) {
-      await redis?.del(`match:${match.match_id}`);
-    }
-  }
-  async function resetPlayerTemp() {
-    if (config.ENABLE_PLAYER_CACHE) {
-      await Promise.allSettled(
-        match.players.map(async (p) => {
-          const account_id = pgroup[p.player_slot]?.account_id ?? p.account_id;
-          if (account_id) {
-            try {
-              // Try deleting the tempfile ince it's now out of date
-              await fs.unlink("./cache/" + account_id);
-            } catch (e) {
-              // File didn't exist, ignore
-            }
-            const isVisitor = await isRecentVisitor(account_id);
-            const isVisited = await isRecentlyVisited(account_id);
-            if (isVisitor || isVisited) {
-              // If OpenDota visitor or profile was recently visited by anyone, pre-compute the tempfile
-              await addReliableJob(
-                {
-                  name: "cacheQueue",
-                  data: { account_id },
-                },
-                {},
-              );
-            }
-          }
-        }),
-      );
-    }
-  }
   async function updateCounts(
     trx: knex.Knex.Transaction,
     match: ApiData,
@@ -945,4 +846,123 @@ export async function upsertPlayerCaches(
       return true;
     }),
   );
+}
+
+async function upsertMatchBlobs(
+  match: InsertMatchInput | ParsedMatch | Match,
+  type: DataType,
+) {
+  // The table holds data for each possible stage of ingestion, api/gcdata/replay/meta etc.
+  // We store a match blob in the row for each stage
+  // in buildMatch we can assemble the data from all these pieces
+  // After some retention period we stick the assembled blob in match archive and delete it
+
+  // NOTE: apparently the Steam API started deleting some fields on old matches, like HD/TD/ability builds
+  // Currently this means fullhistory could overwrite the blob later and we could lose some data
+  // Implement "ifNotExists" behavior if we need to avoid overwriting
+
+  let copy = createMatchCopy<typeof match>(match);
+  await upsertBlob(type, copy);
+
+  async function upsertBlob(
+    type: DataType,
+    blob: { match_id: number; players: { player_slot: number }[] },
+  ) {
+    const matchId = blob.match_id;
+    await blobArchive.archivePut(
+      matchId + "_" + type,
+      Buffer.from(JSON.stringify(blob)),
+    );
+    if (config.NODE_ENV === "development" || config.NODE_ENV === "test") {
+      await fs.writeFile(
+        "./json/" + matchId + "_" + type + ".json",
+        JSON.stringify(blob, null, 2),
+      );
+    }
+  }
+}
+
+async function resetMatchCache(match: InsertMatchInput | ParsedMatch | Match) {
+  if (config.ENABLE_MATCH_CACHE) {
+    await redis?.del(`match:${match.match_id}`);
+  }
+}
+
+async function resetPlayerTemp(
+  match: InsertMatchInput | ParsedMatch | Match,
+  pgroup: PGroup,
+) {
+  if (config.ENABLE_PLAYER_CACHE) {
+    await Promise.allSettled(
+      match.players.map(async (p) => {
+        const account_id = pgroup[p.player_slot]?.account_id ?? p.account_id;
+        if (account_id) {
+          try {
+            // Try deleting the tempfile ince it's now out of date
+            await fs.unlink("./cache/" + account_id);
+          } catch (e) {
+            // File didn't exist, ignore
+          }
+          const isVisitor = await isRecentVisitor(account_id);
+          const isVisited = await isRecentlyVisited(account_id);
+          if (isVisitor || isVisited) {
+            // If OpenDota visitor or profile was recently visited by anyone, pre-compute the tempfile
+            await addReliableJob(
+              {
+                name: "cacheQueue",
+                data: { account_id },
+              },
+              {},
+            );
+          }
+        }
+      }),
+    );
+  }
+}
+
+async function telemetry(
+  match: InsertMatchInput | ParsedMatch | Match,
+  options: InsertMatchOptions,
+) {
+  // Publish to log stream
+  const endedAt =
+    options.endedAt ??
+    ("start_time" in match && "duration" in match
+      ? match.start_time + match.duration
+      : 0);
+  const name = process.env.APP_NAME || process.argv[1];
+  const message = `[${new Date().toISOString()}] [${name}] [insert: ${
+    options.type
+  }] [ended: ${moment.unix(endedAt ?? 0).fromNow()}] ${match.match_id}`;
+  redis?.publish(options.type, message);
+  if (options.type === "parsed") {
+    redisCount("parser");
+  }
+  if (options.origin === "scanner" && options.type === "api") {
+    redisCount("added_match");
+    // match.players
+    //   .filter((p) => p.account_id)
+    //   .forEach(async (p) => {
+    // if (p.account_id) {
+    //   redisCountDistinct(
+    //     'distinct_match_player',
+    //     p.account_id.toString(),
+    //   );
+    // const visitTime = Number(await redis.zscore('visitors', p.account_id.toString()));
+    // if (visitTime) {
+    //   redisCountDistinct(
+    //     'distinct_match_player_user',
+    //     p.account_id.toString(),
+    //   );
+    //   if (visitTime > Number(moment.utc().subtract(30, 'day').format('X'))) {
+    //     redisCountDistinct(
+    //       'distinct_match_player_recent_user',
+    //       p.account_id.toString(),
+    //     );
+    //   }
+    // }
+    // }
+    // });
+  }
 }

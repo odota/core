@@ -98,9 +98,6 @@ let arr = [
   {
     name: "inserter",
     group: "backend",
-    env: {
-      POSTGRES_MAX_CONNECTIONS: "200",
-    },
   },
   // {
   //   name: 'cacher',

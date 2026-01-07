@@ -22,7 +22,10 @@ await runInLoop(async function insert() {
   }
   // Check if we should do rating (if parse queue isn't long)
   const threshold = 1000;
-  const cappedCount = await db.raw(`SELECT COUNT(*) FROM (SELECT 1 FROM queue WHERE type = 'parse' LIMIT ?) subquery;`, [threshold]);
+  const cappedCount = await db.raw(
+    `SELECT COUNT(*) FROM (SELECT 1 FROM queue WHERE type = 'parse' LIMIT ?) subquery;`,
+    [threshold],
+  );
   const skipRating = cappedCount.rows[0].count >= threshold;
   await Promise.all(
     rows.map(async (r: any) => {

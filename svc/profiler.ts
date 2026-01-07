@@ -16,7 +16,7 @@ async function profile(batch: ProfileJob[]) {
   });
   const body = await getSteamAPIDataWithRetry<ProfileSummaries>({ url });
   const results = body.response.players.filter((player) => player.steamid);
-  const map = new Map<string, typeof results[number]>();
+  const map = new Map<string, (typeof results)[number]>();
   const now = new Date();
   for (let player of results) {
     map.set(player.steamid, player);
