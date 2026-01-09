@@ -113,6 +113,7 @@ export async function insertMatch(
   await queueRate(trx);
   await queueScenarios(trx);
   await postParsedMatch(trx);
+  await delInsertQueue(trx);
   const parseJob = await queueParse(trx);
   await trx.commit();
   return { parseJob, pgroup };
@@ -713,6 +714,16 @@ function updateMatchups(match) {
       );
     }
   }
+
+  async function delInsertQueue(trx: knex.Knex.Transaction) {
+    if (options.insertSeqNum) { 
+      await trx.raw(
+        "UPDATE insert_queue SET processed = TRUE WHERE match_seq_num = ?",
+        [options.insertSeqNum],
+      );
+    }
+  }
+
   async function queueParse(trx: knex.Knex.Transaction) {
     if (options.skipParse) {
       return null;

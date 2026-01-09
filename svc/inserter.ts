@@ -1,5 +1,5 @@
 import db from "./store/db.ts";
-import redis from "./store/redis.ts";
+import redis, { redisCount } from "./store/redis.ts";
 import { insertMatch } from "./util/insert.ts";
 import { cacheTrackedPlayers } from "./util/queries.ts";
 import { runInLoop } from "./store/queue.ts";
@@ -13,6 +13,10 @@ if (!trackedExists) {
 }
 
 await runInLoop(async function insert() {
+  const timeout = setTimeout(() => {
+    redisCount('inserter_timeout');
+    throw new Error('inserter timeout');
+  }, 60000);
   const { rows } = await db.raw(
     "SELECT match_seq_num, data FROM insert_queue WHERE processed = FALSE ORDER BY match_seq_num ASC LIMIT 200",
   );
@@ -30,18 +34,16 @@ await runInLoop(async function insert() {
   await Promise.all(
     rows.map(async (r: any) => {
       const match = r.data;
-      if (match) {
-        // console.log(match);
-        await insertMatch(match, {
-          type: "api",
-          origin: "scanner",
-          skipRating,
-        });
+      if (!match) {
+        throw new Error('no match in row: %s', r.match_seq_num);
       }
-      await db.raw(
-        "UPDATE insert_queue SET processed = TRUE WHERE match_seq_num = ?",
-        [r.match_seq_num],
-      );
+      await insertMatch(match, {
+        type: "api",
+        origin: "scanner",
+        skipRating,
+        insertSeqNum: r.match_seq_num,
+      });
     }),
   );
+  clearTimeout(timeout);
 }, 0);

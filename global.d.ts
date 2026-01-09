@@ -363,6 +363,7 @@ type CommonInsertOptions = {
   skipRating?: boolean;
   pgroup?: PGroup;
   endedAt?: number;
+  insertSeqNum?: number;
 };
 
 type ApiInsertOptions = {
@@ -494,7 +495,8 @@ type MetricName =
   | "dedupe_queue"
   | "add_queue_fail"
   | "login"
-  | "alias";
+  | "alias"
+  | "inserter_timeout";
 
 // Object to map player_slot to basic info
 type PGroup = {

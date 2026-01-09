@@ -167,6 +167,8 @@ export async function buildStatus(isAdmin: boolean) {
           getRedisCountDay("archive_get_error"),
         archive_put_error_last_day: async () =>
           getRedisCountDay("archive_put_error"),
+        inserter_timeout_last_day: async () =>
+          getRedisCountDay("inserter_timeout"),
         // incomplete_archive_last_day: async () => countDay('incomplete_archive'),
 
         // distinct_match_players_last_day: async () =>
