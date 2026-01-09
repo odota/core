@@ -75,28 +75,49 @@ export async function insertMatch(
     // await upsertBlob('ranks', ranksBlob);
   }
 
+  let isProTier = false;
+  if ("leagueid" in match && match.leagueid) {
+    // Check if leagueid is premium/professional
+    const { rows } = await db.raw(
+      `select leagueid from leagues where leagueid = ? and (tier = 'premium' OR tier = 'professional')`,
+      [Number(match.leagueid)],
+    );
+    isProTier = rows?.length > 0;
+  }
+
   // Write to non-postgres stores outside transaction
+  // All of these operations should be idempotent (fine to repeat)
+  await upsertPlayerCaches(match, average_rank, pgroup, options.type),
   await Promise.all([
     upsertMatchBlobs(match, options.type),
-    upsertPlayerCaches(match, average_rank, pgroup, options.type),
+    telemetry(match, options),
     resetMatchCache(match),
     resetPlayerTemp(match, pgroup),
-    telemetry(match, options),
   ]);
 
   let doGcData = false;
   const trx = await db.transaction();
-  try {
-    let isProTier = false;
-    if ("leagueid" in match && match.leagueid) {
-      // Check if leagueid is premium/professional
-      const { rows } = await trx.raw(
-        `select leagueid from leagues where leagueid = ? and (tier = 'premium' OR tier = 'professional')`,
-        [Number(match.leagueid)],
-      );
-      isProTier = rows?.length > 0;
-    }
+  await upsertLeagueMatch(trx);
+  await upsertMatchPostgres(trx, isProTier);
+  await updateCounts(
+    trx,
+    match as ApiData,
+    average_rank,
+    num_rank_tier,
+    isProTier,
+  );
+  await discoverPlayers(trx);
+  await queueMmr(trx);
+  await queueGcData(trx);
+  await queueRate(trx);
+  await queueScenarios(trx);
+  await postParsedMatch(trx);
+  const parseJob = await queueParse(trx);
+  await trx.commit();
 
+  return { parseJob, pgroup };
+
+  async function upsertLeagueMatch(trx: knex.Knex.Transaction) {
     // Index the matchid to the league
     if (
       options.origin === "scanner" &&
@@ -109,29 +130,6 @@ export async function insertMatch(
         [match.leagueid, match.match_id],
       );
     }
-
-    await upsertMatchPostgres(trx, isProTier);
-    await updateCounts(
-      trx,
-      match as ApiData,
-      average_rank,
-      num_rank_tier,
-      isProTier,
-    );
-    await discoverPlayers(trx);
-    await queueMmr();
-    await queueGcData(trx);
-    await queueRate(trx);
-    await queueScenarios();
-    await postParsedMatch(trx);
-    const parseJob = await queueParse(trx);
-    await trx.commit();
-
-    return { parseJob, pgroup };
-  } catch (e) {
-    console.log("[INSERTMATCH] rolling back transaction...");
-    await trx.rollback();
-    throw e;
   }
 
   async function upsertMatchPostgres(
@@ -623,7 +621,7 @@ function updateMatchups(match) {
       }),
     );
   }
-  async function queueMmr() {
+  async function queueMmr(trx: knex.Knex.Transaction) {
     // Trigger an update for player rank_tier if ranked match
     const arr = match.players.filter<ApiDataPlayer>((p): p is ApiDataPlayer => {
       return Boolean(
@@ -685,7 +683,7 @@ function updateMatchups(match) {
     }
   }
 
-  async function queueScenarios() {
+  async function queueScenarios(trx: knex.Knex.Transaction) {
     // Decide if we want to do scenarios (requires parsed match)
     // Only if it originated from scanner to avoid triggering on requests
     // NOTE: This chooses from all matches that were auto-parsed, so not a random sample
@@ -700,7 +698,9 @@ function updateMatchups(match) {
           name: "scenariosQueue",
           data: { match_id: match.match_id },
         },
-        {},
+        {
+          trx,
+        },
       );
     }
   }
@@ -734,6 +734,10 @@ function updateMatchups(match) {
       redisCount("auto_parse");
     }
     if (doGcData || doParse) {
+      let jobData: ParseJob = {
+        match_id: match.match_id,
+        origin: options.origin,
+      };
       // By default, lower priority than requests
       let priority = PRIORITY.AUTO_DEFAULT;
       if (isLeagueMatch) {
@@ -744,17 +748,14 @@ function updateMatchups(match) {
       }
       if (doGcData && !doParse) {
         priority = PRIORITY.AUTO_GCDATA;
+        jobData.gcDataOnly = true;
       }
       // We might have to retry since it might be too soon for the replay
       let attempts = 50;
       const job = await addReliableJob(
         {
           name: "parse",
-          data: {
-            match_id: match.match_id,
-            origin: options.origin,
-            gcDataOnly: doGcData && !doParse,
-          },
+          data: jobData,
         },
         {
           priority,
