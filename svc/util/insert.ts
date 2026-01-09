@@ -87,13 +87,14 @@ export async function insertMatch(
 
   // Write to non-postgres stores outside transaction
   // All of these operations should be idempotent (fine to repeat)
-  await upsertPlayerCaches(match, average_rank, pgroup, options.type),
   await Promise.all([
+    upsertPlayerCaches(match, average_rank, pgroup, options.type),
     upsertMatchBlobs(match, options.type),
     telemetry(match, options),
     resetMatchCache(match),
-    resetPlayerTemp(match, pgroup),
   ]);
+  // Make sure player_caches is updated first
+  await resetPlayerTemp(match, pgroup);
 
   let doGcData = false;
   const trx = await db.transaction();
