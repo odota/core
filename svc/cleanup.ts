@@ -25,12 +25,14 @@ await runInLoop(
         currentWeek - Number(config.MAXIMUM_AGE_SCENARIOS_ROWS),
       )
       .del();
-    await db.raw(
+    let result = await db.raw(
       "DELETE from public_matches where start_time < extract(epoch from now() - interval '12 month')::int",
     );
-    await db.raw(
+    console.log(result.command, result.rowCount);
+    result = await db.raw(
       "DELETE from insert_queue where match_seq_num < (select max(match_seq_num) - 100000 from insert_queue) AND processed = TRUE",
     );
+    console.log(result.command, result.rowCount);
     let files: string[] = [];
     try {
       files = await fs.readdir("./cache");
@@ -49,7 +51,6 @@ await runInLoop(
         console.log(e);
       }
     }
-    return;
   },
   1 * 60 * 60 * 1000,
 );
