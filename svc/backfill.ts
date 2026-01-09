@@ -8,7 +8,7 @@ import db from "./store/db.ts";
 
 // Missing match ID analysis
 // select (match_id / 100000000) grp, count(1) from player_match_history where retries >= 5 group by grp;
-//  grp |  count  
+//  grp |  count
 // -----+---------
 //    0 |   64804
 //    1 |   68286
@@ -115,7 +115,10 @@ await runInLoop(async function backfill() {
   // write to blobstore, process the blob using same function as insertMatch
   for (let origMatch of resp) {
     // Check if match is in player_match_history table
-    const { rows } = await db.raw('select match_id from player_match_history where match_id = ? and retries >= 5;', [origMatch.match_id]);
+    const { rows } = await db.raw(
+      "select match_id from player_match_history where match_id = ? and retries >= 5;",
+      [origMatch.match_id],
+    );
     if (rows[0]) {
       const match = transformMatch(origMatch);
       await blobArchive.archivePut(

@@ -60,8 +60,8 @@ export async function reconcileMatch(
   if (result.every(Boolean)) {
     // Delete the rows since we successfully updated
     const result = await db.raw(
-      `DELETE FROM player_match_history WHERE account_id IN (${rows.map(_row => '?').join(',')}) AND match_id = ?`,
-      [...rows.map(row => row.account_id), first.match_id],
+      `DELETE FROM player_match_history WHERE account_id IN (${rows.map((_row) => "?").join(",")}) AND match_id = ?`,
+      [...rows.map((row) => row.account_id), first.match_id],
     );
     console.log(result.command, result.rowCount);
   }
