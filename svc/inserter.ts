@@ -13,10 +13,6 @@ if (!trackedExists) {
 }
 
 await runInLoop(async function insert() {
-  const timeout = setTimeout(() => {
-    redisCount('inserter_timeout');
-    throw new Error('inserter timeout');
-  }, 60000);
   const { rows } = await db.raw(
     "SELECT match_seq_num, data FROM insert_queue WHERE processed = FALSE ORDER BY match_seq_num ASC LIMIT 200",
   );
@@ -31,6 +27,10 @@ await runInLoop(async function insert() {
     [threshold],
   );
   const skipRating = cappedCount.rows[0].count >= threshold;
+  const timeout = setTimeout(() => {
+    redisCount('inserter_timeout');
+    throw new Error('inserter timeout');
+  }, 60000);
   await Promise.all(
     rows.map(async (r: any) => {
       const match = r.data;
