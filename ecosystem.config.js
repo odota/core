@@ -2,6 +2,7 @@
  * PM2 configuration file
  */
 import { loadEnvFile } from "node:process";
+import os from "node:os";
 
 try {
   loadEnvFile();
@@ -40,11 +41,19 @@ let arr = [
   //   name: 'backupscanner',
   //   group: 'disabled',
   // },
+  // {
+  //   name: "backfill",
+  //   group: "backend",
+  //   env: {
+  //     BACKFILL_START: 233273,
+  //     BACKFILL_END: 7000000000,
+  //   },
+  // },
   {
     name: "web",
     group: "backend",
     exec_mode: prod ? "cluster" : undefined,
-    instances: prod ? 8 : undefined,
+    instances: prod ? Math.min(os.cpus().length, 12) : undefined,
   },
   // One local instance of retriever for getting player profiles since this isn't rate limited
   {
