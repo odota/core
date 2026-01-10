@@ -119,6 +119,7 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
     );
 
     if (job.gcDataOnly) {
+      await queueReconcile(gcMatch, pgroup, "pmh_gcdata");
       await log("skip", "Fetching replay data only, skipping parse");
       return true;
     }
@@ -220,10 +221,9 @@ export async function queueReconcile(
   metricName: MetricName,
 ) {
   if (gcMatch) {
-    // Log the players who were previously anonymous for reconciliation
     await Promise.all(
       gcMatch.players
-        // .filter((p) => !Boolean(pgroup[p.player_slot]?.account_id))
+        .filter((p) => metricName === "pmh_gcdata" ? !Boolean(pgroup[p.player_slot]?.account_id) : true)
         .map(async (p) => {
           if (p.account_id) {
             const { rows } = await db.raw(
