@@ -223,7 +223,11 @@ export async function queueReconcile(
   if (gcMatch) {
     await Promise.all(
       gcMatch.players
-        .filter((p) => metricName === "pmh_gcdata" ? !Boolean(pgroup[p.player_slot]?.account_id) : true)
+        .filter((p) =>
+          metricName === "pmh_gcdata"
+            ? !Boolean(pgroup[p.player_slot]?.account_id)
+            : true,
+        )
         .map(async (p) => {
           if (p.account_id) {
             const { rows } = await db.raw(

@@ -716,7 +716,7 @@ function updateMatchups(match) {
   }
 
   async function delInsertQueue(trx: knex.Knex.Transaction) {
-    if (options.insertSeqNum) { 
+    if (options.insertSeqNum) {
       await trx.raw(
         "UPDATE insert_queue SET processed = TRUE WHERE match_seq_num = ?",
         [options.insertSeqNum],

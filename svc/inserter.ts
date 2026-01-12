@@ -28,14 +28,14 @@ await runInLoop(async function insert() {
   );
   const skipRating = cappedCount.rows[0].count >= threshold;
   const timeout = setTimeout(() => {
-    redisCount('inserter_timeout');
-    throw new Error('inserter timeout');
+    redisCount("inserter_timeout");
+    throw new Error("inserter timeout");
   }, 60000);
   await Promise.all(
     rows.map(async (r: any) => {
       const match = r.data;
       if (!match) {
-        throw new Error('no match in row: %s', r.match_seq_num);
+        throw new Error("no match in row: %s", r.match_seq_num);
       }
       await insertMatch(match, {
         type: "api",

@@ -211,7 +211,10 @@ export async function addReliableJob(
     // If we use INSERT ON CONFLICT DO UPDATE for priority, it will block on jobs being processed and then insert after completion
     // This could lead to consuming all available clients if the same ID gets requested repeatedly
     // So we use DO NOTHING and UPDATE with SKIP LOCKED here to update the priority only if not being processed
-    await db.raw(`UPDATE queue SET priority = ? WHERE queue.priority > ? AND id = (select id from queue where job_key = ? FOR UPDATE SKIP LOCKED)`, [priority, priority, jobKey]);
+    await db.raw(
+      `UPDATE queue SET priority = ? WHERE queue.priority > ? AND id = (select id from queue where job_key = ? FOR UPDATE SKIP LOCKED)`,
+      [priority, priority, jobKey],
+    );
   }
   return job;
 }
