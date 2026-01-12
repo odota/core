@@ -171,6 +171,15 @@ app.use((req, res, next) => {
   next();
 });
 
+// CORS headers
+// All endpoints accessed from UI should be after this
+app.use(
+  cors({
+    origin: true,
+    credentials: true,
+  }),
+);
+
 app.get("/logs{/:jobId}", async (req, res) => {
   let logSub = new Redis(config.REDIS_URL);
   if (req.params.jobId) {
@@ -202,15 +211,6 @@ app.set("trust proxy", true);
 
 // Compress everything after this
 app.use(compression());
-
-// CORS headers
-// All endpoints accessed from UI should be after this
-app.use(
-  cors({
-    origin: true,
-    credentials: true,
-  }),
-);
 
 // Reject request if not GET and Origin header is present and not an approved domain (prevent CSRF)
 app.use((req, res, next) => {
