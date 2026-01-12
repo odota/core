@@ -21,7 +21,7 @@ await runInLoop(async function insert() {
     return;
   }
   // Check if we should do rating (if parse queue isn't long)
-  const threshold = 5000;
+  const threshold = 1000;
   const cappedCount = await db.raw(
     `SELECT COUNT(*) FROM (SELECT 1 FROM queue WHERE type = 'parse' LIMIT ?) subquery;`,
     [threshold],
