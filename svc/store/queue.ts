@@ -175,7 +175,7 @@ export async function addReliableJob(
   }>(
     `INSERT INTO queue(type, timestamp, attempts, data, next_attempt_time, priority, job_key)
     VALUES (?, ?, ?, ?, ?, ?, ?)
-    ON CONFLICT(job_key) DO UPDATE SET priority = EXCLUDED.priority WHERE queue.priority >= EXCLUDED.priority
+    ON CONFLICT(job_key) DO NOTHING
     RETURNING id`,
     [
       name,
@@ -199,7 +199,7 @@ export async function addReliableJob(
     );
     await redis.publish("queue", message);
   }
-  // This might be undefined if a job with the same key already exists. Try to find it
+  // No rows are returned if a job with the same key already exists. Try to find it
   // May not exist anymore if the job finished in the meantime
   // Note: In Postgres 18+ we can use RETURNING with OLD to fetch the old id and return it
   if (!job) {
@@ -208,6 +208,10 @@ export async function addReliableJob(
       rows: ReliableQueueRow[];
     }>("SELECT id from queue WHERE job_key = ?", [jobKey]);
     job = rows[0];
+    // If we use INSERT ON CONFLICT DO UPDATE for priority, it will block on jobs being processed and then insert after completion
+    // This could lead to consuming all available clients if the same ID gets requested repeatedly
+    // So we use DO NOTHING and UPDATE with SKIP LOCKED here to update the priority only if not being processed
+    await db.raw(`UPDATE queue SET priority = ? WHERE queue.priority > ? AND id = (select id from queue where job_key = ? FOR UPDATE SKIP LOCKED)`, [priority, priority, jobKey]);
   }
   return job;
 }
