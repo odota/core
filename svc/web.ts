@@ -171,6 +171,32 @@ app.use((req, res, next) => {
   next();
 });
 
+app.get("/logs{/:jobId}", async (req, res) => {
+  let logSub = new Redis(config.REDIS_URL);
+  if (req.params.jobId) {
+    await logSub.subscribe(req.params.jobId);
+  } else {
+    await logSub.subscribe("api", "parsed", "gcdata", "queue");
+  }
+  res.writeHead(200, {
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache",
+    Connection: "keep-alive",
+  });
+  const messageHandler = (channel: string, message: string) => {
+    // Write as a Server Sent Event
+    res.write("data: " + message + "\n\n");
+    // Flush needed when using with compression
+    // res.flush();
+  };
+  logSub.on("message", messageHandler);
+  req.once("close", async () => {
+    // Client disconnected, shut down the subscribe
+    logSub.off("message", messageHandler);
+    await logSub.quit();
+  });
+});
+
 // This is for passing the IP through if behind load balancer https://expressjs.com/en/guide/behind-proxies.html
 app.set("trust proxy", true);
 
@@ -235,32 +261,6 @@ app.post("/register/:service/:host", async (req, res, next) => {
     return res.send(result.toString());
   }
   return res.end();
-});
-
-app.get("/logs{/:jobId}", async (req, res) => {
-  let logSub = new Redis(config.REDIS_URL);
-  if (req.params.jobId) {
-    await logSub.subscribe(req.params.jobId);
-  } else {
-    await logSub.subscribe("api", "parsed", "gcdata", "queue");
-  }
-  res.writeHead(200, {
-    "Content-Type": "text/event-stream",
-    "Cache-Control": "no-cache",
-    Connection: "keep-alive",
-  });
-  const messageHandler = (channel: string, message: string) => {
-    // Write as a Server Sent Event
-    res.write("data: " + message + "\n\n");
-    // Flush needed when using with compression
-    res.flush();
-  };
-  logSub.on("message", messageHandler);
-  req.once("close", async () => {
-    // Client disconnected, shut down the subscribe
-    logSub.off("message", messageHandler);
-    await logSub.quit();
-  });
 });
 
 app.get("/retrieverData", async (req, res, next) => {
