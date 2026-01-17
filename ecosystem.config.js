@@ -53,7 +53,7 @@ let arr = [
     name: "web",
     group: "backend",
     exec_mode: prod ? "cluster" : undefined,
-    instances: prod ? Math.min(os.cpus().length, 12) : undefined,
+    instances: prod ? Math.min(os.cpus().length, 16) : undefined,
   },
   // One local instance of retriever for getting player profiles since this isn't rate limited
   {
