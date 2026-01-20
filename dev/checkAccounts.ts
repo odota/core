@@ -11,7 +11,7 @@ for (let i = Number(process.argv[2]) || 0; i < accountArray.length; i++) {
     password: pass,
   };
   console.log(logOnDetails);
-  await new Promise((resolve) => {
+  await new Promise((resolve, reject) => {
     const client = new SteamUser();
     client.logOn(logOnDetails);
     client.on("loggedOn", (logOnResp: any) => {
@@ -21,22 +21,26 @@ for (let i = Number(process.argv[2]) || 0; i < accountArray.length; i++) {
         resolve(null);
       } else {
         console.log(i, user, pass, "failed", logOnResp.eresult);
-        process.exit(1);
+        fs.appendFileSync('./FAILED.txt', user + '\n');
+        reject(logOnResp.eresult);
       }
     });
     client.on("steamGuard", () => {
       console.log(i, user, pass, "failed", "steamguard");
-      process.exit(1);
+      fs.appendFileSync('./STEAM_GUARD.txt', user + '\n');
+      resolve(null);
     });
     client.on("error", (err: any) => {
       console.log(err);
       if (err.eresult === SteamUser.EResult.AccountDisabled) {
         console.log(i, user, pass, "failed", err.eresult);
+        fs.appendFileSync('./FAILED.txt', user + '\n');
       } else if (err.eresult === SteamUser.EResult.InvalidPassword) {
         console.log(i, user, pass, "failed", err.eresult);
+        fs.appendFileSync('./FAILED.txt', user + '\n');
       }
-      process.exit(1);
+      reject(err);
     });
   });
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+  await new Promise((resolve) => setTimeout(resolve, 120000));
 }
