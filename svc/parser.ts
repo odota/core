@@ -98,19 +98,12 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
       c.blue(`Fetching replay data...`),
     );
     const gcStart = Date.now();
-    const { data: gcMatch, error: gcError } =
-      await gcFetcher.getOrFetchDataWithRetry(
-        matchId,
-        {
-          pgroup,
-          origin: job.origin,
-        },
-        250,
-      );
-    if (!gcMatch) {
-      // non-retryable error
-      await log("fail", gcError || "Missing gcdata");
-      return false;
+    let gcMatch: GcData | null = null;
+    while (!gcMatch) {
+      gcMatch = await gcFetcher.getData(matchId);
+      if (!gcMatch) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
     }
     gcTime = Date.now() - gcStart;
     await redis.publish(
