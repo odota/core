@@ -157,6 +157,7 @@ async function initMinio() {
 
 async function startServices() {
   console.log("starting services");
+  import("../svc/gcdata.ts");
   import("../svc/parser.ts");
   import("../svc/mmr.ts");
   const web = await import("../svc/web.ts");

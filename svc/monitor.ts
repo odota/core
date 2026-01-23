@@ -15,6 +15,7 @@ const health: Record<string, () => Promise<Metric>> = {
   cassandraUsage,
   diskUsage,
   seqNumDelay,
+  gcDelay,
   parseDelay,
   fhDelay,
   mmrDelay,
@@ -86,6 +87,15 @@ async function seqNumDelay() {
 async function parseDelay() {
   const result = await db.raw(
     "select count(*) from queue where type = 'parse'",
+  );
+  return {
+    metric: result.rows[0]?.count,
+    limit: 50000,
+  };
+}
+async function gcDelay() {
+  const result = await db.raw(
+    "select count(*) from queue where type = 'gcdata'",
   );
   return {
     metric: result.rows[0]?.count,
