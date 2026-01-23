@@ -286,11 +286,14 @@ type ScenariosJob = {
 type CacheJob = {
   account_id: number;
 };
-
+type GcDataJob = {
+  match_id: number;
+  origin?: DataOrigin;
+  reconcile: boolean;
+};
 type ParseJob = {
   match_id: number;
   origin?: DataOrigin;
-  gcDataOnly?: boolean;
 };
 
 type QueueJob = QueueInput["data"];
@@ -319,6 +322,10 @@ type QueueInput =
   | {
       name: "cacheQueue";
       data: CacheJob;
+    }
+  | {
+      name: "gcdata";
+      data: GcDataJob;
     };
 
 type ReliableQueueRow = {

@@ -6,7 +6,7 @@
  * This object is passed to insertMatch to persist the data into the database.
  * */
 import config from "../config.ts";
-import { runReliableQueue } from "./store/queue.ts";
+import { addReliableJob, runReliableQueue } from "./store/queue.ts";
 import c from "ansi-colors";
 import { buildReplayUrl } from "./util/utility.ts";
 import redis, { redisCount } from "./store/redis.ts";
@@ -117,12 +117,6 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
       String(metadata.jobId),
       c.green(`Fetched replay data in ${gcTime}ms`),
     );
-
-    if (job.gcDataOnly) {
-      await queueReconcile(gcMatch, pgroup, "pmh_gcdata");
-      await log("skip", "Fetching replay data only, skipping parse");
-      return true;
-    }
 
     let url = buildReplayUrl(
       gcMatch.match_id,
