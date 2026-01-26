@@ -43,7 +43,7 @@
     "passport": "^0.7.0",
     "passport-steam-openid": "^1.1.9",
     "pg": "^8.16.3",
-    "pg-query-stream": "^4.10.3",
+    "pg-query-stream": "^4.11.2",
     "pm2": "^6.0.14",
     "protobufjs": "^7.5.4",
     "steam-user-odota": "^5.2.11",
