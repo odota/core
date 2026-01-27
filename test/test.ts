@@ -23,9 +23,9 @@ import db, { upsertPlayer } from "../svc/store/db.ts";
 import cassandra from "../svc/store/cassandra.ts";
 import c from "ansi-colors";
 import { suite, test, before, beforeEach, after } from "node:test";
-import { S3Client } from "@bradenmacdonald/s3-lite-client";
 import { averageMedal } from "../svc/util/utility.ts";
 import { addReliableJob } from "../svc/store/queue.ts";
+import { S3mini } from 's3mini';
 
 const { RETRIEVER_HOST, POSTGRES_URL, CASSANDRA_URL } = config;
 const initPostgresHost = POSTGRES_URL.replace("/yasp_test", "/postgres");
@@ -133,26 +133,24 @@ async function initCassandra() {
 }
 
 async function initMinio() {
-  const client = new S3Client({
-    endPoint: config.ARCHIVE_S3_ENDPOINT,
+  const client = new S3mini({
+    endpoint: config.ARCHIVE_S3_ENDPOINT + '/' + config.BLOB_ARCHIVE_S3_BUCKET,
     region: "local",
-    accessKey: config.ARCHIVE_S3_KEY_ID,
-    secretKey: config.ARCHIVE_S3_KEY_SECRET,
-    bucket: config.BLOB_ARCHIVE_S3_BUCKET,
+    accessKeyId: config.ARCHIVE_S3_KEY_ID,
+    secretAccessKey: config.ARCHIVE_S3_KEY_SECRET,
   });
   // Make a new test bucket with a new name
   // There's no good way to delete the test bucket automatically since we can't delete nonempty buckets
   console.log("create minio test bucket");
-  await client.makeBucket(config.BLOB_ARCHIVE_S3_BUCKET);
+  await client.createBucket();
   // Put a test blob
   await client.putObject("test", "test");
   // Assert we can read without exception
-  const result = await client.getObject("test");
-  assert.equal(await result.text(), "test");
-  // Assert it rejects when reading invalid key
-  assert.rejects(async () => {
-    await client.getObject("invalid");
-  });
+  let result = await client.getObjectArrayBuffer("test");
+  assert.equal(Buffer.from(result!).toString(), "test");
+  // Assert it's null when reading invalid key
+  result = await client.getObjectArrayBuffer("invalid");
+  assert.equal(result, null);
 }
 
 async function startServices() {

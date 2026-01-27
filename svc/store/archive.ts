@@ -1,11 +1,7 @@
 import config from "../../config.ts";
 import { gzipSync, gunzipSync } from "node:zlib";
 import redis, { redisCount } from "./redis.ts";
-import {
-  S3Client,
-  type S3UploadedObjectInfo,
-  type S3Errors,
-} from "@bradenmacdonald/s3-lite-client";
+import { S3mini } from 's3mini';
 
 type ArchiveType = "match" | "player" | "blob";
 class Archive {
@@ -13,7 +9,7 @@ class Archive {
   private accessKeyId: string = "";
   private secretAccessKey: string = "";
   private bucket: string = "";
-  private client: S3Client | null = null;
+  private client: S3mini | null = null;
   private type: ArchiveType | null = null;
   constructor(type: ArchiveType) {
     this.endpoint = config.ARCHIVE_S3_ENDPOINT;
@@ -27,12 +23,11 @@ class Archive {
     } else if (type === "blob") {
       this.bucket = config.BLOB_ARCHIVE_S3_BUCKET;
     }
-    this.client = new S3Client({
-      endPoint: this.endpoint,
+    this.client = new S3mini({
+      endpoint: this.endpoint + '/' + this.bucket,
       region: "local",
-      bucket: this.bucket,
-      accessKey: this.accessKeyId,
-      secretKey: this.secretAccessKey,
+      accessKeyId: this.accessKeyId,
+      secretAccessKey: this.secretAccessKey,
       // put the bucket name in the path rather than the domain to avoid DNS issues with minio
       // forcePathStyle: true,
     });
@@ -66,15 +61,14 @@ class Archive {
         throw new Error("[ARCHIVE] s3 client not available");
       }
       try {
-        const data = await this.client.getObject(key);
-        buffer = Buffer.from(await data.arrayBuffer());
-      } catch (e: unknown) {
-        const error = e as S3Errors.ServerError;
-        if (error.statusCode === 404) {
+        const data = await this.client.getObjectArrayBuffer(key);
+        if (data == null) {
           // expected response if key not valid
           redisCount("archive_miss");
           return null;
         }
+        buffer = Buffer.from(data);
+      } catch (e: unknown) {
         redisCount("archive_get_error");
         throw e;
       }
@@ -96,7 +90,7 @@ class Archive {
     key: string,
     blob: Buffer,
     noCache = false,
-  ): Promise<S3UploadedObjectInfo | null> => {
+  ): Promise<Response> => {
     if (!this.client) {
       throw new Error("[ARCHIVE] s3 client not available");
     }
@@ -106,7 +100,7 @@ class Archive {
       );
     }
     const zip = gzipSync(blob);
-    let result;
+    let result: Response;
     try {
       // if (ifNotExists) {
       //   // May not be implemented by some s3 providers
@@ -114,13 +108,7 @@ class Archive {
       // }
       result = await this.client.putObject(key, zip);
     } catch (e: unknown) {
-      const error = e as S3Errors.ServerError;
-      console.log(
-        "[ARCHIVE] put error [key: %s] (%s): %s",
-        key,
-        error.code,
-        error.message,
-      );
+      // const error = err as ErrorWithCode;
       // if (ifNotExists && e.Code === 'PreconditionFailed') {
       //   // Expected error if ifNotExists was passed
       //   return { message: 'already exists' };
