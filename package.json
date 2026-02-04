@@ -36,7 +36,7 @@
     "dotaconstants": "^10.7.0",
     "express": "^5.2.1",
     "http-proxy": "^1.18.1",
-    "ioredis": "^5.8.2",
+    "ioredis": "^5.9.2",
     "json-bigint": "^1.0.0",
     "knex": "^3.1.0",
     "moment": "^2.30.1",
