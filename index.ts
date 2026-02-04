@@ -25,6 +25,8 @@ if (!fs.existsSync(".env") || process.env.GROUP) {
 if (process.env.ROLE) {
   // if role variable is set just run that script
   try {
+    // Wait to avoid excessively fast restart loop if services aren't up yet
+    await new Promise((resolve) => setTimeout(resolve, 500));
     await import("./svc/" + process.env.ROLE + ".ts");
   } catch (e: any) {
     console.error(e);
@@ -42,10 +44,10 @@ if (process.env.ROLE) {
 } else {
   console.log("starting web");
   execSync("pm2 start ecosystem.config.js --only web");
-  setInterval(
-    () => {
-      // execSync('pm2 flush');
-    },
-    12 * 60 * 60 * 1000,
-  );
+  // setInterval(
+  //   () => {
+  //     execSync('pm2 flush');
+  //   },
+  //   12 * 60 * 60 * 1000,
+  // );
 }
