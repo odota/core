@@ -152,7 +152,9 @@ export async function addReliableJob(
   const { name, data } = input;
   let jobKey;
   if (name === "parse") {
-    jobKey = `${name}:${data.match_id}${data.gcDataOnly ? ":gcdata" : ""}`;
+    jobKey = `${name}:${data.match_id}`;
+  } else if (name === "gcdata") {
+    jobKey = `${name}:${data.match_id}`;
   } else if (name === "fhQueue") {
     jobKey = `${name}:${data.account_id}`;
   } else if (name === "scenariosQueue") {

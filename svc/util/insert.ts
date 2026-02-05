@@ -741,36 +741,52 @@ function updateMatchups(match) {
     let hasTrackedPlayer = trackedScores.filter(Boolean).length > 0;
     const isLeagueMatch = Boolean("leagueid" in match && match.leagueid);
     const doParse = hasTrackedPlayer || isLeagueMatch;
+    // By default, lower priority than requests
+    let priority = PRIORITY.AUTO_DEFAULT;
+    if (isLeagueMatch) {
+      priority = PRIORITY.AUTO_LEAGUE;
+    }
+    if (hasTrackedPlayer) {
+      priority = PRIORITY.AUTO_TRACKED_PLAYER;
+    }
+    if (doGcData && !doParse) {
+      await addReliableJob(
+        {
+          name: "gcdata",
+          data: {
+            match_id: match.match_id,
+            origin: options.origin,
+            reconcile: true,
+          },
+        },
+        { trx, priority },
+      );
+    }
     if (doParse) {
       redisCount("auto_parse");
-    }
-    if (doGcData || doParse) {
-      let jobData: ParseJob = {
-        match_id: match.match_id,
-        origin: options.origin,
-      };
-      // By default, lower priority than requests
-      let priority = PRIORITY.AUTO_DEFAULT;
-      if (isLeagueMatch) {
-        priority = PRIORITY.AUTO_LEAGUE;
-      }
-      if (hasTrackedPlayer) {
-        priority = PRIORITY.AUTO_TRACKED_PLAYER;
-      }
-      if (doGcData && !doParse) {
-        priority = PRIORITY.AUTO_GCDATA;
-        jobData.gcDataOnly = true;
-      }
-      // We might have to retry since it might be too soon for the replay
-      let attempts = 50;
+      await addReliableJob(
+        {
+          name: "gcdata",
+          data: {
+            match_id: match.match_id,
+            origin: options.origin,
+            reconcile: false,
+          },
+        },
+        { trx, priority },
+      );
       const job = await addReliableJob(
         {
           name: "parse",
-          data: jobData,
+          data: {
+            match_id: match.match_id,
+            origin: options.origin,
+          },
         },
         {
           priority,
-          attempts,
+          // We might have to retry since it might be too soon for the replay
+          attempts: 50,
           trx,
         },
       );
@@ -976,5 +992,33 @@ async function telemetry(
     // }
     // }
     // });
+  }
+}
+
+export async function queueReconcile(
+  gcMatch: GcData | null,
+  pgroup: PGroup,
+  metricName: MetricName,
+) {
+  if (gcMatch) {
+    await Promise.all(
+      gcMatch.players
+        .filter((p) =>
+          metricName === "pmh_gcdata"
+            ? !Boolean(pgroup[p.player_slot]?.account_id)
+            : true,
+        )
+        .map(async (p) => {
+          if (p.account_id) {
+            const { rows } = await db.raw(
+              "INSERT INTO player_match_history(account_id, match_id, player_slot) VALUES (?, ?, ?) ON CONFLICT DO NOTHING RETURNING *",
+              [p.account_id, gcMatch.match_id, p.player_slot],
+            );
+            if (rows.length > 0) {
+              redisCount(metricName);
+            }
+          }
+        }),
+    );
   }
 }

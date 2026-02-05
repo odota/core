@@ -1570,6 +1570,16 @@ You can use the API without a key, but registering for a key allows increased ra
           //   // Give subscribers higher parse priority
           //   priority = PRIORITY_REQUEST_SUBSCRIBER;
           // }
+          await addReliableJob(
+            {
+              name: "gcdata",
+              data: {
+                match_id: Number(matchId),
+                reconcile: false,
+              },
+            },
+            { priority },
+          );
           const parseJob = await addReliableJob(
             {
               name: "parse",

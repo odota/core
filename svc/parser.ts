@@ -6,7 +6,7 @@
  * This object is passed to insertMatch to persist the data into the database.
  * */
 import config from "../config.ts";
-import { runReliableQueue } from "./store/queue.ts";
+import { addReliableJob, runReliableQueue } from "./store/queue.ts";
 import c from "ansi-colors";
 import { buildReplayUrl } from "./util/utility.ts";
 import redis, { redisCount } from "./store/redis.ts";
@@ -98,31 +98,18 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
       c.blue(`Fetching replay data...`),
     );
     const gcStart = Date.now();
-    const { data: gcMatch, error: gcError } =
-      await gcFetcher.getOrFetchDataWithRetry(
-        matchId,
-        {
-          pgroup,
-          origin: job.origin,
-        },
-        250,
-      );
-    if (!gcMatch) {
-      // non-retryable error
-      await log("fail", gcError || "Missing gcdata");
-      return false;
+    let gcMatch: GcData | null = null;
+    while (!gcMatch) {
+      gcMatch = await gcFetcher.getData(matchId);
+      if (!gcMatch) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
     }
     gcTime = Date.now() - gcStart;
     await redis.publish(
       String(metadata.jobId),
       c.green(`Fetched replay data in ${gcTime}ms`),
     );
-
-    if (job.gcDataOnly) {
-      await queueReconcile(gcMatch, pgroup, "pmh_gcdata");
-      await log("skip", "Fetching replay data only, skipping parse");
-      return true;
-    }
 
     let url = buildReplayUrl(
       gcMatch.match_id,
