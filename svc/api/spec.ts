@@ -1,6 +1,6 @@
 import constants, { heroes, cluster } from "dotaconstants";
 import moment from "moment";
-import { Client } from "pg";
+import { Pool } from "pg";
 import config from "../../config.ts";
 import { addJob, addReliableJob, getReliableJob } from "../store/queue.ts";
 import { buildMatch } from "../util/buildMatch.ts";
@@ -90,6 +90,11 @@ import TeamPlayersResponse from "./responses/TeamPlayersResponse.ts";
 import { PRIORITY } from "../util/priority.ts";
 import { getPatchIndex } from "../util/compute.ts";
 import { matchupToString } from "../util/matchups.ts";
+
+const pool = new Pool({
+  connectionString: config.READONLY_POSTGRES_URL,
+  statement_timeout: 15000,
+});
 
 const parameters = {
   ...heroParams,
@@ -1251,19 +1256,13 @@ You can use the API without a key, but registering for a key allows increased ra
           if (typeof input !== "string") {
             return res.status(400).json({ error: "sql is not a string" });
           }
-          const client = new Client({
-            connectionString: config.READONLY_POSTGRES_URL,
-            statement_timeout: 15000,
-          });
           let result = null;
           let err = null;
           try {
-            await client.connect();
-            result = await client.query(input);
+            result = await pool.query(input);
           } catch (e) {
             err = e;
           }
-          await client.end();
           const final = { ...result, err: err && err.toString() };
           return res.status(err ? 400 : 200).json(final);
         },
