@@ -102,6 +102,17 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
     while (!gcMatch) {
       gcMatch = await gcFetcher.getData(matchId);
       if (!gcMatch) {
+        // Try adding the job. It might already exist in queue but we can dedup it
+        await addReliableJob(
+          {
+            name: "gcdata",
+            data: {
+              match_id: Number(matchId),
+              reconcile: false,
+            },
+          },
+          { priority: metadata.priority },
+        );
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
     }

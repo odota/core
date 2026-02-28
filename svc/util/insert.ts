@@ -764,17 +764,6 @@ function updateMatchups(match) {
     }
     if (doParse) {
       redisCount("auto_parse");
-      await addReliableJob(
-        {
-          name: "gcdata",
-          data: {
-            match_id: match.match_id,
-            origin: options.origin,
-            reconcile: false,
-          },
-        },
-        { trx, priority },
-      );
       const job = await addReliableJob(
         {
           name: "parse",
