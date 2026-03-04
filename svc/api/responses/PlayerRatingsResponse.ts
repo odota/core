@@ -7,13 +7,8 @@ export default {
     properties: {
       account_id: commonProperties.account_id,
       match_id: commonProperties.match_id,
-      solo_competitive_rank: {
-        description: "solo_competitive_rank",
-        type: "integer",
-        nullable: true,
-      },
-      competitive_rank: {
-        description: "competitive_rank",
+      rank_tier: {
+        description: "Rank tier/medal of the player",
         type: "integer",
       },
       time: {
