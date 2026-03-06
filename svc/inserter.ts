@@ -19,7 +19,7 @@ await runInLoop(async function insert() {
     return;
   }
   // Check if we should do rating (if queue isn't long)
-  const threshold = 10000;
+  const threshold = 5000;
   const cappedCount = await db.raw(
     `SELECT COUNT(*) FROM (SELECT 1 FROM queue WHERE type = 'gcdata' LIMIT ?) subquery;`,
     [threshold],
