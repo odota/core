@@ -21,23 +21,23 @@ for (let i = Number(process.argv[2]) || 0; i < accountArray.length; i++) {
         resolve(null);
       } else {
         console.log(i, user, pass, "failed", logOnResp.eresult);
-        fs.appendFileSync('./FAILED.txt', user + '\n');
+        fs.appendFileSync("./FAILED.txt", user + "\n");
         reject(logOnResp.eresult);
       }
     });
     client.on("steamGuard", () => {
       console.log(i, user, pass, "failed", "steamguard");
-      fs.appendFileSync('./STEAM_GUARD.txt', user + '\n');
+      fs.appendFileSync("./STEAM_GUARD.txt", user + "\n");
       resolve(null);
     });
     client.on("error", (err: any) => {
       console.log(err);
       if (err.eresult === SteamUser.EResult.AccountDisabled) {
         console.log(i, user, pass, "failed", err.eresult);
-        fs.appendFileSync('./FAILED.txt', user + '\n');
+        fs.appendFileSync("./FAILED.txt", user + "\n");
       } else if (err.eresult === SteamUser.EResult.InvalidPassword) {
         console.log(i, user, pass, "failed", err.eresult);
-        fs.appendFileSync('./FAILED.txt', user + '\n');
+        fs.appendFileSync("./FAILED.txt", user + "\n");
       }
       reject(err);
     });

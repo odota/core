@@ -100,7 +100,7 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
     const gcStart = Date.now();
     let gcMatch: GcData | null = null;
     while (!gcMatch) {
-      if (await redis.get('noretry:' + matchId)) {
+      if (await redis.get("noretry:" + matchId)) {
         // We can't get the GC data because it's blocked. Skip the parse.
         await log("skip", "Replay parse skipped (blocked GC data)");
         return true;
@@ -118,7 +118,7 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
           },
           { priority: metadata.priority },
         );
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
     }
     gcTime = Date.now() - gcStart;

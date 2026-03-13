@@ -9,11 +9,9 @@ await runReliableQueue(
   Number(config.GCDATA_PARALLELISM),
   async function gcdata(job: GcDataJob) {
     const matchId = job.match_id;
-    let apiMatch = await apiFetcher.getData(
-      matchId,
-    );
+    let apiMatch = await apiFetcher.getData(matchId);
     if (!apiMatch) {
-        throw new Error('missing API data: ' + matchId);
+      throw new Error("missing API data: " + matchId);
     }
     const pgroup = getPGroup(apiMatch);
     const { data: gcMatch } = await gcFetcher.getOrFetchDataWithRetry(
