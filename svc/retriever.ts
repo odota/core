@@ -159,11 +159,11 @@ const server = createServer(async (req, res) => {
         const client = clientMap.get(rKey)!;
         matchRequests += 1;
         // If the selected client has multiple consecutive failures, skip the request
-        if ((matchAttempts.get(rKey) ?? 0) >= accountAttemptMax) {
-          res.statusCode = 500;
-          res.end("too many attempts");
-          return;
-        }
+        // if ((matchAttempts.get(rKey) ?? 0) >= accountAttemptMax) {
+        //   res.statusCode = 500;
+        //   res.end("too many attempts");
+        //   return;
+        // }
         res.setHeader("x-match-request-steamid", rKey);
         res.setHeader("x-match-request-ip", publicIP);
         matchAttempts.set(rKey, (matchAttempts.get(rKey) ?? 0) + 1);
@@ -173,7 +173,7 @@ const server = createServer(async (req, res) => {
           // Use a 204 status code to avoid exception, we'll check the response body after and read headers
           res.statusCode = 204;
           res.end();
-        }, 3000);
+        }, 4000);
         client.sendToGC(
           DOTA_APPID,
           EDOTAGCMsg.values.k_EMsgGCMatchDetailsRequest,
