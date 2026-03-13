@@ -27,7 +27,7 @@ export class GcdataFetcher extends MatchFetcherBase<GcData> {
   };
   fetchData = async (matchId: number, extraData: GcExtraData | null) => {
     if (await redis.get('noretry:' + matchId)) {
-      // We already tried to fetch the gcdata and found it was blocked
+      // We already tried this match recently with a nonretryable error
       return { error: "x-match-noretry", data: null };
     }
     const url = await getRandomRetrieverUrl(`/match/${matchId}`);
@@ -53,29 +53,15 @@ export class GcdataFetcher extends MatchFetcherBase<GcData> {
     redisCountHash("retrieverSteamIDs", steamid);
     redisCountHash("retrieverIPs", ip);
     if (headers["x-match-noretry"]) {
-      // Steam is blocking this match for community prediction, so return error to prevent retry
-      console.log(matchId, "x-match-noretry");
+      // There are several reasons for nonretryable errors
+      console.log(matchId, "x-match-noretry", headers["x-noretry-reason"]);
       // Mark this match as nonretryable so parser knows to stop
       await redis.setex('noretry:' + matchId, 3600, 1);
-      return { error: "x-match-noretry", data: null };
-    }
-    if (data.match.game_mode === "DOTA_GAMEMODE_NONE" && data.match.replay_salt === 0) {
-      // Really old matches have a 0 replay salt so if we don't have gamemode stop retrying
-      return {
-        error: "extremely old GC response format without replay salt",
-        data: null,
-      };
-    }
-    if (data.result === 2) {
-      // Match not found, don't retry
-      return {
-        error: "Match ID not found",
-        data: null,
-      };
+      return { error: headers["x-noretry-reason"], data: null };
     }
     if (!data?.match?.replay_salt) {
-      // Response doesn't have replay data, try again
-      return { error: "invalid data", data: null, retryable: true };
+      // Response was 2xx but doesn't have replay salt, try again
+      return { error: "invalid data (no replay salt)", data: null, retryable: true };
     }
     // Count successful calls
     redisCount("retriever");

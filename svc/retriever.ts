@@ -190,11 +190,23 @@ const server = createServer(async (req, res) => {
               const end = Date.now();
               console.log("match %s: %dms", matchId, end - start);
               const matchData: any = CMsgGCMatchDetailsResponse.decode(payload);
-              if (matchData.result === 15) {
-                // Valve is blocking GC access to this match, probably a community prediction match
+              // Community prediction match or other reason valve is blocking
+              const isBlockedByValve = matchData.result === 15;
+              const isExtremelyOldMatch = matchData.game_mode === "DOTA_GAMEMODE_NONE" && matchData.replay_salt === 0;
+              const isMatchNotFound = matchData.result === 2;
+              if (isBlockedByValve || isExtremelyOldMatch || isMatchNotFound) {
+                let reason = '';
+                if (isBlockedByValve) {
+                  reason = "Blocked by Valve (maybe community prediction match)";
+                } else if (isExtremelyOldMatch) {
+                  reason = "Extremely old GC response format without replay salt";
+                } else if (isMatchNotFound) {
+                  reason = "Match ID not found";
+                }
                 // Send back 204 success with a specific header that tells us not to retry
-                console.log("match %s: gcdata blocked, result: %s", matchId, matchData.result);
+                console.log("match %s: non-retryable reason: %s", matchId, reason);
                 res.setHeader("x-match-noretry", matchData.result);
+                res.setHeader("x-noretry-reason", reason);
                 res.statusCode = 204;
                 res.end();
                 return;
