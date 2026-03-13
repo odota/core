@@ -193,6 +193,7 @@ const server = createServer(async (req, res) => {
               if (matchData.result === 15) {
                 // Valve is blocking GC access to this match, probably a community prediction match
                 // Send back 204 success with a specific header that tells us not to retry
+                console.log("match %s: gcdata blocked, result: %s", matchId, matchData.result);
                 res.setHeader("x-match-noretry", matchData.result);
                 res.statusCode = 204;
                 res.end();

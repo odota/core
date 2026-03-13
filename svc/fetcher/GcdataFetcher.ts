@@ -49,6 +49,7 @@ export class GcdataFetcher extends MatchFetcherBase<GcData> {
     redisCountHash("retrieverSteamIDs", steamid);
     redisCountHash("retrieverIPs", ip);
     if (headers["x-match-noretry"]) {
+      console.log(url, "x-match-noretry");
       // Steam is blocking this match for community prediction, so return error to prevent retry
       return { error: "x-match-noretry", data: null };
     }
