@@ -100,6 +100,11 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
     const gcStart = Date.now();
     let gcMatch: GcData | null = null;
     while (!gcMatch) {
+      if (await redis.get('noretry:' + matchId)) {
+        // We can't get the GC data because it's blocked. Skip the parse.
+        await log("skip", "Replay parse skipped (blocked GC data)");
+        return true;
+      }
       gcMatch = await gcFetcher.getData(matchId);
       if (!gcMatch) {
         // Try adding the job. It might already exist in queue but we can dedup it

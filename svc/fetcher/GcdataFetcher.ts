@@ -5,7 +5,7 @@ import { insertMatch } from "../util/insert.ts";
 import { blobArchive } from "../store/archive.ts";
 import { MatchFetcherBase } from "./MatchFetcherBase.ts";
 import config from "../../config.ts";
-import { redisCount, redisCountHash } from "../store/redis.ts";
+import redis, { redisCount, redisCountHash } from "../store/redis.ts";
 import { getRandomRetrieverUrl } from "../util/registry.ts";
 
 export class GcdataFetcher extends MatchFetcherBase<GcData> {
@@ -49,8 +49,10 @@ export class GcdataFetcher extends MatchFetcherBase<GcData> {
     redisCountHash("retrieverSteamIDs", steamid);
     redisCountHash("retrieverIPs", ip);
     if (headers["x-match-noretry"]) {
-      console.log(url, "x-match-noretry");
       // Steam is blocking this match for community prediction, so return error to prevent retry
+      console.log(matchId, "x-match-noretry");
+      // Mark this match as nonretryable so parser knows to stop
+      await redis.setex('noretry:' + matchId, 3600, 1);
       return { error: "x-match-noretry", data: null };
     }
     if (data.match.game_mode === "DOTA_GAMEMODE_NONE" && data.match.replay_salt === 0) {
