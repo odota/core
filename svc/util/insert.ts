@@ -750,6 +750,7 @@ function updateMatchups(match) {
       priority = PRIORITY.AUTO_TRACKED_PLAYER;
     }
     if (doGcData && !doParse) {
+      priority = PRIORITY.AUTO_GCDATA;
       await addReliableJob(
         {
           name: "gcdata",
