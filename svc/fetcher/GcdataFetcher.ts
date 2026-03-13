@@ -26,6 +26,10 @@ export class GcdataFetcher extends MatchFetcherBase<GcData> {
     return data;
   };
   fetchData = async (matchId: number, extraData: GcExtraData | null) => {
+    if (await redis.get('noretry:' + matchId)) {
+      // We already tried to fetch the gcdata and found it was blocked
+      return { error: "x-match-noretry", data: null };
+    }
     const url = await getRandomRetrieverUrl(`/match/${matchId}`);
     let resp: AxiosResponse<RetrieverMatch>;
     try {
