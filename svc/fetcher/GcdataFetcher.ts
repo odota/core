@@ -67,8 +67,7 @@ export class GcdataFetcher extends MatchFetcherBase<GcData> {
     redisCount("retriever");
     redisCountHash("retrieverSuccessSteamIDs", steamid);
     redisCountHash("retrieverSuccessIPs", ip);
-    // 
-    Some old matches don't have players, e.g. 271601114
+    // Some old matches don't have players, e.g. 271601114.
     // They still have a replay salt so we can continue
     const gcPlayers = data.match.players ?? [];
     const players = gcPlayers.map(
