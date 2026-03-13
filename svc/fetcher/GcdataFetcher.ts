@@ -52,7 +52,7 @@ export class GcdataFetcher extends MatchFetcherBase<GcData> {
       // Steam is blocking this match for community prediction, so return error to prevent retry
       return { error: "x-match-noretry", data: null };
     }
-    if (data.match.game_mode === "DOTA_GAMEMODE_NONE") {
+    if (data.match.game_mode === "DOTA_GAMEMODE_NONE" && data.match.replay_salt === 0) {
       // Really old matches have a 0 replay salt so if we don't have gamemode stop retrying
       return {
         error: "extremely old GC response format without replay salt",
