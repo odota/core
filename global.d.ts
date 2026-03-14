@@ -503,7 +503,8 @@ type MetricName =
   | "add_queue_fail"
   | "login"
   | "alias"
-  | "inserter_timeout";
+  | "inserter_timeout"
+  | "retriever_noretry";
 
 // Object to map player_slot to basic info
 type PGroup = {

@@ -57,6 +57,7 @@ export class GcdataFetcher extends MatchFetcherBase<GcData> {
       console.log(matchId, "x-match-noretry", headers["x-noretry-reason"]);
       // Mark this match as nonretryable so parser knows to stop
       await redis.setex('noretry:' + matchId, 3600, 1);
+      redisCount("retriever_noretry");
       return { error: headers["x-noretry-reason"], data: null };
     }
     if (!data?.match?.replay_salt) {
