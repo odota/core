@@ -19,7 +19,7 @@ await runInLoop(async function insert() {
     return;
   }
   // Check if we should do rating (if queue isn't long)
-  const threshold = 2000;
+  const threshold = 1000;
   const cappedCount = await db.raw(
     `SELECT COUNT(*) FROM (SELECT 1 FROM queue WHERE type = 'gcdata' LIMIT ?) subquery;`,
     [threshold],
@@ -29,7 +29,7 @@ await runInLoop(async function insert() {
     redisCount("inserter_timeout");
     console.error('inserter timeout');
     process.exit(1);
-  }, 15000);
+  }, 10000);
   await Promise.all(
     rows.map(async (r: any) => {
       const match = r.data;
