@@ -27,8 +27,9 @@ await runInLoop(async function insert() {
   const skipRating = cappedCount.rows[0].count >= threshold;
   const timeout = setTimeout(() => {
     redisCount("inserter_timeout");
-    throw new Error("inserter timeout");
-  }, 30000);
+    console.error('inserter timeout');
+    process.exit(1);
+  }, 15000);
   await Promise.all(
     rows.map(async (r: any) => {
       const match = r.data;
