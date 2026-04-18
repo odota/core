@@ -26,7 +26,7 @@ await runInLoop(async function insert() {
   );
   const skipRating = cappedCount.rows[0].count >= threshold;
   await Promise.race([
-    Promise.all(
+    Promise.allSettled(
       rows.map(async (r: any) => {
         const match = r.data;
         if (!match) {
