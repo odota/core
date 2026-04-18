@@ -29,7 +29,7 @@ if (process.env.ROLE) {
   } catch (e: any) {
     console.error(e);
     // Wait to avoid excessively fast restart loop if services aren't up yet
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 250));
     process.exit(1);
   }
 } else if (process.env.GROUP) {
