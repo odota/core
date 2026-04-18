@@ -25,24 +25,26 @@ await runInLoop(async function insert() {
     [threshold],
   );
   const skipRating = cappedCount.rows[0].count >= threshold;
-  const timeout = setTimeout(() => {
-    redisCount("inserter_timeout");
-    console.error('inserter timeout');
-    process.exit(1);
-  }, 6000);
-  await Promise.all(
-    rows.map(async (r: any) => {
-      const match = r.data;
-      if (!match) {
-        throw new Error("no match in row: %s", r.match_seq_num);
-      }
-      await insertMatch(match, {
-        type: "api",
-        origin: "scanner",
-        skipRating,
-        insertSeqNum: r.match_seq_num,
-      });
+  await Promise.race([
+    Promise.all(
+      rows.map(async (r: any) => {
+        const match = r.data;
+        if (!match) {
+          throw new Error("no match in row: %s", r.match_seq_num);
+        }
+        await insertMatch(match, {
+          type: "api",
+          origin: "scanner",
+          skipRating,
+          insertSeqNum: r.match_seq_num,
+        });
+      }),
+    ),
+    new Promise((resolve, reject) => {
+      setTimeout(() => {
+        // redisCount("inserter_timeout");
+        reject(new Error("Request timed out"));
+      }, 6000);
     }),
-  );
-  clearTimeout(timeout);
+  ]);
 }, 0);
