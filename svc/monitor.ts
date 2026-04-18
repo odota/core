@@ -193,6 +193,6 @@ async function redisUsage() {
     .find((line: string) => line.startsWith("used_memory"));
   return {
     metric: Number(line?.split(":")[1]),
-    limit: 4 * 10 ** 9,
+    limit: 6 * 10 ** 9,
   };
 }
