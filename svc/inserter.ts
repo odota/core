@@ -12,7 +12,7 @@ if (!trackedExists) {
 
 await runInLoop(async function insert() {
   const { rows } = await db.raw(
-    "SELECT match_seq_num, data FROM insert_queue WHERE processed = FALSE ORDER BY match_seq_num ASC LIMIT 150",
+    "SELECT match_seq_num, data FROM insert_queue WHERE processed = FALSE ORDER BY match_seq_num ASC LIMIT 100",
   );
   if (!rows.length) {
     await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -29,7 +29,7 @@ await runInLoop(async function insert() {
     redisCount("inserter_timeout");
     console.error('inserter timeout');
     process.exit(1);
-  }, 10000);
+  }, 6000);
   await Promise.all(
     rows.map(async (r: any) => {
       const match = r.data;
