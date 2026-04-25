@@ -94,6 +94,10 @@ import { matchupToString } from "../util/matchups.ts";
 const pool = new Pool({
   connectionString: config.READONLY_POSTGRES_URL,
   statement_timeout: 15000,
+  query_timeout: 15000,
+  lock_timeout: 15000,
+  connectionTimeoutMillis: 15000,
+  max: 5,
 });
 
 const parameters = {
