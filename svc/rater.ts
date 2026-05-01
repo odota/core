@@ -74,32 +74,37 @@ await runInLoop(async function rate() {
   const ratingDiff2 = kFactor * (win2 - e2);
   // Start transaction
   const trx = await db.transaction();
-  // Rate each player
-  console.log("match %s, radiant_win: %s", row.match_id, row.radiant_win);
-  for (let p of gcMatch.players) {
-    const oldRating = ratingMap.get(p.account_id!) ?? DEFAULT_RATING;
-    const delta = isRadiant(p) ? ratingDiff1 : ratingDiff2;
-    // apply delta to each player (all players on a team will have the same rating change)
-    const newRating = oldRating + delta;
-    console.log(
-      "account_id: %s, oldRating: %s, newRating: %s, delta: %s",
-      p.account_id,
-      oldRating,
-      newRating,
-      delta,
-    );
-    // Write ratings back to players
+  try {
+    // Rate each player
+    console.log("match %s, radiant_win: %s", row.match_id, row.radiant_win);
+    for (let p of gcMatch.players) {
+      const oldRating = ratingMap.get(p.account_id!) ?? DEFAULT_RATING;
+      const delta = isRadiant(p) ? ratingDiff1 : ratingDiff2;
+      // apply delta to each player (all players on a team will have the same rating change)
+      const newRating = oldRating + delta;
+      console.log(
+        "account_id: %s, oldRating: %s, newRating: %s, delta: %s",
+        p.account_id,
+        oldRating,
+        newRating,
+        delta,
+      );
+      // Write ratings back to players
+      await trx.raw(
+        `INSERT INTO ${tableName}(account_id, computed_mmr, delta, match_id) VALUES(?, ?, ?, ?) ON CONFLICT(account_id) DO UPDATE SET computed_mmr = EXCLUDED.computed_mmr, delta = EXCLUDED.delta, match_id = EXCLUDED.match_id`,
+        [p.account_id, newRating, delta, row.match_id],
+      );
+    }
+    // Delete row
     await trx.raw(
-      `INSERT INTO ${tableName}(account_id, computed_mmr, delta, match_id) VALUES(?, ?, ?, ?) ON CONFLICT(account_id) DO UPDATE SET computed_mmr = EXCLUDED.computed_mmr, delta = EXCLUDED.delta, match_id = EXCLUDED.match_id`,
-      [p.account_id, newRating, delta, row.match_id],
+      "DELETE FROM rating_queue WHERE match_seq_num = ?",
+      row.match_seq_num,
     );
+    // Commit transaction
+    await trx.commit();
+    redisCount("rater");
+  } catch (e) {
+    await trx.rollback();
+    throw e;
   }
-  // Delete row
-  await trx.raw(
-    "DELETE FROM rating_queue WHERE match_seq_num = ?",
-    row.match_seq_num,
-  );
-  // Commit transaction
-  await trx.commit();
-  redisCount("rater");
 }, 0);
