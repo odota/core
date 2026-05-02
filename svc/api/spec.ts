@@ -97,7 +97,7 @@ const pool = new Pool({
   query_timeout: 15000,
   lock_timeout: 15000,
   connectionTimeoutMillis: 15000,
-  max: 5,
+  max: 3,
 });
 
 const parameters = {
