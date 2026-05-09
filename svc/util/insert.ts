@@ -98,25 +98,30 @@ export async function insertMatch(
 
   let doGcData = false;
   const trx = await db.transaction();
-  await upsertLeagueMatch(trx);
-  await upsertMatchPostgres(trx, isProTier);
-  await updateCounts(
-    trx,
-    match as ApiData,
-    average_rank,
-    num_rank_tier,
-    isProTier,
-  );
-  await discoverPlayers(trx);
-  await queueMmr(trx);
-  await queueGcData(trx);
-  await queueRate(trx);
-  await queueScenarios(trx);
-  await postParsedMatch(trx);
-  await delInsertQueue(trx);
-  const parseJob = await queueParse(trx);
-  await trx.commit();
-  return { parseJob, pgroup };
+  try {
+    await upsertLeagueMatch(trx);
+    await upsertMatchPostgres(trx, isProTier);
+    await updateCounts(
+      trx,
+      match as ApiData,
+      average_rank,
+      num_rank_tier,
+      isProTier,
+    );
+    await discoverPlayers(trx);
+    await queueMmr(trx);
+    await queueGcData(trx);
+    await queueRate(trx);
+    await queueScenarios(trx);
+    await postParsedMatch(trx);
+    await delInsertQueue(trx);
+    const parseJob = await queueParse(trx);
+    await trx.commit();
+    return { parseJob, pgroup };
+  } catch (e) {
+    await trx.rollback();
+    throw e;
+  }
 
   async function upsertLeagueMatch(trx: knex.Knex.Transaction) {
     // Index the matchid to the league

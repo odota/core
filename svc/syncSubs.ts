@@ -15,14 +15,19 @@ await runInLoop(async function doSyncSubs() {
   }
   console.log(result.length, "subs");
   const trx = await db.transaction();
-  // Delete all status from subscribers
-  await trx.raw("UPDATE subscriber SET status = NULL");
-  for (let sub of result) {
-    // Mark list of subscribers as active
-    await trx.raw("UPDATE subscriber SET status = ? WHERE customer_id = ?", [
-      sub.status,
-      sub.customer,
-    ]);
+  try {
+    // Delete all status from subscribers
+    await trx.raw("UPDATE subscriber SET status = NULL");
+    for (let sub of result) {
+      // Mark list of subscribers as active
+      await trx.raw("UPDATE subscriber SET status = ? WHERE customer_id = ?", [
+        sub.status,
+        sub.customer,
+      ]);
+    }
+    await trx.commit();
+  } catch (e) {
+    await trx.rollback();
+    throw e;
   }
-  await trx.commit();
 }, 60 * 1000);
