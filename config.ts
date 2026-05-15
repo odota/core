@@ -40,6 +40,8 @@ const defaults = {
   PARSER_PARALLELISM: "1", // Number of simultaneous parse jobs to process
   FULLHISTORY_PARALLELISM: "1", // Number of simultaneous fullhistory (player refresh) jobs to process
   GCDATA_PARALLELISM: "1", // Number of simultaneous GC match details jobs to process
+  INSERTER_BATCH_SIZE: "100", // Max insert_queue rows pulled per inserter loop tick
+  INSERTER_PARALLELISM: "100", // Max concurrent insertMatch per tick
   BENCHMARK_RETENTION_MINUTES: "60", // minutes in block to retain benchmark data for percentile
   GCDATA_PERCENT: "0", // percent of inserted matches to randomly queue for GC data
   RATING_PERCENT: "0", // percent of ranked matches to update player ratings with
