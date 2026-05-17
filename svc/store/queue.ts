@@ -120,15 +120,40 @@ export async function runReliableQueue(
 }
 
 /**
- * Runs an async function on a loop, waiting the delay between each iteration
+ * Runs an async function on a loop, waiting the delay between each iteration.
+ * On failure, logs and sleeps with exponential backoff + jitter (capped at 30s)
+ * before retrying, so a sick dependency (e.g. Postgres at max_connections) is
+ * not hammered by tight-loop restarts. The lastRun health beacon is only
+ * refreshed on success, so the existing HEALTH_TIMEOUT alerting still detects
+ * a stuck worker.
  * @param func
  * @param delay
  */
 export async function runInLoop(func: () => Promise<void>, delay: number) {
+  const BASE_BACKOFF_MS = 250;
+  const MAX_BACKOFF_MS = 30_000;
+  let consecutiveFailures = 0;
   while (true) {
     console.log("running %s", func.name);
     const start = Date.now();
-    await func();
+    try {
+      await func();
+    } catch (e) {
+      consecutiveFailures += 1;
+      console.error(
+        "%s failed (consecutive failures: %d):",
+        func.name,
+        consecutiveFailures,
+        e,
+      );
+      // 2 ** capped so the exponent doesn't overflow on long outages
+      const exp = Math.min(consecutiveFailures, 10);
+      const backoff = Math.min(MAX_BACKOFF_MS, BASE_BACKOFF_MS * 2 ** exp);
+      const jitter = Math.random() * 250;
+      await new Promise((resolve) => setTimeout(resolve, backoff + jitter));
+      continue;
+    }
+    consecutiveFailures = 0;
     const end = Date.now();
     console.log("%s: %dms", func.name, end - start);
     await redis.setex(
