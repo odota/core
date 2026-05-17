@@ -55,7 +55,10 @@ export async function runReliableQueue(
   getCapacity?: () => Promise<number>,
 ) {
   const executor = async (i: number) => {
-    const consumer = new Client(config.POSTGRES_URL);
+    const consumer = new Client({
+      connectionString: config.POSTGRES_URL,
+      application_name: `odota-${config.APP_NAME || "unknown"}-queue`,
+    });
     await consumer.connect();
     while (true) {
       // If we have a way to measure capacity, throttle the processing speed based on capacity
