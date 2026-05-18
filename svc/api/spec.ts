@@ -93,6 +93,7 @@ import { matchupToString } from "../util/matchups.ts";
 
 const pool = new Pool({
   connectionString: config.READONLY_POSTGRES_URL,
+  application_name: `odota-${config.APP_NAME || "unknown"}-explorer`,
   statement_timeout: 15000,
   query_timeout: 15000,
   lock_timeout: 15000,

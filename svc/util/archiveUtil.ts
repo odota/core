@@ -43,7 +43,10 @@ export async function archivePostgresStream() {
     ORDER BY match_id asc`,
     [],
   );
-  const pg = new Client(config.POSTGRES_URL);
+  const pg = new Client({
+    connectionString: config.POSTGRES_URL,
+    application_name: `odota-${config.APP_NAME || "unknown"}-archive`,
+  });
   await pg.connect();
   const stream = pg.query(query);
   let i = 0;

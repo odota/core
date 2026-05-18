@@ -14,7 +14,10 @@ console.log(
 
 export const db = knex({
   client: "pg",
-  connection: config.POSTGRES_URL,
+  connection: {
+    connectionString: config.POSTGRES_URL,
+    application_name: `odota-${config.APP_NAME || "unknown"}`,
+  },
   pool: {
     min: 0,
     max: Number(config.POSTGRES_MAX_CONNECTIONS),
