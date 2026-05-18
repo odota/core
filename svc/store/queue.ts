@@ -127,9 +127,7 @@ export async function runReliableQueue(
  * not hammered by tight-loop restarts.
  *
  * After MAX_CONSECUTIVE_FAILURES in a row, exits the process so PM2 can do a
- * clean-slate restart (fresh Knex pool, cleared in-memory state). With the
- * default backoff curve this is ~7.5 minutes of sustained failure before
- * giving up, which is well past any transient DB blip.
+ * clean-slate restart (fresh Knex pool, cleared in-memory state).
  *
  * The lastRun health beacon is only refreshed on success, so the existing
  * HEALTH_TIMEOUT alerting still detects a stuck worker before exit.
