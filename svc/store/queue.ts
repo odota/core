@@ -121,17 +121,26 @@ export async function runReliableQueue(
 
 /**
  * Runs an async function on a loop, waiting the delay between each iteration.
+ *
  * On failure, logs and sleeps with exponential backoff + jitter (capped at 30s)
  * before retrying, so a sick dependency (e.g. Postgres at max_connections) is
- * not hammered by tight-loop restarts. The lastRun health beacon is only
- * refreshed on success, so the existing HEALTH_TIMEOUT alerting still detects
- * a stuck worker.
+ * not hammered by tight-loop restarts.
+ *
+ * After MAX_CONSECUTIVE_FAILURES in a row, exits the process so PM2 can do a
+ * clean-slate restart (fresh Knex pool, cleared in-memory state). With the
+ * default backoff curve this is ~7.5 minutes of sustained failure before
+ * giving up, which is well past any transient DB blip.
+ *
+ * The lastRun health beacon is only refreshed on success, so the existing
+ * HEALTH_TIMEOUT alerting still detects a stuck worker before exit.
+ *
  * @param func
  * @param delay
  */
 export async function runInLoop(func: () => Promise<void>, delay: number) {
   const BASE_BACKOFF_MS = 250;
   const MAX_BACKOFF_MS = 30_000;
+  const MAX_CONSECUTIVE_FAILURES = 10;
   let consecutiveFailures = 0;
   while (true) {
     console.log("running %s", func.name);
@@ -146,6 +155,14 @@ export async function runInLoop(func: () => Promise<void>, delay: number) {
         consecutiveFailures,
         e,
       );
+      if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
+        console.error(
+          "%s exceeded %d consecutive failures, exiting for PM2 restart",
+          func.name,
+          MAX_CONSECUTIVE_FAILURES,
+        );
+        process.exit(1);
+      }
       // 2 ** capped so the exponent doesn't overflow on long outages
       const exp = Math.min(consecutiveFailures, 10);
       const backoff = Math.min(MAX_BACKOFF_MS, BASE_BACKOFF_MS * 2 ** exp);
