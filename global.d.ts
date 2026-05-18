@@ -523,6 +523,7 @@ type Metric = {
 
 type ApiExtraData = {
   seqNumBackfill?: boolean;
+  seqNumSeed?: number;
 };
 
 type GcExtraData = {

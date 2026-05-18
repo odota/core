@@ -32,7 +32,7 @@ export class ApiFetcher extends MatchFetcherBase<ApiData> {
       // });
       // match = body.result;
       if (options?.seqNumBackfill) {
-        match = await this.backfillFromSeqNumApi_INTERNAL(matchId);
+        match = await this.backfillFromSeqNumApi_INTERNAL(matchId, options?.seqNumSeed);
       }
     } catch (e: any) {
       if (e?.result?.error === "Match ID not found") {
@@ -58,7 +58,7 @@ export class ApiFetcher extends MatchFetcherBase<ApiData> {
       error: "[APIDATA]: Could not get API data for match " + matchId,
     };
   };
-  backfillFromSeqNumApi_INTERNAL = async (matchId: number) => {
+  backfillFromSeqNumApi_INTERNAL = async (matchId: number, seqNumSeed?: number) => {
     // Try to get match data from blob store
     // If not available, go back 1 ID number and try again until success (or 0)
     // count how many times we do this (max 100)
@@ -74,7 +74,7 @@ export class ApiFetcher extends MatchFetcherBase<ApiData> {
       redisCount("backfill_skip");
       return;
     }
-    let earlierSeqNum;
+    let earlierSeqNum = seqNumSeed;
     let pageBack = 0;
     while (!earlierSeqNum && pageBack <= 1000) {
       console.log("looking back %s for matchId %s", pageBack, matchId);
