@@ -19,7 +19,7 @@ export class ApiFetcher extends MatchFetcherBase<ApiData> {
   };
   fetchData = async (
     matchId: number,
-    options: { seqNumBackfill?: boolean },
+    options: ApiExtraData,
   ) => {
     let match;
     try {
