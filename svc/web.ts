@@ -207,7 +207,7 @@ app.get("/logs{/:jobId}", async (req, res) => {
 });
 
 // This is for passing the IP through if behind load balancer https://expressjs.com/en/guide/behind-proxies.html
-app.set("trust proxy", true);
+// app.set("trust proxy", true);
 
 // Compress everything after this
 app.use(compression());
