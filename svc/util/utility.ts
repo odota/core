@@ -191,8 +191,6 @@ export function buildReplayUrl(
       ".bz2",
       "",
     )}`;
-  } else if (cluster === 236) {
-    return `http://replay${cluster}.wmsj.cn/570/${matchId}_${replaySalt}${suffix}`;
   }
   return `http://replay${cluster}.valve.net/570/${matchId}_${replaySalt}${suffix}`;
 }
