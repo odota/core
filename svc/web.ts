@@ -207,6 +207,8 @@ app.get("/logs{/:jobId}", async (req, res) => {
 });
 
 // This is for passing the IP through if behind load balancer https://expressjs.com/en/guide/behind-proxies.html
+// Cloudflare also sets the x-forwarded-for header
+// However, setting to true allows clients to spoof the X-Forwarded-For header
 // app.set("trust proxy", true);
 
 // Compress everything after this
@@ -235,7 +237,8 @@ app.get("/healthz", (req, res) => {
 
 app.get("/ip", (req, res) => {
   // Echo back the client's ip
-  res.end(req.ip);
+  const ip = req.headers['cf-connecting-ip'] || req.ip;
+  res.end(ip);
 });
 
 app.post("/register/:service/:host", async (req, res, next) => {
@@ -419,7 +422,7 @@ app.use(async (req, res, next) => {
     }
     res.locals.isAPIRequest = true;
   }
-  const { ip } = req;
+  const ip = req.headers['cf-connecting-ip'] || req.ip;
   let rateLimit: number | string = "";
   if (res.locals.isAPIRequest) {
     res.locals.usageIdentifier = apiKey;
