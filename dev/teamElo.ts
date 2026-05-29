@@ -61,8 +61,7 @@ stream.on("data", (match) => {
   losses.set(match.team_id1, losses.get(match.team_id1)! + Number(!win1));
   losses.set(match.team_id2, losses.get(match.team_id2)! + Number(!win2));
 });
-stream.on("end", () => {
-  console.log(teams, wins, losses, startTimes);
+stream.on("end", async () => {
   // Write the results to table
   for (const teamId of teams.keys()) {
     console.log([
