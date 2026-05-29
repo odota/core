@@ -55,7 +55,7 @@ stream.on("data", (match) => {
   const ratingDiff1 = kFactor * (win1 - e1);
   const ratingDiff2 = kFactor * (win2 - e2);
   teams.set(match.team_id1, teams.get(match.team_id1)! + ratingDiff1);
-  teams.set(match.team_id2, teams.get(match.tem_id2)! + ratingDiff2);
+  teams.set(match.team_id2, teams.get(match.team_id2)! + ratingDiff2);
   wins.set(match.team_id1, wins.get(match.team_id1)! + win1);
   wins.set(match.team_id2, wins.get(match.team_id2)! + win2);
   losses.set(match.team_id1, losses.get(match.team_id1)! + Number(!win1));
@@ -64,7 +64,7 @@ stream.on("data", (match) => {
 stream.on("end", () => {
   console.log(teams, wins, losses, startTimes);
   // Write the results to table
-  Object.keys(teams).forEach((teamId) => {
+  for (const teamId of teams.keys()) {
     console.log([
       teamId,
       teams.get(teamId),
@@ -72,7 +72,7 @@ stream.on("end", () => {
       losses.get(teamId),
       startTimes.get(teamId),
     ]);
-    db.raw(
+    await db.raw(
       `INSERT INTO team_rating(team_id, rating, wins, losses, last_match_time) VALUES(?, ?, ?, ?, ?)
   ON CONFLICT(team_id) DO UPDATE SET team_id=EXCLUDED.team_id, rating=EXCLUDED.rating, wins=EXCLUDED.wins, losses=EXCLUDED.losses, last_match_time=EXCLUDED.last_match_time`,
       [
@@ -83,7 +83,7 @@ stream.on("end", () => {
         startTimes.get(teamId),
       ],
     );
-  });
+  }
 });
 stream.on("error", (err) => {
   throw err;
