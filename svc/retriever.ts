@@ -193,8 +193,8 @@ const server = createServer(async (req, res) => {
               // Community prediction match or other reason valve is blocking
               const isBlockedByValve = matchData.result === 15;
               const isExtremelyOldMatch =
-                matchData.game_mode === "DOTA_GAMEMODE_NONE" &&
-                matchData.replay_salt === 0;
+                matchData.match?.game_mode === "DOTA_GAMEMODE_NONE" &&
+                matchData.match?.replay_salt === 0;
               const isMatchNotFound = matchData.result === 2;
               if (isBlockedByValve || isExtremelyOldMatch || isMatchNotFound) {
                 let reason = "";
