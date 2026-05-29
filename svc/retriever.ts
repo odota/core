@@ -193,8 +193,10 @@ const server = createServer(async (req, res) => {
               // Community prediction match or other reason valve is blocking
               const isBlockedByValve = matchData.result === 15;
               const isExtremelyOldMatch =
-                matchData.match?.game_mode === "DOTA_GAMEMODE_NONE" &&
+                // DOTA_GAMEMODE_NONE, the original response is a number even though the returned response is a string after JSON.stringify()
+                matchData.match?.game_mode === 0 &&
                 matchData.match?.replay_salt === 0;
+              console.log(matchData.match?.game_mode, matchData.match?.replay_salt, isExtremelyOldMatch);
               const isMatchNotFound = matchData.result === 2;
               if (isBlockedByValve || isExtremelyOldMatch || isMatchNotFound) {
                 let reason = "";
