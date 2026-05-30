@@ -1,6 +1,6 @@
 import constants, { heroes, cluster } from "dotaconstants";
 import moment from "moment";
-import { Pool } from "pg";
+import { Client } from "pg";
 import config from "../../config.ts";
 import { addJob, addReliableJob, getReliableJob } from "../store/queue.ts";
 import { buildMatch } from "../util/buildMatch.ts";
@@ -91,14 +91,13 @@ import { PRIORITY } from "../util/priority.ts";
 import { getPatchIndex } from "../util/compute.ts";
 import { matchupToString } from "../util/matchups.ts";
 
-const pool = new Pool({
+const conn = new Client({
   connectionString: config.READONLY_POSTGRES_URL,
   application_name: `odota-${config.APP_NAME || "unknown"}-explorer`,
   statement_timeout: 15000,
   query_timeout: 15000,
   lock_timeout: 15000,
   connectionTimeoutMillis: 15000,
-  max: 3,
 });
 
 const parameters = {
@@ -1264,7 +1263,7 @@ You can use the API without a key, but registering for a key allows increased ra
           let result = null;
           let err = null;
           try {
-            result = await pool.query(input);
+            result = await conn.query(input);
           } catch (e) {
             err = e;
           }
