@@ -28,8 +28,9 @@ if (process.env.ROLE) {
     await import("./svc/" + process.env.ROLE + ".ts");
   } catch (e: any) {
     console.error(e);
-    // Wait to avoid excessively fast restart loop if services aren't up yet
-    await new Promise((resolve) => setTimeout(resolve, 250));
+    // Wait with jitter to avoid excessively fast restart loop if services aren't up yet
+    const jitter = Math.random() * 250;
+    await new Promise((resolve) => setTimeout(resolve, 250 + jitter));
     process.exit(1);
   }
 } else if (process.env.GROUP) {
