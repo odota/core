@@ -99,6 +99,7 @@ const conn = new Client({
   lock_timeout: 15000,
   connectionTimeoutMillis: 15000,
 });
+await conn.connect();
 
 const parameters = {
   ...heroParams,
