@@ -364,7 +364,7 @@ export async function insertMatch(
           // Treat the result as an Elo rating change where the opponent is the average rank tier of the match * 100
           const win = Number(isRadiant(player) === radiant_win);
           const kFactor = 100;
-          const data1 = await trx.select("score").from("hero_ranking").where({
+          const data1 = await db.select("score").from("hero_ranking").where({
             account_id: player.account_id,
             hero_id: player.hero_id,
           });
