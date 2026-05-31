@@ -1,6 +1,6 @@
 import constants, { heroes, cluster } from "dotaconstants";
 import moment from "moment";
-import { Client } from "pg";
+import { Pool } from "pg";
 import config from "../../config.ts";
 import { addJob, addReliableJob, getReliableJob } from "../store/queue.ts";
 import { buildMatch } from "../util/buildMatch.ts";
@@ -91,15 +91,15 @@ import { PRIORITY } from "../util/priority.ts";
 import { getPatchIndex } from "../util/compute.ts";
 import { matchupToString } from "../util/matchups.ts";
 
-const conn = new Client({
+const conn = new Pool({
   connectionString: config.READONLY_POSTGRES_URL,
   application_name: `odota-${config.APP_NAME || "unknown"}-explorer`,
   statement_timeout: 15000,
   query_timeout: 15000,
   lock_timeout: 15000,
   connectionTimeoutMillis: 15000,
+  max: 2,
 });
-await conn.connect();
 
 const parameters = {
   ...heroParams,
