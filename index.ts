@@ -29,8 +29,8 @@ if (process.env.ROLE) {
   } catch (e: any) {
     console.error(e);
     // Wait with jitter to avoid excessively fast restart loop if services aren't up yet
-    const jitter = Math.random() * 250;
-    await new Promise((resolve) => setTimeout(resolve, 250 + jitter));
+    const jitter = Math.random() * 500;
+    await new Promise((resolve) => setTimeout(resolve, 500 + jitter));
     process.exit(1);
   }
 } else if (process.env.GROUP) {
