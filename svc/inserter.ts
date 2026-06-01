@@ -28,7 +28,7 @@ await runInLoop(async function insert() {
   const timeout = setTimeout(() => {
     redisCount("inserter_timeout");
     process.exit(1);
-  }, 10000);
+  }, 5000);
   await Promise.all(
     rows.map(async (r: any) => {
       const match = r.data;
