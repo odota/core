@@ -1007,24 +1007,21 @@ export async function queueReconcile(
   metricName: MetricName,
 ) {
   if (gcMatch) {
-    await Promise.all(
-      gcMatch.players
-        .filter((p) =>
-          metricName === "pmh_gcdata"
-            ? !Boolean(pgroup[p.player_slot]?.account_id)
-            : true,
-        )
-        .map(async (p) => {
-          if (p.account_id) {
-            const { rows } = await db.raw(
-              "INSERT INTO player_match_history(account_id, match_id, player_slot) VALUES (?, ?, ?) ON CONFLICT DO NOTHING RETURNING *",
-              [p.account_id, gcMatch.match_id, p.player_slot],
-            );
-            if (rows.length > 0) {
-              redisCount(metricName);
-            }
-          }
-        }),
-    );
+    const filtered = gcMatch.players
+      .filter((p) =>
+        metricName === "pmh_gcdata"
+          ? !Boolean(pgroup[p.player_slot]?.account_id)
+          : true,
+      )
+      .filter(p => p.account_id);
+    for (let p of filtered) {
+      const { rows } = await db.raw(
+        "INSERT INTO player_match_history(account_id, match_id, player_slot) VALUES (?, ?, ?) ON CONFLICT DO NOTHING RETURNING *",
+        [p.account_id, gcMatch.match_id, p.player_slot],
+      );
+      if (rows.length > 0) {
+        redisCount(metricName);
+      }
+    }
   }
 }
