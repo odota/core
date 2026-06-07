@@ -279,7 +279,11 @@ type ProfileJob = {
   account_id: number;
 };
 
-type CountsJob = ApiData;
+type CountsJob = ApiData & {
+  avg?: number;
+  num?: number;
+  isProTier: boolean;
+}
 type ScenariosJob = {
   match_id: number;
 };
@@ -326,7 +330,11 @@ type QueueInput =
   | {
       name: "gcdata";
       data: GcDataJob;
-    };
+    }
+  | {
+    name: "counts";
+    data: CountsJob;
+  };
 
 type ReliableQueueRow = {
   id: number;

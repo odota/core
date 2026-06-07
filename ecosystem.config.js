@@ -115,6 +115,10 @@ let arr = [
       POSTGRES_MAX_CONNECTIONS: "100",
     },
   },
+  {
+    name: "counts",
+    group: "backend",
+  },
   // {
   //   name: 'cacher',
   //   group: 'backend',

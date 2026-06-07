@@ -24,6 +24,7 @@ const health: Record<string, () => Promise<Metric>> = {
   profileDelay,
   rateDelay,
   insertDelay,
+  countsDelay,
 };
 
 // Get list of backend processes
@@ -154,6 +155,13 @@ async function insertDelay() {
   const result = await db.raw(
     "select count(*) from insert_queue WHERE processed = FALSE",
   );
+  return {
+    metric: result.rows[0]?.count,
+    limit: 50000,
+  };
+}
+async function countsDelay() {
+  const result = await db.raw("select count(*) from queue where type = 'counts'");
   return {
     metric: result.rows[0]?.count,
     limit: 50000,

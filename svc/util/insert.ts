@@ -27,13 +27,10 @@ import {
   getLaneFromPosData,
   getPatchIndex,
   isProMatch,
-  isSignificant,
   transformMatch,
 } from "./compute.ts";
-import { benchmarks } from "./benchmarksUtil.ts";
 import type knex from "knex";
 import { PRIORITY } from "./priority.ts";
-import { getEndOfWeek, getStartOfBlockMinutes } from "./time.ts";
 
 moment.relativeTimeThreshold("ss", 0);
 
@@ -101,14 +98,14 @@ export async function insertMatch(
   try {
     await upsertLeagueMatch(trx);
     await upsertMatchPostgres(trx, isProTier);
-    await updateCounts(
+    await discoverPlayers(trx);
+    await queueCounts(
       trx,
       match as ApiData,
       average_rank,
       num_rank_tier,
       isProTier,
     );
-    await discoverPlayers(trx);
     await queueMmr(trx);
     await queueGcData(trx);
     await queueRate(trx);
@@ -324,7 +321,7 @@ export async function insertMatch(
     }
   }
 
-  async function updateCounts(
+  async function queueCounts(
     trx: knex.Knex.Transaction,
     match: ApiData,
     avg: number | undefined,
@@ -333,262 +330,8 @@ export async function insertMatch(
   ) {
     // Update temporary match counts/hero rankings
     if (options.origin === "scanner" && options.type === "api") {
-      await updateHeroRankings();
-      await upsertMatchSample();
-      await updateLastPlayed();
-      await updateRecords();
-      await updateHeroCounts(isProTier);
-      await updateMatchCounts();
-      await updateBenchmarks();
+      await addReliableJob({ name: "counts", data: { ...match, avg, num, isProTier } }, { trx })
     }
-
-    async function updateHeroRankings() {
-      if (!isSignificant(match)) {
-        return;
-      }
-      const matchScore =
-        avg && !Number.isNaN(Number(avg)) ? avg * 100 : undefined;
-      if (!matchScore) {
-        return;
-      }
-      await Promise.all(
-        match.players.map(async (player) => {
-          if (
-            !player.account_id ||
-            player.account_id === getAnonymousAccountId() ||
-            !player.hero_id
-          ) {
-            return;
-          }
-          const radiant_win = match.radiant_win;
-          // Treat the result as an Elo rating change where the opponent is the average rank tier of the match * 100
-          const win = Number(isRadiant(player) === radiant_win);
-          const kFactor = 100;
-          const data1 = await db.select("score").from("hero_ranking").where({
-            account_id: player.account_id,
-            hero_id: player.hero_id,
-          });
-          const currRating1 = Number(
-            (data1 && data1[0] && data1[0].score) || 4000,
-          );
-          const r1 = 10 ** (currRating1 / 1000);
-          const r2 = 10 ** (matchScore / 1000);
-          const e1 = r1 / (r1 + r2);
-          const ratingDiff1 = kFactor * (win - e1);
-          const newScore = currRating1 + ratingDiff1;
-          return trx.raw(
-            "INSERT INTO hero_ranking VALUES(?, ?, ?) ON CONFLICT(account_id, hero_id) DO UPDATE SET score = ?",
-            [player.account_id, player.hero_id, newScore, newScore],
-          );
-        }),
-      );
-    }
-
-    async function upsertMatchSample() {
-      if (match.match_id % 100 < Number(config.PUBLIC_SAMPLE_PERCENT)) {
-        const radiant_team = match.players
-          .filter((p) => isRadiant(p))
-          .map((p) => p.hero_id);
-        const dire_team = match.players
-          .filter((p) => !isRadiant(p))
-          .map((p) => p.hero_id);
-        const newMatch = {
-          ...match,
-          avg_rank_tier: avg ?? null,
-          num_rank_tier: num ?? null,
-          radiant_team,
-          dire_team,
-        };
-        await upsert(trx, "public_matches", newMatch, {
-          match_id: newMatch.match_id,
-        });
-      }
-    }
-
-    async function updateRecord(
-      field: keyof ApiData | keyof ApiDataPlayer,
-      player: ApiDataPlayer,
-    ) {
-      redis.zadd(
-        `records:${field}`,
-        Number(
-          match[field as keyof ApiData] || player[field as keyof ApiDataPlayer],
-        ),
-        [match.match_id, match.start_time, player.hero_id].join(":"),
-      );
-      // Keep only 100 top scores
-      redis.zremrangebyrank(`records:${field}`, "0", "-101");
-      const expire = getEndOfWeek();
-      redis.expireat(`records:${field}`, expire);
-    }
-
-    async function updateRecords() {
-      if (isSignificant(match) && isRanked(match)) {
-        updateRecord("duration", {} as ApiDataPlayer);
-        match.players.forEach((player) => {
-          updateRecord("kills", player);
-          updateRecord("deaths", player);
-          updateRecord("assists", player);
-          updateRecord("last_hits", player);
-          updateRecord("denies", player);
-          updateRecord("gold_per_min", player);
-          updateRecord("xp_per_min", player);
-          updateRecord("hero_damage", player);
-          updateRecord("tower_damage", player);
-          updateRecord("hero_healing", player);
-        });
-      }
-    }
-
-    async function updateLastPlayed() {
-      const filteredPlayers = match.players.filter(
-        (player) =>
-          player.account_id && player.account_id !== getAnonymousAccountId(),
-      );
-      const lastMatchTime = new Date(match.start_time * 1000);
-      await Promise.all(
-        filteredPlayers.map((player) =>
-          upsertPlayer(trx, {
-            account_id: player.account_id,
-            last_match_time: lastMatchTime,
-            // If the player's ID is showing up then they aren't anonymous
-            fh_unavailable: false,
-          }),
-        ),
-      );
-    }
-
-    async function updateHeroCounts(isProTier: boolean) {
-      // If match has leagueid, update pro picks and wins
-      // If turbo, update picks and wins
-      // Otherwise, update pub picks and wins if significant
-      // If none of the above, skip
-      // If pub and we have a rank tier, also update the 1-8 rank pick/win
-      let tier: string | null = null;
-      let rank: number | null = null;
-      if (isProTier) {
-        tier = "pro";
-      } else if (isTurbo(match)) {
-        tier = "turbo";
-      } else if (isSignificant(match)) {
-        tier = "pub";
-        if (avg) {
-          rank = Math.floor(avg / 10);
-        }
-      }
-      if (!tier) {
-        return;
-      }
-      const timestamp = moment.utc().startOf("day").unix();
-      const expire = moment.utc().startOf("day").add(8, "day").unix();
-      for (let player of match.players) {
-        const heroId = player.hero_id;
-        if (heroId) {
-          const win = Number(isRadiant(player) === match.radiant_win);
-          const updateKeys = (prefix: string) => {
-            const rKey = `${heroId}:${prefix}:pick:${timestamp}`;
-            redis.incr(rKey);
-            redis.expireat(rKey, expire);
-            if (win) {
-              const rKeyWin = `${heroId}:${prefix}:win:${timestamp}`;
-              redis.incr(rKeyWin);
-              redis.expireat(rKeyWin, expire);
-            }
-          };
-          if (tier) {
-            // pro, pub, or turbo
-            updateKeys(tier);
-          }
-          if (rank) {
-            // 1 to 8 based on the average level of the match
-            updateKeys(rank.toString());
-          }
-        }
-      }
-      // Do bans for pro
-      if (isProTier) {
-        match.picks_bans?.forEach((pb) => {
-          if (pb.is_pick === false) {
-            const heroId = pb.hero_id;
-            const rKey = `${heroId}:pro:ban:${timestamp}`;
-            redis.incr(rKey);
-            redis.expireat(rKey, expire);
-          }
-        });
-      }
-    }
-
-    async function updateMatchCounts() {
-      redisCount(`${match.game_mode}_game_mode` as MetricName);
-      redisCount(`${match.lobby_type}_lobby_type` as MetricName);
-      redisCount(`${match.cluster}_cluster` as MetricName);
-    }
-
-    async function updateBenchmarks() {
-      const turbo = isTurbo(match);
-      if (
-        match.match_id % 100 < Number(config.BENCHMARKS_SAMPLE_PERCENT) &&
-        (isSignificant(match) || turbo)
-      ) {
-        for (let p of match.players) {
-          // only do if all players have heroes
-          if (p.hero_id) {
-            Object.keys(benchmarks).forEach((key) => {
-              const metric = benchmarks[key](match, p);
-              if (
-                metric !== undefined &&
-                metric !== null &&
-                !Number.isNaN(Number(metric))
-              ) {
-                const rkey = [
-                  "benchmarks",
-                  getStartOfBlockMinutes(
-                    Number(config.BENCHMARK_RETENTION_MINUTES),
-                    0,
-                  ),
-                  key,
-                  p.hero_id,
-                  turbo ? "turbo" : "",
-                ].join(":");
-                redis.zadd(rkey, metric, match.match_id);
-                // expire at time two epochs later (after prev/current cycle)
-                const expiretime = getStartOfBlockMinutes(
-                  Number(config.BENCHMARK_RETENTION_MINUTES),
-                  2,
-                );
-                redis.expireat(rkey, expiretime);
-              }
-            });
-          }
-        }
-      }
-    }
-    /*
-// Stores winrate of each subset of heroes in this game
-function updateCompositions() {
-  generateMatchups(match, 5, true).forEach((team) => {
-    const key = team.split(':')[0];
-    const win = Number(team.split(':')[1]);
-    trx.raw(`INSERT INTO compositions (composition, games, wins)
-    VALUES (?, 1, ?)
-    ON CONFLICT(composition)
-    DO UPDATE SET games = compositions.games + 1, wins = compositions.wins + ?
-    `, [key, win, win]);
-    redis.hincrby('compositions', team, 1);
-  });
-}
-
-// Stores result of each matchup of subsets of heroes in this game
-function updateMatchups(match) {
-  generateMatchups(match, 1).forEach((key) => {
-    trx.raw(`INSERT INTO matchups (matchup, num)
-    VALUES (?, 1)
-    ON CONFLICT(matchup)
-    DO UPDATE SET num = matchups.num + 1
-    `, [key])
-    redis.hincrby('matchups', key, 1);
-}
-*/
   }
 
   async function discoverPlayers(trx: knex.Knex.Transaction) {
