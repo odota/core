@@ -12,7 +12,7 @@ if (!trackedExists) {
 
 await runInLoop(async function insert() {
   const { rows } = await db.raw(
-    "SELECT match_seq_num, data FROM insert_queue WHERE processed = FALSE ORDER BY match_seq_num ASC LIMIT 40",
+    "SELECT match_seq_num, data FROM insert_queue WHERE processed = FALSE ORDER BY match_seq_num ASC LIMIT 50",
   );
   if (!rows.length) {
     await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -25,10 +25,10 @@ await runInLoop(async function insert() {
     [threshold],
   );
   const skipRating = cappedCount.rows[0].count >= threshold;
-  const timeout = setTimeout(() => {
-    redisCount("inserter_timeout");
-    process.exit(1);
-  }, 4000);
+  // const timeout = setTimeout(() => {
+  //   redisCount("inserter_timeout");
+  //   process.exit(1);
+  // }, 5000);
   await Promise.all(
     rows.map(async (r: any) => {
       const match = r.data;
@@ -43,5 +43,5 @@ await runInLoop(async function insert() {
       });
     }),
   );
-  clearTimeout(timeout);
+  // clearTimeout(timeout);
 }, 0);

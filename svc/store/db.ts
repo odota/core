@@ -17,16 +17,20 @@ export const db = knex({
   connection: {
     connectionString: config.POSTGRES_URL,
     application_name: `odota-${config.APP_NAME || "unknown"}`,
+    statement_timeout: 600000,
   },
   pool: {
     min: 0,
     max: Number(config.POSTGRES_MAX_CONNECTIONS),
-    // afterCreate: (conn, done) => {
-    //   // Set the minimum similarity for pg_trgm
-    //   conn.query('SELECT set_limit(0.6);', (err) => {
-    //     // if err is not falsy, connection is discarded from pool
-    //     done(err, conn);
-    //   });
+    // afterCreate: (conn: any, done: any) => {
+      // Set the minimum similarity for pg_trgm
+      // conn.query('SELECT set_limit(0.6);', (err) => {
+      //   // if err is not falsy, connection is discarded from pool
+      //   done(err, conn);
+      // });
+      // conn.query('SET statement_timeout TO 60000;', (err: any) => {
+      //   done(err, conn);
+      // });
     // },
   },
 });
