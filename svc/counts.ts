@@ -10,6 +10,7 @@ import { benchmarks } from "./util/benchmarksUtil.ts";
 
 runReliableQueue("counts", 1, async (job: CountsJob, metadata) => {
     const match = job;
+    console.time(match.match_id.toString());
     const trx = await db.transaction();
     const { avg, num, isProTier } = job;
 
@@ -22,6 +23,7 @@ runReliableQueue("counts", 1, async (job: CountsJob, metadata) => {
     await updateBenchmarks();
     
     await trx.commit();
+    console.timeEnd(match.match_id.toString());
 
     return true;
 
