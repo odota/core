@@ -192,7 +192,11 @@ export function buildReplayUrl(
       "",
     )}`;
   }
-  return `http://replay${cluster}.valve.net/570/${matchId}_${replaySalt}${suffix}`;
+  let domain = "valve.net";
+  if (cluster === 413 || cluster === 415 || cluster === 417) {
+    domain = "dota2.com.cn";
+  }
+  return `http://replay${cluster}.${domain}/570/${matchId}_${replaySalt}${suffix}`;
 }
 
 /**
