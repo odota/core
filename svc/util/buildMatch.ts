@@ -144,33 +144,35 @@ export async function getPlayerBenchmarks(m: Match) {
 }
 
 async function getPlayerDetails(match: Match | ParsedMatch) {
-  return Promise.all(
-    // Get names, last login for players from DB
-    match.players.map(async (p) => {
-      const { rows } = await db.raw(
-        `
-        SELECT personaname, name, last_login, rating, status, computed_mmr
-        FROM players
-        LEFT JOIN notable_players USING(account_id)
-        LEFT JOIN rank_tier USING(account_id)
-        LEFT JOIN player_computed_mmr USING(account_id)
-        LEFT JOIN subscriber USING(account_id)
-        WHERE players.account_id = ?
-      `,
-        [p.account_id ?? null],
-      );
-      const row = rows[0];
-      return {
-        ...p,
-        personaname: row?.personaname,
-        name: row?.name,
-        last_login: row?.last_login,
-        rank_tier: row?.rating,
-        computed_mmr: row?.computed_mmr,
-        is_subscriber: Boolean(row?.status),
-      };
-    }),
+  const accountIds = match.players.map((p) => p.account_id ?? null).filter(Boolean);
+
+  const { rows } = await db.raw(
+    `
+    SELECT players.account_id, personaname, name, last_login, rating, status, computed_mmr
+    FROM players
+    LEFT JOIN notable_players USING(account_id)
+    LEFT JOIN rank_tier USING(account_id)
+    LEFT JOIN player_computed_mmr USING(account_id)
+    LEFT JOIN subscriber USING(account_id)
+    WHERE players.account_id = ANY(?)
+  `,
+    [accountIds],
   );
+
+  const rowsByAccountId = new Map<number | undefined, AnyDict>(rows.map((row: AnyDict) => [row.account_id, row]));
+
+  return match.players.map((p) => {
+    const row = rowsByAccountId.get(p.account_id);
+    return {
+      ...p,
+      personaname: row?.personaname,
+      name: row?.name,
+      last_login: row?.last_login,
+      rank_tier: row?.rating,
+      computed_mmr: row?.computed_mmr,
+      is_subscriber: Boolean(row?.status),
+    };
+  });
 }
 
 async function getCosmetics(match: Match | ParsedMatch) {

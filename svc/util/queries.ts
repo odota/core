@@ -237,43 +237,45 @@ export async function getPeers(
   teammatesArr.sort((a, b) => b.games - a.games);
   // limit to 200 max players
   teammatesArr = teammatesArr.slice(0, 200);
-  return Promise.all(
-    teammatesArr.map(async (t) => {
-      const row: AnyDict = await db
-        .first(
-          "players.account_id",
-          "personaname",
-          "name",
-          "avatar",
-          "avatarfull",
-          "last_login",
-          "subscriber.status",
-        )
-        .from("players")
-        .leftJoin(
-          "notable_players",
-          "players.account_id",
-          "notable_players.account_id",
-        )
-        .leftJoin("subscriber", "players.account_id", "subscriber.account_id")
-        .where({
-          "players.account_id": t.account_id,
-        });
-      if (!row) {
-        return { ...t };
-      }
-      return {
-        ...t,
-        personaname: row.personaname,
-        name: row.name,
-        is_contributor: isContributor(t.account_id),
-        is_subscriber: Boolean(row.status),
-        last_login: row.last_login,
-        avatar: row.avatar,
-        avatarfull: row.avatarfull,
-      };
-    }),
-  );
+  const accountIds = teammatesArr.map((t) => t.account_id);
+
+  const rows: AnyDict[] = await db
+    .select(
+      "players.account_id",
+      "personaname",
+      "name",
+      "avatar",
+      "avatarfull",
+      "last_login",
+      "subscriber.status",
+    )
+    .from("players")
+    .leftJoin(
+      "notable_players",
+      "players.account_id",
+      "notable_players.account_id",
+    )
+    .leftJoin("subscriber", "players.account_id", "subscriber.account_id")
+    .whereIn("players.account_id", accountIds);
+
+  const rowsByAccountId = new Map(rows.map((row) => [row.account_id, row]));
+
+  return teammatesArr.map((t) => {
+    const row = rowsByAccountId.get(t.account_id);
+    if (!row) {
+      return { ...t };
+    }
+    return {
+      ...t,
+      personaname: row.personaname,
+      name: row.name,
+      is_contributor: isContributor(t.account_id),
+      is_subscriber: Boolean(row.status),
+      last_login: row.last_login,
+      avatar: row.avatar,
+      avatarfull: row.avatarfull,
+    };
+  });
 }
 export async function getProPeers(
   input: PeersCount,
