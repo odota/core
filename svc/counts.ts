@@ -8,7 +8,7 @@ import { getEndOfWeek, getStartOfBlockMinutes } from "./util/time.ts";
 import { getAnonymousAccountId, isRadiant, isRanked, isTurbo } from "./util/utility.ts";
 import { benchmarks } from "./util/benchmarksUtil.ts";
 
-runReliableQueue("counts", 1, async (job: CountsJob, metadata) => {
+runReliableQueue("counts", 2, async (job: CountsJob, metadata) => {
     const match = job;
     console.time(match.match_id.toString());
     const trx = await db.transaction();
