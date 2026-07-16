@@ -184,7 +184,7 @@ WHERE keyspace_name = 'yasp';
   );
   return {
     metric: result.rows[0]?.size,
-    limit: 10 * 10 ** 12,
+    limit: 6.1 * 10 ** 12,
   };
 }
 async function diskUsage() {
@@ -201,6 +201,6 @@ async function redisUsage() {
     .find((line: string) => line.startsWith("used_memory"));
   return {
     metric: Number(line?.split(":")[1]),
-    limit: 6 * 10 ** 9,
+    limit: 10 * 10 ** 9,
   };
 }
