@@ -1,5 +1,6 @@
 import ProtoBuf from "protobufjs";
 import { spawn } from "node:child_process";
+import { zstdDecompressSync } from "node:zlib";
 import { buildReplayUrl } from "../util/utility.ts";
 import { MatchFetcherBase } from "./MatchFetcherBase.ts";
 import { GcdataFetcher } from "./GcdataFetcher.ts";
@@ -41,10 +42,18 @@ export class MetaFetcher extends MatchFetcherBase<Record<string, any>> {
     const start = Date.now();
     const resp = await fetch(url);
     const bzIn = Buffer.from(await resp.arrayBuffer());
-    const bz = spawn(`bunzip2`);
-    bz.stdin.write(bzIn);
-    bz.stdin.end();
-    const outBuf = await buffer(bz.stdout);
+    // Detect compression by magic bytes rather than URL extension: Valve switched
+    // meta files from bzip2 to Zstandard around 2026-07-27, keeping the .bz2 extension
+    const isZstd = bzIn.length >= 4 && bzIn.readUInt32LE(0) === 0xfd2fb528;
+    let outBuf: Buffer;
+    if (isZstd) {
+      outBuf = zstdDecompressSync(bzIn);
+    } else {
+      const bz = spawn(`bunzip2`);
+      bz.stdin.write(bzIn);
+      bz.stdin.end();
+      outBuf = await buffer(bz.stdout);
+    }
     const message: any = CDOTAMatchMetadataFile.decode(outBuf);
     // message.metadata.teams.forEach((team) => {
     //   team.players.forEach((player) => {
