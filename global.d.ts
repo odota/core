@@ -139,6 +139,9 @@ interface ParsedPlayer extends Player {
   gold_t: number[];
   xp_t: number[];
   lh_t: number[];
+  camps_stacked_t: number[];
+  hero_damage_t: number[];
+  hero_healing_t: number[];
   item_uses: NumberDict;
   buyback_log: any[];
   killed: NumberDict;
