@@ -357,7 +357,7 @@ app.post("/subCheckout", async (req, res, next) => {
         account_id: req.user?.account_id ?? "",
       }
     },
-    success_url: `${config.ROOT_URL}/keys/subSuccess?session_id={CHECKOUT_SESSION_ID}`,
+    success_url: `${config.ROOT_URL}/subSuccess?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${config.UI_HOST}/subscribe`,
     allow_promotion_codes: true,
   });
