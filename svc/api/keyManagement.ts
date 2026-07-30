@@ -23,6 +23,14 @@ keys.use((req, res, next) => {
   }
   return next();
 });
+keys.use(async (req, res, next) => {
+  const rows = await db.from("api_keys").where({
+    account_id: req.user?.account_id,
+  });
+  res.locals.keyRecord = getActiveKey(rows);
+  res.locals.allKeyRecords = rows;
+  return next();
+});
 // @param rows - query result from api_keys table
 function getActiveKey(rows: any[]) {
   const notCanceled = rows.filter((row) => row.is_canceled != true);
@@ -44,14 +52,6 @@ async function getOpenInvoices(customerId: string) {
  */
 keys
   .route("/")
-  .all(async (req, res, next) => {
-    const rows = await db.from("api_keys").where({
-      account_id: req.user?.account_id,
-    });
-    res.locals.keyRecord = getActiveKey(rows);
-    res.locals.allKeyRecords = rows;
-    next();
-  })
   .get(async (req, res, next) => {
     const { keyRecord, allKeyRecords } = res.locals;
     if (!hasActiveKey(keyRecord) && allKeyRecords.length === 0) {
