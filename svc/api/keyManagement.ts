@@ -65,11 +65,6 @@ keys
       const toReturn: any = {
         api_key,
       };
-      const customer = await stripe.customers.retrieve(customer_id);
-      //@ts-expect-error
-      const source = customer.sources.data[0];
-      toReturn.credit_brand = source?.brand;
-      toReturn.credit_last4 = source?.last4;
       const sub = await stripe.subscriptions.retrieve(subscription_id);
       toReturn.current_period_end = sub.current_period_end;
       return toReturn;
