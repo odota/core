@@ -339,7 +339,36 @@ app.get("/logout", (req, res) => {
 // req.body available after this
 app.use(bodyParser.json());
 
-app.get("/subscribeSuccess", async (req, res, next) => {
+app.post("/subCheckout", async (req, res, next) => {
+  const session = await stripe.checkout.sessions.create({
+    mode: "subscription",
+    client_reference_id: String(req.user?.account_id ?? ""),
+    line_items: [
+      {
+        price:
+          process.env.NODE_ENV === "development"
+            ? "price_1LE6FHCHN72mG1oK4E4NdERI"
+            : "price_1LE5NqCHN72mG1oKg2Y9pqXb",
+        quantity: 1,
+      },
+    ],
+    subscription_data: {
+      billing_cycle_anchor: moment
+        .utc()
+        .add(1, "month")
+        .startOf("month")
+        .unix(),
+      metadata: {
+        account_id: req.user?.account_id ?? "",
+      },
+    },
+    success_url: `${config.ROOT_URL}/keys/subSuccess?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${config.UI_HOST}/subscribe`,
+  });
+  return res.json({ url: session.url });
+});
+
+app.get("/subSuccess", async (req, res, next) => {
   if (!req.query.session_id) {
     return res.status(400).json({ error: "no session ID" });
   }
@@ -361,7 +390,7 @@ app.get("/subscribeSuccess", async (req, res, next) => {
   return res.redirect(`${config.UI_HOST}/subscribe`);
 });
 
-app.post("/manageSub", async (req, res, next) => {
+app.post("/subManage", async (req, res, next) => {
   if (!req.user?.account_id) {
     return res.status(400).json({ error: "no account ID" });
   }

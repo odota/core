@@ -5,6 +5,7 @@ import stripe from "../store/stripe.ts";
 import db from "../store/db.ts";
 import config from "../../config.ts";
 import { redisCount } from "../store/redis.ts";
+import type Stripe from "stripe";
 
 const stripeAPIPlan = config.STRIPE_API_PLAN;
 const keys = express.Router();
@@ -29,10 +30,6 @@ function getActiveKey(rows: any[]) {
 }
 function hasActiveKey(getActiveKeyResult: any) {
   return getActiveKeyResult !== null;
-}
-function hasToken(req: express.Request) {
-  const { token } = req.body;
-  return token && token.id && token.email;
 }
 async function getOpenInvoices(customerId: string) {
   const invoices = await stripe.invoices.list({
@@ -150,128 +147,135 @@ keys
         is_canceled: true,
       });
     res.sendStatus(200);
-  })
-  .post(async (req, res, next) => {
-    // Creates key
-    if (!hasToken(req)) {
-      return res.status(500).json({
-        error: "Missing token",
-      });
+  });
+
+/**
+ * Creates a Stripe-hosted Checkout Session for a new API key subscription.
+ * Mirrors the pattern used for the /subscribeSuccess + /manageSub flow in web.ts:
+ * the client is redirected to a Stripe-hosted page instead of collecting card
+ * details itself (see https://docs.stripe.com/payments/checkout/migration).
+ */
+keys.post("/checkout", async (req, res, next) => {
+  const { keyRecord, allKeyRecords } = res.locals;
+  if (hasActiveKey(keyRecord)) {
+    // Already has an active key/subscription, nothing to do
+    return res.sendStatus(200);
+  }
+  // Optionally verify the account_id
+  if (req.user?.account_id && Number(config.API_KEY_GEN_THRESHOLD)) {
+    const threshold = await db
+      .first("account_id")
+      .from("players")
+      .orderBy("account_id", "desc");
+    const fail =
+      Number(req.user?.account_id) >
+      threshold.account_id - Number(config.API_KEY_GEN_THRESHOLD);
+    if (fail) {
+      redisCount("gen_api_key_invalid");
+      return res.status(400).json({ error: "Failed validation" });
     }
-    const { keyRecord, allKeyRecords } = res.locals;
-    const { token } = req.body;
-    let customer_id;
-    if (hasActiveKey(keyRecord)) {
-      console.log("Active key exists for", req.user?.account_id);
-      return res.sendStatus(200);
+  }
+  // Returning customer: reuse the existing Stripe customer, block on unpaid invoices
+  let customerId = allKeyRecords?.[0].customer_id;
+  if (customerId) {
+    const invoices = await getOpenInvoices(customerId);
+    if (invoices.length > 0) {
+      console.log(
+        "Open invoices exist for",
+        req.user?.account_id,
+        "customer",
+        customerId,
+      );
+      return res.status(402).json({ error: "Open invoice" });
     }
-    // Optionally verify the account_id
-    if (req.user?.account_id && Number(config.API_KEY_GEN_THRESHOLD)) {
-      const threshold = await db
-        .first("account_id")
-        .from("players")
-        .orderBy("account_id", "desc");
-      const fail =
-        Number(req.user?.account_id) >
-        threshold.account_id - Number(config.API_KEY_GEN_THRESHOLD);
-      if (fail) {
-        redisCount("gen_api_key_invalid");
-        return res.sendStatus(400).json({ error: "Failed validation" });
-      }
-    }
-    // returning customer
-    if (allKeyRecords.length > 0) {
-      customer_id = allKeyRecords[0].customer_id;
-      const invoices = await getOpenInvoices(customer_id);
-      if (invoices.length > 0) {
-        console.log(
-          "Open invoices exist for",
-          req.user?.account_id,
-          "customer",
-          customer_id,
-        );
-        return res.status(402).json({ error: "Open invoice" });
-      }
-      try {
-        await stripe.customers.update(customer_id, {
-          email: token.email,
-          source: token.id,
-        });
-      } catch (err) {
-        // probably insufficient funds
-        return res.status(402).json(err);
-      }
-    }
-    // New customer -> create customer first
-    else {
-      try {
-        const customer = await stripe.customers.create({
-          source: token.id,
-          email: token.email,
-          metadata: {
-            account_id: req.user?.account_id ?? "",
-          },
-        });
-        customer_id = customer.id;
-      } catch (err) {
-        // probably insufficient funds
-        return res.status(402).json(err);
-      }
-    }
-    const apiKey = crypto.randomUUID();
-    const sub = await stripe.subscriptions.create({
-      customer: customer_id,
-      items: [{ plan: stripeAPIPlan }],
+  }
+  const session = await stripe.checkout.sessions.create({
+    mode: "subscription",
+    customer: customerId,
+    client_reference_id: String(req.user?.account_id ?? ""),
+    line_items: [
+      {
+        price: stripeAPIPlan,
+        quantity: 1,
+      },
+    ],
+    subscription_data: {
       billing_cycle_anchor: moment
         .utc()
         .add(1, "month")
         .startOf("month")
         .unix(),
       metadata: {
-        apiKey,
+        account_id: req.user?.account_id ?? "",
       },
-    });
-    await db.raw(
-      `
+    },
+    // Land back on this service (not the UI) so we can persist the new key
+    // before bouncing the user to the UI, same as /subscribeSuccess does.
+    success_url: `${config.ROOT_URL}/keys/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${config.UI_HOST}/api-keys`,
+  });
+  return res.json({ url: session.url });
+});
+
+/**
+ * Stripe redirects here after a successful Checkout Session (see /checkout above).
+ * Equivalent of /subscribeSuccess in web.ts, but provisions an API key/subscription
+ * pair instead of a subscriber row.
+ */
+keys.get("/success", async (req, res, next) => {
+  if (!req.query.session_id) {
+    return res.status(400).json({ error: "no session ID" });
+  }
+  if (!req.user?.account_id) {
+    return res.status(400).json({ error: "no account ID" });
+  }
+  // look up the checkout session id: https://stripe.com/docs/payments/checkout/custom-success-page
+  const session = await stripe.checkout.sessions.retrieve(
+    req.query.session_id as string,
+    { expand: ["subscription"] },
+  );
+  const subscription = session.subscription as Stripe.Subscription;
+  const apiKey = crypto.randomUUID();
+  // Store the generated key on the subscription for reference/debugging
+  await stripe.subscriptions.update(subscription.id, {
+    metadata: { apiKey },
+  });
+  await db.raw(
+    `
           INSERT INTO api_keys (account_id, api_key, customer_id, subscription_id)
           VALUES (?, ?, ?, ?)
           ON CONFLICT (account_id, subscription_id) DO UPDATE SET
           api_key = ?, customer_id = ?, subscription_id = ?
         `,
-      [
-        req.user?.account_id,
-        apiKey,
-        sub.customer,
-        sub.id,
-        apiKey,
-        sub.customer,
-        sub.id,
-      ],
-    );
-    res.sendStatus(200);
-  })
-  .put(async (req, res, next) => {
-    // Updates billing
-    if (!hasToken(req)) {
-      return res.status(400).json({
-        error: "Missing token",
-      });
-    }
-    const { keyRecord } = res.locals;
-    if (!hasActiveKey(keyRecord)) {
-      throw Error("No record to update.");
-    }
-    const { customer_id, subscription_id } = keyRecord;
-    const {
-      token: { email, id },
-    } = req.body;
-    await stripe.customers.update(customer_id, {
-      email,
-    });
-    await stripe.subscriptions.update(subscription_id, {
-      //@ts-expect-error
-      source: id,
-    });
-    res.sendStatus(200);
+    [
+      req.user.account_id,
+      apiKey,
+      session.customer,
+      subscription?.id,
+      apiKey,
+      session.customer,
+      subscription?.id,
+    ],
+  );
+  // Send the user back to the API key management page
+  return res.redirect(`${config.UI_HOST}/api-keys`);
+});
+
+/**
+ * Creates a Stripe Billing Portal session so the customer can update their
+ * payment method, replacing the old client-side "update billing" card token
+ * flow. Mirrors /manageSub in web.ts.
+ */
+keys.post("/manage", async (req, res, next) => {
+  const { keyRecord } = res.locals;
+  if (!hasActiveKey(keyRecord)) {
+    return res.status(400).json({ error: "No active key found" });
+  }
+  const session = await stripe.billingPortal.sessions.create({
+    customer: keyRecord.customer_id,
+    return_url: req.body?.return_url || `${config.UI_HOST}/api-keys`,
   });
+  return res.json({ url: session.url });
+});
+
 export default keys;
