@@ -266,7 +266,6 @@ keys.post("/manage", async (req, res, next) => {
   if (!hasActiveKey(keyRecord)) {
     return res.status(400).json({ error: "No active key found" });
   }
-  console.log(keyRecord);
   const session = await stripe.billingPortal.sessions.create({
     customer: keyRecord.customer_id,
     return_url: req.body?.return_url || `${config.UI_HOST}/api-keys`,
