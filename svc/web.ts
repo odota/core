@@ -352,16 +352,6 @@ app.post("/subCheckout", async (req, res, next) => {
         quantity: 1,
       },
     ],
-    subscription_data: {
-      billing_cycle_anchor: moment
-        .utc()
-        .add(1, "month")
-        .startOf("month")
-        .unix(),
-      metadata: {
-        account_id: req.user?.account_id ?? "",
-      },
-    },
     success_url: `${config.ROOT_URL}/keys/subSuccess?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${config.UI_HOST}/subscribe`,
   });
