@@ -19,9 +19,13 @@ await runInLoop(async function doSyncSubs() {
     // Delete all status from subscribers
     await trx.raw("UPDATE subscriber SET status = NULL");
     for (let sub of result) {
-      // Mark list of subscribers as active
-      await trx.raw("UPDATE subscriber SET status = ? WHERE customer_id = ?", [
-        sub.status,
+      // Reconcile, insert any missing subscribers
+      const accountId = sub.metadata['account_id'];
+      if (accountId) {
+        await trx.raw("INSERT INTO subscriber(account_id, customer_id, status) VALUES (?, ?, 'active') ON CONFLICT DO NOTHING", [Number(accountId), sub.customer]);
+      }
+      // Mark subscribers as active
+      await trx.raw("UPDATE subscriber SET status = 'active' WHERE customer_id = ?", [
         sub.customer,
       ]);
     }

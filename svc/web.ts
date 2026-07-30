@@ -376,6 +376,7 @@ app.get("/subSuccess", async (req, res, next) => {
   );
   const accountId = Number(req.user.account_id);
   // associate the customer id with the steam account ID (req.user.account_id)
+  // NOTE: This may not be hit if the customer loses connection. Either integrate with Stripe webhooks or rely on syncSubs to reconcile
   await db.raw(
     "INSERT INTO subscriber(account_id, customer_id, status) VALUES (?, ?, ?) ON CONFLICT(account_id) DO UPDATE SET account_id = EXCLUDED.account_id, customer_id = EXCLUDED.customer_id, status = EXCLUDED.status",
     [accountId, session.customer, "active"],
