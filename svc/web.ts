@@ -352,6 +352,11 @@ app.post("/subCheckout", async (req, res, next) => {
         quantity: 1,
       },
     ],
+    subscription_data: {
+      metadata: {
+        account_id: req.user?.account_id ?? "",
+      }
+    },
     success_url: `${config.ROOT_URL}/keys/subSuccess?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${config.UI_HOST}/subscribe`,
   });
@@ -369,12 +374,11 @@ app.get("/subSuccess", async (req, res, next) => {
   const session = await stripe.checkout.sessions.retrieve(
     req.query.session_id as string,
   );
-  const customer = await stripe.customers.retrieve(session.customer as string);
   const accountId = Number(req.user.account_id);
   // associate the customer id with the steam account ID (req.user.account_id)
   await db.raw(
     "INSERT INTO subscriber(account_id, customer_id, status) VALUES (?, ?, ?) ON CONFLICT(account_id) DO UPDATE SET account_id = EXCLUDED.account_id, customer_id = EXCLUDED.customer_id, status = EXCLUDED.status",
-    [accountId, customer.id, "active"],
+    [accountId, session.customer, "active"],
   );
   // Send the user back to the subscribe page
   return res.redirect(`${config.UI_HOST}/subscribe`);
