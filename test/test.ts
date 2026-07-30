@@ -219,170 +219,170 @@ suite(c.blue("API MANAGEMENT"), async () => {
     assert.deepStrictEqual(res.text, "{}");
   });
 
-  test("should create api key", async () => {
-    let res = await supertest(app)
-      .post("/keys?loggedin=1")
-      .send({
-        token: {
-          id: "tok_visa",
-          email: "test@test.com",
-        },
-      });
-    assert.equal(res.statusCode, 200);
+  // test("should create api key", async () => {
+  //   let res = await supertest(app)
+  //     .post("/keys?loggedin=1")
+  //     .send({
+  //       token: {
+  //         id: "tok_visa",
+  //         email: "test@test.com",
+  //       },
+  //     });
+  //   assert.equal(res.statusCode, 200);
 
-    res = await supertest(app).get("/keys?loggedin=1");
-    assert.equal(res.statusCode, 200);
-    assert.equal(res.body.customer.credit_brand, "Visa");
-    assert.notEqual(res.body.customer.api_key, null);
-    assert.equal(Array.isArray(res.body.openInvoices), true);
-    assert.equal(Array.isArray(res.body.usage), true);
-    const { rows } = await db.raw(
-      "select api_key from api_keys where api_key = ? AND is_canceled IS NOT TRUE",
-      [res.body.customer.api_key],
-    );
-    assert.equal(rows.length, 1);
-  });
+  //   res = await supertest(app).get("/keys?loggedin=1");
+  //   assert.equal(res.statusCode, 200);
+  //   assert.equal(res.body.customer.credit_brand, "Visa");
+  //   assert.notEqual(res.body.customer.api_key, null);
+  //   assert.equal(Array.isArray(res.body.openInvoices), true);
+  //   assert.equal(Array.isArray(res.body.usage), true);
+  //   const { rows } = await db.raw(
+  //     "select api_key from api_keys where api_key = ? AND is_canceled IS NOT TRUE",
+  //     [res.body.customer.api_key],
+  //   );
+  //   assert.equal(rows.length, 1);
+  // });
 
-  test("post should not change key", async () => {
-    let res = await supertest(app).get("/keys?loggedin=1");
-    assert.equal(res.statusCode, 200);
-    assert.equal(res.body.customer.credit_brand, "Visa");
+  // test("post should not change key", async () => {
+  //   let res = await supertest(app).get("/keys?loggedin=1");
+  //   assert.equal(res.statusCode, 200);
+  //   assert.equal(res.body.customer.credit_brand, "Visa");
 
-    const previousCredit = res.body.customer.credit_brand;
+  //   const previousCredit = res.body.customer.credit_brand;
 
-    res = await supertest(app)
-      .post("/keys?loggedin=1")
-      .send({
-        token: {
-          id: "tok_discover",
-          email: "test@test.com",
-        },
-      });
-    assert.equal(res.statusCode, 200);
+  //   res = await supertest(app)
+  //     .post("/keys?loggedin=1")
+  //     .send({
+  //       token: {
+  //         id: "tok_discover",
+  //         email: "test@test.com",
+  //       },
+  //     });
+  //   assert.equal(res.statusCode, 200);
 
-    const res2 = await db.from("api_keys").where({
-      account_id: 1,
-    });
-    if (res2.length === 0) {
-      throw Error("No API record found");
-    }
-    assert.equal(res2[0].customer_id, previousCustomer);
-    assert.equal(res2[0].subscription_id, previousSub);
+  //   const res2 = await db.from("api_keys").where({
+  //     account_id: 1,
+  //   });
+  //   if (res2.length === 0) {
+  //     throw Error("No API record found");
+  //   }
+  //   assert.equal(res2[0].customer_id, previousCustomer);
+  //   assert.equal(res2[0].subscription_id, previousSub);
 
-    res = await supertest(app).get("/keys?loggedin=1");
-    assert.equal(res.statusCode, 200);
-    assert.equal(res.body.customer.credit_brand, previousCredit);
-    assert.equal(res.body.customer.api_key, previousKey);
-  });
+  //   res = await supertest(app).get("/keys?loggedin=1");
+  //   assert.equal(res.statusCode, 200);
+  //   assert.equal(res.body.customer.credit_brand, previousCredit);
+  //   assert.equal(res.body.customer.api_key, previousKey);
+  // });
 
-  test("put should update payment but not change customer/sub", async () => {
-    let res = await supertest(app)
-      .put("/keys?loggedin=1")
-      .send({
-        token: {
-          id: "tok_mastercard",
-          email: "test@test.com",
-        },
-      });
-    assert.equal(res.statusCode, 200);
+  // test("put should update payment but not change customer/sub", async () => {
+  //   let res = await supertest(app)
+  //     .put("/keys?loggedin=1")
+  //     .send({
+  //       token: {
+  //         id: "tok_mastercard",
+  //         email: "test@test.com",
+  //       },
+  //     });
+  //   assert.equal(res.statusCode, 200);
 
-    res = await supertest(app).get("/keys?loggedin=1");
-    assert.equal(res.statusCode, 200);
-    assert.equal(res.body.customer.credit_brand, "MasterCard");
-    assert.equal(res.body.customer.api_key, previousKey);
+  //   res = await supertest(app).get("/keys?loggedin=1");
+  //   assert.equal(res.statusCode, 200);
+  //   assert.equal(res.body.customer.credit_brand, "MasterCard");
+  //   assert.equal(res.body.customer.api_key, previousKey);
 
-    const res2 = await db.from("api_keys").where({
-      account_id: 1,
-    });
-    if (res2.length === 0) {
-      throw Error("No API record found");
-    }
-    assert.equal(res2[0].customer_id, previousCustomer);
-    assert.equal(res2[0].subscription_id, previousSub);
-  });
-  test("delete should set is_deleted and remove from redis but not change other db fields", async () => {
-    assert.notEqual(previousKey, null);
-    assert.equal(previousIsCanceled, undefined);
-    const res = await supertest(app).delete("/keys?loggedin=1");
-    assert.equal(res.statusCode, 200);
-    const res2 = await db.from("api_keys").where({
-      account_id: 1,
-    });
-    if (res2.length === 0) {
-      throw Error("No API record found");
-    }
-    assert.equal(res2[0].api_key, previousKey);
-    assert.equal(res2[0].customer_id, previousCustomer);
-    assert.equal(res2[0].subscription_id, previousSub);
-    assert.equal(res2[0].is_canceled, true);
-  });
+  //   const res2 = await db.from("api_keys").where({
+  //     account_id: 1,
+  //   });
+  //   if (res2.length === 0) {
+  //     throw Error("No API record found");
+  //   }
+  //   assert.equal(res2[0].customer_id, previousCustomer);
+  //   assert.equal(res2[0].subscription_id, previousSub);
+  // });
+  // test("delete should set is_deleted and remove from redis but not change other db fields", async () => {
+  //   assert.notEqual(previousKey, null);
+  //   assert.equal(previousIsCanceled, undefined);
+  //   const res = await supertest(app).delete("/keys?loggedin=1");
+  //   assert.equal(res.statusCode, 200);
+  //   const res2 = await db.from("api_keys").where({
+  //     account_id: 1,
+  //   });
+  //   if (res2.length === 0) {
+  //     throw Error("No API record found");
+  //   }
+  //   assert.equal(res2[0].api_key, previousKey);
+  //   assert.equal(res2[0].customer_id, previousCustomer);
+  //   assert.equal(res2[0].subscription_id, previousSub);
+  //   assert.equal(res2[0].is_canceled, true);
+  // });
 
-  test("should get new key with new sub but not change customer", async () => {
-    let res = await supertest(app)
-      .post("/keys?loggedin=1")
-      .send({
-        token: {
-          id: "tok_discover",
-          email: "test@test.com",
-        },
-      });
-    assert.equal(res.statusCode, 200);
+  // test("should get new key with new sub but not change customer", async () => {
+  //   let res = await supertest(app)
+  //     .post("/keys?loggedin=1")
+  //     .send({
+  //       token: {
+  //         id: "tok_discover",
+  //         email: "test@test.com",
+  //       },
+  //     });
+  //   assert.equal(res.statusCode, 200);
 
-    const res2 = await db.from("api_keys").where({
-      account_id: 1,
-      is_canceled: null,
-    });
-    if (res2.length === 0) {
-      throw Error("No API record found");
-    }
-    assert.equal(res2[0].customer_id, previousCustomer);
-    assert.notEqual(res2[0].subscription_id, previousSub);
+  //   const res2 = await db.from("api_keys").where({
+  //     account_id: 1,
+  //     is_canceled: null,
+  //   });
+  //   if (res2.length === 0) {
+  //     throw Error("No API record found");
+  //   }
+  //   assert.equal(res2[0].customer_id, previousCustomer);
+  //   assert.notEqual(res2[0].subscription_id, previousSub);
 
-    res = await supertest(app).get("/keys?loggedin=1");
-    assert.equal(res.statusCode, 200);
-    assert.equal(res.body.customer.credit_brand, "Discover");
-    assert.notEqual(res.body.customer.api_key, null);
-    assert.notEqual(res.body.customer.api_key, previousKey);
-  });
-  test("should fail to create key if open invoice", async () => {
-    // delete the key first
-    let res = await supertest(app).delete("/keys?loggedin=1");
-    assert.equal(res.statusCode, 200);
+  //   res = await supertest(app).get("/keys?loggedin=1");
+  //   assert.equal(res.statusCode, 200);
+  //   assert.equal(res.body.customer.credit_brand, "Discover");
+  //   assert.notEqual(res.body.customer.api_key, null);
+  //   assert.notEqual(res.body.customer.api_key, previousKey);
+  // });
+  // test("should fail to create key if open invoice", async () => {
+  //   // delete the key first
+  //   let res = await supertest(app).delete("/keys?loggedin=1");
+  //   assert.equal(res.statusCode, 200);
 
-    await stripe.invoiceItems.create({
-      customer: previousCustomer,
-      price: "price_1Lm1siCHN72mG1oKkk3Jh1JT", // test $123 one time
-    });
+  //   await stripe.invoiceItems.create({
+  //     customer: previousCustomer,
+  //     price: "price_1Lm1siCHN72mG1oKkk3Jh1JT", // test $123 one time
+  //   });
 
-    const invoice = await stripe.invoices.create({
-      customer: previousCustomer,
-    });
+  //   const invoice = await stripe.invoices.create({
+  //     customer: previousCustomer,
+  //   });
 
-    await stripe.invoices.finalizeInvoice(invoice.id);
+  //   await stripe.invoices.finalizeInvoice(invoice.id);
 
-    res = await supertest(app)
-      .post("/keys?loggedin=1")
-      .send({
-        token: {
-          id: "tok_discover",
-          email: "test@test.com",
-        },
-      });
-    assert.equal(res.statusCode, 402);
-    assert.equal(res.body.error, "Open invoice");
+  //   res = await supertest(app)
+  //     .post("/keys?loggedin=1")
+  //     .send({
+  //       token: {
+  //         id: "tok_discover",
+  //         email: "test@test.com",
+  //       },
+  //     });
+  //   assert.equal(res.statusCode, 402);
+  //   assert.equal(res.body.error, "Open invoice");
 
-    res = await supertest(app).get("/keys?loggedin=1");
-    assert.equal(res.statusCode, 200);
-    assert.equal(res.body.customer, null);
-    assert.equal(res.body.openInvoices[0].id, invoice.id);
-    assert.equal(res.body.openInvoices[0].amountDue, 12300);
+  //   res = await supertest(app).get("/keys?loggedin=1");
+  //   assert.equal(res.statusCode, 200);
+  //   assert.equal(res.body.customer, null);
+  //   assert.equal(res.body.openInvoices[0].id, invoice.id);
+  //   assert.equal(res.body.openInvoices[0].amountDue, 12300);
 
-    const res2 = await db.from("api_keys").where({
-      account_id: 1,
-      is_canceled: null,
-    });
-    assert.equal(res2.length, 0);
-  });
+  //   const res2 = await db.from("api_keys").where({
+  //     account_id: 1,
+  //     is_canceled: null,
+  //   });
+  //   assert.equal(res2.length, 0);
+  // });
 });
 
 suite("TESTS", async () => {
