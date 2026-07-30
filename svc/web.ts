@@ -359,6 +359,7 @@ app.post("/subCheckout", async (req, res, next) => {
     },
     success_url: `${config.ROOT_URL}/keys/subSuccess?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${config.UI_HOST}/subscribe`,
+    allow_promotion_codes: true,
   });
   return res.json({ url: session.url });
 });
