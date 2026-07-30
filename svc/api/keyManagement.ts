@@ -191,7 +191,6 @@ keys.post("/checkout", async (req, res, next) => {
     line_items: [
       {
         price: stripeAPIPlan,
-        quantity: 1,
       },
     ],
     subscription_data: {
