@@ -11,8 +11,17 @@ export const benchmarks: Record<
   kills_per_min(m, p) {
     return (p.kills / m.duration) * 60;
   },
+  deaths_per_min(m, p) {
+    return (p.deaths / m.duration) * 60;
+  },
+  assists_per_min(m, p) {
+    return (p.assists / m.duration) * 60;
+  },
   last_hits_per_min(m, p) {
     return (p.last_hits / m.duration) * 60;
+  },
+  denies_per_min(m, p) {
+    return (p.denies / m.duration) * 60;
   },
   hero_damage_per_min(m, p) {
     return (p.hero_damage / m.duration) * 60;
