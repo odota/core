@@ -58,7 +58,55 @@ export default {
               },
             },
           },
+          deaths_per_min: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                percentile: {
+                  description: "percentile",
+                  type: "number",
+                },
+                value: {
+                  description: "value",
+                  type: "number",
+                },
+              },
+            },
+          },
+          assists_per_min: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                percentile: {
+                  description: "percentile",
+                  type: "number",
+                },
+                value: {
+                  description: "value",
+                  type: "number",
+                },
+              },
+            },
+          },
           last_hits_per_min: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                percentile: {
+                  description: "percentile",
+                  type: "number",
+                },
+                value: {
+                  description: "value",
+                  type: "number",
+                },
+              },
+            },
+          },
+          denies_per_min: {
             type: "array",
             items: {
               type: "object",
