@@ -170,8 +170,9 @@ keys.post("/checkout", async (req, res, next) => {
       return res.status(400).json({ error: "Failed validation" });
     }
   }
-  // Returning customer: reuse the existing Stripe customer, block on unpaid invoices
-  let customerId = allKeyRecords?.[0].customer_id;
+  // Check if we already have a customer ID (using account_id to look up from keys)
+  // If so, reuse the existing ID and block on unpaid invoices
+  let customerId = allKeyRecords?.[0]?.customer_id;
   if (customerId) {
     const invoices = await getOpenInvoices(customerId);
     if (invoices.length > 0) {
@@ -186,7 +187,7 @@ keys.post("/checkout", async (req, res, next) => {
   }
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
-    customer: customerId,
+    customer: customerId ?? "",
     client_reference_id: String(req.user?.account_id ?? ""),
     line_items: [
       {
