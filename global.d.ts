@@ -153,6 +153,7 @@ interface ParsedPlayer extends Player {
 
   // Computed
   is_roaming?: boolean | null;
+  position_est?: number;
   all_word_counts: NumberDict;
   my_word_counts: NumberDict;
   throw: number | undefined;
