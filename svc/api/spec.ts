@@ -1420,6 +1420,16 @@ You can use the API without a key, but registering for a key allows increased ra
               type: "string", // todo: String for hero id?
             },
           },
+          {
+            name: "bracket",
+            in: "query",
+            description:
+              "Rank bracket from 1 (Herald) to 8 (Immortal) to benchmark against. Omit for matches of all ranks",
+            required: false,
+            schema: {
+              type: "integer",
+            },
+          },
         ],
         responses: {
           200: {
@@ -1438,7 +1448,16 @@ You can use the API without a key, but registering for a key allows increased ra
           if (typeof req.query.hero_id !== "string") {
             return res.status(400).json({ error: "hero_id is not a string" });
           }
-          const result = await getHeroBenchmarks(req.query.hero_id);
+          let bracket: number | null = null;
+          if (req.query.bracket !== undefined) {
+            bracket = Number(req.query.bracket);
+            if (!Number.isInteger(bracket) || bracket < 1 || bracket > 8) {
+              return res
+                .status(400)
+                .json({ error: "bracket must be an integer between 1 and 8" });
+            }
+          }
+          const result = await getHeroBenchmarks(req.query.hero_id, bracket);
           return res.json(result);
         },
       },
