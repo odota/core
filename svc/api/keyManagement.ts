@@ -187,7 +187,7 @@ keys.post("/checkout", async (req, res, next) => {
   }
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
-    customer: customerId ?? "",
+    customer: customerId,
     client_reference_id: String(req.user?.account_id ?? ""),
     line_items: [
       {
