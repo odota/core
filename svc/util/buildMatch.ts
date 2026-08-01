@@ -1,6 +1,6 @@
 import { heroes } from "dotaconstants";
 import config from "../../config.ts";
-import { computeMatchData } from "./compute.ts";
+import { computeMatchData, estimatePositions } from "./compute.ts";
 import { buildReplayUrl, isTurbo } from "./utility.ts";
 import redis, { redisCount } from "../store/redis.ts";
 import db from "../store/db.ts";
@@ -266,6 +266,7 @@ export async function buildMatch(
       : undefined,
   };
   computeMatchData(matchResult as ParsedPlayerMatch);
+  estimatePositions(matchResult.players as ParsedPlayerMatch[]);
 
   // Save in cache
   if (matchResult && config.ENABLE_MATCH_CACHE) {

@@ -824,6 +824,12 @@ export default {
               type: "boolean",
               nullable: true,
             },
+            position_est: {
+              description:
+                "Estimated position (1-5) of the player within their team, from early farm priority and lane data. Only present on parsed matches",
+              type: "integer",
+              nullable: true,
+            },
             purchase_time: {
               description:
                 "Object with information on when the player last purchased an item",
