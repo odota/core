@@ -108,9 +108,11 @@ export async function getHeroItemPopularity(heroId: string) {
     late_game_items: lateGameItems,
   };
 }
-export async function getHeroBenchmarks(heroId: string) {
+export async function getHeroBenchmarks(heroId: string, bracket?: number | null) {
   const ret: AnyDict = {};
   const arr = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99];
+  // Keys end with an empty suffix for the global sets, or the 1-8 rank bracket
+  const suffix = bracket ? bracket.toString() : "";
   const items: [metric: string, percentile: number][] = [];
   Object.keys(benchmarks).forEach((metric) => {
     arr.forEach((percentile) => {
@@ -125,14 +127,14 @@ export async function getHeroBenchmarks(heroId: string) {
         getStartOfBlockMinutes(Number(config.BENCHMARK_RETENTION_MINUTES), -1),
         metric,
         heroId,
-        "",
+        suffix,
       ].join(":");
       const backupKey = [
         "benchmarks",
         getStartOfBlockMinutes(Number(config.BENCHMARK_RETENTION_MINUTES), 0),
         metric,
         heroId,
-        "",
+        suffix,
       ].join(":");
       const exists = await redis.exists(key);
       if (exists === 0) {
