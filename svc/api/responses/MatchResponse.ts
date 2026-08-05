@@ -313,6 +313,14 @@ export default {
               description: "Number of camps stacked",
               type: "integer",
             },
+            camps_stacked_t: {
+              description:
+                "Array containing number of camps stacked at different times of the match",
+              type: "array",
+              items: {
+                type: "integer",
+              },
+            },
             connection_log: {
               description:
                 "Array containing information about the player's disconnections and reconnections",
@@ -401,9 +409,25 @@ export default {
               description: "Hero Damage Dealt",
               type: "integer",
             },
+            hero_damage_t: {
+              description:
+                "Array containing cumulative damage dealt to enemy heroes at each minute of the match, as computed from the replay combat log. Follows the hero_damage scoreboard definition (real non-illusion hero targets, self-damage excluded, illusion attacker damage counted), so the final value matches hero_damage up to the last minute boundary",
+              type: "array",
+              items: {
+                type: "integer",
+              },
+            },
             hero_healing: {
               description: "Hero Healing Done",
               type: "integer",
+            },
+            hero_healing_t: {
+              description:
+                "Array containing cumulative healing done to other heroes at each minute of the match, as computed from the replay combat log. Follows the hero_healing scoreboard definition (self-healing excluded), so the final value matches hero_healing up to the last minute boundary",
+              type: "array",
+              items: {
+                type: "integer",
+              },
             },
             hero_hits: {
               description:
