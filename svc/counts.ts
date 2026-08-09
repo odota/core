@@ -245,16 +245,7 @@ runReliableQueue("counts", 2, async (job: CountsJob, metadata) => {
                 );
                 redis.expireat(rkey, expiretime);
                 if (rank) {
-                  const rankKey = [
-                    "benchmarks",
-                    getStartOfBlockMinutes(
-                      Number(config.BENCHMARK_RETENTION_MINUTES),
-                      0,
-                    ),
-                    key,
-                    p.hero_id,
-                    rank,
-                  ].join(":");
+                  const rankKey = `${rkey}:${rank}`;
                   redis.zadd(rankKey, metric, match.match_id);
                   redis.expireat(rankKey, expiretime);
                 }
