@@ -252,6 +252,90 @@ export function computeMatchData(pm: ParsedPlayerMatch) {
 }
 
 /**
+ * Estimates each player's position (1-5) on parsed matches.
+ * Within each team, players are ranked by early farm priority (gold_t/lh_t
+ * averaged over minutes 10-12, early ward purchases breaking ties toward
+ * support): the top 3 are cores and the bottom 2 supports. Cores map to 1/2/3
+ * through their lane_role; supports on the safe lane read as 5 and elsewhere
+ * as 4 (in the current meta the 4 plays around mid while the 5 roams, so
+ * is_roaming deliberately plays no part). Unresolved conflicts fall back to
+ * farm order. Sets position_est only when the whole team has the parsed data.
+ * Accuracy notes and validation in the issue: 98.9% exact vs reference labels
+ * on 100 pro matches (https://github.com/odota/core/issues/1590).
+ * */
+export function estimatePositions(players: ParsedPlayerMatch[]) {
+  const EARLY_SECONDS = 12 * 60;
+  for (const side of [true, false]) {
+    const team = players.filter((p) => isRadiant(p) === side);
+    const parsed = team.every(
+      (p) =>
+        p.gold_t &&
+        p.gold_t.length > 12 &&
+        p.lh_t &&
+        p.lh_t.length > 12 &&
+        p.lane_role != null,
+    );
+    if (team.length !== 5 || !parsed) {
+      continue;
+    }
+    const avgWindow = (arr: number[]) => (arr[10] + arr[11] + arr[12]) / 3;
+    const scored = team.map((p) => ({
+      p,
+      gold: avgWindow(p.gold_t),
+      lh: avgWindow(p.lh_t),
+      wards: (p.purchase_log ?? []).filter(
+        (e) =>
+          (e.key === "ward_observer" || e.key === "ward_sentry") &&
+          e.time <= EARLY_SECONDS,
+      ).length,
+      rank_gold: 0,
+      rank_lh: 0,
+      farmRank: 0,
+    }));
+    for (const key of ["gold", "lh"] as const) {
+      const sorted = [...scored].sort((a, b) => b[key] - a[key]);
+      scored.forEach((s) => {
+        s[key === "gold" ? "rank_gold" : "rank_lh"] = sorted.indexOf(s);
+      });
+    }
+    // lower farmRank = higher farm priority; wards break ties toward support
+    scored.forEach((s) => {
+      s.farmRank = s.rank_gold + s.rank_lh;
+    });
+    scored.sort((a, b) => a.farmRank - b.farmRank || a.wards - b.wards);
+    const assign = (
+      group: typeof scored,
+      wanted: number[],
+      prefer: (p: ParsedPlayerMatch) => number | null,
+    ) => {
+      const taken = new Set<number>();
+      const unassigned: typeof scored = [];
+      for (const s of group) {
+        const want = prefer(s.p);
+        if (want != null && wanted.includes(want) && !taken.has(want)) {
+          s.p.position_est = want;
+          taken.add(want);
+        } else {
+          unassigned.push(s);
+        }
+      }
+      const remaining = wanted.filter((w) => !taken.has(w));
+      unassigned.forEach((s, i) => {
+        s.p.position_est = remaining[i];
+      });
+    };
+    assign(scored.slice(0, 3), [1, 2, 3], (p) =>
+      p.lane_role != null && p.lane_role >= 1 && p.lane_role <= 3
+        ? p.lane_role
+        : null,
+    );
+    assign(scored.slice(3), [4, 5], (p) =>
+      p.lane_role === 2 || p.lane_role === 3 ? 4 : p.lane_role === 1 ? 5 : null,
+    );
+  }
+}
+
+/**
  * Determines if a match is significant for aggregation purposes
  * */
 export function isSignificant(match: Match | ApiData) {
