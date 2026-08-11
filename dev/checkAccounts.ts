@@ -42,5 +42,5 @@ for (let i = Number(process.argv[2]) || 0; i < accountArray.length; i++) {
       reject(err);
     });
   });
-  await new Promise((resolve) => setTimeout(resolve, 120000));
+  await new Promise((resolve) => setTimeout(resolve, 150000));
 }

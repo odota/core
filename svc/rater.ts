@@ -2,7 +2,8 @@ import { gcFetcher } from "./fetcher/allFetchers.ts";
 import db from "./store/db.ts";
 import { redisCount } from "./store/redis.ts";
 import { average, isRadiant, isTurbo } from "./util/utility.ts";
-import { runInLoop } from "./store/queue.ts";
+import { addReliableJob, runInLoop } from "./store/queue.ts";
+import { PRIORITY } from "./util/priority.ts";
 
 const DEFAULT_RATING = 4000;
 const kFactor = 50;
@@ -25,6 +26,17 @@ await runInLoop(async function rate() {
   }
   let gcMatch = await gcFetcher.getData(row.match_id);
   if (!gcMatch) {
+    // Try re-queueing the job. If it's a duplicate, it'll be dropped
+    await addReliableJob(
+      {
+        name: "gcdata",
+        data: {
+          match_id: row.match_id,
+          reconcile: false,
+        },
+      },
+      { priority: PRIORITY.AUTO_GCDATA },
+    );
     await new Promise((resolve) => setTimeout(resolve, 1000));
     return;
   }
