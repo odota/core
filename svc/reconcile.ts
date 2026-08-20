@@ -33,7 +33,8 @@ await runInLoop(async function reconcile() {
         return;
       }
       console.log("%s: %s rows", matchId, rows.length);
-      const shouldRepair = rows.every((row) => row.retries >= 5);
+      // const shouldRepair = rows.every((row) => row.retries >= 5);
+      const shouldRepair = false;
       await reconcileMatch(rows, shouldRepair);
     }),
   );

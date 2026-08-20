@@ -105,7 +105,7 @@ export class ApiFetcher extends MatchFetcherBase<ApiData> {
       const first = body.result.matches[0];
       const last = body.result.matches[body.result.matches.length - 1];
       redisCount("backfill_page_back");
-      await new Promise((resolve) => setTimeout(resolve, 3000));
+      await new Promise((resolve) => setTimeout(resolve, 5000));
       return [
         match,
         first.start_time + first.duration,
