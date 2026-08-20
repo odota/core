@@ -108,9 +108,11 @@ export async function getHeroItemPopularity(heroId: string) {
     late_game_items: lateGameItems,
   };
 }
-export async function getHeroBenchmarks(heroId: string) {
+export async function getHeroBenchmarks(heroId: string, bracket?: number | null) {
   const ret: AnyDict = {};
   const arr = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99];
+  // Bracketed sets add the 1-8 rank bracket after the global/turbo slot
+  const suffix = bracket ? `:${bracket}` : "";
   const items: [metric: string, percentile: number][] = [];
   Object.keys(benchmarks).forEach((metric) => {
     arr.forEach((percentile) => {
@@ -120,20 +122,25 @@ export async function getHeroBenchmarks(heroId: string) {
   await Promise.all(
     items.map(async ([metric, percentile]) => {
       // Use data from previous epoch
-      let key = [
-        "benchmarks",
-        getStartOfBlockMinutes(Number(config.BENCHMARK_RETENTION_MINUTES), -1),
-        metric,
-        heroId,
-        "",
-      ].join(":");
-      const backupKey = [
-        "benchmarks",
-        getStartOfBlockMinutes(Number(config.BENCHMARK_RETENTION_MINUTES), 0),
-        metric,
-        heroId,
-        "",
-      ].join(":");
+      let key =
+        [
+          "benchmarks",
+          getStartOfBlockMinutes(
+            Number(config.BENCHMARK_RETENTION_MINUTES),
+            -1,
+          ),
+          metric,
+          heroId,
+          "",
+        ].join(":") + suffix;
+      const backupKey =
+        [
+          "benchmarks",
+          getStartOfBlockMinutes(Number(config.BENCHMARK_RETENTION_MINUTES), 0),
+          metric,
+          heroId,
+          "",
+        ].join(":") + suffix;
       const exists = await redis.exists(key);
       if (exists === 0) {
         // No data, use backup key (current epoch)

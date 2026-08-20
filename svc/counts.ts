@@ -211,6 +211,8 @@ runReliableQueue("counts", 2, async (job: CountsJob, metadata) => {
 
     async function updateBenchmarks() {
       const turbo = isTurbo(match);
+      // 1 to 8 based on the average rank of the match, as in updateHeroCounts
+      const rank = !turbo && avg ? Math.floor(avg / 10) : null;
       if (
         match.match_id % 100 < Number(config.BENCHMARKS_SAMPLE_PERCENT) &&
         (isSignificant(match) || turbo)
@@ -242,6 +244,11 @@ runReliableQueue("counts", 2, async (job: CountsJob, metadata) => {
                   2,
                 );
                 redis.expireat(rkey, expiretime);
+                if (rank) {
+                  const rankKey = `${rkey}:${rank}`;
+                  redis.zadd(rankKey, metric, match.match_id);
+                  redis.expireat(rankKey, expiretime);
+                }
               }
             });
           }
