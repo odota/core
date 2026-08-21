@@ -134,7 +134,10 @@ export async function getPlayerBenchmarks(m: Match) {
         const card = await redis.zcard(key);
         if (raw !== undefined && raw !== null && !Number.isNaN(Number(raw))) {
           const count = await redis.zcount(key, "0", raw);
-          const pct = count / card;
+          // deaths_per_min is the one metric where lower is better, so its
+          // percentile is the share of players with a higher value
+          const pct =
+            metric === "deaths_per_min" ? 1 - count / card : count / card;
           result[metric].pct = pct;
         }
       }
