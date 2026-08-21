@@ -8,6 +8,7 @@ import { benchmarks } from "./benchmarksUtil.ts";
 import * as allFetchers from "../fetcher/allFetchers.ts";
 import { getMatchBlob } from "./getMatchBlob.ts";
 import { getStartOfBlockMinutes } from "./time.ts";
+import { getMatchRankTier } from "./queries.ts";
 import { isContributor } from "../../CONTRIBUTORS.ts";
 
 const { metaFetcher } = allFetchers;
@@ -99,9 +100,16 @@ async function getProMatchInfo(match: Match): Promise<ProMatchInfo> {
  * */
 export async function getPlayerBenchmarks(m: Match) {
   const turbo = isTurbo(m);
+  // Bracket 1-8 from the average rank of the players, matching what the
+  // write side does in counts.ts (turbo only has global benchmarks)
+  const { avg } = turbo ? { avg: null } : await getMatchRankTier(db, m.players);
+  const bracket = avg ? Math.floor(avg / 10) : null;
   return Promise.all(
     m.players.map(async (p) => {
-      const result: Record<string, { raw?: number; pct?: number }> = {};
+      const result: Record<
+        string,
+        { raw?: number; pct?: number; pct_bracket?: number }
+      > = {};
       for (let metric of Object.keys(benchmarks)) {
         result[metric] = {};
         // Use data from previous epoch
@@ -139,6 +147,18 @@ export async function getPlayerBenchmarks(m: Match) {
           const pct =
             metric === "deaths_per_min" ? 1 - count / card : count / card;
           result[metric].pct = pct;
+          if (bracket) {
+            // Same distribution restricted to this match's rank bracket
+            const bracketKey = `${key}:${bracket}`;
+            const bracketCard = await redis.zcard(bracketKey);
+            if (bracketCard > 0) {
+              const bracketCount = await redis.zcount(bracketKey, "0", raw);
+              result[metric].pct_bracket =
+                metric === "deaths_per_min"
+                  ? 1 - bracketCount / bracketCard
+                  : bracketCount / bracketCard;
+            }
+          }
         }
       }
       return result;
