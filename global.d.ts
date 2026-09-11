@@ -109,6 +109,8 @@ type Player = {
   total_gold: number;
   total_xp: number;
   kills_per_min: number;
+  hero_damage_per_min: number;
+  tower_damage_per_min: number;
   kda: number;
   abandons: number;
   heroes: PGroup;

@@ -17,6 +17,12 @@ import swaggerParser from "@apidevtools/swagger-parser";
 import config from "../config.ts";
 import spec from "../svc/api/spec.ts";
 import { getPlayerMatches } from "../svc/util/buildPlayer.ts";
+import {
+  derivedCols,
+  isDerivedCol,
+  withDerivedCols,
+  withDerivedDeps,
+} from "../svc/util/derivedCols.ts";
 import { insertMatch } from "../svc/util/insert.ts";
 import { buildMatch } from "../svc/util/buildMatch.ts";
 import db, { upsertPlayer } from "../svc/store/db.ts";
@@ -190,6 +196,105 @@ suite(c.blue("AVERAGE MEDAL"), async () => {
     assert.equal(averageMedal(test1), 15);
     const test2 = [80, 80, 80];
     assert.equal(averageMedal(test2), 75);
+  });
+});
+
+suite(c.blue("DERIVED COLUMNS"), async () => {
+  // Columns read back from player_caches are null when the match wasn't parsed,
+  // which the ParsedPlayerMatch types don't model
+  const match = (fields: Record<string, number | null>) =>
+    fields as unknown as ParsedPlayerMatch;
+
+  test("should recognize only derived columns", () => {
+    assert.equal(isDerivedCol("hero_damage_per_min"), true);
+    assert.equal(isDerivedCol("kills_per_min"), true);
+    assert.equal(isDerivedCol("tower_damage_per_min"), true);
+    // Stored columns and unknown fields are not derived
+    assert.equal(isDerivedCol("hero_damage"), false);
+    assert.equal(isDerivedCol("gold_per_min"), false);
+    assert.equal(isDerivedCol("nonsense"), false);
+  });
+
+  test("should compute each column per minute of duration", () => {
+    const m = match({
+      duration: 1200,
+      kills: 10,
+      hero_damage: 24000,
+      tower_damage: 600,
+    });
+    assert.equal(derivedCols.kills_per_min.compute(m), 0.5);
+    assert.equal(derivedCols.hero_damage_per_min.compute(m), 1200);
+    assert.equal(derivedCols.tower_damage_per_min.compute(m), 30);
+  });
+
+  test("should declare the columns each computed value reads", () => {
+    Object.values(derivedCols).forEach(({ deps, compute }) => {
+      assert.ok((deps as readonly string[]).includes("duration"));
+      // Dropping any dependency makes the value uncomputable
+      deps.forEach((dep) => {
+        const withoutDep = match({
+          duration: 1200,
+          kills: 10,
+          hero_damage: 24000,
+          tower_damage: 600,
+          [dep]: null,
+        });
+        assert.equal(compute(withoutDep), null);
+      });
+    });
+  });
+
+  test("should return null rather than dividing by a zero duration", () => {
+    const m = match({ duration: 0, kills: 10, hero_damage: 24000 });
+    assert.equal(derivedCols.kills_per_min.compute(m), null);
+    assert.equal(derivedCols.hero_damage_per_min.compute(m), null);
+  });
+
+  test("should distinguish a zero source column from a missing one", () => {
+    const zero = match({ duration: 1200, kills: 0, tower_damage: 0 });
+    assert.equal(derivedCols.kills_per_min.compute(zero), 0);
+    assert.equal(derivedCols.tower_damage_per_min.compute(zero), 0);
+    const missing = match({ duration: 1200, kills: null, tower_damage: null });
+    assert.equal(derivedCols.kills_per_min.compute(missing), null);
+    assert.equal(derivedCols.tower_damage_per_min.compute(missing), null);
+  });
+
+  test("withDerivedDeps should pass the projection through when none are requested", () => {
+    const project = ["match_id", "kills"] as (keyof ParsedPlayerMatch)[];
+    assert.strictEqual(withDerivedDeps([], project), project);
+  });
+
+  test("withDerivedDeps should add the stored columns behind each derived column", () => {
+    const withDeps = withDerivedDeps(
+      ["hero_damage_per_min", "tower_damage_per_min"],
+      ["match_id"] as (keyof ParsedPlayerMatch)[],
+    );
+    // The caller's own projection survives
+    assert.ok(withDeps.includes("match_id"));
+    assert.ok(withDeps.includes("hero_damage"));
+    assert.ok(withDeps.includes("tower_damage"));
+    assert.ok(withDeps.includes("duration"));
+  });
+
+  test("withDerivedCols should pass the matches through when none are requested", () => {
+    const matches = [match({ duration: 1200, kills: 10 })];
+    assert.strictEqual(withDerivedCols([], matches), matches);
+  });
+
+  test("withDerivedCols should compute onto every match without mutating them", () => {
+    const original = match({ duration: 1200, kills: 10, hero_damage: 24000 });
+    const result = withDerivedCols(
+      ["kills_per_min", "hero_damage_per_min"],
+      [original, match({ duration: 600, kills: 3, hero_damage: 6000 })],
+    );
+    assert.deepEqual(
+      result.map((m) => [m.kills_per_min, m.hero_damage_per_min]),
+      [
+        [0.5, 1200],
+        [0.3, 600],
+      ],
+    );
+    assert.equal("kills_per_min" in original, false);
   });
 });
 
@@ -402,6 +507,16 @@ suite("TESTS", async () => {
       project: ["match_id"],
     });
     assert.equal(data.length, 1);
+  });
+  test("player_caches should compute derived per-minute columns on read", async () => {
+    const [match] = await getPlayerMatches(120269134, {
+      project: ["kills_per_min", "hero_damage_per_min", "tower_damage_per_min"],
+      sort: "hero_damage_per_min",
+    });
+    // Seeded match lasted 2220s with 8 kills, 12234 hero damage and 537 tower damage
+    assert.equal(match.kills_per_min, (8 / 2220) * 60);
+    assert.equal(match.hero_damage_per_min, (12234 / 2220) * 60);
+    assert.equal(match.tower_damage_per_min, (537 / 2220) * 60);
   });
   test("teamRanking should have team rankings", async () => {
     const rows = await db

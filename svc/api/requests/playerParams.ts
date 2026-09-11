@@ -22,7 +22,8 @@ export default {
   projectParam: {
     name: "project",
     in: "query",
-    description: "Fields to project (array)",
+    description:
+      "Fields to project (array). Also accepts the per-minute fields kills_per_min, hero_damage_per_min and tower_damage_per_min, computed from duration.",
     required: false,
     schema: {
       type: "string",
@@ -186,7 +187,8 @@ export default {
   sortParam: {
     name: "sort",
     in: "query",
-    description: "The field to return matches sorted by in descending order",
+    description:
+      "The field to return matches sorted by in descending order. Accepts the same per-minute fields as project.",
     required: false,
     schema: {
       type: "string",

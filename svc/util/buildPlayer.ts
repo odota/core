@@ -6,6 +6,11 @@ import cassandra, { getCassandraColumns } from "../store/cassandra.ts";
 import { deserialize, pick } from "./utility.ts";
 import { zstdCompressSync, zstdDecompressSync } from "node:zlib";
 import { cacheableCols } from "../api/playerFields.ts";
+import {
+  isDerivedCol,
+  withDerivedCols,
+  withDerivedDeps,
+} from "./derivedCols.ts";
 import fs from "node:fs/promises";
 import { playerArchive } from "../store/archive.ts";
 
@@ -37,7 +42,10 @@ export async function getPlayerMatchesWithMetadata(
   }
   redisCount("player_matches");
   const columns = await getCassandraColumns("player_caches");
-  const sanitizedProject = queryObj.project.filter((f: string) => columns[f]);
+  // Derived columns aren't stored, so read the columns they're computed from instead
+  const requestedDerived = queryObj.project.filter(isDerivedCol);
+  const projectWithDeps = withDerivedDeps(requestedDerived, queryObj.project);
+  const sanitizedProject = projectWithDeps.filter((f: string) => columns[f]);
   const projection = queryObj.projectAll ? ["*"] : sanitizedProject;
 
   // Archive model
@@ -70,9 +78,12 @@ export async function getPlayerMatchesWithMetadata(
 
   const keys = queryObj.projectAll
     ? (Object.keys(columns) as (keyof ParsedPlayerMatch)[])
-    : queryObj.project;
+    : projectWithDeps;
   // Merge the two sets of matches
-  let matches = mergeMatches(localMatches, archivedMatches, keys);
+  const matches = withDerivedCols(
+    requestedDerived,
+    mergeMatches(localMatches, archivedMatches, keys),
+  );
   const filtered = filterMatches(matches, queryObj.filter);
   const sort = queryObj.sort;
   if (sort) {
