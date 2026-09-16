@@ -10,7 +10,7 @@ services:
     environment:
       JVM_EXTRA_OPTS: -Dcassandra.skip_wait_for_gossip_to_settle=0
   minio:
-    image: minio/minio:RELEASE.2024-11-07T00-52-20Z
+    image: quay.io/minio/minio:RELEASE.2024-11-07T00-52-20Z
     container_name: odota-minio
     command: server /data
   redis:
