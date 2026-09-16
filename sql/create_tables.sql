@@ -141,7 +141,7 @@ CREATE TABLE IF NOT EXISTS player_matches (
   neutral_item_history json[]
 );
 CREATE INDEX IF NOT EXISTS player_matches_account_id_idx on player_matches(account_id) WHERE account_id IS NOT NULL;
-CREATE INDEX IF NOT EXISTS player_matches_hero_id_idx on player_matches(hero_id, match_id);
+CREATE INDEX IF NOT EXISTS player_matches_hero_id_match_id_idx on player_matches(hero_id, match_id);
 
 CREATE TABLE IF NOT EXISTS players (
   account_id bigint PRIMARY KEY,

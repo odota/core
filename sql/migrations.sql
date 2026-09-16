@@ -7,4 +7,3 @@ ALTER TABLE api_key_usage ADD CONSTRAINT api_key_usage_api_key_fkey FOREIGN KEY 
 -- heap for it, which is the bulk of the cost in hero combination queries
 CREATE INDEX CONCURRENTLY player_matches_hero_id_match_id_idx ON player_matches (hero_id, match_id);
 DROP INDEX CONCURRENTLY player_matches_hero_id_idx;
-ALTER INDEX player_matches_hero_id_match_id_idx RENAME TO player_matches_hero_id_idx;
