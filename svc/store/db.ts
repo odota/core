@@ -17,7 +17,7 @@ export const db = knex({
   connection: {
     connectionString: config.POSTGRES_URL,
     application_name: `odota-${config.APP_NAME || "unknown"}`,
-    statement_timeout: 600000,
+    statement_timeout: 60000,
   },
   pool: {
     min: 0,
