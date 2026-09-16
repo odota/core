@@ -336,6 +336,27 @@ export function estimatePositions(players: ParsedPlayerMatch[]) {
 }
 
 /**
+ * The parser stores the first blood victim as the victim's 0-9 player index
+ * in the CHAT_MESSAGE_FIRSTBLOOD objective's key. Resolve it to a
+ * victim_player_slot field alongside the killer's player_slot
+ * (https://github.com/odota/core/issues/1488)
+ * */
+export function annotateFirstbloodVictim(match: {
+  objectives?: any[];
+  players?: Array<{ player_slot?: number }>;
+}) {
+  const firstblood = match.objectives?.find(
+    (o) => o.type === "CHAT_MESSAGE_FIRSTBLOOD",
+  );
+  const victim = firstblood
+    ? match.players?.[Number(firstblood.key)]
+    : undefined;
+  if (victim?.player_slot != null) {
+    firstblood.victim_player_slot = victim.player_slot;
+  }
+}
+
+/**
  * Determines if a match is significant for aggregation purposes
  * */
 export function isSignificant(match: Match | ApiData) {
