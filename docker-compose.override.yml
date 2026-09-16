@@ -27,7 +27,7 @@ services:
         "sleep 45 && cqlsh -f /usr/src/sql/init.cql odota-cassandra && cqlsh -f /usr/src/sql/create_tables.cql -k yasp odota-cassandra",
       ]
   minioinit:
-    image: minio/mc
+    image: quay.io/minio/mc
     depends_on:
       - minio
     container_name: odota-minioinit
