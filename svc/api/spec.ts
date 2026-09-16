@@ -1430,6 +1430,17 @@ You can use the API without a key, but registering for a key allows increased ra
               type: "integer",
             },
           },
+          {
+            name: "role",
+            in: "query",
+            description:
+              "Segment the bracket further by core or support, estimated from farm within each team. Requires bracket. Omit for all roles",
+            required: false,
+            schema: {
+              type: "string",
+              enum: ["core", "support"],
+            },
+          },
         ],
         responses: {
           200: {
@@ -1457,7 +1468,23 @@ You can use the API without a key, but registering for a key allows increased ra
                 .json({ error: "bracket must be an integer between 1 and 8" });
             }
           }
-          const result = await getHeroBenchmarks(req.query.hero_id, bracket);
+          let role: string | null = null;
+          if (req.query.role !== undefined) {
+            role = String(req.query.role);
+            if (role !== "core" && role !== "support") {
+              return res
+                .status(400)
+                .json({ error: "role must be core or support" });
+            }
+            if (!bracket) {
+              return res.status(400).json({ error: "role requires bracket" });
+            }
+          }
+          const result = await getHeroBenchmarks(
+            req.query.hero_id,
+            bracket,
+            role,
+          );
           return res.json(result);
         },
       },
