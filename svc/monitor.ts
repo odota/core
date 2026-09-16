@@ -184,7 +184,7 @@ WHERE keyspace_name = 'yasp';
   );
   return {
     metric: result.rows[0]?.size,
-    limit: 6.1 * 10 ** 12,
+    limit: 6.3 * 10 ** 12,
   };
 }
 async function diskUsage() {
