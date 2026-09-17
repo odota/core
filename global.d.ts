@@ -131,6 +131,7 @@ type Player = {
 
 interface ParsedPlayer extends Player {
   kills_log: any[];
+  deaths_log: any[];
   obs_log: any[];
   purchase_log: any[];
   pings: any;

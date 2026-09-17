@@ -501,6 +501,34 @@ export default {
                 },
               },
             },
+            deaths_log: {
+              description:
+                "Array containing information on the player's deaths: when they died, to whom, the gold lost and the time spent dead. Only present for matches parsed after the field was added",
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  time: {
+                    description: "Time in seconds the player died",
+                    type: "integer",
+                  },
+                  key: {
+                    description: "Name of the killing unit",
+                    type: "string",
+                  },
+                  gold_lost: {
+                    description:
+                      "Gold lost to this death (0 on patches without death gold loss)",
+                    type: "integer",
+                  },
+                  time_dead: {
+                    description:
+                      "Seconds spent dead after this death. Absent if the match ended before the respawn",
+                    type: "integer",
+                  },
+                },
+              },
+            },
             lane_pos: {
               description: "Object containing information on lane position",
               type: "object",
