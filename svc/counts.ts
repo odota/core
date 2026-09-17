@@ -217,7 +217,7 @@ runReliableQueue("counts", 2, async (job: CountsJob, metadata) => {
       // supports. The exact 1-5 position needs parsed data, but this split is
       // right for 99.4% of players using api data alone (see #2980).
       const roles = new Map<number, string>();
-      if (rank) {
+      if (!turbo) {
         [true, false].forEach((radiant) => {
           const team = match.players.filter((p) => isRadiant(p) === radiant);
           if (team.length === 5) {
@@ -261,11 +261,16 @@ runReliableQueue("counts", 2, async (job: CountsJob, metadata) => {
                   2,
                 );
                 redis.expireat(rkey, expiretime);
+                const role = roles.get(p.player_slot);
+                if (role) {
+                  const roleKey = `${rkey}:${role}`;
+                  redis.zadd(roleKey, metric, match.match_id);
+                  redis.expireat(roleKey, expiretime);
+                }
                 if (rank) {
                   const rankKey = `${rkey}:${rank}`;
                   redis.zadd(rankKey, metric, match.match_id);
                   redis.expireat(rankKey, expiretime);
-                  const role = roles.get(p.player_slot);
                   if (role) {
                     const rankRoleKey = `${rankKey}:${role}`;
                     redis.zadd(rankRoleKey, metric, match.match_id);

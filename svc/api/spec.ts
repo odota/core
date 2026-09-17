@@ -1434,7 +1434,7 @@ You can use the API without a key, but registering for a key allows increased ra
             name: "role",
             in: "query",
             description:
-              "Segment the bracket further by core or support, estimated from farm within each team. Requires bracket. Omit for all roles",
+              "Benchmark against cores or supports only, estimated from farm within each team. Can be combined with bracket. Omit for all roles",
             required: false,
             schema: {
               type: "string",
@@ -1475,9 +1475,6 @@ You can use the API without a key, but registering for a key allows increased ra
               return res
                 .status(400)
                 .json({ error: "role must be core or support" });
-            }
-            if (!bracket) {
-              return res.status(400).json({ error: "role requires bracket" });
             }
           }
           const result = await getHeroBenchmarks(
