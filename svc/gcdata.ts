@@ -6,7 +6,7 @@ import { getPGroup } from "./util/pgroup.ts";
 
 await runReliableQueue(
   "gcdata",
-  Number(config.GCDATA_PARALLELISM),
+  Number(config.GCDATA_PARALLELISM) * 2,
   async function gcdata(job: GcDataJob) {
     const matchId = job.match_id;
     let apiMatch = await apiFetcher.getData(matchId);
