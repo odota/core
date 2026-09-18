@@ -213,6 +213,23 @@ runReliableQueue("counts", 2, async (job: CountsJob, metadata) => {
       const turbo = isTurbo(match);
       // 1 to 8 based on the average rank of the match, as in updateHeroCounts
       const rank = !turbo && avg ? Math.floor(avg / 10) : null;
+      // Rank each team by gold_per_min and call the top 3 cores, the rest
+      // supports. The exact 1-5 position needs parsed data, but this split is
+      // right for 99.4% of players using api data alone (see #2980).
+      const roles = new Map<number, string>();
+      if (!turbo) {
+        [true, false].forEach((radiant) => {
+          const team = match.players.filter((p) => isRadiant(p) === radiant);
+          if (team.length === 5) {
+            team
+              .slice()
+              .sort((a, b) => (b.gold_per_min ?? 0) - (a.gold_per_min ?? 0))
+              .forEach((p, i) =>
+                roles.set(p.player_slot, i < 3 ? "core" : "support"),
+              );
+          }
+        });
+      }
       if (
         match.match_id % 100 < Number(config.BENCHMARKS_SAMPLE_PERCENT) &&
         (isSignificant(match) || turbo)
@@ -244,10 +261,21 @@ runReliableQueue("counts", 2, async (job: CountsJob, metadata) => {
                   2,
                 );
                 redis.expireat(rkey, expiretime);
+                const role = roles.get(p.player_slot);
+                if (role) {
+                  const roleKey = `${rkey}:${role}`;
+                  redis.zadd(roleKey, metric, match.match_id);
+                  redis.expireat(roleKey, expiretime);
+                }
                 if (rank) {
                   const rankKey = `${rkey}:${rank}`;
                   redis.zadd(rankKey, metric, match.match_id);
                   redis.expireat(rankKey, expiretime);
+                  if (role) {
+                    const rankRoleKey = `${rankKey}:${role}`;
+                    redis.zadd(rankRoleKey, metric, match.match_id);
+                    redis.expireat(rankRoleKey, expiretime);
+                  }
                 }
               }
             });

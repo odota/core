@@ -108,11 +108,22 @@ export async function getHeroItemPopularity(heroId: string) {
     late_game_items: lateGameItems,
   };
 }
-export async function getHeroBenchmarks(heroId: string, bracket?: number | null) {
+export async function getHeroBenchmarks(
+  heroId: string,
+  bracket?: number | null,
+  role?: string | null,
+) {
   const ret: AnyDict = {};
   const arr = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99];
-  // Bracketed sets add the 1-8 rank bracket after the global/turbo slot
-  const suffix = bracket ? `:${bracket}` : "";
+  // The bracket and the role are independent slots after the global/turbo one,
+  // so either can be used on its own: ...:<hero>::5, ...:<hero>::core
+  let suffix = "";
+  if (bracket) {
+    suffix += `:${bracket}`;
+  }
+  if (role) {
+    suffix += `:${role}`;
+  }
   const items: [metric: string, percentile: number][] = [];
   Object.keys(benchmarks).forEach((metric) => {
     arr.forEach((percentile) => {
