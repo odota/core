@@ -41,14 +41,14 @@ let arr = [
   //   name: 'backupscanner',
   //   group: 'disabled',
   // },
-  // {
-  //   name: "backfill",
-  //   group: "backend",
-  //   env: {
-  //     BACKFILL_START: 233273,
-  //     BACKFILL_END: 7000000000,
-  //   },
-  // },
+  {
+    name: "backfill",
+    group: "backend",
+    env: {
+      BACKFILL_START: 6481993884, // match ID 7700000000
+      BACKFILL_END: 6565976575,  // 7800000000
+    },
+  },
   {
     name: "web",
     group: "backend",
