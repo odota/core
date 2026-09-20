@@ -115,14 +115,12 @@ export async function getHeroBenchmarks(
 ) {
   const ret: AnyDict = {};
   const arr = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99];
-  // The bracket and the role are independent slots after the global/turbo one,
-  // so either can be used on its own: ...:<hero>::5, ...:<hero>::core
+  // Filtered sets always carry both slots, empty for the ones not in use:
+  // ...:<hero>::5:  ...:<hero>:::core  ...:<hero>::5:core
+  // The unfiltered key keeps no suffix at all so existing ones still resolve.
   let suffix = "";
-  if (bracket) {
-    suffix += `:${bracket}`;
-  }
-  if (role) {
-    suffix += `:${role}`;
+  if (bracket || role) {
+    suffix = `:${bracket ?? ""}:${role ?? ""}`;
   }
   const items: [metric: string, percentile: number][] = [];
   Object.keys(benchmarks).forEach((metric) => {

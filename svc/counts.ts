@@ -261,18 +261,20 @@ runReliableQueue("counts", 2, async (job: CountsJob, metadata) => {
                   2,
                 );
                 redis.expireat(rkey, expiretime);
+                // Filtered sets keep both slots so every key has the same
+                // shape, with an empty segment for the filter not in use.
                 const role = roles.get(p.player_slot);
                 if (role) {
-                  const roleKey = `${rkey}:${role}`;
+                  const roleKey = `${rkey}::${role}`;
                   redis.zadd(roleKey, metric, match.match_id);
                   redis.expireat(roleKey, expiretime);
                 }
                 if (rank) {
-                  const rankKey = `${rkey}:${rank}`;
+                  const rankKey = `${rkey}:${rank}:`;
                   redis.zadd(rankKey, metric, match.match_id);
                   redis.expireat(rankKey, expiretime);
                   if (role) {
-                    const rankRoleKey = `${rankKey}:${role}`;
+                    const rankRoleKey = `${rkey}:${rank}:${role}`;
                     redis.zadd(rankRoleKey, metric, match.match_id);
                     redis.expireat(rankRoleKey, expiretime);
                   }
