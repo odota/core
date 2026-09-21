@@ -503,7 +503,7 @@ export default {
             },
             deaths_log: {
               description:
-                "Array containing information on the player's deaths: when they died, to whom, the gold lost and the time spent dead. Only present for matches parsed after the field was added",
+                "Array containing information on the player's deaths: when they died, to whom, the gold lost, the gold the enemy collected and the time spent dead. Only present for matches parsed after the field was added",
               type: "array",
               items: {
                 type: "object",
@@ -518,7 +518,12 @@ export default {
                   },
                   gold_lost: {
                     description:
-                      "Gold lost to this death (0 on patches without death gold loss)",
+                      "Gold the player lost to this death. Sums to the negative gold_reasons bucket 1",
+                    type: "integer",
+                  },
+                  gold_fed: {
+                    description:
+                      "Gold the enemy team collected for this kill, split between the killer and the assisters. Sums to the enemy's gold_reasons bucket 12, and is larger than gold_lost because the bounty is not what the victim drops. 0 for deaths that pay no bounty, such as a suicide or a death to a tower",
                     type: "integer",
                   },
                   time_dead: {
