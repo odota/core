@@ -523,8 +523,13 @@ export default {
                   },
                   gold_fed: {
                     description:
-                      "Gold the enemy team collected for this kill, split between the killer and the assisters. Sums to the enemy's gold_reasons bucket 12, and is larger than gold_lost because the bounty is not what the victim drops. 0 for deaths that pay no bounty, such as a suicide or a death to a tower",
+                      "Gold the enemy team collected for this kill, split between the killer and the assisters. Sums to the enemy's gold_reasons bucket 12, and is larger than gold_lost because the bounty is not what the victim drops. 0 for deaths that pay no bounty, such as a suicide or a death with no enemy hero in range",
                     type: "integer",
+                  },
+                  gold_fed_shared: {
+                    description:
+                      "Present and true when another death on the same side claimed the same payout, so one of the two entries carries all of it and the other carries 0. Their sum is still what that side fed, but neither number stands on its own",
+                    type: "boolean",
                   },
                   time_dead: {
                     description:
