@@ -501,6 +501,30 @@ export default {
                 },
               },
             },
+            assists_log: {
+              description:
+                "Array containing information on which hero the player assisted in killing at what time. Only present for matches parsed after the field was added",
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  time: {
+                    description:
+                      "Time in seconds of the death the player was credited for",
+                    type: "integer",
+                  },
+                  key: {
+                    description: "Hero that died",
+                    type: "string",
+                  },
+                  ambiguous: {
+                    description:
+                      "Present and true when more enemies died in that second than the player was credited for, so the hero named in key is one of them rather than a certainty. About 1.7% of entries",
+                    type: "boolean",
+                  },
+                },
+              },
+            },
             deaths_log: {
               description:
                 "Array containing information on the player's deaths: when they died, to whom, the gold lost and the time spent dead. Only present for matches parsed after the field was added",
