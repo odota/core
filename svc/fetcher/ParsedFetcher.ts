@@ -47,7 +47,7 @@ export class ParsedFetcher extends MatchFetcherBase<ParsedData> {
       console.log("[STATUS]", resp.status);
       return {
         data: null,
-        error: "No parse data in 2xx response (probably expected error)",
+        error: `No parse data in ${resp.status} response (probably expected error)`,
       };
     }
     const result: ParsedData = {
