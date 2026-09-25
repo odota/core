@@ -44,6 +44,7 @@ export class ParsedFetcher extends MatchFetcherBase<ParsedData> {
     // This will throw if the http response is 4xx or 5xx (and not consume an attempt)
     if (!resp.data) {
       // Otherwise, it's an expected error so we should use an attempt
+      console.log("[STATUS]", resp.status);
       return {
         data: null,
         error: "No parse data in 2xx response (probably expected error)",
