@@ -22,7 +22,7 @@ await runReliableQueue(
   parseProcessor,
   async () => {
     const cap = await getParserCapacity();
-    return cap * 4;
+    return cap;
   },
 );
 
