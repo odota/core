@@ -514,12 +514,13 @@ export default {
                     type: "integer",
                   },
                   key: {
-                    description: "Hero that died",
+                    description:
+                      "Hero that died. Usually an enemy; the game also credits some assists on a death on the player's own side",
                     type: "string",
                   },
                   ambiguous: {
                     description:
-                      "Present and true when more enemies died in that second than the player was credited for, so the hero named in key is one of them rather than a certainty. About 1.7% of entries",
+                      "Present and true when two heroes died on the same tick and the replay doesn't tell which of them the assist was for, so the hero named in key is one of them rather than a certainty. Only seen on old replays that predate the combat log assist list",
                     type: "boolean",
                   },
                 },
