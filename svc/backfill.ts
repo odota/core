@@ -6,7 +6,7 @@ import { SteamAPIUrls, getSteamAPIDataWithRetry } from "./util/http.ts";
 import { transformMatch } from "./util/compute.ts";
 import db from "./store/db.ts";
 
-const stop = Number(process.env.BACKFILL_STOP);
+const stop = Number(process.env.BACKFILL_END);
 
 await runInLoop(async function backfill() {
   // This endpoint is limited to something like 1 request every 5 seconds
