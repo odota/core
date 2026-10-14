@@ -6,7 +6,7 @@ import config from "../../config.ts";
 export function tokenize(input: string) {
   return input
     .replace(/[^a-zа-я- ]+/gi, "")
-    .replace("/ {2,}/", " ")
+    .replace(/ {2,}/, " ")
     .toLowerCase()
     .split(" ");
 }
@@ -413,7 +413,7 @@ export function isDataComplete(match: Partial<ParsedMatch>) {
     match.start_time &&
     match.version &&
     match.chat &&
-    match.players?.[0]?.hero_damage &&
+    match.players?.[0]?.hero_damage != null &&
     // Some players may not have upgrades (DCed or never upgraded abilities), so check all slots
     // If it's ability upgrade expired data none of the players will have it
     // Looks like some ability draft matches also don't have this data (not sure if present in source)

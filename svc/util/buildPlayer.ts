@@ -134,6 +134,7 @@ function mergeMatches(
         }
       }
     }
+    return matches;
   }
   return localMatches;
 }

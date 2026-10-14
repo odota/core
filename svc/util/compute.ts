@@ -76,7 +76,7 @@ export function computeMatchData(pm: ParsedPlayerMatch) {
   if (pm.duration && pm.xp_per_min) {
     pm.total_xp = Math.floor((pm.xp_per_min * pm.duration) / 60);
   }
-  if (pm.duration && pm.kills) {
+  if (pm.duration && pm.kills != null) {
     pm.kills_per_min = pm.kills / (pm.duration / 60);
   }
   if (
@@ -196,7 +196,7 @@ export function computeMatchData(pm: ParsedPlayerMatch) {
         pm.purchase_time[k] = 0;
       }
       // Store first purchase time for every item
-      if (!pm.first_purchase_time[k]) {
+      if (pm.first_purchase_time[k] == null) {
         pm.first_purchase_time[k] = time;
       }
       pm.purchase_time[k] += time;
