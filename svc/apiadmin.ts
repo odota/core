@@ -32,10 +32,16 @@ await runInLoop(
         );
         continue;
       }
+      // Use UTC: usage rows are bucketed by moment.utc().startOf("month") in web.ts,
+      // so a non-UTC server timezone would otherwise select the wrong month near boundaries
       const startTime = moment
         .unix(sub.current_period_end - 1)
+        .utc()
         .startOf("month");
-      const endTime = moment.unix(sub.current_period_end - 1).endOf("month");
+      const endTime = moment
+        .unix(sub.current_period_end - 1)
+        .utc()
+        .endOf("month");
       const res = await db.raw(
         `
               SELECT
@@ -45,10 +51,10 @@ await runInLoop(
                   api_key_usage.api_key,
                   api_key_usage.ip,
                   MAX(api_key_usage.usage_count) as usage
-                FROM api_key_usage, api_keys
+                FROM api_key_usage
+                JOIN api_keys ON api_key_usage.api_key = api_keys.api_key
                 WHERE
-                  api_key_usage.account_id = api_keys.account_id
-                  AND timestamp >= ?
+                  timestamp >= ?
                   AND timestamp <= ?
                   AND subscription_id = ?
                 GROUP BY api_key_usage.api_key, api_key_usage.ip
