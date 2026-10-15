@@ -441,7 +441,7 @@ export async function isRecentlyVisited(accountId: number): Promise<boolean> {
 
 export async function search(query: string) {
   let accountIdMatch: any[] = [];
-  if (Number.isInteger(Number(query))) {
+  if (Number.isInteger(Number(query)) && /^\d+$/.test(query)) {
     let query32 = isSteamID64(query) ? convert64to32(query) : query;
     accountIdMatch = await db
       .select(["account_id", "personaname", "avatarfull"])
