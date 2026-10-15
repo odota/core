@@ -461,7 +461,9 @@ app.use(async (req, res, next) => {
     !unlimitedPaths.includes(req.originalUrl.split("?")[0])
   ) {
     let rateCost = 1;
-    if (req.method === "POST" && req.route?.path === "/request/:match_id") {
+    // NOTE: req.route is not set yet in app-level middleware (routing happens later in the /api router),
+    // so match on the method and path instead
+    if (req.method === "POST" && /^\/api\/request\/[^/]+\/?$/.test(req.path)) {
       rateCost = 10;
     }
     const command = redis.multi();
