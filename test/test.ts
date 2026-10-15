@@ -526,6 +526,31 @@ suite(c.blue("API ROUTES"), async () => {
       );
     }
   });
+  for (const query of ["1e3", "1.0", "5."]) {
+    test(`search should not throw for ${query}`, async () => {
+      const res = await supertest(app).get("/api/search").query({ q: query });
+      assert.equal(res.statusCode, 200);
+      assert.ok(Array.isArray(res.body));
+    });
+  }
+  test("search for a player with an exponential-looking name", async () => {
+    const accountId = 120269134;
+    const player = await db("players")
+      .where({ account_id: accountId })
+      .first("personaname");
+    try {
+      await db("players")
+        .where({ account_id: accountId })
+        .update({ personaname: "1e3" });
+      const res = await supertest(app).get("/api/search").query({ q: "1e3" });
+      assert.equal(res.statusCode, 200);
+      assert.ok(res.body.some((p: User) => p.account_id === accountId));
+    } finally {
+      await db("players")
+        .where({ account_id: accountId })
+        .update({ personaname: player.personaname });
+    }
+  });
   test("search for steamid32", async () => {
     const res = await supertest(app).get(`/api/search?q=120269134`);
     assert.equal(res.statusCode, 200);
