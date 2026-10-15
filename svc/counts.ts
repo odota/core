@@ -11,18 +11,21 @@ import { benchmarks } from "./util/benchmarksUtil.ts";
 runReliableQueue("counts", 2, async (job: CountsJob, metadata) => {
     const match = job;
     console.time(match.match_id.toString());
-    const trx = await db.transaction();
     const { avg, num, isProTier } = job;
-
-    await updateHeroRankings();
-    await upsertMatchSample();
-    await updateLastPlayed();
-    await updateRecords();
-    await updateHeroCounts(isProTier);
-    await updateMatchCounts();
-    await updateBenchmarks();
-    
-    await trx.commit();
+    const trx = await db.transaction();
+    try {
+      await updateHeroRankings();
+      await upsertMatchSample();
+      await updateLastPlayed();
+      await updateRecords();
+      await updateHeroCounts(isProTier);
+      await updateMatchCounts();
+      await updateBenchmarks();
+      await trx.commit();
+    } catch (e) {
+      await trx.rollback();
+      throw e;
+    }
     console.timeEnd(match.match_id.toString());
 
     return true;

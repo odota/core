@@ -21,7 +21,7 @@ console.log("listening on port %s", port);
 if (config.SERVICE_REGISTRY_HOST) {
   let ip = os.networkInterfaces()?.eth0?.[0]?.address;
   if (config.EXTERNAL) {
-    const resp = await fetch(`${config.SERVICE_REGISTRY_HOST}/ip`);
+    const resp = await fetch(`https://${config.SERVICE_REGISTRY_HOST}/ip`);
     if (!resp.ok) {
       throw new Error("fetch not ok");
     }

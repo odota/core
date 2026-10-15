@@ -34,7 +34,7 @@ await runInLoop(async function insert() {
     rows.map(async (r: any) => {
       const match = r.data;
       if (!match) {
-        throw new Error("no match in row: %s", r.match_seq_num);
+        throw new Error("no match in row " + r.match_seq_num);
       }
       await insertMatch(match, {
         type: "api",
