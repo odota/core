@@ -97,16 +97,18 @@ keys
                   api_key,
                   ip,
                   concat(date_part('year', timestamp), '-', date_part('month', timestamp)) as month,
+                  date_trunc('month', timestamp) as month_start,
                   MAX(usage_count) as usage_count
                 FROM api_key_usage
                 WHERE
                   timestamp >= ?
                   AND timestamp <= ?
                   AND account_id = ?
-                GROUP BY account_id, api_key, ip, month
+                GROUP BY account_id, api_key, ip, month, month_start
               ) as T1
-              GROUP BY account_id, month
-              ORDER BY month DESC
+              GROUP BY account_id, month, month_start
+              -- "month" is an unpadded string (e.g. 2026-9), which sorts lexicographically (2026-9 > 2026-10), so order by the real date
+              ORDER BY month_start DESC
             `,
         [
           moment.utc().subtract(5, "month").startOf("month"),

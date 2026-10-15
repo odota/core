@@ -22,7 +22,13 @@ await runInLoop(async function doSyncSubs() {
       // Reconcile, insert any missing subscribers
       const accountId = sub.metadata['account_id'];
       if (accountId) {
-        await trx.raw("INSERT INTO subscriber(account_id, customer_id, status) VALUES (?, ?, 'active') ON CONFLICT DO NOTHING", [Number(accountId), sub.customer]);
+        // If the account already has a row (e.g. from an earlier subscription under a different Stripe customer),
+        // point it at the customer with the active subscription, otherwise the UPDATE below matches nothing
+        // and a paying user stays inactive
+        await trx.raw(
+          "INSERT INTO subscriber(account_id, customer_id, status) VALUES (?, ?, 'active') ON CONFLICT (account_id) DO UPDATE SET customer_id = EXCLUDED.customer_id, status = 'active'",
+          [Number(accountId), sub.customer],
+        );
       }
       // Mark subscribers as active
       await trx.raw("UPDATE subscriber SET status = 'active' WHERE customer_id = ?", [
