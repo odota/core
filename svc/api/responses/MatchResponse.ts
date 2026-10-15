@@ -501,6 +501,31 @@ export default {
                 },
               },
             },
+            assists_log: {
+              description:
+                "Array containing information on which hero the player assisted in killing at what time. Only present for matches parsed after the field was added",
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  time: {
+                    description:
+                      "Time in seconds of the death the player was credited for",
+                    type: "integer",
+                  },
+                  key: {
+                    description:
+                      "Hero that died. Usually an enemy; the game also credits some assists on a death on the player's own side",
+                    type: "string",
+                  },
+                  ambiguous: {
+                    description:
+                      "Present and true when two heroes died on the same tick and the replay doesn't tell which of them the assist was for, so the hero named in key is one of them rather than a certainty. Only seen on old replays that predate the combat log assist list",
+                    type: "boolean",
+                  },
+                },
+              },
+            },
             deaths_log: {
               description:
                 "Array containing information on the player's deaths: when they died, to whom, the gold lost, the gold the enemy collected and the time spent dead. Only present for matches parsed after the field was added",
