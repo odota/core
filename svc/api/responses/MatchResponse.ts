@@ -411,7 +411,7 @@ export default {
             },
             hero_damage_t: {
               description:
-                "Array containing cumulative damage dealt to enemy heroes at each minute of the match, as computed from the replay combat log. Follows the hero_damage scoreboard definition (real non-illusion hero targets, self-damage excluded, illusion attacker damage counted), so the final value matches hero_damage up to the last minute boundary",
+                "Array containing cumulative damage dealt to enemy heroes at each minute of the match, taken from the game's own hero damage counter, the one hero_damage comes from, so the final value matches hero_damage up to the last minute boundary. Empty for replays without that counter",
               type: "array",
               items: {
                 type: "integer",
@@ -424,6 +424,14 @@ export default {
             hero_healing_t: {
               description:
                 "Array containing cumulative healing done to other heroes at each minute of the match, as computed from the replay combat log. Follows the hero_healing scoreboard definition (self-healing excluded), so the final value matches hero_healing up to the last minute boundary",
+              type: "array",
+              items: {
+                type: "integer",
+              },
+            },
+            tower_damage_t: {
+              description:
+                "Array containing cumulative damage dealt to towers at each minute of the match, taken from the game's own tower damage counter, the one tower_damage comes from, so the final value matches tower_damage up to the last minute boundary. Empty for replays without that counter",
               type: "array",
               items: {
                 type: "integer",
