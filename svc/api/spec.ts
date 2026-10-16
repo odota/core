@@ -90,6 +90,7 @@ import TeamPlayersResponse from "./responses/TeamPlayersResponse.ts";
 import { PRIORITY } from "../util/priority.ts";
 import { getPatchIndex } from "../util/compute.ts";
 import { matchupToString } from "../util/matchups.ts";
+import { apiFetcher } from "../fetcher/allFetchers.ts";
 
 const conn = new Pool({
   connectionString: config.READONLY_POSTGRES_URL,
@@ -1589,6 +1590,13 @@ You can use the API without a key, but registering for a key allows increased ra
         func: async (req, res, next) => {
           // We validated the ID in middleware
           const matchId = req.params.match_id;
+
+          // Check to make sure we have data for this match
+          let apiMatch = await apiFetcher.getData(Number(matchId));
+          if (!apiMatch) {
+            return res.status(400).json({ error: "match ID not found" });
+          }
+
           // Count this request
           redisCount("request");
           redisCountDistinct("distinct_request", matchId);
