@@ -187,10 +187,7 @@ export function buildReplayUrl(
     suffix = ".meta.bz2";
   }
   if (config.NODE_ENV === "test") {
-    return `https://odota.github.io/testfiles/${matchId}_${replaySalt}${suffix.replace(
-      ".bz2",
-      "",
-    )}`;
+    return `https://odota.github.io/testfiles/${matchId}_${replaySalt}${suffix}`;
   }
   let domain = "valve.net";
   if (cluster === 413 || cluster === 415 || cluster === 417) {
