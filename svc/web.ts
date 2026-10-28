@@ -232,6 +232,9 @@ app.use((req, res, next) => {
 
 // Health check
 app.get("/healthz", (req, res) => {
+  if (redis.status !== "ready") {
+    throw new Error('redis not ready');
+  }
   res.end("ok");
 });
 

@@ -20,11 +20,13 @@ await runInLoop(async function doSyncSubs() {
     await trx.raw("DELETE FROM subscriber");
     for (let sub of result) {
       const accountId = sub.metadata['account_id'];
-      if (accountId) {
-        await trx.raw(
-          "INSERT INTO subscriber(account_id, customer_id, status) VALUES (?, ?, 'active') ON CONFLICT DO NOTHING",
-          [Number(accountId), sub.customer],
-        );
+      if (!accountId) {
+        console.error('no accountID for active customer %s', sub.customer);
+      } else {
+      await trx.raw(
+        "INSERT INTO subscriber(account_id, customer_id, status) VALUES (?, ?, 'active') ON CONFLICT DO NOTHING",
+        [Number(accountId), sub.customer],
+      );
       }
     }
     await trx.commit();
