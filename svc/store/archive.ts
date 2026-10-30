@@ -33,7 +33,7 @@ class Archive {
       bucket: this.bucket,
       accessKey: this.accessKeyId,
       secretKey: this.secretAccessKey,
-      // put the bucket name in the path rather than the domain to avoid DNS issues with minio
+      // put the bucket name in the path rather than the domain to avoid DNS issues with rustfs
       // forcePathStyle: true,
     });
   }

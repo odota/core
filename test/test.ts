@@ -76,7 +76,7 @@ nock(`http://${RETRIEVER_HOST}`)
 await initPostgres();
 await initRedis();
 await initCassandra();
-await initMinio();
+await initRustfs();
 await loadMatches();
 await loadPlayers();
 await startServices();
@@ -132,7 +132,7 @@ async function initCassandra() {
   }
 }
 
-async function initMinio() {
+async function initRustfs() {
   const client = new S3Client({
     endPoint: config.ARCHIVE_S3_ENDPOINT,
     region: "local",
@@ -142,7 +142,7 @@ async function initMinio() {
   });
   // Make a new test bucket with a new name
   // There's no good way to delete the test bucket automatically since we can't delete nonempty buckets
-  console.log("create minio test bucket");
+  console.log("create rustfs test bucket");
   await client.makeBucket(config.BLOB_ARCHIVE_S3_BUCKET);
   // Put a test blob
   await client.putObject("test", "test");

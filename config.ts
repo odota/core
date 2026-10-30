@@ -65,8 +65,8 @@ const defaults = {
   STRIPE_SECRET: "rk_test_gRqwhv4xqv0a1olp8kk8fZ94", // for stripe payment processing (kept on server)
   STRIPE_API_PLAN: "plan_CgLthOgwrDgz2K", // plan id for stripe metering
   ARCHIVE_S3_ENDPOINT: "http://localhost:9000", // S3-compatible endpoint for archive storage (should have http prefix)
-  ARCHIVE_S3_KEY_ID: "minioadmin", // S3-compatible key ID to archive
-  ARCHIVE_S3_KEY_SECRET: "minioadmin", // S3-compatible key secret to archive
+  ARCHIVE_S3_KEY_ID: "rustfsadmin", // S3-compatible key ID to archive
+  ARCHIVE_S3_KEY_SECRET: "rustfsadmin", // S3-compatible key secret to archive
   ARCHIVE_PUBLIC_URL: "", // base URL to use for public archive reading (if not set, uses s3 client with endpoint)
   MATCH_ARCHIVE_S3_BUCKET: "opendota", // name of the S3 bucket to archive parsed match blobs
   PLAYER_ARCHIVE_S3_BUCKET: "opendota-players", // name of the S3 bucket to archive player match blobs
@@ -97,8 +97,8 @@ if (process.env.NODE_TEST_CONTEXT) {
   process.env.CASSANDRA_URL = process.env.CASSANDRA_URL + "_test";
   process.env.REDIS_URL = process.env.REDIS_URL?.slice(0, -1) + "1";
   process.env.BLOB_ARCHIVE_S3_BUCKET = "opendota-test" + Date.now();
-  process.env.ARCHIVE_S3_KEY_ID = "minioadmin";
-  process.env.ARCHIVE_S3_KEY_SECRET = "minioadmin";
+  process.env.ARCHIVE_S3_KEY_ID = "rustfsadmin";
+  process.env.ARCHIVE_S3_KEY_SECRET = "rustfsadmin";
   process.env.SESSION_SECRET = "testsecretvalue";
   process.env.FRONTEND_PORT = "5001";
   process.env.ENABLE_RANDOM_MMR_UPDATE = "1";

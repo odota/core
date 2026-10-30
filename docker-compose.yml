@@ -9,10 +9,12 @@ services:
     container_name: odota-cassandra
     environment:
       JVM_EXTRA_OPTS: -Dcassandra.skip_wait_for_gossip_to_settle=0
-  minio:
-    image: ghcr.io/coollabsio/minio
-    container_name: odota-minio
-    command: server /data
+  rustfs:
+    image: rustfs/rustfs:latest
+    container_name: odota-rustfs
+    environment:
+      RUSTFS_ACCESS_KEY: rustfsadmin
+      RUSTFS_SECRET_KEY: rustfsadmin
   redis:
     image: redis:7
     container_name: odota-redis
@@ -32,11 +34,11 @@ services:
       READONLY_POSTGRES_URL: postgresql://readonly:readonly@odota-postgres/yasp
       REDIS_URL: redis://odota-redis:6379/0
       CASSANDRA_URL: cassandra://odota-cassandra/yasp
-      ARCHIVE_S3_ENDPOINT: http://odota-minio:9000
+      ARCHIVE_S3_ENDPOINT: http://odota-rustfs:9000
     links:
       - postgres
       - redis
       - parser
-      - minio
+      - rustfs
       - cassandra
     container_name: odota-core
