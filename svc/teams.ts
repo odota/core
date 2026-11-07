@@ -2,12 +2,12 @@
 import axios from "axios";
 import db, { upsert } from "./store/db.ts";
 import { runInLoop } from "./store/queue.ts";
-import JSONbig from "json-bigint";
 import {
   SteamAPIUrls,
   getSteamAPIDataWithRetry,
   getSteamAPIData,
 } from "./util/http.ts";
+import { parseJSONWithBigInts } from "./util/utility.ts";
 
 await runInLoop(
   async function doTeams() {
@@ -37,7 +37,7 @@ await runInLoop(
         url,
         raw: true,
       });
-      const body = JSONbig.parse(raw);
+      const body = parseJSONWithBigInts(raw);
       if (!body.result || !body.result.teams) {
         continue;
       }
@@ -56,7 +56,7 @@ await runInLoop(
       }
       if (!t.logo_url) {
         // The logo value is a 64 bit integer which is too large to represent in JSON
-        // So we use JSONbig to parse it
+        // So we parse it with parseJSONWithBigInts, which keeps it as a string
         const logoUgc = t.logo;
         // Try getting image from ugc
         try {

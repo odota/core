@@ -1,9 +1,9 @@
 // Updates the list of currently live games
-import JSONbig from "json-bigint";
 import redis from "./store/redis.ts";
 import db from "./store/db.ts";
 import { runInLoop } from "./store/queue.ts";
 import { getSteamAPIDataWithRetry, SteamAPIUrls } from "./util/http.ts";
+import { parseJSONWithBigInts } from "./util/utility.ts";
 
 await runInLoop(async function liveGames() {
   // Get the list of pro players
@@ -15,7 +15,7 @@ await runInLoop(async function liveGames() {
     partner: Math.random() < 0.5 ? 1 : 2,
   });
   const body = await getSteamAPIDataWithRetry<string>({ url, raw: true });
-  const json: TopLiveGames = JSONbig.parse(body);
+  const json: TopLiveGames = parseJSONWithBigInts(body);
   // If a match contains a pro player
   // add their name to the match object, save it to redis zset, keyed by server_steam_id
   for (let match of json.game_list) {
