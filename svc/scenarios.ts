@@ -37,7 +37,7 @@ async function processScenarios(job: ScenariosJob) {
           epoch_week: currentWeek,
           wins: row.wins ? "1" : "0",
         });
-        const values = Object.keys(row).map(() => "?");
+        const values = Object.keys(row).map((_, i) => `$${i + 1}`);
         const query = util.format(
           "INSERT INTO %s (%s) VALUES (%s) ON CONFLICT (%s) DO UPDATE SET wins = %s.wins + EXCLUDED.wins, games = %s.games + 1",
           table,
@@ -49,7 +49,7 @@ async function processScenarios(job: ScenariosJob) {
           table,
           table,
         );
-        await db.raw(
+        await db.query(
           query,
           Object.keys(row).map((key) => row[key]),
         );

@@ -106,7 +106,7 @@ async function initPostgres() {
   await client2.query(query);
   console.log("insert postgres test data");
   // populate the DB with this leagueid so we insert a pro match
-  await db.raw(
+  await db.query(
     "INSERT INTO leagues(leagueid, tier) VALUES(5399, 'professional')",
   );
 }
@@ -199,9 +199,9 @@ suite(c.blue("API MANAGEMENT"), async () => {
   let previousSub: string;
   let previousIsCanceled: boolean;
   beforeEach(async () => {
-    const res = await db.from("api_keys").where({
-      account_id: 1,
-    });
+    const { rows: res } = await db.query(
+      "SELECT * FROM api_keys WHERE account_id = 1",
+    );
     previousKey = res[0]?.api_key;
     previousCustomer = res[0]?.customer_id;
     previousSub = res[0]?.subscription_id;
@@ -404,9 +404,9 @@ suite("TESTS", async () => {
     assert.equal(data.length, 1);
   });
   test("teamRanking should have team rankings", async () => {
-    const rows = await db
-      .select(["team_id", "rating", "wins", "losses"])
-      .from("team_rating");
+    const { rows } = await db.query(
+      "SELECT team_id, rating, wins, losses FROM team_rating",
+    );
     // We inserted the pro match twice so expect to update the ratings twice
     const loser = rows.find((row) => row.team_id === 4251435);
     const winner = rows.find((row) => row.team_id === 1375614);
@@ -441,32 +441,32 @@ suite(c.blue("PLAYERS"), async () => {
 
 suite(c.blue("PRIVACY"), async () => {
   test("privacy setting should return one row due to default privacy setting", async () => {
-    await db.raw(
-      "UPDATE players SET fh_unavailable = NULL WHERE account_id = ?",
+    await db.query(
+      "UPDATE players SET fh_unavailable = NULL WHERE account_id = $1",
       ["120269134"],
     );
     const res = await supertest(app).get("/api/players/120269134/matches");
     assert.equal(res.body.length, 1);
   });
   test("privacy setting should return one row due to visible match data", async () => {
-    await db.raw(
-      "UPDATE players SET fh_unavailable = FALSE WHERE account_id = ?",
+    await db.query(
+      "UPDATE players SET fh_unavailable = FALSE WHERE account_id = $1",
       ["120269134"],
     );
     const res = await supertest(app).get("/api/players/120269134/matches");
     assert.equal(res.body.length, 1);
   });
   test("privacy setting should return no rows due to hidden match data", async () => {
-    await db.raw(
-      "UPDATE players SET fh_unavailable = TRUE WHERE account_id = ?",
+    await db.query(
+      "UPDATE players SET fh_unavailable = TRUE WHERE account_id = $1",
       ["120269134"],
     );
     const res = await supertest(app).get("/api/players/120269134/matches");
     assert.equal(res.body.length, 0);
   });
   test("privacy setting should return no rows in recentMatches due to hidden match data", async () => {
-    await db.raw(
-      "UPDATE players SET fh_unavailable = TRUE WHERE account_id = ?",
+    await db.query(
+      "UPDATE players SET fh_unavailable = TRUE WHERE account_id = $1",
       ["120269134"],
     );
     const res = await supertest(app).get(
@@ -535,20 +535,25 @@ suite(c.blue("API ROUTES"), async () => {
   }
   test("search for a player with an exponential-looking name", async () => {
     const accountId = 120269134;
-    const player = await db("players")
-      .where({ account_id: accountId })
-      .first("personaname");
+    const {
+      rows: [player],
+    } = await db.query(
+      "SELECT personaname FROM players WHERE account_id = $1",
+      [accountId],
+    );
     try {
-      await db("players")
-        .where({ account_id: accountId })
-        .update({ personaname: "1e3" });
+      await db.query(
+        "UPDATE players SET personaname = $1 WHERE account_id = $2",
+        ["1e3", accountId],
+      );
       const res = await supertest(app).get("/api/search").query({ q: "1e3" });
       assert.equal(res.statusCode, 200);
       assert.ok(res.body.some((p: User) => p.account_id === accountId));
     } finally {
-      await db("players")
-        .where({ account_id: accountId })
-        .update({ personaname: player.personaname });
+      await db.query(
+        "UPDATE players SET personaname = $1 WHERE account_id = $2",
+        [player.personaname, accountId],
+      );
     }
   });
   test("search for steamid32", async () => {
@@ -569,8 +574,8 @@ suite(c.blue("RATE LIMITING"), async () => {
   before(async () => {
     config.ENABLE_API_LIMIT = "1";
     config.API_FREE_LIMIT = "5";
-    await db.raw(
-      "insert into api_keys(account_id, subscription_id, customer_id, api_key) VALUES (?, ?, ?, ?)",
+    await db.query(
+      "insert into api_keys(account_id, subscription_id, customer_id, api_key) VALUES ($1, $2, $3, $4)",
       [2, "1", "1", testKey],
     );
   });
@@ -606,7 +611,7 @@ suite(c.blue("RATE LIMITING"), async () => {
     const err = await supertest(app).get("/gen500?api_key=" + testKey);
     assert.equal(err.statusCode, 500);
 
-    const { rows } = await db.raw("SELECT * from api_key_usage");
+    const { rows } = await db.query("SELECT * from api_key_usage");
     assert.ok(rows);
     assert.equal(rows.length, 1);
     assert.equal(Number(rows[0].usage_count), 10);
@@ -658,7 +663,9 @@ suite(c.blue("REPLAY PARSING"), async () => {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       tries += 1;
       console.log("waiting for replay parse... %s", tries);
-      const row = await db.first().from("queue").where({ type: "parse" });
+      const {
+        rows: [row],
+      } = await db.query("SELECT * FROM queue WHERE type = 'parse' LIMIT 1");
       notDone = Boolean(row);
     }
   });
@@ -698,16 +705,17 @@ suite(c.blue("REPLAY PARSING"), async () => {
   });
   test("should have parse match data in postgres", async () => {
     // Assert that the pro data (with parsed info) is in postgres
-    const proMatch = await db.raw("select * from matches where match_id = ?", [
-      matchData.match_id,
-    ]);
-    const proMatchPlayers = await db.raw(
-      "select * from player_matches where match_id = ?",
+    const proMatch = await db.query(
+      "select * from matches where match_id = $1",
       [matchData.match_id],
     );
-    const picksBans = await db.raw("select * from picks_bans");
-    const teamMatch = await db.raw("select * from team_match");
-    const teamRankings = await db.raw("select * from team_rating");
+    const proMatchPlayers = await db.query(
+      "select * from player_matches where match_id = $1",
+      [matchData.match_id],
+    );
+    const picksBans = await db.query("select * from picks_bans");
+    const teamMatch = await db.query("select * from team_match");
+    const teamRankings = await db.query("select * from team_rating");
     // console.log(proMatch.rows, proMatchPlayers.rows[0], picksBans.rows, teamMatch.rows, teamRankings.rows);
     assert.ok(proMatch.rows.length);
     assert.ok(proMatch.rows[0].chat);

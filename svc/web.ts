@@ -91,16 +91,17 @@ const onResFinish = async (
     if (res.locals.isAPIRequest) {
       const apiKey = res.locals.usageIdentifier;
       const apiTimestamp = moment.utc().startOf("month");
-      const rows = await db.from("api_keys").where({
-        api_key: apiKey,
-      });
+      const { rows } = await db.query(
+        "SELECT * FROM api_keys WHERE api_key = $1",
+        [apiKey],
+      );
       const [apiRecord] = rows;
       if (apiRecord) {
-        await db.raw(
+        await db.query(
           `
         INSERT INTO api_key_usage
         (account_id, api_key, customer_id, timestamp, ip, usage_count) VALUES
-        (?, ?, ?, ?, ?, 1)
+        ($1, $2, $3, $4, $5, 1)
         ON CONFLICT ON CONSTRAINT api_key_usage_pkey DO UPDATE SET usage_count = api_key_usage.usage_count + 1
         `,
           [
@@ -382,8 +383,8 @@ app.get("/subSuccess", async (req, res, next) => {
   const accountId = Number(req.user.account_id);
   // associate the customer id with the steam account ID (req.user.account_id)
   // NOTE: This may not be hit if the customer loses connection. Either integrate with Stripe webhooks or rely on syncSubs to reconcile
-  await db.raw(
-    "INSERT INTO subscriber(account_id, customer_id, status) VALUES (?, ?, ?) ON CONFLICT(account_id) DO UPDATE SET account_id = EXCLUDED.account_id, customer_id = EXCLUDED.customer_id, status = EXCLUDED.status",
+  await db.query(
+    "INSERT INTO subscriber(account_id, customer_id, status) VALUES ($1, $2, $3) ON CONFLICT(account_id) DO UPDATE SET account_id = EXCLUDED.account_id, customer_id = EXCLUDED.customer_id, status = EXCLUDED.status",
     [accountId, session.customer, "active"],
   );
   // Send the user back to the subscribe page
@@ -394,8 +395,8 @@ app.post("/subManage", async (req, res, next) => {
   if (!req.user?.account_id) {
     return res.status(400).json({ error: "no account ID" });
   }
-  const result = await db.raw(
-    "SELECT customer_id FROM subscriber where account_id = ? AND status = 'active'",
+  const result = await db.query(
+    "SELECT customer_id FROM subscriber where account_id = $1 AND status = 'active'",
     [Number(req.user.account_id)],
   );
   const customer = result?.rows?.[0];
@@ -434,8 +435,8 @@ app.use(async (req, res, next) => {
     let isValidKey = Boolean(await redis.get("apiKeyCache:" + apiKey));
     if (!isValidKey) {
       // Check DB for key
-      const { rows } = await db.raw(
-        "select api_key from api_keys where api_key = ? and is_canceled IS NOT TRUE",
+      const { rows } = await db.query(
+        "select api_key from api_keys where api_key = $1 and is_canceled IS NOT TRUE",
         [apiKey],
       );
       if (rows[0]) {

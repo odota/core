@@ -29,8 +29,8 @@ export class ArchivedFetcher extends MatchFetcherBase<ParsedMatch> {
   checkAvailable = async (matchId: number) => {
     return Boolean(
       (
-        await db.raw(
-          "select match_id from parsed_matches where match_id = ? and is_archived IS TRUE",
+        await db.query(
+          "select match_id from parsed_matches where match_id = $1 and is_archived IS TRUE",
           [matchId],
         )
       ).rows[0],

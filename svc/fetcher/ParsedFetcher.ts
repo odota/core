@@ -79,9 +79,10 @@ export class ParsedFetcher extends MatchFetcherBase<ParsedData> {
   checkAvailable = async (matchId: number) => {
     return Boolean(
       (
-        await db.raw("select match_id from parsed_matches where match_id = ?", [
-          matchId,
-        ])
+        await db.query(
+          "select match_id from parsed_matches where match_id = $1",
+          [matchId],
+        )
       ).rows[0],
     );
   };

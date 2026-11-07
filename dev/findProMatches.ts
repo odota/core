@@ -33,11 +33,9 @@ async function getPage(url: string, leagueid: number) {
 }
 
 // From DB
-const data: any = await db
-  .select("leagueid")
-  .from("leagues")
-  .where("tier", "professional")
-  .orWhere("tier", "premium");
+const { rows: data } = await db.query(
+  "SELECT leagueid FROM leagues WHERE tier = 'professional' OR tier = 'premium'",
+);
 const leagueIds = data.map((l: any) => l.leagueid);
 // NOTE: there could be a lot of leagueids
 leagueIds.forEach(async (leagueid: number) => {

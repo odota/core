@@ -91,7 +91,7 @@ async function archiveRandom(max: number) {
 }
 
 export async function getCurrentMaxArchiveID() {
-  const max = (await db.raw("select max(match_id) from public_matches"))
+  const max = (await db.query("select max(match_id) from public_matches"))
     ?.rows?.[0]?.max;
   const limit = max - 100000000;
   return limit;
@@ -150,8 +150,8 @@ export async function doArchiveMatchFromBlobs(matchId: number) {
     const result = await matchArchive.archivePut(matchId.toString(), blob);
     if (result) {
       // Mark the match archived
-      await db.raw(
-        `UPDATE parsed_matches SET is_archived = TRUE WHERE match_id = ?`,
+      await db.query(
+        `UPDATE parsed_matches SET is_archived = TRUE WHERE match_id = $1`,
         [matchId],
       );
       // TODO delete blobs

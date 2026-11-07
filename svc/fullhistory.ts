@@ -109,8 +109,8 @@ async function processFullHistory(job: FullHistoryJob, metadata: JobMetadata) {
       };
       // Note: If an account ID shows up here that player is not anonymous anymore (could update fh_unavailable for other players)
       // Log the match IDs we should reconcile, we can query our own DB for data
-      const { rows } = await db.raw(
-        "INSERT INTO player_match_history(account_id, match_id, player_slot) VALUES (?, ?, ?) ON CONFLICT DO NOTHING RETURNING *",
+      const { rows } = await db.query(
+        "INSERT INTO player_match_history(account_id, match_id, player_slot) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING RETURNING *",
         [row.account_id, row.match_id, row.player_slot],
       );
       if (rows?.length) {
@@ -134,13 +134,9 @@ async function processFullHistory(job: FullHistoryJob, metadata: JobMetadata) {
 
 async function updatePlayer(player: FullHistoryJob) {
   // done with this player, update
-  await db("players")
-    .update({
-      full_history_time: new Date(),
-      fh_unavailable: player.fh_unavailable,
-    })
-    .where({
-      account_id: player.account_id,
-    });
+  await db.query(
+    "UPDATE players SET full_history_time = $1, fh_unavailable = $2 WHERE account_id = $3",
+    [new Date(), player.fh_unavailable, player.account_id],
+  );
   redisCount("fullhistory");
 }

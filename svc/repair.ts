@@ -6,15 +6,15 @@ import { reconcileMatch } from "./util/reconcileUtil.ts";
 import { runInLoop } from "./store/queue.ts";
 
 await runInLoop(async function repair() {
-  const { rows } = await db.raw(
+  const { rows } = await db.query(
     "select match_id, retries from player_match_history WHERE retries >= 5 ORDER BY retries DESC NULLS LAST LIMIT 1",
   );
   const row = rows[0];
   if (row) {
     await apiFetcher.getOrFetchData(row.match_id, { seqNumBackfill: true });
     // Reconcile the match now that it's fixed
-    let { rows: allRows } = await db.raw(
-      "select * from player_match_history where match_id = ?",
+    let { rows: allRows } = await db.query(
+      "select * from player_match_history where match_id = $1",
       [row.match_id],
     );
     console.log(allRows);

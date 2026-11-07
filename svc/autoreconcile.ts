@@ -7,7 +7,7 @@ await runInLoop(async function autoReconcile() {
   // Randomly guess IDs (about 1/2 will be valid) and try to parse them
   // This will get gcdata and reconcile
   const max =
-    (await db.raw("select max(match_id) from public_matches"))?.rows?.[0]
+    (await db.query("select max(match_id) from public_matches"))?.rows?.[0]
       ?.max ?? 0;
   const rand = randomInt(0, max);
   await addReliableJob(

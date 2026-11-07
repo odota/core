@@ -39,13 +39,13 @@ api.use("/players/:account_id{/:info}", async (req, res, next) => {
   const sortCols = queryParamToArray(
     req.query.sort,
   ) as (keyof ParsedPlayerMatch)[];
-  const privacy = await db.raw(
-    "SELECT fh_unavailable FROM players WHERE account_id = ?",
+  const privacy = await db.query(
+    "SELECT fh_unavailable FROM players WHERE account_id = $1",
     [req.params.account_id],
   );
   // Show data for pro players
-  const pro = await db.raw(
-    "SELECT account_id FROM notable_players WHERE account_id = ?",
+  const pro = await db.query(
+    "SELECT account_id FROM notable_players WHERE account_id = $1",
     [req.params.account_id],
   );
   // User can view their own stats

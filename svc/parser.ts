@@ -233,8 +233,8 @@ export async function queueReconcile(
         )
         .map(async (p) => {
           if (p.account_id) {
-            const { rows } = await db.raw(
-              "INSERT INTO player_match_history(account_id, match_id, player_slot) VALUES (?, ?, ?) ON CONFLICT DO NOTHING RETURNING *",
+            const { rows } = await db.query(
+              "INSERT INTO player_match_history(account_id, match_id, player_slot) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING RETURNING *",
               [p.account_id, gcMatch.match_id, p.player_slot],
             );
             if (rows.length > 0) {

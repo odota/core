@@ -15,6 +15,7 @@ import {
 } from "./utility.ts";
 import contributors, { isContributor } from "../../CONTRIBUTORS.ts";
 import moment from "moment";
+import type pg from "pg";
 import { getStartOfBlockMinutes } from "./time.ts";
 
 export async function getDistributions() {
@@ -28,14 +29,14 @@ export async function getDistributions() {
 }
 
 export async function getHeroRankings(heroId: string) {
-  const result = await db.raw(
+  const result = await db.query(
     `
   SELECT players.account_id, score, personaname, name, avatar, last_login, rating as rank_tier
   from hero_ranking
   join players using(account_id)
   left join notable_players using(account_id)
   left join rank_tier using(account_id)
-  WHERE hero_id = ?
+  WHERE hero_id = $1
   ORDER BY score DESC
   LIMIT 100
   `,
@@ -47,16 +48,14 @@ export async function getHeroRankings(heroId: string) {
   };
 }
 export async function getHeroItemPopularity(heroId: string) {
-  const purchaseLogs: {
-    rows: {
-      purchase_log: { key: keyof typeof itemsConstants; time: string }[];
-    }[];
-  } = await db.raw(
+  const purchaseLogs = await db.query<{
+    purchase_log: { key: keyof typeof itemsConstants; time: string }[];
+  }>(
     `
   SELECT purchase_log
   FROM player_matches
   JOIN matches USING(match_id)
-  WHERE hero_id = ? AND version IS NOT NULL
+  WHERE hero_id = $1 AND version IS NOT NULL
   ORDER BY match_id DESC
   LIMIT 100
   `,
@@ -177,21 +176,21 @@ export async function getHeroBenchmarks(
 }
 
 export async function getPlayerRatings(accountId: string) {
-  const { rows } = await db.raw(
-    "SELECT time, rank_tier FROM rank_tier_history WHERE account_id = ? ORDER BY time asc",
+  const { rows } = await db.query(
+    "SELECT time, rank_tier FROM rank_tier_history WHERE account_id = $1 ORDER BY time asc",
     [accountId],
   );
   return rows;
 }
 export async function getPlayerHeroRankings(accountId: string): Promise<any[]> {
-  const result = await db.raw(
+  const result = await db.query(
     `
   SELECT
   hero_id,
   playerscore.score,
   count(1) filter (where hr.score <= playerscore.score)::float/count(1) as percent_rank
   FROM (select * from hero_ranking TABLESAMPLE SYSTEM(0.1) REPEATABLE(1)) hr
-  JOIN (select hero_id, score from hero_ranking hr2 WHERE account_id = ?) playerscore using (hero_id)
+  JOIN (select hero_id, score from hero_ranking hr2 WHERE account_id = $1) playerscore using (hero_id)
   GROUP BY hero_id, playerscore.score
   ORDER BY percent_rank desc
   `,
@@ -200,33 +199,32 @@ export async function getPlayerHeroRankings(accountId: string): Promise<any[]> {
   return result.rows;
 }
 export async function getPlayer(accountId: number): Promise<User | undefined> {
-  const playerData = await db
-    .first<User>(
-      "players.account_id",
-      "personaname",
-      "name",
-      "plus",
-      "cheese",
-      "steamid",
-      "avatar",
-      "avatarmedium",
-      "avatarfull",
-      "profileurl",
-      "last_login",
-      "loccountrycode",
-      "subscriber.status",
-      "fh_unavailable",
-    )
-    .from("players")
-    .leftJoin(
-      "notable_players",
-      "players.account_id",
-      "notable_players.account_id",
-    )
-    .leftJoin("subscriber", "players.account_id", "subscriber.account_id")
-    .where({
-      "players.account_id": Number(accountId),
-    });
+  const { rows } = await db.query<User>(
+    `
+    SELECT
+      players.account_id,
+      personaname,
+      name,
+      plus,
+      cheese,
+      steamid,
+      avatar,
+      avatarmedium,
+      avatarfull,
+      profileurl,
+      last_login,
+      loccountrycode,
+      subscriber.status,
+      fh_unavailable
+    FROM players
+    LEFT JOIN notable_players ON players.account_id = notable_players.account_id
+    LEFT JOIN subscriber ON players.account_id = subscriber.account_id
+    WHERE players.account_id = $1
+    LIMIT 1
+    `,
+    [Number(accountId)],
+  );
+  const playerData = rows[0];
   if (playerData) {
     playerData.is_contributor = isContributor(accountId.toString());
     playerData.is_subscriber = Boolean(playerData?.status);
@@ -257,24 +255,23 @@ export async function getPeers(
   teammatesArr = teammatesArr.slice(0, 200);
   const accountIds = teammatesArr.map((t) => t.account_id);
 
-  const rows: AnyDict[] = await db
-    .select(
-      "players.account_id",
-      "personaname",
-      "name",
-      "avatar",
-      "avatarfull",
-      "last_login",
-      "subscriber.status",
-    )
-    .from("players")
-    .leftJoin(
-      "notable_players",
-      "players.account_id",
-      "notable_players.account_id",
-    )
-    .leftJoin("subscriber", "players.account_id", "subscriber.account_id")
-    .whereIn("players.account_id", accountIds);
+  const { rows } = await db.query<AnyDict>(
+    `
+    SELECT
+      players.account_id,
+      personaname,
+      name,
+      avatar,
+      avatarfull,
+      last_login,
+      subscriber.status
+    FROM players
+    LEFT JOIN notable_players ON players.account_id = notable_players.account_id
+    LEFT JOIN subscriber ON players.account_id = subscriber.account_id
+    WHERE players.account_id = ANY($1)
+    `,
+    [accountIds],
+  );
 
   const rowsByAccountId = new Map(rows.map((row) => [row.account_id, row]));
 
@@ -300,7 +297,7 @@ export async function getProPeers(
   player: { account_id: number },
 ) {
   const teammates = input;
-  const { rows }: { rows: any[] } = await db.raw(
+  const { rows }: { rows: any[] } = await db.query(
     `select *, notable_players.account_id
           FROM notable_players
           LEFT JOIN players
@@ -315,7 +312,7 @@ export async function getProPeers(
 }
 
 export async function getMatchRankTier(
-  db: Knex,
+  db: pg.Pool | pg.PoolClient,
   players: { account_id?: number | null; player_slot: number }[],
 ) {
   const result = await Promise.all(
@@ -323,10 +320,11 @@ export async function getMatchRankTier(
       if (!player.account_id) {
         return;
       }
-      const row = await db
-        .first()
-        .from("rank_tier")
-        .where({ account_id: player.account_id });
+      const { rows } = await db.query(
+        "SELECT * FROM rank_tier WHERE account_id = $1",
+        [player.account_id],
+      );
+      const row = rows[0];
       return row ? row.rating : undefined;
     }),
   );
@@ -346,30 +344,30 @@ export async function getMatchRankTier(
 export async function getItemTimings(req: Request): Promise<any[]> {
   const heroId = req.query.hero_id || 0;
   const item = req.query.item || "";
-  const result = await db.raw(
+  const result = await db.query(
     `SELECT hero_id, item, time, sum(games) games, sum(wins) wins
      FROM scenarios
      WHERE item IS NOT NULL
-     AND (0 = :heroId OR hero_id = :heroId)
-     AND ('' = :item OR item = :item)
+     AND (0 = $1 OR hero_id = $1)
+     AND ('' = $2 OR item = $2)
      GROUP BY hero_id, item, time ORDER BY time, hero_id, item
      LIMIT 1600`,
-    { heroId, item },
+    [heroId, item],
   );
   return result.rows;
 }
 export async function getLaneRoles(req: Request): Promise<any[]> {
   const heroId = req.query.hero_id || 0;
   const lane = req.query.lane_role || 0;
-  const result = await db.raw(
+  const result = await db.query(
     `SELECT hero_id, lane_role, time, sum(games) games, sum(wins) wins
      FROM scenarios
      WHERE lane_role IS NOT NULL
-     AND (0 = :heroId OR hero_id = :heroId)
-     AND (0 = :lane OR lane_role = :lane)
+     AND (0 = $1 OR hero_id = $1)
+     AND (0 = $2 OR lane_role = $2)
      GROUP BY hero_id, lane_role, time ORDER BY hero_id, time, lane_role
      LIMIT 1200`,
-    { heroId, lane },
+    [heroId, lane],
   );
   return result.rows;
 }
@@ -378,13 +376,13 @@ export async function getTeamScenarios(req: Request): Promise<any[]> {
     (teamScenariosQueryParams.includes(String(req.query.scenario)) &&
       req.query.scenario) ||
     "";
-  const result = await db.raw(
+  const result = await db.query(
     `SELECT scenario, is_radiant, region, sum(games) games, sum(wins) wins
      FROM team_scenarios
-     WHERE ('' = :scenario OR scenario = :scenario)
+     WHERE ('' = $1 OR scenario = $1)
      GROUP BY scenario, is_radiant, region ORDER BY scenario
      LIMIT 1000`,
-    { scenario },
+    [scenario],
   );
   return result.rows;
 }
@@ -418,8 +416,8 @@ export async function getMetadata(req: Request) {
 }
 
 export async function isSubscriber(account_id: string) {
-  const result: { rows: any[] } = await db.raw(
-    "SELECT account_id from subscriber WHERE account_id = ? AND status = 'active'",
+  const result: { rows: any[] } = await db.query(
+    "SELECT account_id from subscriber WHERE account_id = $1 AND status = 'active'",
     [Number(account_id)],
   );
   return Boolean(result.rows?.[0]);
@@ -443,21 +441,22 @@ export async function search(query: string) {
   let accountIdMatch: any[] = [];
   if (Number.isInteger(Number(query)) && /^\d+$/.test(query)) {
     let query32 = isSteamID64(query) ? convert64to32(query) : query;
-    accountIdMatch = await db
-      .select(["account_id", "personaname", "avatarfull"])
-      .from("players")
-      .where({ account_id: Number(query32) });
+    const { rows } = await db.query(
+      "SELECT account_id, personaname, avatarfull FROM players WHERE account_id = $1",
+      [Number(query32)],
+    );
+    accountIdMatch = rows;
   }
   // Set similarity threshold
-  // await db.raw('SELECT set_limit(0.5)');
+  // await db.query('SELECT set_limit(0.5)');
   let rows = [];
   const trim = query.trim();
   if (trim.length >= 3) {
-    const personaNameMatch = await db.raw(
+    const personaNameMatch = await db.query(
       `
-      SELECT account_id, avatarfull, personaname, last_match_time, similarity(?, personaname) as sml
+      SELECT account_id, avatarfull, personaname, last_match_time, similarity($1, personaname) as sml
       FROM players
-      WHERE personaname ilike ?
+      WHERE personaname ilike $2
       ORDER BY sml DESC, last_match_time DESC NULLS LAST
       LIMIT 50;
       `,
@@ -471,10 +470,9 @@ export async function search(query: string) {
 }
 
 export async function cacheTrackedPlayers() {
-  const subs = await db
-    .select<{ account_id: string }[]>(["account_id"])
-    .from("subscriber")
-    .where("status", "=", "active");
+  const { rows: subs } = await db.query<{ account_id: string }>(
+    "SELECT account_id FROM subscriber WHERE status = 'active'",
+  );
   const subIds = subs.map((sub) => sub.account_id);
   const contribs = Object.keys(contributors);
   console.log(

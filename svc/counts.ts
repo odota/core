@@ -12,7 +12,8 @@ runReliableQueue("counts", 2, async (job: CountsJob, metadata) => {
     const match = job;
     console.time(match.match_id.toString());
     const { avg, num, isProTier } = job;
-    const trx = await db.transaction();
+    const trx = await db.connect();
+    await trx.query("BEGIN");
     try {
       await updateHeroRankings();
       await upsertMatchSample();
@@ -21,10 +22,12 @@ runReliableQueue("counts", 2, async (job: CountsJob, metadata) => {
       await updateHeroCounts(isProTier);
       await updateMatchCounts();
       await updateBenchmarks();
-      await trx.commit();
+      await trx.query("COMMIT");
     } catch (e) {
-      await trx.rollback();
+      await trx.query("ROLLBACK");
       throw e;
+    } finally {
+      trx.release();
     }
     console.timeEnd(match.match_id.toString());
 
@@ -52,10 +55,10 @@ runReliableQueue("counts", 2, async (job: CountsJob, metadata) => {
           // Treat the result as an Elo rating change where the opponent is the average rank tier of the match * 100
           const win = Number(isRadiant(player) === radiant_win);
           const kFactor = 100;
-          const data1 = await db.select("score").from("hero_ranking").where({
-            account_id: player.account_id,
-            hero_id: player.hero_id,
-          });
+          const { rows: data1 } = await db.query(
+            "SELECT score FROM hero_ranking WHERE account_id = $1 AND hero_id = $2",
+            [player.account_id, player.hero_id],
+          );
           const currRating1 = Number(
             (data1 && data1[0] && data1[0].score) || 4000,
           );
@@ -64,8 +67,8 @@ runReliableQueue("counts", 2, async (job: CountsJob, metadata) => {
           const e1 = r1 / (r1 + r2);
           const ratingDiff1 = kFactor * (win - e1);
           const newScore = currRating1 + ratingDiff1;
-          return trx.raw(
-            "INSERT INTO hero_ranking VALUES(?, ?, ?) ON CONFLICT(account_id, hero_id) DO UPDATE SET score = ?",
+          return trx.query(
+            "INSERT INTO hero_ranking VALUES($1, $2, $3) ON CONFLICT(account_id, hero_id) DO UPDATE SET score = $4",
             [player.account_id, player.hero_id, newScore, newScore],
           );
         }),

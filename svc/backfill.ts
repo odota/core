@@ -37,8 +37,8 @@ await runInLoop(async function backfill() {
   // write to blobstore, process the blob using same function as insertMatch
   for (let origMatch of resp) {
     // Check if match is in player_match_history table
-    const { rows } = await db.raw(
-      "select match_id from player_match_history where match_id = ? and retries >= 5;",
+    const { rows } = await db.query(
+      "select match_id from player_match_history where match_id = $1 and retries >= 5;",
       [origMatch.match_id],
     );
     if (rows[0]) {

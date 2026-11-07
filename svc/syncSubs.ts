@@ -14,24 +14,27 @@ await runInLoop(async function doSyncSubs() {
     result.push(sub);
   }
   console.log(result.length, "subs");
-  const trx = await db.transaction();
+  const trx = await db.connect();
+  await trx.query("BEGIN");
   try {
     // Delete all status from subscribers
-    await trx.raw("DELETE FROM subscriber");
+    await trx.query("DELETE FROM subscriber");
     for (let sub of result) {
       const accountId = sub.metadata['account_id'];
       if (!accountId) {
         console.error('no accountID for active customer %s', sub.customer);
       } else {
-      await trx.raw(
-        "INSERT INTO subscriber(account_id, customer_id, status) VALUES (?, ?, 'active') ON CONFLICT DO NOTHING",
-        [Number(accountId), sub.customer],
-      );
+        await trx.query(
+          "INSERT INTO subscriber(account_id, customer_id, status) VALUES ($1, $2, 'active') ON CONFLICT DO NOTHING",
+          [Number(accountId), sub.customer],
+        );
       }
     }
-    await trx.commit();
+    await trx.query("COMMIT");
   } catch (e) {
-    await trx.rollback();
+    await trx.query("ROLLBACK");
     throw e;
+  } finally {
+    trx.release();
   }
 }, 60 * 1000);

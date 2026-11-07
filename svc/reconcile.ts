@@ -9,7 +9,7 @@ import { reconcileMatch } from "./util/reconcileUtil.ts";
 import { runInLoop } from "./store/queue.ts";
 
 await runInLoop(async function reconcile() {
-  const result = await db.raw(
+  const result = await db.query(
     "SELECT match_id FROM player_match_history ORDER BY retries ASC NULLS FIRST LIMIT 20",
   );
   if (!result.rows.length) {
@@ -24,8 +24,8 @@ await runInLoop(async function reconcile() {
   await Promise.all(
     dedupIds.map(async (matchId) => {
       // Fetch rows for a single match (could be multiple players to fill)
-      const { rows }: { rows: HistoryType[] } = await db.raw(
-        "UPDATE player_match_history SET retries = coalesce(retries, 0) + 1 WHERE match_id = ? RETURNING *",
+      const { rows }: { rows: HistoryType[] } = await db.query(
+        "UPDATE player_match_history SET retries = coalesce(retries, 0) + 1 WHERE match_id = $1 RETURNING *",
         [matchId],
       );
       if (!rows.length) {

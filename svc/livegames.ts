@@ -7,7 +7,9 @@ import { parseJSONWithBigInts } from "./util/utility.ts";
 
 await runInLoop(async function liveGames() {
   // Get the list of pro players
-  const proPlayers: ProPlayer[] = await db.select().from("notable_players");
+  const { rows: proPlayers } = await db.query<ProPlayer>(
+    "SELECT * FROM notable_players",
+  );
   // Get the list of live games
   const url = SteamAPIUrls.api_top_live_game({
     partner: Math.random() < 0.5 ? 1 : 2,

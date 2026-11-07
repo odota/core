@@ -45,8 +45,8 @@ async function doArchiveFromLegacy(matchId: number) {
   // This flag also lets us know to look for the match in archive on read
   const isArchived = Boolean(
     (
-      await db.raw(
-        "select match_id from parsed_matches where match_id = ? and is_archived IS TRUE",
+      await db.query(
+        "select match_id from parsed_matches where match_id = $1 and is_archived IS TRUE",
         [matchId],
       )
     ).rows[0],
@@ -61,7 +61,7 @@ async function doArchiveFromLegacy(matchId: number) {
     console.log("no players for match, deleting:", matchId);
     if (Number(matchId) < 7000000000) {
       // Just delete it from postgres too
-      await db.raw("DELETE from parsed_matches WHERE match_id = ?", [
+      await db.query("DELETE from parsed_matches WHERE match_id = $1", [
         Number(matchId),
       ]);
     }
@@ -70,8 +70,8 @@ async function doArchiveFromLegacy(matchId: number) {
   }
 
   // Add to parsed_matches if not present
-  await db.raw(
-    "INSERT INTO parsed_matches(match_id) VALUES(?) ON CONFLICT DO NOTHING",
+  await db.query(
+    "INSERT INTO parsed_matches(match_id) VALUES($1) ON CONFLICT DO NOTHING",
     [matchId],
   );
 
@@ -81,8 +81,8 @@ async function doArchiveFromLegacy(matchId: number) {
   const result = await matchArchive.archivePut(matchId.toString(), blob);
   if (result) {
     // Mark the match archived
-    await db.raw(
-      `UPDATE parsed_matches SET is_archived = TRUE WHERE match_id = ?`,
+    await db.query(
+      `UPDATE parsed_matches SET is_archived = TRUE WHERE match_id = $1`,
       [matchId],
     );
     await deleteFromLegacy(matchId);

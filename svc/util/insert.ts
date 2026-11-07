@@ -29,7 +29,7 @@ import {
   isProMatch,
   transformMatch,
 } from "./compute.ts";
-import type knex from "knex";
+import type pg from "pg";
 import { PRIORITY } from "./priority.ts";
 
 moment.relativeTimeThreshold("ss", 0);
@@ -75,8 +75,8 @@ export async function insertMatch(
   let isProTier = false;
   if ("leagueid" in match && match.leagueid) {
     // Check if leagueid is premium/professional
-    const { rows } = await db.raw(
-      `select leagueid from leagues where leagueid = ? and (tier = 'premium' OR tier = 'professional')`,
+    const { rows } = await db.query(
+      `select leagueid from leagues where leagueid = $1 and (tier = 'premium' OR tier = 'professional')`,
       [Number(match.leagueid)],
     );
     isProTier = rows?.length > 0;
@@ -94,7 +94,8 @@ export async function insertMatch(
   await resetPlayerTemp(match, pgroup);
 
   let doGcData = false;
-  const trx = await db.transaction();
+  const trx = await db.connect();
+  await trx.query("BEGIN");
   try {
     await upsertLeagueMatch(trx);
     await upsertMatchPostgres(trx, isProTier);
@@ -113,14 +114,16 @@ export async function insertMatch(
     await postParsedMatch(trx);
     await delInsertQueue(trx);
     const parseJob = await queueParse(trx);
-    await trx.commit();
+    await trx.query("COMMIT");
     return { parseJob, pgroup };
   } catch (e) {
-    await trx.rollback();
+    await trx.query("ROLLBACK");
     throw e;
+  } finally {
+    trx.release();
   }
 
-  async function upsertLeagueMatch(trx: knex.Knex.Transaction) {
+  async function upsertLeagueMatch(trx: pg.PoolClient) {
     // Index the matchid to the league
     if (
       options.origin === "scanner" &&
@@ -128,15 +131,15 @@ export async function insertMatch(
       "leagueid" in match &&
       match.leagueid
     ) {
-      await db.raw(
-        "INSERT INTO league_match(leagueid, match_id) VALUES(?, ?) ON CONFLICT DO NOTHING",
+      await db.query(
+        "INSERT INTO league_match(leagueid, match_id) VALUES($1, $2) ON CONFLICT DO NOTHING",
         [match.leagueid, match.match_id],
       );
     }
   }
 
   async function upsertMatchPostgres(
-    trx: knex.Knex.Transaction,
+    trx: pg.PoolClient,
     isProTier: boolean,
   ) {
     if (options.type !== "api" && options.type !== "parsed") {
@@ -160,8 +163,8 @@ export async function insertMatch(
     // That requires writing a new SQL query though
     // If we do that then we can put the NOT NULL constraint on hero_id
     if (options.type === "parsed") {
-      const { rows } = await trx.raw(
-        "select match_id from matches where match_id = ?",
+      const { rows } = await trx.query(
+        "select match_id from matches where match_id = $1",
         [match.match_id],
       );
       if (!rows.length) {
@@ -262,14 +265,14 @@ export async function insertMatch(
       const team2 = match.dire_team_id;
       const team1Win = Number(match.radiant_win);
       const kFactor = 32;
-      const data1 = await trx
-        .select("rating")
-        .from("team_rating")
-        .where({ team_id: team1 });
-      const data2 = await trx
-        .select("rating")
-        .from("team_rating")
-        .where({ team_id: team2 });
+      const { rows: data1 } = await trx.query(
+        "SELECT rating FROM team_rating WHERE team_id = $1",
+        [team1],
+      );
+      const { rows: data2 } = await trx.query(
+        "SELECT rating FROM team_rating WHERE team_id = $1",
+        [team2],
+      );
       const currRating1 = Number(
         (data1 && data1[0] && data1[0].rating) || 1000,
       );
@@ -284,9 +287,9 @@ export async function insertMatch(
       const win2 = Number(!team1Win);
       const ratingDiff1 = kFactor * (win1 - e1);
       const ratingDiff2 = kFactor * (win2 - e2);
-      const query = `INSERT INTO team_rating(team_id, rating, wins, losses, last_match_time, delta, match_id) VALUES(?, ?, ?, ?, ?, ?, ?)
-          ON CONFLICT(team_id) DO UPDATE SET team_id=team_rating.team_id, rating=team_rating.rating + ?, wins=team_rating.wins + ?, losses=team_rating.losses + ?, last_match_time=?, delta=?, match_id=?`;
-      await trx.raw(query, [
+      const query = `INSERT INTO team_rating(team_id, rating, wins, losses, last_match_time, delta, match_id) VALUES($1, $2, $3, $4, $5, $6, $7)
+          ON CONFLICT(team_id) DO UPDATE SET team_id=team_rating.team_id, rating=team_rating.rating + $8, wins=team_rating.wins + $9, losses=team_rating.losses + $10, last_match_time=$11, delta=$12, match_id=$13`;
+      await trx.query(query, [
         team1,
         currRating1 + ratingDiff1,
         win1,
@@ -302,7 +305,7 @@ export async function insertMatch(
         ratingDiff1,
         match.match_id,
       ]);
-      await trx.raw(query, [
+      await trx.query(query, [
         team2,
         currRating2 + ratingDiff2,
         win2,
@@ -322,7 +325,7 @@ export async function insertMatch(
   }
 
   async function queueCounts(
-    trx: knex.Knex.Transaction,
+    trx: pg.PoolClient,
     match: ApiData,
     avg: number | undefined,
     num: number | undefined,
@@ -334,7 +337,7 @@ export async function insertMatch(
     }
   }
 
-  async function discoverPlayers(trx: knex.Knex.Transaction) {
+  async function discoverPlayers(trx: pg.PoolClient) {
     // Player discovery
     // Add a placeholder player with just the ID
     // Queue a profile update request
@@ -345,8 +348,8 @@ export async function insertMatch(
     });
     await Promise.all(
       arr.map(async (p) => {
-        const { rows } = await trx.raw(
-          "INSERT INTO players(account_id) VALUES(?) ON CONFLICT DO NOTHING RETURNING account_id",
+        const { rows } = await trx.query(
+          "INSERT INTO players(account_id) VALUES($1) ON CONFLICT DO NOTHING RETURNING account_id",
           [p.account_id],
         );
         if (rows.length) {
@@ -370,7 +373,7 @@ export async function insertMatch(
       }),
     );
   }
-  async function queueMmr(trx: knex.Knex.Transaction) {
+  async function queueMmr(trx: pg.PoolClient) {
     // Trigger an update for player rank_tier if ranked match
     const arr = match.players.filter<ApiDataPlayer>((p): p is ApiDataPlayer => {
       return Boolean(
@@ -395,7 +398,7 @@ export async function insertMatch(
     );
   }
 
-  async function queueGcData(trx: knex.Knex.Transaction) {
+  async function queueGcData(trx: pg.PoolClient) {
     // Trigger a request for gcdata
     if (
       options.origin === "scanner" &&
@@ -406,7 +409,7 @@ export async function insertMatch(
     }
   }
 
-  async function queueRate(trx: knex.Knex.Transaction) {
+  async function queueRate(trx: pg.PoolClient) {
     // Decide whether to rate the match
     // Rate a percentage of ranked matches
     if (
@@ -419,8 +422,8 @@ export async function insertMatch(
         (isTurbo(match) &&
           match.match_id % 100 < Number(config.RATING_PERCENT_TURBO)))
     ) {
-      await trx.raw(
-        "INSERT INTO rating_queue(match_seq_num, match_id, radiant_win, game_mode) VALUES(?, ?, ?, ?) ON CONFLICT DO NOTHING",
+      await trx.query(
+        "INSERT INTO rating_queue(match_seq_num, match_id, radiant_win, game_mode) VALUES($1, $2, $3, $4) ON CONFLICT DO NOTHING",
         [
           match.match_seq_num,
           match.match_id,
@@ -432,7 +435,7 @@ export async function insertMatch(
     }
   }
 
-  async function queueScenarios(trx: knex.Knex.Transaction) {
+  async function queueScenarios(trx: pg.PoolClient) {
     // Decide if we want to do scenarios (requires parsed match)
     // Only if it originated from scanner to avoid triggering on requests
     // NOTE: This chooses from all matches that were auto-parsed, so not a random sample
@@ -453,26 +456,26 @@ export async function insertMatch(
       );
     }
   }
-  async function postParsedMatch(trx: knex.Knex.Transaction) {
+  async function postParsedMatch(trx: pg.PoolClient) {
     if (options.type === "parsed") {
       // Mark this match parsed
-      await trx.raw(
-        "INSERT INTO parsed_matches(match_id) VALUES(?) ON CONFLICT DO NOTHING",
+      await trx.query(
+        "INSERT INTO parsed_matches(match_id) VALUES($1) ON CONFLICT DO NOTHING",
         [Number(match.match_id)],
       );
     }
   }
 
-  async function delInsertQueue(trx: knex.Knex.Transaction) {
+  async function delInsertQueue(trx: pg.PoolClient) {
     if (options.insertSeqNum) {
-      await trx.raw(
-        "UPDATE insert_queue SET processed = TRUE WHERE match_seq_num = ?",
+      await trx.query(
+        "UPDATE insert_queue SET processed = TRUE WHERE match_seq_num = $1",
         [options.insertSeqNum],
       );
     }
   }
 
-  async function queueParse(trx: knex.Knex.Transaction) {
+  async function queueParse(trx: pg.PoolClient) {
     if (options.skipParse) {
       return null;
     }
@@ -758,8 +761,8 @@ export async function queueReconcile(
       )
       .filter(p => p.account_id);
     for (let p of filtered) {
-      const { rows } = await db.raw(
-        "INSERT INTO player_match_history(account_id, match_id, player_slot) VALUES (?, ?, ?) ON CONFLICT DO NOTHING RETURNING *",
+      const { rows } = await db.query(
+        "INSERT INTO player_match_history(account_id, match_id, player_slot) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING RETURNING *",
         [p.account_id, gcMatch.match_id, p.player_slot],
       );
       if (rows.length > 0) {

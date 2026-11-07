@@ -71,7 +71,7 @@ async function seqNumDelay() {
   const url = SteamAPIUrls.api_history({});
   const body = await getSteamAPIData<MatchHistory>({ url });
   const currSeqNum = body.result.matches[0]?.match_seq_num;
-  const { rows } = await db.raw("select max(match_seq_num) from insert_queue;");
+  const { rows } = await db.query("select max(match_seq_num) from insert_queue;");
   const numResult = Number(rows[0]?.max) || 0;
   let metric;
   if (!currSeqNum || !numResult) {
@@ -86,7 +86,7 @@ async function seqNumDelay() {
   };
 }
 async function parseDelay() {
-  const result = await db.raw(
+  const result = await db.query(
     "select count(*) from queue where type = 'parse'",
   );
   return {
@@ -95,7 +95,7 @@ async function parseDelay() {
   };
 }
 async function gcDelay() {
-  const result = await db.raw(
+  const result = await db.query(
     "select count(*) from queue where type = 'gcdata'",
   );
   return {
@@ -104,7 +104,7 @@ async function gcDelay() {
   };
 }
 async function fhDelay() {
-  const result = await db.raw(
+  const result = await db.query(
     "select count(*) from queue where type = 'fhQueue'",
   );
   return {
@@ -120,7 +120,7 @@ async function mmrDelay() {
   };
 }
 async function cacheDelay() {
-  const result = await db.raw(
+  const result = await db.query(
     "select count(*) from queue where type = 'cacheQueue'",
   );
   return {
@@ -129,7 +129,7 @@ async function cacheDelay() {
   };
 }
 async function scenariosDelay() {
-  const result = await db.raw(
+  const result = await db.query(
     "select count(*) from queue where type = 'scenariosQueue'",
   );
   return {
@@ -145,14 +145,14 @@ async function profileDelay() {
   };
 }
 async function rateDelay() {
-  const result = await db.raw("select count(*) from rating_queue");
+  const result = await db.query("select count(*) from rating_queue");
   return {
     metric: result.rows[0]?.count,
     limit: 50000,
   };
 }
 async function insertDelay() {
-  const result = await db.raw(
+  const result = await db.query(
     "select count(*) from insert_queue WHERE processed = FALSE",
   );
   return {
@@ -161,14 +161,14 @@ async function insertDelay() {
   };
 }
 async function countsDelay() {
-  const result = await db.raw("select count(*) from queue where type = 'counts'");
+  const result = await db.query("select count(*) from queue where type = 'counts'");
   return {
     metric: result.rows[0]?.count,
     limit: 50000,
   };
 }
 async function postgresUsage() {
-  const result = await db.raw("select pg_database_size('yasp')");
+  const result = await db.query("select pg_database_size('yasp')");
   return {
     metric: result.rows[0]?.pg_database_size,
     limit: 3.5 * 10 ** 11,

@@ -24,9 +24,9 @@ await runInLoop(
       // updateAPIKeysInRedis deletes the keys so just do that there
       if (sub.status === "canceled") {
         console.log("updateStripeUsage CANCELED SUBSCRIPTION", sub.id);
-        await db.raw(
+        await db.query(
           `
-                UPDATE api_keys SET is_canceled = true WHERE subscription_id = ?
+                UPDATE api_keys SET is_canceled = true WHERE subscription_id = $1
               `,
           [sub.id],
         );
@@ -42,7 +42,7 @@ await runInLoop(
         .unix(sub.current_period_end - 1)
         .utc()
         .endOf("month");
-      const res = await db.raw(
+      const res = await db.query(
         `
               SELECT
                 SUM(usage) as usage_count
@@ -54,9 +54,9 @@ await runInLoop(
                 FROM api_key_usage
                 JOIN api_keys ON api_key_usage.api_key = api_keys.api_key
                 WHERE
-                  timestamp >= ?
-                  AND timestamp <= ?
-                  AND subscription_id = ?
+                  timestamp >= $1
+                  AND timestamp <= $2
+                  AND subscription_id = $3
                 GROUP BY api_key_usage.api_key, api_key_usage.ip
               ) as t1
             `,

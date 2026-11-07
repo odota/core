@@ -32,8 +32,8 @@ export async function reconcileMatch(
   }
   // Update the league to match index (if available)
   if ("leagueid" in match && match.leagueid) {
-    await db.raw(
-      "INSERT INTO league_match(leagueid, match_id) VALUES(?, ?) ON CONFLICT DO NOTHING",
+    await db.query(
+      "INSERT INTO league_match(leagueid, match_id) VALUES($1, $2) ON CONFLICT DO NOTHING",
       [match.leagueid, match.match_id],
     );
   }
@@ -59,8 +59,8 @@ export async function reconcileMatch(
   );
   if (result.every(Boolean)) {
     // Delete the rows since we successfully updated
-    const result = await db.raw(
-      `DELETE FROM player_match_history WHERE account_id IN (${rows.map((_row) => "?").join(",")}) AND match_id = ?`,
+    const result = await db.query(
+      `DELETE FROM player_match_history WHERE account_id IN (${rows.map((_, i) => `$${i + 1}`).join(",")}) AND match_id = $${rows.length + 1}`,
       [...rows.map((row) => row.account_id), first.match_id],
     );
     console.log(result.command, result.rowCount);

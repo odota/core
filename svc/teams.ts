@@ -10,10 +10,10 @@ import { parseJSONWithBigInts } from "./util/utility.ts";
 
 await runInLoop(
   async function doTeams() {
-    const result = await db.raw(
+    const result = await db.query(
       "select distinct team_id from team_match TABLESAMPLE BERNOULLI(0.05)",
     );
-    const result2 = await db.raw(
+    const result2 = await db.query(
       "select team_id from (select distinct team_id from team_match) ids where team_id not in (select team_id from teams)",
     );
     const combined = [...result2.rows, ...result.rows];

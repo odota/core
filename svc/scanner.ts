@@ -55,8 +55,8 @@ await runInLoop(async function scanApi() {
       if (match.match_id % 100 >= Number(config.SCANNER_PERCENT)) {
         return;
       }
-      const { rows } = await db.raw(
-        "INSERT INTO insert_queue(match_seq_num, data) VALUES(?, ?) ON CONFLICT DO NOTHING RETURNING match_seq_num",
+      const { rows } = await db.query(
+        "INSERT INTO insert_queue(match_seq_num, data) VALUES($1, $2) ON CONFLICT DO NOTHING RETURNING match_seq_num",
         [match.match_seq_num, JSON.stringify(match)],
       );
       if (rows[0]) {
@@ -79,6 +79,6 @@ await runInLoop(async function scanApi() {
 }, 0);
 
 async function getCurrentSeqNum(): Promise<number> {
-  const result = await db.raw("select max(match_seq_num) from insert_queue;");
+  const result = await db.query("select max(match_seq_num) from insert_queue;");
   return Number(result.rows[0]?.max) || 0;
 }

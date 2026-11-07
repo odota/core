@@ -207,7 +207,7 @@ export async function buildStatus(isAdmin: boolean) {
     },
     relTuples: async () => {
       if (isAdmin) {
-        const { rows } = await db.raw(
+        const { rows } = await db.query(
           `select relname, reltuples::bigint from pg_class WHERE relname NOT LIKE '%_pkey' AND relname NOT LIKE '%_idx' AND relname NOT LIKE '%_idx_gin' AND relname NOT LIKE '%_index' order by reltuples desc`,
         );
         const result: any[] = rows.map((r: any) => [r.relname, r.reltuples]);
@@ -326,7 +326,7 @@ export async function buildStatus(isAdmin: boolean) {
       if (isAdmin) {
         const startTime = moment.utc().startOf("month").format("YYYY-MM-DD");
         const endTime = moment.utc().endOf("month").format("YYYY-MM-DD");
-        const { rows } = await db.raw(
+        const { rows } = await db.query(
           `
     SELECT
         account_id,
@@ -340,8 +340,8 @@ export async function buildStatus(isAdmin: boolean) {
         MAX(usage_count) as usage
         FROM api_key_usage
         WHERE
-        timestamp >= ?
-        AND timestamp <= ?
+        timestamp >= $1
+        AND timestamp <= $2
         GROUP BY account_id, api_key, ip
     ) as t1
     GROUP BY account_id

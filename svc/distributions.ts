@@ -6,7 +6,7 @@ import { runInLoop } from "./store/queue.ts";
 
 await runInLoop(
   async function distributions() {
-    const results = await db.raw(fs.readFileSync(`./sql/ranks.sql`, "utf8"));
+    const results = await db.query(fs.readFileSync(`./sql/ranks.sql`, "utf8"));
     const ranks = mapMmr(results);
     await redis.set(`distribution:ranks`, JSON.stringify(ranks));
   },
