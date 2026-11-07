@@ -421,3 +421,26 @@ export function isDataComplete(match: Partial<ParsedMatch>) {
 export function exhaustive(name: never) {
   console.error("Unhandled case: %s", name);
 }
+
+/**
+ * Parses JSON with native JSON.parse, but keeps integers that exceed
+ * Number.MAX_SAFE_INTEGER (e.g. 64-bit Steam ids) intact by returning them as strings.
+ * Uses the reviver `context.source` (Node 21+) to read the original numeric text.
+ */
+export function parseJSONWithBigInts(text: string): any {
+  return JSON.parse(
+    text,
+    function (_key: string, value: any, context?: { source?: string }) {
+      if (
+        typeof value === "number" &&
+        Number.isInteger(value) &&
+        !Number.isSafeInteger(value) &&
+        context?.source &&
+        /^-?\d+$/.test(context.source)
+      ) {
+        return context.source;
+      }
+      return value;
+    } as any,
+  );
+}
