@@ -2,7 +2,6 @@
 import { runQueue } from "./store/queue.ts";
 import db from "./store/db.ts";
 import config from "../config.ts";
-import axios from "axios";
 import { redisCount } from "./store/redis.ts";
 import { getRandomRetrieverUrl } from "./util/registry.ts";
 
@@ -18,10 +17,13 @@ await runQueue<MmrJob>(
     let data: RetrieverPlayer | undefined = undefined;
     while (!data) {
       try {
-        const result = await axios.get<RetrieverPlayer>(url, {
-          timeout: 2000,
+        const resp = await fetch(url, {
+          signal: AbortSignal.timeout(2000),
         });
-        data = result.data;
+        if (!resp.ok) {
+          throw new Error(`Failed to fetch MMR data: ${resp.status}`);
+        }
+        data = await resp.json();
       } catch (e) {
         console.log("[MMR] Error fetching data for %s, retrying...", accountId);
         await new Promise((resolve) => setTimeout(resolve, 500));

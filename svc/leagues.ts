@@ -1,5 +1,4 @@
 // Updates the list of leagues in the database
-import axios from "axios";
 import db, { upsert } from "./store/db.ts";
 import { runInLoop } from "./store/queue.ts";
 
@@ -7,8 +6,12 @@ await runInLoop(
   async function leagues() {
     const url =
       "http://www.dota2.com/webapi/IDOTA2League/GetLeagueInfoList/v001";
-    const resp = await axios.get<Leagues>(url);
-    const apiLeagues: LeagueToInsert[] = resp.data.infos;
+    const resp = await fetch(url);
+    if (!resp.ok) {
+      throw new Error(`Failed to fetch leagues: ${resp.status}`);
+    }
+    const data: Leagues = await resp.json();
+    const apiLeagues: LeagueToInsert[] = data.infos;
     console.log("[LEAGUES]", apiLeagues.length, "leagues");
     for (let league of apiLeagues) {
       const openQualifierTier =

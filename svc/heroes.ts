@@ -1,5 +1,4 @@
 // Updates the heroes in the database
-import axios from "axios";
 import db, { upsert } from "./store/db.ts";
 import { runInLoop } from "./store/queue.ts";
 import { getSteamAPIDataWithRetry, SteamAPIUrls } from "./util/http.ts";
@@ -13,10 +12,13 @@ await runInLoop(
     if (!body || !body.result || !body.result.heroes) {
       return;
     }
-    const heroResp = await axios.get(
+    const heroResp = await fetch(
       "https://raw.githubusercontent.com/odota/dotaconstants/master/build/heroes.json",
     );
-    const heroData = heroResp.data;
+    if (!heroResp.ok) {
+      return;
+    }
+    const heroData = await heroResp.json();
     if (!heroData) {
       return;
     }
