@@ -20,7 +20,26 @@ await runInLoop(async function doSyncSubs() {
     // Delete all status from subscribers
     await trx.query("DELETE FROM subscriber");
     for (let sub of result) {
-      const accountId = sub.metadata['account_id'];
+      let accountId = sub.metadata['account_id'];
+      if (!accountId) {
+        try {
+          const sessions = await stripe.checkout.sessions.list({
+            subscription: sub.id,
+            limit: 1,
+          });
+          const session = sessions.data[0];
+          const clientRef = session?.metadata?.account_id ?? session?.client_reference_id;
+          if (clientRef) {
+            accountId = clientRef;
+            await stripe.subscriptions.update(sub.id, {
+              metadata: { account_id: clientRef },
+            });
+            console.log('Copied account_id %s to subscription %s metadata', clientRef, sub.id);
+          }
+        } catch (err) {
+          console.error('Failed to copy account_id for sub %s: %s', sub.id, err);
+        }
+      }
       if (!accountId) {
         console.error('no accountID for active customer %s', sub.customer);
       } else {
