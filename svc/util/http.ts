@@ -1,7 +1,5 @@
-import type { AxiosRequestConfig } from "axios";
 import config from "../../config.ts";
 import redis, { redisCount, redisCountHash } from "../store/redis.ts";
-import axios from "axios";
 import { convert32to64 } from "./utility.ts";
 
 const apiUrl = "http://api.steampowered.com";
@@ -90,48 +88,34 @@ export async function getSteamAPIData<T>(options: GetDataOptions): Promise<T> {
     redisCount("steam_proxy_call");
   }
   const target = parsedUrl.toString();
-  const axiosOptions: AxiosRequestConfig = {
-    timeout: options.timeout ?? 5000,
+  const start = Date.now();
+  const response = await fetch(target, {
+    signal: AbortSignal.timeout(options.timeout ?? 5000),
     headers: {
       "Content-Encoding": "gzip",
     },
-  };
-  if (options.raw) {
-    // Return string instead of JSON
-    axiosOptions.responseType = "text";
-  }
-  let body = null;
-  const start = Date.now();
-  try {
-    // Throws an exception if we get a non-2xx status code
-    const response = await axios.get(target, axiosOptions);
-    body = response.data;
-  } catch (err) {
-    const end = Date.now();
-    console.log("%s: %dms", target, end - start);
-    if (axios.isAxiosError(err)) {
-      const statusCode = err.response?.status;
-      console.log("[EXCEPTION] %s, %s", statusCode, target);
-      if (statusCode === 429) {
-        redisCount("steam_429");
-      } else if (statusCode === 403) {
-        redisCount("steam_403");
-      }
-      if (statusCode === 429) {
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-      }
-      throw new Error(
-        "[EXCEPTION] status: " + statusCode + " message: " + err.message,
-      );
-    } else {
-      throw err;
-    }
-  }
+  });
   const end = Date.now();
   console.log("%s: %dms", target, end - start);
-  if (options.raw) {
-    return body;
+  if (!response.ok) {
+    const statusCode = response.status;
+    console.log("[EXCEPTION] %s, %s", statusCode, target);
+    if (statusCode === 429) {
+      redisCount("steam_429");
+    } else if (statusCode === 403) {
+      redisCount("steam_403");
+    }
+    if (statusCode === 429) {
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
+    throw new Error(
+      "[EXCEPTION] status: " + statusCode + " message: " + response.statusText,
+    );
   }
+  if (options.raw) {
+    return (await response.text()) as T;
+  }
+  const body = await response.json();
   // Validate the response, even if we got a successful result
   if (body.result) {
     // steam api usually returns data with body.result, getplayersummaries has body.response

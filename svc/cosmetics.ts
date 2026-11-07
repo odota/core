@@ -2,19 +2,23 @@
 import vdfparser from "vdf-parser";
 import db, { upsert } from "./store/db.ts";
 import { runInLoop } from "./store/queue.ts";
-import axios from "axios";
 
 await runInLoop(
   async function cosmetics() {
-    const itemsResp = await axios.get(
+    const itemsResp = await fetch(
       "https://raw.githubusercontent.com/dotabuff/d2vpkr/master/dota/scripts/items/items_game.txt",
-      { responseType: "text" },
     );
-    const items = itemsResp.data;
-    const iconsResp = await axios.get(
+    if (!itemsResp.ok) {
+      throw new Error(`Failed to fetch items_game.txt: ${itemsResp.status}`);
+    }
+    const items = await itemsResp.text();
+    const iconsResp = await fetch(
       "https://raw.githubusercontent.com/builder-247/node-dota2-cdn/main/build/icons.json",
     );
-    const icons = iconsResp.data;
+    if (!iconsResp.ok) {
+      throw new Error(`Failed to fetch icons.json: ${iconsResp.status}`);
+    }
+    const icons = await iconsResp.json();
     const itemData = vdfparser.parse<any>(items);
 
     const ids = Object.keys(itemData.items_game.items);

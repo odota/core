@@ -1,5 +1,4 @@
 // Updates the list of teams in the database
-import axios from "axios";
 import db, { upsert } from "./store/db.ts";
 import { runInLoop } from "./store/queue.ts";
 import {
@@ -47,7 +46,10 @@ await runInLoop(
       try {
         const cdnUrl = `https://steamcdn-a.akamaihd.net/apps/dota2/images/team_logos/${m.team_id}.png`;
         // Check if it exists
-        await axios.head(cdnUrl);
+        const resp = await fetch(cdnUrl, { method: "HEAD" });
+        if (!resp.ok) {
+          throw new Error(`CDN image not found: ${resp.status}`);
+        }
         t.logo_url = cdnUrl;
         // console.log('[TEAMS] cdn: ', t);
       } catch {

@@ -21,7 +21,6 @@ import redis, {
 } from "./store/redis.ts";
 import config from "../config.ts";
 import stripe from "./store/stripe.ts";
-import axios from "axios";
 import { buildStatus } from "./util/buildStatus.ts";
 import { getEndOfDay, getStartOfBlockMinutes } from "./util/time.ts";
 import { convert64to32 } from "./util/utility.ts";
@@ -277,10 +276,12 @@ app.get("/retrieverData", async (req, res, next) => {
   const accountCount = Number(req.query.count) || 5;
   if ((await redis.scard("retrieverDataSet")) < accountCount) {
     // Refill the set if running out of logins
-    const resp = await axios.get<string>(config.STEAM_ACCOUNT_DATA, {
-      responseType: "text",
-    });
-    const accountData = resp.data.split(/\r\n|\r|\n/g);
+    const resp = await fetch(config.STEAM_ACCOUNT_DATA);
+    if (!resp.ok) {
+      throw new Error(`Failed to fetch account data: ${resp.status}`);
+    }
+    const text = await resp.text();
+    const accountData = text.split(/\r\n|\r|\n/g);
     // Store in redis set
     const idReqs = await getRedisCountDayHash("retrieverSteamIDs");
     for (let line of accountData) {

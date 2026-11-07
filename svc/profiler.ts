@@ -4,7 +4,6 @@ import { convert32to64, convert64to32 } from "./util/utility.ts";
 import { redisCount } from "./store/redis.ts";
 import { SteamAPIUrls, getSteamAPIDataWithRetry } from "./util/http.ts";
 import { getRandomRetrieverUrl } from "./util/registry.ts";
-import axios from "axios";
 import { runQueue } from "./store/queue.ts";
 
 await runQueue<ProfileJob>("profileQueue", 1, 100, profile);
@@ -32,14 +31,18 @@ async function profile(batch: ProfileJob[]) {
   // Get aliases from retriever
   // This may fail but we'll just let it crash if we do
   const url2 = await getRandomRetrieverUrl("/aliases/" + steamids.join(","));
-  const respAliases = await axios.get<RetrieverAliases>(url2, {
-    timeout: 5000,
+  const resp = await fetch(url2, {
+    signal: AbortSignal.timeout(5000),
   });
-  console.log("got %s alias results", Object.keys(respAliases.data).length);
-  for (let steamid of Object.keys(respAliases.data)) {
+  if (!resp.ok) {
+    throw new Error(`Failed to fetch aliases: ${resp.status}`);
+  }
+  const aliasData: RetrieverAliases = await resp.json();
+  console.log("got %s alias results", Object.keys(aliasData).length);
+  for (let steamid of Object.keys(aliasData)) {
     const accountId = convert64to32(steamid);
-    for (let item of respAliases.data[
-      steamid as keyof typeof respAliases.data
+    for (let item of aliasData[
+      steamid as keyof typeof aliasData
     ]) {
       await db.raw(
         "INSERT INTO aliases(account_id, personaname, name_since) VALUES(?, ?, ?) ON CONFLICT(account_id, personaname) DO NOTHING",

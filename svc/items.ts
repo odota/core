@@ -2,13 +2,16 @@
 import { items } from "dotaconstants";
 import db, { upsert } from "./store/db.ts";
 import { runInLoop } from "./store/queue.ts";
-import axios from "axios";
 
 await runInLoop(
   async function doItems() {
     const url = `https://www.dota2.com/datafeed/itemlist?language=english`;
-    const resp = await axios.get(url);
-    const arr: any[] = resp.data?.result?.data?.itemabilities;
+    const resp = await fetch(url);
+    if (!resp.ok) {
+      throw new Error(`Failed to fetch items: ${resp.status}`);
+    }
+    const data = await resp.json();
+    const arr: any[] = data?.result?.data?.itemabilities;
     if (!arr) {
       throw new Error("invalid response");
     }

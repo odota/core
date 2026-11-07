@@ -1,7 +1,6 @@
 import { blobArchive } from "../store/archive.ts";
 import db from "../store/db.ts";
 import { insertMatch } from "../util/insert.ts";
-import axios from "axios";
 import { MatchFetcherBase } from "./MatchFetcherBase.ts";
 import config from "../../config.ts";
 import { getRandomParserUrl } from "../util/registry.ts";
@@ -25,11 +24,15 @@ export class ParsedFetcher extends MatchFetcherBase<ParsedData> {
   ) => {
     try {
       // Make a HEAD request for the replay to see if it's available
-      await axios.head(url, { timeout: 10000 });
-    } catch (e) {
-      if (axios.isAxiosError(e)) {
-        console.log(e.message);
+      const headResp = await fetch(url, {
+        method: "HEAD",
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!headResp.ok) {
+        return { data: null, error: "Replay not found" };
       }
+    } catch (e: any) {
+      console.log(e.message);
       return { data: null, error: "Replay not found" };
     }
 
@@ -40,9 +43,16 @@ export class ParsedFetcher extends MatchFetcherBase<ParsedData> {
     // process: 3278ms (node processors/createParsedDataBlob.mjs < output.log)
     const parseUrl = await getRandomParserUrl(`/blob?replay_url=${url}`);
     console.log("[PARSER]", parseUrl);
-    const resp = await axios.get<ParsedData>(parseUrl, { timeout: 300000 });
-    // This will throw if the http response is 4xx or 5xx (and not consume an attempt)
-    if (!resp.data) {
+    const resp = await fetch(parseUrl, {
+      signal: AbortSignal.timeout(300000),
+    });
+    // Throw if the http response is 4xx or 5xx (and not consume an attempt)
+    if (!resp.ok) {
+      throw new Error(`Parser response not ok: ${resp.status}`);
+    }
+    const text = await resp.text();
+    const parseData: ParsedData | null = text ? JSON.parse(text) : null;
+    if (!parseData) {
       // Otherwise, it's an expected error so we should use an attempt
       console.log("[STATUS]", resp.status);
       return {
@@ -51,7 +61,7 @@ export class ParsedFetcher extends MatchFetcherBase<ParsedData> {
       };
     }
     const result: ParsedData = {
-      ...resp.data,
+      ...parseData,
       match_id: matchId,
       leagueid,
       // start_time and duration used for calculating dust adjustments and APM

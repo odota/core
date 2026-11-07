@@ -1,6 +1,4 @@
-import type { AxiosResponse } from "axios";
 import db from "../store/db.ts";
-import axios from "axios";
 import { insertMatch } from "../util/insert.ts";
 import { blobArchive } from "../store/archive.ts";
 import { MatchFetcherBase } from "./MatchFetcherBase.ts";
@@ -31,43 +29,53 @@ export class GcdataFetcher extends MatchFetcherBase<GcData> {
       return { error: "x-match-noretry", data: null };
     }
     const url = await getRandomRetrieverUrl(`/match/${matchId}`);
-    let resp: AxiosResponse<RetrieverMatch>;
+    let resp: Response;
     try {
-      resp = await axios.get<RetrieverMatch>(url, {
-        timeout: 5000,
+      resp = await fetch(url, {
+        signal: AbortSignal.timeout(5000),
       });
-    } catch (e) {
-      // Non-2xx status (e.g. 429 too many requests or 500 server error)
-      let message = "";
-      if (axios.isAxiosError(e)) {
-        message = e.message;
+      if (!resp.ok) {
+        throw new Error(`${resp.status}`);
       }
+    } catch (e: any) {
+      // Non-2xx status (e.g. 429 too many requests or 500 server error)
+      const message = e?.message ?? "";
       console.log(url, message);
-      return { data: null, error: "axiosError: " + message, retryable: true };
+      return { data: null, error: "fetchError: " + message, retryable: true };
     }
     console.log(url, resp.status);
-    const { data, headers } = resp;
-    const steamid = headers["x-match-request-steamid"];
-    const ip = headers["x-match-request-ip"];
+    const { headers } = resp;
+    const steamid = headers.get("x-match-request-steamid");
+    const ip = headers.get("x-match-request-ip");
     // Record the total steamids and ip counts from headers (sent with 204 response even if request timed out)
-    redisCountHash("retrieverSteamIDs", steamid);
-    redisCountHash("retrieverIPs", ip);
-    if (headers["x-match-noretry"]) {
+    if (steamid) {
+      redisCountHash("retrieverSteamIDs", steamid);
+    }
+    if (ip) {
+      redisCountHash("retrieverIPs", ip);
+    }
+    if (headers.get("x-match-noretry")) {
       // There are several reasons for nonretryable errors
-      console.log(matchId, "x-match-noretry", headers["x-noretry-reason"]);
+      console.log(matchId, "x-match-noretry", headers.get("x-noretry-reason"));
       // Mark this match as nonretryable so parser knows to stop
       await redis.setex('noretry:' + matchId, 3600, 1);
       redisCount("retriever_noretry");
-      return { error: headers["x-noretry-reason"], data: null };
+      return { error: headers.get("x-noretry-reason"), data: null };
     }
+    const text = await resp.text();
+    const data: RetrieverMatch | null = text ? JSON.parse(text) : null;
     if (!data?.match?.replay_salt) {
       // Response was 2xx but doesn't have replay salt, try again
       return { error: "invalid data (no replay salt)", data: null, retryable: true };
     }
     // Count successful calls
     redisCount("retriever");
-    redisCountHash("retrieverSuccessSteamIDs", steamid);
-    redisCountHash("retrieverSuccessIPs", ip);
+    if (steamid) {
+      redisCountHash("retrieverSuccessSteamIDs", steamid);
+    }
+    if (ip) {
+      redisCountHash("retrieverSuccessIPs", ip);
+    }
     // Some old matches don't have players, e.g. 271601114.
     // They still have a replay salt so we can continue
     const gcPlayers = data.match.players ?? [];
