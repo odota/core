@@ -7,7 +7,7 @@
  * */
 import config from "../config.ts";
 import { addReliableJob, runReliableQueue } from "./store/queue.ts";
-import c from "ansi-colors";
+import { styleText } from "node:util";
 import { buildReplayUrl } from "./util/utility.ts";
 import redis, { redisCount } from "./store/redis.ts";
 import { apiFetcher, gcFetcher, parsedFetcher } from "./fetcher/allFetchers.ts";
@@ -35,7 +35,8 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
     redisCount("parser_job");
     await redis.publish(
       String(metadata.jobId),
-      c.magenta(
+      styleText(
+        "magenta",
         `Starting [job: ${metadata.jobId}] [match: ${job.match_id}] after ${Date.now() - Number(metadata.timestamp)}ms`,
       ),
     );
@@ -53,7 +54,10 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
     }
 
     // Fetch the API data
-    await redis.publish(String(metadata.jobId), c.blue(`Fetching API data...`));
+    await redis.publish(
+      String(metadata.jobId),
+      styleText("blue", `Fetching API data...`),
+    );
     const apiStart = Date.now();
     // The pgroup is used to update player_caches on insert.
     // Since currently gcdata and parse data have no knowledge of anonymity, we pass it from API data
@@ -78,7 +82,7 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
     apiTime = Date.now() - apiStart;
     await redis.publish(
       String(metadata.jobId),
-      c.green(`Fetched API data in ${apiTime}ms`),
+      styleText("green", `Fetched API data in ${apiTime}ms`),
     );
 
     const { leagueid, duration, start_time } = apiMatch;
@@ -95,7 +99,7 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
     // Fetch the gcdata and construct a replay URL
     await redis.publish(
       String(metadata.jobId),
-      c.blue(`Fetching replay data...`),
+      styleText("blue", `Fetching replay data...`),
     );
     const gcStart = Date.now();
     let gcMatch: GcData | null = null;
@@ -124,7 +128,7 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
     gcTime = Date.now() - gcStart;
     await redis.publish(
       String(metadata.jobId),
-      c.green(`Fetched replay data in ${gcTime}ms`),
+      styleText("green", `Fetched replay data in ${gcTime}ms`),
     );
 
     let url = buildReplayUrl(
@@ -133,7 +137,10 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
       gcMatch.replay_salt,
     );
 
-    await redis.publish(String(metadata.jobId), c.blue(`Parsing replay...`));
+    await redis.publish(
+      String(metadata.jobId),
+      styleText("blue", `Parsing replay...`),
+    );
     const parseStart = Date.now();
     const { error: parseError, skipped } = await parsedFetcher.getOrFetchData(
       matchId,
@@ -150,7 +157,7 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
     parseTime = Date.now() - parseStart;
     await redis.publish(
       String(metadata.jobId),
-      c.green(`Parsed replay in ${parseTime}ms`),
+      styleText("green", `Parsed replay in ${parseTime}ms`),
     );
 
     // Reconcile if last attempt (no more retries) or skipped or successful parse
@@ -189,7 +196,8 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
       success: "green",
       skip: "gray",
     };
-    const message = c[colors[type]](
+    const message = styleText(
+      colors[type],
       `[${new Date().toISOString()}] [parser] [${type}: ${
         end - start
       }ms] [api: ${apiTime}ms] [gcdata: ${gcTime}ms] [parse: ${parseTime}ms] [queued: ${moment
@@ -201,7 +209,8 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
     await redis.publish("parsed", message);
     await redis.publish(
       String(metadata.jobId),
-      c[colors[type]](
+      styleText(
+        colors[type],
         `[${type}] Finished [job: ${metadata.jobId}] [match: ${
           job.match_id
         }] in ${end - start}ms ${displayMsg ?? ""}`,

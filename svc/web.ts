@@ -9,7 +9,6 @@ import express from "express";
 import passport from "passport";
 import { SteamOpenIdStrategy } from "passport-steam-openid";
 import cors from "cors";
-import bodyParser from "body-parser";
 import { Redis } from "ioredis";
 import keys from "./api/keyManagement.ts";
 import api from "./api/api.ts";
@@ -342,7 +341,7 @@ app.get("/logout", (req, res) => {
 });
 
 // req.body available after this
-app.use(bodyParser.json());
+app.use(express.json());
 
 app.post("/subCheckout", async (req, res, next) => {
   const session = await stripe.checkout.sessions.create({

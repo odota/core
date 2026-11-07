@@ -1,5 +1,4 @@
 import express from "express";
-import bodyParser from "body-parser";
 import moment from "moment";
 import stripe from "../store/stripe.ts";
 import db from "../store/db.ts";
@@ -9,9 +8,9 @@ import type Stripe from "stripe";
 
 const stripeAPIPlan = config.STRIPE_API_PLAN;
 const keys = express.Router();
-keys.use(bodyParser.json());
+keys.use(express.json());
 keys.use(
-  bodyParser.urlencoded({
+  express.urlencoded({
     extended: true,
   }),
 );

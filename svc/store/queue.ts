@@ -3,7 +3,7 @@ import redis, { redisCount } from "./redis.ts";
 import db from "./db.ts";
 import config from "../../config.ts";
 import { Client } from "pg";
-import c from "ansi-colors";
+import { styleText } from "node:util";
 import { exhaustive } from "../util/utility.ts";
 
 moment.relativeTimeThreshold("ss", 0);
@@ -207,7 +207,8 @@ export async function addReliableJob(
   let job = rows[0];
   const source = options.caller ?? config.APP_NAME;
   if (job && source === "web") {
-    const message = c.magenta(
+    const message = styleText(
+      "magenta",
       `[${new Date().toISOString()}] [${
         source
       }] [queue: ${name}] [pri: ${priority}] [att: ${attempts}] ${

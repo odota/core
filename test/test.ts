@@ -21,7 +21,7 @@ import { insertMatch } from "../svc/util/insert.ts";
 import { buildMatch } from "../svc/util/buildMatch.ts";
 import db, { upsertPlayer } from "../svc/store/db.ts";
 import cassandra from "../svc/store/cassandra.ts";
-import c from "ansi-colors";
+import { styleText } from "node:util";
 import { suite, test, before, beforeEach, after } from "node:test";
 import { S3Client } from "@bradenmacdonald/s3-lite-client";
 import { averageMedal } from "../svc/util/utility.ts";
@@ -184,7 +184,7 @@ async function loadPlayers() {
   );
 }
 
-suite(c.blue("AVERAGE MEDAL"), async () => {
+suite(styleText("blue", "AVERAGE MEDAL"), async () => {
   test("should calculate average medal correctly", () => {
     const test1 = [14, 15, 21];
     assert.equal(averageMedal(test1), 15);
@@ -193,7 +193,7 @@ suite(c.blue("AVERAGE MEDAL"), async () => {
   });
 });
 
-suite(c.blue("API MANAGEMENT"), async () => {
+suite(styleText("blue", "API MANAGEMENT"), async () => {
   let previousKey: string;
   let previousCustomer: string;
   let previousSub: string;
@@ -417,7 +417,7 @@ suite("TESTS", async () => {
   });
 });
 
-suite(c.blue("PLAYERS"), async () => {
+suite(styleText("blue", "PLAYERS"), async () => {
   let playerData: any = null;
   before(async () => {
     const res = await supertest(app).get("/api/players/120269134");
@@ -439,7 +439,7 @@ suite(c.blue("PLAYERS"), async () => {
   });
 });
 
-suite(c.blue("PRIVACY"), async () => {
+suite(styleText("blue", "PRIVACY"), async () => {
   test("privacy setting should return one row due to default privacy setting", async () => {
     await db.query(
       "UPDATE players SET fh_unavailable = NULL WHERE account_id = $1",
@@ -476,7 +476,7 @@ suite(c.blue("PRIVACY"), async () => {
   });
 });
 
-suite(c.blue("API ROUTES"), async () => {
+suite(styleText("blue", "API ROUTES"), async () => {
   test("api routes visit all routes in spec", async () => {
     const tests: string[][] = [];
     console.log("getting API spec and setting up tests");
@@ -570,7 +570,7 @@ suite(c.blue("API ROUTES"), async () => {
   });
 });
 
-suite(c.blue("RATE LIMITING"), async () => {
+suite(styleText("blue", "RATE LIMITING"), async () => {
   before(async () => {
     config.ENABLE_API_LIMIT = "1";
     config.API_FREE_LIMIT = "5";
@@ -637,7 +637,7 @@ suite(c.blue("RATE LIMITING"), async () => {
   }
 });
 
-suite(c.blue("REPLAY PARSING"), async () => {
+suite(styleText("blue", "REPLAY PARSING"), async () => {
   const tests = [detailsApi.result];
   const matchData = tests[0];
   before(async () => {
@@ -743,7 +743,7 @@ suite(c.blue("REPLAY PARSING"), async () => {
 });
 
 /*
-describe(c.blue('generateMatchups'), () => {
+describe(styleText("blue", 'generateMatchups'), () => {
   it('should generate matchups', () => {
     // in this sample match
     // 1,6,52,59,105:46,73,75,100,104:1
