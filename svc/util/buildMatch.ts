@@ -52,28 +52,30 @@ type ProMatchInfo = {
 async function getProMatchInfo(match: Match): Promise<ProMatchInfo> {
   const resultPromise = match.leagueid
     ? db
-        .first(["series_id", "series_type", "replay_salt"])
-        .from("matches")
-        .where({
-          match_id: match.match_id,
-        })
+        .query(
+          "SELECT series_id, series_type, replay_salt FROM matches WHERE match_id = $1",
+          [match.match_id],
+        )
+        .then((r) => r.rows[0])
     : Promise.resolve(undefined);
   const leaguePromise = match.leagueid
-    ? db.first().from("leagues").where({
-        leagueid: match.leagueid,
-      })
+    ? db
+        .query("SELECT * FROM leagues WHERE leagueid = $1", [match.leagueid])
+        .then((r) => r.rows[0])
     : Promise.resolve(undefined);
   const radiantTeamPromise =
     "radiant_team_id" in match
-      ? db.first().from("teams").where({
-          team_id: match.radiant_team_id,
-        })
+      ? db
+          .query("SELECT * FROM teams WHERE team_id = $1", [
+            match.radiant_team_id,
+          ])
+          .then((r) => r.rows[0])
       : Promise.resolve(undefined);
   const direTeamPromise =
     "dire_team_id" in match
-      ? db.first().from("teams").where({
-          team_id: match.dire_team_id,
-        })
+      ? db
+          .query("SELECT * FROM teams WHERE team_id = $1", [match.dire_team_id])
+          .then((r) => r.rows[0])
       : Promise.resolve(undefined);
   const [result, league, radiantTeam, direTeam] = await Promise.all([
     resultPromise,
@@ -173,7 +175,7 @@ export async function getPlayerBenchmarks(m: Match) {
 async function getPlayerDetails(match: Match | ParsedMatch) {
   const accountIds = match.players.map((p) => p.account_id ?? null).filter(Boolean);
 
-  const { rows } = await db.raw(
+  const { rows } = await db.query(
     `
     SELECT players.account_id, personaname, name, last_login, rating, status, computed_mmr
     FROM players
@@ -181,7 +183,7 @@ async function getPlayerDetails(match: Match | ParsedMatch) {
     LEFT JOIN rank_tier USING(account_id)
     LEFT JOIN player_computed_mmr USING(account_id)
     LEFT JOIN subscriber USING(account_id)
-    WHERE players.account_id = ANY(?)
+    WHERE players.account_id = ANY($1)
   `,
     [accountIds],
   );
@@ -206,9 +208,9 @@ async function getCosmetics(match: Match | ParsedMatch) {
   if ("cosmetics" in match && match.cosmetics) {
     return Promise.all(
       Object.keys(match.cosmetics).map((itemId) =>
-        db.first().from("cosmetics").where({
-          item_id: itemId,
-        }),
+        db
+          .query("SELECT * FROM cosmetics WHERE item_id = $1", [itemId])
+          .then((r) => r.rows[0]),
       ),
     );
   }

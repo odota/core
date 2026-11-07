@@ -9,13 +9,11 @@ const DEFAULT_RATING = 4000;
 const kFactor = 50;
 
 await runInLoop(async function rate() {
-  const { rows } = await db.raw<{
-    rows: {
-      match_seq_num: number;
-      match_id: number;
-      radiant_win: boolean;
-      game_mode: number;
-    }[];
+  const { rows } = await db.query<{
+    match_seq_num: number;
+    match_id: number;
+    radiant_win: boolean;
+    game_mode: number;
   }>(
     "SELECT match_seq_num, match_id, radiant_win, game_mode from rating_queue order by match_seq_num ASC LIMIT 1",
   );
@@ -45,19 +43,20 @@ await runInLoop(async function rate() {
   // console.log(row.match_id, accountIds);
   if (!accountIds.every(Boolean)) {
     // undefined account ID, delete the row
-    await db.raw(
-      "DELETE FROM rating_queue WHERE match_seq_num = ?",
-      row.match_seq_num,
+    await db.query(
+      "DELETE FROM rating_queue WHERE match_seq_num = $1",
+      [row.match_seq_num],
     );
     redisCount("rater_skip");
     return;
   }
   const turbo = isTurbo(row);
   const tableName = turbo ? "player_computed_mmr_turbo" : "player_computed_mmr";
-  const { rows: existingRatings } = await db.raw<{
-    rows: { account_id: number; computed_mmr: number }[];
+  const { rows: existingRatings } = await db.query<{
+    account_id: number;
+    computed_mmr: number;
   }>(
-    `SELECT account_id, computed_mmr FROM ${tableName} WHERE account_id IN (${accountIds.map((_) => "?").join(",")})`,
+    `SELECT account_id, computed_mmr FROM ${tableName} WHERE account_id IN (${accountIds.map((_, i) => `$${i + 1}`).join(",")})`,
     [...accountIds],
   );
   const ratingMap = new Map<number, number>();
@@ -85,7 +84,8 @@ await runInLoop(async function rate() {
   const ratingDiff1 = kFactor * (win1 - e1);
   const ratingDiff2 = kFactor * (win2 - e2);
   // Start transaction
-  const trx = await db.transaction();
+  const trx = await db.connect();
+  await trx.query("BEGIN");
   try {
     // Rate each player
     console.log("match %s, radiant_win: %s", row.match_id, row.radiant_win);
@@ -102,21 +102,23 @@ await runInLoop(async function rate() {
         delta,
       );
       // Write ratings back to players
-      await trx.raw(
-        `INSERT INTO ${tableName}(account_id, computed_mmr, delta, match_id) VALUES(?, ?, ?, ?) ON CONFLICT(account_id) DO UPDATE SET computed_mmr = EXCLUDED.computed_mmr, delta = EXCLUDED.delta, match_id = EXCLUDED.match_id`,
+      await trx.query(
+        `INSERT INTO ${tableName}(account_id, computed_mmr, delta, match_id) VALUES($1, $2, $3, $4) ON CONFLICT(account_id) DO UPDATE SET computed_mmr = EXCLUDED.computed_mmr, delta = EXCLUDED.delta, match_id = EXCLUDED.match_id`,
         [p.account_id, newRating, delta, row.match_id],
       );
     }
     // Delete row
-    await trx.raw(
-      "DELETE FROM rating_queue WHERE match_seq_num = ?",
-      row.match_seq_num,
+    await trx.query(
+      "DELETE FROM rating_queue WHERE match_seq_num = $1",
+      [row.match_seq_num],
     );
     // Commit transaction
-    await trx.commit();
+    await trx.query("COMMIT");
     redisCount("rater");
   } catch (e) {
-    await trx.rollback();
+    await trx.query("ROLLBACK");
     throw e;
+  } finally {
+    trx.release();
   }
 }, 0);

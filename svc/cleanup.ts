@@ -9,27 +9,19 @@ import { isRecentVisitor, isRecentlyVisited } from "./util/queries.ts";
 await runInLoop(
   async function cleanup() {
     const currentWeek = epochWeek();
-    await db("team_scenarios")
-      .whereNull("epoch_week")
-      .orWhere(
-        "epoch_week",
-        "<=",
-        currentWeek - Number(config.MAXIMUM_AGE_SCENARIOS_ROWS),
-      )
-      .del();
-    await db("scenarios")
-      .whereNull("epoch_week")
-      .orWhere(
-        "epoch_week",
-        "<=",
-        currentWeek - Number(config.MAXIMUM_AGE_SCENARIOS_ROWS),
-      )
-      .del();
-    let result = await db.raw(
+    await db.query(
+      "DELETE FROM team_scenarios WHERE epoch_week IS NULL OR epoch_week <= $1",
+      [currentWeek - Number(config.MAXIMUM_AGE_SCENARIOS_ROWS)],
+    );
+    await db.query(
+      "DELETE FROM scenarios WHERE epoch_week IS NULL OR epoch_week <= $1",
+      [currentWeek - Number(config.MAXIMUM_AGE_SCENARIOS_ROWS)],
+    );
+    let result = await db.query(
       "DELETE from public_matches where start_time < extract(epoch from now() - interval '12 month')::int",
     );
     console.log(result.command, result.rowCount);
-    result = await db.raw(
+    result = await db.query(
       "DELETE from insert_queue where match_seq_num < (select max(match_seq_num) - 100000 from insert_queue) AND processed = TRUE",
     );
     console.log(result.command, result.rowCount);

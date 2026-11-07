@@ -3,7 +3,9 @@ import db, { upsert } from "../svc/store/db.ts";
 import { getPatchIndex } from "../svc/util/compute.ts";
 
 // No loop, just runs once when deployed
-const matches = await db.select(["match_id", "start_time"]).from("matches");
+const { rows: matches } = await db.query(
+  "SELECT match_id, start_time FROM matches",
+);
 // This could be a lot of matches so go one at a time
 for (let match of matches) {
   await upsert(

@@ -67,7 +67,7 @@ export class ApiFetcher extends MatchFetcherBase<ApiData> {
     // Insert the data normally as if API data from scanner
 
     // Don't try with recent matches since there might be gaps in match IDs
-    const max = (await db.raw("select max(match_id) from public_matches"))
+    const max = (await db.query("select max(match_id) from public_matches"))
       ?.rows?.[0]?.max;
     const limit = max - 10000;
     if (matchId > limit) {

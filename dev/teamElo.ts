@@ -1,6 +1,7 @@
 /**
  * Computes team Elo ratings by game
  * */
+import QueryStream from "pg-query-stream";
 import db from "../svc/store/db.ts";
 
 // Keep each team's rating in memory and update
@@ -10,8 +11,9 @@ const losses = new Map<string, number>();
 const startTimes = new Map<string, number>();
 const kFactor = 32;
 // Read a stream from the database
-const stream = db
-  .raw(
+const client = await db.connect();
+const stream = client.query(
+  new QueryStream(
     `
 SELECT team_match.team_id team_id1, tm2.team_id team_id2, matches.match_id, team_match.radiant = radiant_win team1_win, start_time
 FROM team_match
@@ -20,8 +22,8 @@ JOIN team_match tm2 on team_match.match_id = tm2.match_id AND team_match.team_id
 WHERE matches.radiant_team_id IS NOT NULL AND matches.dire_team_id IS NOT NULL
 ORDER BY match_id ASC
 `,
-  )
-  .stream();
+  ),
+);
 stream.on("data", (match) => {
   // console.log(JSON.stringify(match));
   if (!teams.has(match.team_id1)) {
@@ -62,6 +64,7 @@ stream.on("data", (match) => {
   losses.set(match.team_id2, losses.get(match.team_id2)! + Number(!win2));
 });
 stream.on("end", async () => {
+  client.release();
   // Write the results to table
   for (const teamId of teams.keys()) {
     console.log([
@@ -71,8 +74,8 @@ stream.on("end", async () => {
       losses.get(teamId),
       startTimes.get(teamId),
     ]);
-    await db.raw(
-      `INSERT INTO team_rating(team_id, rating, wins, losses, last_match_time) VALUES(?, ?, ?, ?, ?)
+    await db.query(
+      `INSERT INTO team_rating(team_id, rating, wins, losses, last_match_time) VALUES($1, $2, $3, $4, $5)
   ON CONFLICT(team_id) DO UPDATE SET team_id=EXCLUDED.team_id, rating=EXCLUDED.rating, wins=EXCLUDED.wins, losses=EXCLUDED.losses, last_match_time=EXCLUDED.last_match_time`,
       [
         teamId,

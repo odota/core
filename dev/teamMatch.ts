@@ -1,8 +1,8 @@
 import db, { upsert } from "../svc/store/db.ts";
 
-const matches = await db
-  .select(["radiant_team_id", "dire_team_id", "match_id"])
-  .from("matches");
+const { rows: matches } = await db.query(
+  "SELECT radiant_team_id, dire_team_id, match_id FROM matches",
+);
 matches.forEach((match: any) => {
   console.log(match.match_id);
   const arr: any[] = [];

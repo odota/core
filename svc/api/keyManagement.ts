@@ -24,9 +24,10 @@ keys.use((req, res, next) => {
   return next();
 });
 keys.use(async (req, res, next) => {
-  const rows = await db.from("api_keys").where({
-    account_id: req.user?.account_id,
-  });
+  const { rows } = await db.query(
+    "SELECT * FROM api_keys WHERE account_id = $1",
+    [req.user?.account_id],
+  );
   res.locals.keyRecord = getActiveKey(rows);
   res.locals.allKeyRecords = rows;
   return next();
@@ -84,7 +85,7 @@ keys
       return processed;
     };
     const getUsage = async () => {
-      const { rows } = await db.raw(
+      const { rows } = await db.query(
         `
               SELECT
                 account_id,
@@ -101,9 +102,9 @@ keys
                   MAX(usage_count) as usage_count
                 FROM api_key_usage
                 WHERE
-                  timestamp >= ?
-                  AND timestamp <= ?
-                  AND account_id = ?
+                  timestamp >= $1
+                  AND timestamp <= $2
+                  AND account_id = $3
                 GROUP BY account_id, api_key, ip, month, month_start
               ) as T1
               GROUP BY account_id, month, month_start
@@ -134,15 +135,10 @@ keys
     const { api_key, subscription_id } = keyRecord;
     // Immediately bill the customer for any unpaid usage
     await stripe.subscriptions.del(subscription_id, { invoice_now: true });
-    await db
-      .from("api_keys")
-      .where({
-        account_id: req.user?.account_id,
-        subscription_id,
-      })
-      .update({
-        is_canceled: true,
-      });
+    await db.query(
+      "UPDATE api_keys SET is_canceled = true WHERE account_id = $1 AND subscription_id = $2",
+      [req.user?.account_id, subscription_id],
+    );
     res.sendStatus(200);
   });
 
@@ -160,10 +156,11 @@ keys.post("/checkout", async (req, res, next) => {
   }
   // Optionally verify the account_id
   if (req.user?.account_id && Number(config.API_KEY_GEN_THRESHOLD)) {
-    const threshold = await db
-      .first("account_id")
-      .from("players")
-      .orderBy("account_id", "desc");
+    const {
+      rows: [threshold],
+    } = await db.query(
+      "SELECT account_id FROM players ORDER BY account_id DESC LIMIT 1",
+    );
     const fail =
       Number(req.user?.account_id) >
       threshold.account_id - Number(config.API_KEY_GEN_THRESHOLD);
@@ -237,12 +234,12 @@ keys.get("/success", async (req, res, next) => {
   await stripe.subscriptions.update(subscription.id, {
     metadata: { apiKey },
   });
-  await db.raw(
+  await db.query(
     `
           INSERT INTO api_keys (account_id, api_key, customer_id, subscription_id)
-          VALUES (?, ?, ?, ?)
+          VALUES ($1, $2, $3, $4)
           ON CONFLICT (account_id, subscription_id) DO UPDATE SET
-          api_key = ?, customer_id = ?, subscription_id = ?
+          api_key = $5, customer_id = $6, subscription_id = $7
         `,
     [
       req.user.account_id,

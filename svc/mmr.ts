@@ -31,16 +31,16 @@ await runQueue<MmrJob>(
 
     // Update player's Dota Plus status if changed
     const plus = Boolean(data.is_plus_subscriber);
-    await db.raw(
-      "UPDATE players SET plus = ? WHERE account_id = ? AND (plus != ? OR plus IS NULL)",
+    await db.query(
+      "UPDATE players SET plus = $1 WHERE account_id = $2 AND (plus != $3 OR plus IS NULL)",
       [plus, data.account_id, plus],
     );
 
     if (data.rank_tier) {
       // Insert into history if different from current value
       // NOTE: This is a read-then-insert and might insert twice if the same player is processed in parallel
-      await db.raw(
-        "INSERT INTO rank_tier_history(account_id, time, rank_tier) SELECT ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM rank_tier WHERE account_id = ? AND rating = ?) ON CONFLICT DO NOTHING",
+      await db.query(
+        "INSERT INTO rank_tier_history(account_id, time, rank_tier) SELECT $1, $2, $3 WHERE NOT EXISTS (SELECT 1 FROM rank_tier WHERE account_id = $4 AND rating = $5) ON CONFLICT DO NOTHING",
         [
           data.account_id,
           new Date(),
@@ -49,19 +49,19 @@ await runQueue<MmrJob>(
           data.rank_tier,
         ],
       );
-      await db.raw(
-        "INSERT INTO rank_tier(account_id, rating) VALUES (?, ?) ON CONFLICT(account_id) DO UPDATE SET rating = EXCLUDED.rating",
+      await db.query(
+        "INSERT INTO rank_tier(account_id, rating) VALUES ($1, $2) ON CONFLICT(account_id) DO UPDATE SET rating = EXCLUDED.rating",
         [data.account_id, data.rank_tier],
       );
     }
     if (data.leaderboard_rank) {
-      await db.raw(
-        "INSERT INTO leaderboard_rank(account_id, rating) VALUES (?, ?) ON CONFLICT(account_id) DO UPDATE SET rating = EXCLUDED.rating",
+      await db.query(
+        "INSERT INTO leaderboard_rank(account_id, rating) VALUES ($1, $2) ON CONFLICT(account_id) DO UPDATE SET rating = EXCLUDED.rating",
         [data.account_id, data.leaderboard_rank],
       );
     }
 
-    await db.raw("UPDATE players SET rank_tier_time = ? WHERE account_id = ?", [
+    await db.query("UPDATE players SET rank_tier_time = $1 WHERE account_id = $2", [
       new Date(),
       job.account_id,
     ]);

@@ -1,5 +1,4 @@
 import pg from "pg";
-import knex from "knex";
 import config from "../../config.ts";
 import { convert64to32, getAnonymousAccountId } from "../util/utility.ts";
 import util from "node:util";
@@ -12,40 +11,31 @@ console.log(
   config.POSTGRES_MAX_CONNECTIONS,
 );
 
-export const db = knex({
-  client: "pg",
-  connection: {
-    connectionString: config.POSTGRES_URL,
-    application_name: `odota-${config.APP_NAME || "unknown"}`,
-    statement_timeout: 60000,
-  },
-  pool: {
-    min: 0,
-    max: Number(config.POSTGRES_MAX_CONNECTIONS),
-    // afterCreate: (conn: any, done: any) => {
-      // Set the minimum similarity for pg_trgm
-      // conn.query('SELECT set_limit(0.6);', (err) => {
-      //   // if err is not falsy, connection is discarded from pool
-      //   done(err, conn);
-      // });
-      // conn.query('SET statement_timeout TO 60000;', (err: any) => {
-      //   done(err, conn);
-      // });
-    // },
-  },
+export const db = new pg.Pool({
+  connectionString: config.POSTGRES_URL,
+  application_name: `odota-${config.APP_NAME || "unknown"}`,
+  statement_timeout: 60000,
+  min: 0,
+  max: Number(config.POSTGRES_MAX_CONNECTIONS),
 });
 
-const columns: Record<string, any> = {};
+const columns: Record<string, Record<string, boolean>> = {};
 
 export async function upsert(
-  db: Knex,
+  db: pg.Pool | pg.PoolClient,
   table: string,
   insert: AnyDict,
   conflict: NumberDict,
 ) {
   if (!columns[table]) {
-    const result = await db(table).columnInfo();
-    columns[table] = result;
+    const result = await db.query(
+      "SELECT column_name FROM information_schema.columns WHERE table_schema = 'public' AND table_name = $1",
+      [table],
+    );
+    columns[table] = {};
+    result.rows.forEach((r) => {
+      columns[table][r.column_name] = true;
+    });
   }
   const tableColumns = columns[table];
   const row = { ...insert };
@@ -55,7 +45,7 @@ export async function upsert(
       delete row[key];
     }
   });
-  const values = Object.keys(row).map(() => "?");
+  const values = Object.keys(row).map((_, i) => `$${i + 1}`);
   const update = Object.keys(row).map((key) =>
     util.format("%s=%s", key, `EXCLUDED.${key}`),
   );
@@ -67,13 +57,16 @@ export async function upsert(
     Object.keys(conflict).join(","),
     update.join(","),
   );
-  return db.raw(
+  return db.query(
     query,
     Object.keys(row).map((key) => row[key]),
   );
 }
 
-export async function upsertPlayer(db: Knex, player: Partial<User>) {
+export async function upsertPlayer(
+  db: pg.Pool | pg.PoolClient,
+  player: Partial<User>,
+) {
   if (player.steamid && !player.account_id) {
     // convert steamid to accountid
     player.account_id = Number(convert64to32(player.steamid));

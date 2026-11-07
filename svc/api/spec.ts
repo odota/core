@@ -280,23 +280,34 @@ You can use the API without a key, but registering for a key allows increased ra
             computedRatingTurbo,
             aliases,
           ] = await Promise.all([
-            db.first().from("rank_tier").where({ account_id: accountId }),
             db
-              .first()
-              .from("leaderboard_rank")
-              .where({ account_id: accountId }),
+              .query("SELECT * FROM rank_tier WHERE account_id = $1", [
+                accountId,
+              ])
+              .then((r) => r.rows[0]),
             db
-              .first()
-              .from("player_computed_mmr")
-              .where({ account_id: accountId }),
+              .query("SELECT * FROM leaderboard_rank WHERE account_id = $1", [
+                accountId,
+              ])
+              .then((r) => r.rows[0]),
             db
-              .first()
-              .from("player_computed_mmr_turbo")
-              .where({ account_id: accountId }),
+              .query(
+                "SELECT * FROM player_computed_mmr WHERE account_id = $1",
+                [accountId],
+              )
+              .then((r) => r.rows[0]),
             db
-              .select("personaname", "name_since")
-              .from("aliases")
-              .where({ account_id: accountId }),
+              .query(
+                "SELECT * FROM player_computed_mmr_turbo WHERE account_id = $1",
+                [accountId],
+              )
+              .then((r) => r.rows[0]),
+            db
+              .query(
+                "SELECT personaname, name_since FROM aliases WHERE account_id = $1",
+                [accountId],
+              )
+              .then((r) => r.rows),
           ]);
           const result = {
             profile: playerData,
@@ -1033,22 +1044,15 @@ You can use the API without a key, but registering for a key allows increased ra
           const tableName = turbo
             ? "player_computed_mmr_turbo"
             : "player_computed_mmr";
-          const result = await db
-            .select([
-              "*",
-              "players.account_id as account_id",
-              "rank_tier.rating as rank_tier",
-            ])
-            .from(tableName)
-            .join("players", "players.account_id", `${tableName}.account_id`)
-            .leftJoin(
-              "notable_players",
-              "players.account_id",
-              "notable_players.account_id",
-            )
-            .leftJoin("rank_tier", "players.account_id", "rank_tier.account_id")
-            .orderBy(`${tableName}.computed_mmr`, "desc")
-            .limit(100);
+          const { rows: result } = await db.query(
+            `SELECT *, players.account_id as account_id, rank_tier.rating as rank_tier
+             FROM ${tableName}
+             JOIN players ON players.account_id = ${tableName}.account_id
+             LEFT JOIN notable_players ON players.account_id = notable_players.account_id
+             LEFT JOIN rank_tier ON players.account_id = rank_tier.account_id
+             ORDER BY ${tableName}.computed_mmr DESC
+             LIMIT 100`,
+          );
           return res.json(result);
         },
       },
@@ -1077,15 +1081,11 @@ You can use the API without a key, but registering for a key allows increased ra
         },
         route: () => "/proPlayers",
         func: async (req, res, next) => {
-          const result = await db
-            .select()
-            .from("players")
-            .rightJoin(
-              "notable_players",
-              "players.account_id",
-              "notable_players.account_id",
-            )
-            .orderBy("notable_players.account_id", "asc");
+          const { rows: result } = await db.query(
+            `SELECT * FROM players
+             RIGHT JOIN notable_players ON players.account_id = notable_players.account_id
+             ORDER BY notable_players.account_id ASC`,
+          );
           return res.json(result);
         },
       },
@@ -1114,7 +1114,7 @@ You can use the API without a key, but registering for a key allows increased ra
         },
         route: () => "/proMatches",
         func: async (req, res, next) => {
-          const { rows } = await db.raw(
+          const { rows } = await db.query(
             `
           SELECT match_id, duration, start_time,
           radiant_team_id, radiant.name as radiant_name,
@@ -1129,7 +1129,7 @@ You can use the API without a key, but registering for a key allows increased ra
           LEFT JOIN teams dire
           ON dire.team_id = matches.dire_team_id
           LEFT JOIN leagues USING(leagueid)
-          WHERE match_id < ?
+          WHERE match_id < $1
           ORDER BY match_id DESC
           LIMIT 100
           `,
@@ -1172,12 +1172,12 @@ You can use the API without a key, but registering for a key allows increased ra
           const minRank = Math.min(Number(req.query.min_rank), 75) || 0;
           const maxRank =
             Math.max(Number(req.query.max_rank), 15) || Number.MAX_SAFE_INTEGER;
-          const { rows } = await db.raw(
+          const { rows } = await db.query(
             `
           SELECT * FROM public_matches
-          WHERE match_id < ?
-          AND avg_rank_tier >= ?
-          AND avg_rank_tier <= ?
+          WHERE match_id < $1
+          AND avg_rank_tier >= $2
+          AND avg_rank_tier <= $3
           ORDER BY match_id DESC
           LIMIT 100
           `,
@@ -1213,10 +1213,10 @@ You can use the API without a key, but registering for a key allows increased ra
         func: async (req, res, next) => {
           const lessThan =
             req.query.less_than_match_id || Number.MAX_SAFE_INTEGER;
-          const { rows } = await db.raw(
+          const { rows } = await db.query(
             `
           SELECT match_id FROM parsed_matches
-          WHERE match_id < ?
+          WHERE match_id < $1
           ORDER BY match_id DESC
           LIMIT 100
           `,
@@ -1728,8 +1728,8 @@ You can use the API without a key, but registering for a key allows increased ra
           const inverted = false;
           const teamA = inverted ? t1 : t0;
           const teamB = inverted ? t0 : t1;
-          const { rows } = await db.raw(
-            "select match_id, radiant_team as teamA, dire_team as teamB, radiant_win as teamAWin, start_time from public_matches where (radiant_team @> ? AND dire_team @> ?) OR (radiant_team @> ? AND dire_team @> ?) order by match_id desc limit 10",
+          const { rows } = await db.query(
+            "select match_id, radiant_team as teamA, dire_team as teamB, radiant_win as teamAWin, start_time from public_matches where (radiant_team @> $1 AND dire_team @> $2) OR (radiant_team @> $3 AND dire_team @> $4) order by match_id desc limit 10",
             [teamA, teamB, teamB, teamA],
           );
           redis.setex(key, 60, JSON.stringify(rows));
@@ -1760,7 +1760,9 @@ You can use the API without a key, but registering for a key allows increased ra
         },
         route: () => "/heroes",
         func: async (req, res, next) => {
-          const result = await db.select().from("heroes").orderBy("id", "asc");
+          const { rows: result } = await db.query(
+            "SELECT * FROM heroes ORDER BY id ASC",
+          );
           return res.json(result);
         },
       },
@@ -1884,7 +1886,7 @@ You can use the API without a key, but registering for a key allows increased ra
         route: () => "/heroes/:hero_id/matches",
         func: async (req, res, next) => {
           const heroId = req.params.hero_id;
-          const { rows } = await db.raw(
+          const { rows } = await db.query(
             `SELECT
             matches.match_id,
             matches.start_time,
@@ -1902,7 +1904,7 @@ You can use the API without a key, but registering for a key allows increased ra
             JOIN player_matches using(match_id)
             JOIN leagues using(leagueid)
             LEFT JOIN heroes on heroes.id = player_matches.hero_id
-            WHERE player_matches.hero_id = ?
+            WHERE player_matches.hero_id = $1
             ORDER BY matches.match_id DESC
             LIMIT 100`,
             [heroId],
@@ -1936,7 +1938,7 @@ You can use the API without a key, but registering for a key allows increased ra
         route: () => "/heroes/:hero_id/matchups",
         func: async (req, res, next) => {
           const heroId = req.params.hero_id;
-          const { rows } = await db.raw(
+          const { rows } = await db.query(
             `SELECT
             pm2.hero_id,
             count(player_matches.match_id) games_played,
@@ -1944,8 +1946,8 @@ You can use the API without a key, but registering for a key allows increased ra
             FROM matches
             JOIN player_matches using(match_id)
             JOIN player_matches pm2 on player_matches.match_id = pm2.match_id AND (player_matches.player_slot < 128) != (pm2.player_slot < 128)
-            WHERE player_matches.hero_id = ?
-            AND matches.start_time > ?
+            WHERE player_matches.hero_id = $1
+            AND matches.start_time > $2
             GROUP BY pm2.hero_id
             ORDER BY games_played DESC`,
             [heroId, moment.utc().subtract(1, "year").format("X")],
@@ -1979,14 +1981,14 @@ You can use the API without a key, but registering for a key allows increased ra
         route: () => "/heroes/:hero_id/durations",
         func: async (req, res, next) => {
           const heroId = req.params.hero_id;
-          const { rows } = await db.raw(
+          const { rows } = await db.query(
             `SELECT
             (matches.duration / 300 * 300) duration_bin,
             count(match_id) games_played,
             sum(case when (player_matches.player_slot < 128) = matches.radiant_win then 1 else 0 end) wins
             FROM matches
             JOIN player_matches using(match_id)
-            WHERE player_matches.hero_id = ?
+            WHERE player_matches.hero_id = $1
             GROUP BY (matches.duration / 300 * 300)`,
             [heroId],
           );
@@ -2022,14 +2024,14 @@ You can use the API without a key, but registering for a key allows increased ra
         route: () => "/heroes/:hero_id/players",
         func: async (req, res, next) => {
           const heroId = req.params.hero_id;
-          const { rows } = await db.raw(
+          const { rows } = await db.query(
             `SELECT
             account_id,
             count(match_id) games_played,
             sum(case when (player_matches.player_slot < 128) = matches.radiant_win then 1 else 0 end) wins
             FROM matches
             JOIN player_matches using(match_id)
-            WHERE player_matches.hero_id = ?
+            WHERE player_matches.hero_id = $1
             GROUP BY account_id
             ORDER BY games_played DESC`,
             [heroId],
@@ -2092,7 +2094,7 @@ You can use the API without a key, but registering for a key allows increased ra
         },
         route: () => "/leagues",
         func: async (req, res, next) => {
-          const result = await db.select().from("leagues");
+          const { rows: result } = await db.query("SELECT * FROM leagues");
           return res.json(result);
         },
       },
@@ -2121,10 +2123,10 @@ You can use the API without a key, but registering for a key allows increased ra
         },
         route: () => "/leagues/:league_id",
         func: async (req, res, next) => {
-          const { rows } = await db.raw(
+          const { rows } = await db.query(
             `SELECT leagues.*
             FROM leagues
-            WHERE leagues.leagueid = ?`,
+            WHERE leagues.leagueid = $1`,
             [req.params.league_id],
           );
           return res.json(rows[0]);
@@ -2152,10 +2154,10 @@ You can use the API without a key, but registering for a key allows increased ra
         },
         route: () => "/leagues/:league_id/matches",
         func: async (req, res, next) => {
-          const { rows } = await db.raw(
+          const { rows } = await db.query(
             `SELECT match_id, radiant_win, start_time, duration, leagueid, radiant_score, dire_score, radiant_team_id, radiant_team_name, dire_team_id, dire_team_name, series_id, series_type
             FROM matches
-            WHERE matches.leagueid = ?
+            WHERE matches.leagueid = $1
             ORDER BY match_id DESC`,
             [req.params.league_id],
           );
@@ -2190,10 +2192,10 @@ You can use the API without a key, but registering for a key allows increased ra
         },
         route: () => "/leagues/:league_id/matchIds",
         func: async (req, res, next) => {
-          const { rows } = await db.raw(
+          const { rows } = await db.query(
             `SELECT match_id
             FROM league_match
-            WHERE league_match.leagueid = ?
+            WHERE league_match.leagueid = $1
             ORDER BY match_id DESC`,
             [req.params.league_id],
           );
@@ -2222,13 +2224,13 @@ You can use the API without a key, but registering for a key allows increased ra
         },
         route: () => "/leagues/:league_id/teams",
         func: async (req, res, next) => {
-          const { rows } = await db.raw(
+          const { rows } = await db.query(
             `SELECT team_rating.*, teams.*
             FROM matches
             LEFT JOIN team_match using(match_id)
             LEFT JOIN teams using(team_id)
             LEFT JOIN team_rating using(team_id)
-            WHERE matches.leagueid = ?
+            WHERE matches.leagueid = $1
             GROUP BY (teams.team_id, team_rating.team_id)`,
             [req.params.league_id],
           );
@@ -2271,13 +2273,13 @@ You can use the API without a key, but registering for a key allows increased ra
         },
         route: () => "/teams",
         func: async (req, res, next) => {
-          const { rows } = await db.raw(
+          const { rows } = await db.query(
             `SELECT team_rating.*, teams.*
             FROM teams
             LEFT JOIN team_rating using(team_id)
             ORDER BY rating desc NULLS LAST
             LIMIT 1000
-            OFFSET ?`,
+            OFFSET $1`,
             [(Number(req.query.page) || 0) * 1000],
           );
           return res.json(rows);
@@ -2305,11 +2307,11 @@ You can use the API without a key, but registering for a key allows increased ra
         },
         route: () => "/teams/:team_id",
         func: async (req, res, next) => {
-          const { rows } = await db.raw(
+          const { rows } = await db.query(
             `SELECT team_rating.*, teams.*
             FROM teams
             LEFT JOIN team_rating using(team_id)
-            WHERE teams.team_id = ?`,
+            WHERE teams.team_id = $1`,
             [req.params.team_id],
           );
           return res.json(rows[0]);
@@ -2337,7 +2339,7 @@ You can use the API without a key, but registering for a key allows increased ra
         },
         route: () => "/teams/:team_id/matches",
         func: async (req, res, next) => {
-          const { rows } = await db.raw(
+          const { rows } = await db.query(
             `
             SELECT team_match.match_id, radiant_win, radiant_score, dire_score, team_match.radiant, duration, start_time, leagueid, leagues.name as league_name, cluster, tm2.team_id opposing_team_id, teams2.name opposing_team_name, teams2.logo_url opposing_team_logo
             FROM team_match
@@ -2345,7 +2347,7 @@ You can use the API without a key, but registering for a key allows increased ra
             JOIN leagues USING(leagueid)
             JOIN team_match tm2 on team_match.match_id = tm2.match_id and team_match.team_id != tm2.team_id
             JOIN teams teams2 on tm2.team_id = teams2.team_id
-            WHERE team_match.team_id = ?
+            WHERE team_match.team_id = $1
             ORDER BY match_id DESC
             `,
             [req.params.team_id],
@@ -2375,14 +2377,14 @@ You can use the API without a key, but registering for a key allows increased ra
         },
         route: () => "/teams/:team_id/players",
         func: async (req, res, next) => {
-          const { rows } = await db.raw(
+          const { rows } = await db.query(
             `SELECT account_id, notable_players.name, count(matches.match_id) games_played, sum(case when (player_matches.player_slot < 128) = matches.radiant_win then 1 else 0 end) wins, notable_players.team_id = teams.team_id is_current_team_member
             FROM matches
             JOIN team_match USING(match_id)
             JOIN player_matches ON player_matches.match_id = matches.match_id AND team_match.radiant = (player_matches.player_slot < 128)
             JOIN teams USING (team_id)
             LEFT JOIN notable_players USING(account_id)
-            WHERE teams.team_id = ?
+            WHERE teams.team_id = $1
             GROUP BY account_id, notable_players.name, notable_players.team_id, teams.team_id
             ORDER BY games_played DESC`,
             [req.params.team_id],
@@ -2412,14 +2414,14 @@ You can use the API without a key, but registering for a key allows increased ra
         },
         route: () => "/teams/:team_id/heroes",
         func: async (req, res, next) => {
-          const { rows } = await db.raw(
+          const { rows } = await db.query(
             `SELECT hero_id, localized_name, count(matches.match_id) games_played, sum(case when (player_matches.player_slot < 128) = matches.radiant_win then 1 else 0 end) wins
             FROM matches
             JOIN team_match USING(match_id)
             JOIN player_matches ON player_matches.match_id = matches.match_id AND team_match.radiant = (player_matches.player_slot < 128)
             JOIN teams USING(team_id)
             LEFT JOIN heroes ON player_matches.hero_id = heroes.id
-            WHERE teams.team_id = ?
+            WHERE teams.team_id = $1
             GROUP BY hero_id, localized_name
             ORDER BY games_played DESC`,
             [req.params.team_id],
@@ -2656,12 +2658,9 @@ You can use the API without a key, but registering for a key allows increased ra
         },
         route: () => "/schema",
         func: async (req, res, next) => {
-          const result = await db
-            .select(["table_name", "column_name", "data_type"])
-            .from("information_schema.columns")
-            .where({
-              table_schema: "public",
-            });
+          const { rows: result } = await db.query(
+            "SELECT table_name, column_name, data_type FROM information_schema.columns WHERE table_schema = 'public'",
+          );
           return res.json(result);
         },
       },

@@ -95,8 +95,8 @@ export class GcdataFetcher extends MatchFetcherBase<GcData> {
     };
 
     // Update series id and type for pro match
-    await db.raw(
-      "UPDATE matches SET series_id = ?, series_type = ?, cluster = ?, replay_salt = ? WHERE match_id = ?",
+    await db.query(
+      "UPDATE matches SET series_id = $1, series_type = $2, cluster = $3, replay_salt = $4 WHERE match_id = $5",
       [
         matchToInsert.series_id,
         matchToInsert.series_type,

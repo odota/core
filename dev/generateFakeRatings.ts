@@ -17,8 +17,8 @@ function gaussianRandom(mean: number, std: number) {
   return randByCentralLimitTheorem() * std + mean;
 }
 
-const players = await db.from("players");
-players.forEach((p) => {
+const { rows: players } = await db.query("SELECT * FROM players");
+for (const p of players) {
   const fake = {
     match_id: p.account_id,
     account_id: p.account_id,
@@ -27,5 +27,14 @@ players.forEach((p) => {
     time: new Date(),
   };
   console.log(fake.account_id, fake.solo_competitive_rank);
-  db.insert(fake).into("player_ratings");
-});
+  await db.query(
+    "INSERT INTO player_ratings(match_id, account_id, solo_competitive_rank, competitive_rank, time) VALUES($1, $2, $3, $4, $5)",
+    [
+      fake.match_id,
+      fake.account_id,
+      fake.solo_competitive_rank,
+      fake.competitive_rank,
+      fake.time,
+    ],
+  );
+}

@@ -41,8 +41,8 @@ async function profile(batch: ProfileJob[]) {
     for (let item of respAliases.data[
       steamid as keyof typeof respAliases.data
     ]) {
-      await db.raw(
-        "INSERT INTO aliases(account_id, personaname, name_since) VALUES(?, ?, ?) ON CONFLICT(account_id, personaname) DO NOTHING",
+      await db.query(
+        "INSERT INTO aliases(account_id, personaname, name_since) VALUES($1, $2, $3) ON CONFLICT(account_id, personaname) DO NOTHING",
         [accountId, item.name, new Date(item.name_since)],
       );
     }

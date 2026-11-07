@@ -2,7 +2,7 @@
 import db from "../svc/store/db.ts";
 import { addReliableJob } from "../svc/store/queue.ts";
 
-const matches = await db.raw(
+const matches = await db.query(
   "select match_id from matches where replay_salt IS NULL",
 );
 console.log(matches.rows.length);

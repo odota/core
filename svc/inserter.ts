@@ -11,7 +11,7 @@ if (!trackedExists) {
 }
 
 await runInLoop(async function insert() {
-  const { rows } = await db.raw(
+  const { rows } = await db.query(
     "SELECT match_seq_num, data FROM insert_queue WHERE processed = FALSE ORDER BY match_seq_num ASC LIMIT 90",
   );
   if (!rows.length) {

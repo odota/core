@@ -353,12 +353,11 @@ type JobMetadata = {
   i: number;
 };
 
-type Knex = import("knex").Knex;
 type ReliableQueueOptions = {
   attempts?: number;
   priority?: number;
   caller?: string;
-  trx?: Knex;
+  trx?: import("pg").PoolClient;
   delayMs?: number;
 };
 
