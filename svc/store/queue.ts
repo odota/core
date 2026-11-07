@@ -55,16 +55,23 @@ export async function runReliableQueue(
   getCapacity?: () => Promise<number>,
 ) {
   const executor = async (i: number) => {
-    const consumer = new Client({
-      connectionString: config.POSTGRES_URL,
-      application_name: `odota-${config.APP_NAME || "unknown"}-queue`,
-    });
-    await consumer.connect();
+    let consumer: Client | null = null;
     while (true) {
       // If we have a way to measure capacity, throttle the processing speed based on capacity
       if (getCapacity && i >= (await getCapacity())) {
+        if (consumer) {
+          await consumer.end();
+          consumer = null;
+        }
         await new Promise((resolve) => setTimeout(resolve, 3000));
         continue;
+      }
+      if (!consumer) {
+        consumer = new Client({
+          connectionString: config.POSTGRES_URL,
+          application_name: `odota-${config.APP_NAME || "unknown"}-queue`,
+        });
+        await consumer.connect();
       }
       const start = Date.now();
       await consumer.query("BEGIN TRANSACTION");
@@ -100,12 +107,16 @@ export async function runReliableQueue(
             await consumer.query("DELETE FROM queue WHERE id = $1", [job.id]);
           }
           await consumer.query("COMMIT");
-          const end = Date.now();
-          await redis.setex(
-            "lastRun:" + config.APP_NAME,
-            config.HEALTH_TIMEOUT,
-            end - start,
-          );
+          try {
+            const end = Date.now();
+            await redis.setex(
+              "lastRun:" + config.APP_NAME,
+              config.HEALTH_TIMEOUT,
+              end - start,
+            );
+          } catch (e) {
+            console.log('Failed to update Redis with lastRun');
+          }
         } catch (e) {
           console.log(e);
           // If the processor crashes unexpectedly, we should rollback the transaction to not consume an attempt
