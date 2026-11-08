@@ -1,4 +1,16 @@
 import config from "../../config.ts";
+import { styleText as nodeStyleText } from "node:util";
+
+/**
+ * Colorizes text using ANSI escape codes without validating against the terminal stream,
+ * ensuring colors are preserved when logged to non-TTY streams or published to Redis.
+ */
+export function styleText(
+  format: Parameters<typeof nodeStyleText>[0],
+  text: string,
+) {
+  return nodeStyleText(format, text, { validateStream: false });
+}
 
 /**
  * Tokenizes an input string.

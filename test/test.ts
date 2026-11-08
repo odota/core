@@ -20,10 +20,9 @@ import { insertMatch } from "../svc/util/insert.ts";
 import { buildMatch } from "../svc/util/buildMatch.ts";
 import db, { upsertPlayer } from "../svc/store/db.ts";
 import cassandra from "../svc/store/cassandra.ts";
-import { styleText } from "node:util";
 import { suite, test, before, beforeEach, after } from "node:test";
 import { S3Client } from "@bradenmacdonald/s3-lite-client";
-import { averageMedal } from "../svc/util/utility.ts";
+import { averageMedal, styleText } from "../svc/util/utility.ts";
 import { addReliableJob } from "../svc/store/queue.ts";
 
 const { RETRIEVER_HOST, POSTGRES_URL, CASSANDRA_URL } = config;

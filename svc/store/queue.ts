@@ -2,8 +2,7 @@ import redis, { redisCount } from "./redis.ts";
 import db from "./db.ts";
 import config from "../../config.ts";
 import { Client } from "pg";
-import { styleText } from "node:util";
-import { exhaustive } from "../util/utility.ts";
+import { exhaustive, styleText } from "../util/utility.ts";
 
 export async function runQueue<T>(
   queueName: QueueName,

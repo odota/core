@@ -7,8 +7,7 @@
  * */
 import config from "../config.ts";
 import { addReliableJob, runReliableQueue } from "./store/queue.ts";
-import { styleText } from "node:util";
-import { buildReplayUrl } from "./util/utility.ts";
+import { buildReplayUrl, styleText } from "./util/utility.ts";
 import redis, { redisCount } from "./store/redis.ts";
 import { apiFetcher, gcFetcher, parsedFetcher } from "./fetcher/allFetchers.ts";
 import { getPGroup } from "./util/pgroup.ts";
