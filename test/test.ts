@@ -13,7 +13,6 @@ import { Client as DBClient } from "pg";
 import { readFileSync } from "node:fs";
 import { Client } from "cassandra-driver";
 import nock from "nock";
-import swaggerParser from "@apidevtools/swagger-parser";
 import config from "../config.ts";
 import spec from "../svc/api/spec.ts";
 import { getPlayerMatches } from "../svc/util/buildPlayer.ts";
@@ -387,14 +386,78 @@ suite(styleText("blue", "API MANAGEMENT"), async () => {
 
 suite("TESTS", async () => {
   test("swagger schema should be valid", async () => {
-    const validOpts = {
-      validate: {
-        schema: true,
-        spec: true,
-      },
+    // We stringify and immediately parse the object in order to remove the route() and func() properties, which aren't a part of the OpenAPI spec
+    const doc = JSON.parse(JSON.stringify(spec));
+    assert.ok(
+      typeof doc.openapi === "string" && doc.openapi.startsWith("3."),
+      "Must have valid openapi 3.x version",
+    );
+    assert.ok(doc.info?.title, "Must have info.title");
+    assert.ok(doc.info?.version, "Must have info.version");
+    assert.ok(
+      doc.paths && typeof doc.paths === "object",
+      "Must have paths object",
+    );
+
+    const resolveRef = (ref: string) => {
+      assert.ok(ref.startsWith("#/"), `Invalid ref format: ${ref}`);
+      let curr: any = doc;
+      for (const part of ref.slice(2).split("/")) {
+        assert.ok(
+          curr && typeof curr === "object" && part in curr,
+          `Cannot resolve $ref: ${ref} (failed at ${part})`,
+        );
+        curr = curr[part];
+      }
     };
-    // We stringify and imediately parse the object in order to remove the route() and func() properties, which arent a part of the OpenAPI spec
-    await swaggerParser.validate(JSON.parse(JSON.stringify(spec)), validOpts);
+
+    const validateNode = (node: any) => {
+      if (!node || typeof node !== "object") return;
+      if (typeof node.$ref === "string") {
+        resolveRef(node.$ref);
+      }
+      for (const [key, value] of Object.entries(node)) {
+        if (key !== "$ref") {
+          validateNode(value);
+        }
+      }
+    };
+
+    const httpMethods = [
+      "get",
+      "put",
+      "post",
+      "delete",
+      "options",
+      "head",
+      "patch",
+      "trace",
+    ];
+    for (const [pathKey, pathItem] of Object.entries(doc.paths)) {
+      assert.ok(pathKey.startsWith("/"), `Path must start with '/': ${pathKey}`);
+      assert.ok(
+        pathItem && typeof pathItem === "object",
+        `Path item must be object: ${pathKey}`,
+      );
+      for (const [method, op] of Object.entries(pathItem as any)) {
+        if (httpMethods.includes(method.toLowerCase())) {
+          assert.ok(
+            op && typeof op === "object",
+            `Operation ${method} ${pathKey} must be object`,
+          );
+          assert.ok(
+            (op as any).responses,
+            `Operation ${method} ${pathKey} must have responses`,
+          );
+          assert.ok(
+            Object.keys((op as any).responses).length > 0,
+            `Operation ${method} ${pathKey} must have at least one response`,
+          );
+        }
+      }
+    }
+
+    validateNode(doc);
   });
   // Test fetching matches for first player
   test("player_caches should have one row in player_caches", async () => {

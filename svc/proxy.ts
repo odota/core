@@ -1,23 +1,60 @@
 // Proxies requests to the Steam API
-import httpProxy from "http-proxy";
 import http from "node:http";
+import { pipeline } from "node:stream";
 import config from "../config.ts";
 import os from "node:os";
 
 const { PORT, PROXY_PORT } = config;
 const port = PORT || PROXY_PORT;
-const proxy = httpProxy.createProxyServer({
-  target: "http://api.steampowered.com",
-  changeOrigin: true,
-});
+
+const TARGET_HOST = "api.steampowered.com";
+const TARGET_PORT = 80;
+
 const server = http.createServer((req, res) => {
   if (req.url === "/healthz") {
     return res.end("ok");
   }
-  return proxy.web(req, res);
+
+  const proxyReq = http.request(
+    {
+      host: TARGET_HOST,
+      port: TARGET_PORT,
+      method: req.method,
+      path: req.url,
+      // changeOrigin: rewrite the Host header to match the target
+      headers: { ...req.headers, host: TARGET_HOST },
+    },
+    (proxyRes) => {
+      res.writeHead(
+        proxyRes.statusCode ?? 502,
+        proxyRes.statusMessage,
+        proxyRes.headers,
+      );
+      pipeline(proxyRes, res, () => {});
+    },
+  );
+
+  proxyReq.on("error", (err) => {
+    console.error("proxy error: %s", err.message);
+    if (!res.headersSent) {
+      res.writeHead(502);
+    }
+    res.end("Bad gateway");
+  });
+
+  // Abort the upstream request if the client goes away
+  res.on("close", () => {
+    if (!res.writableFinished) {
+      proxyReq.destroy();
+    }
+  });
+
+  pipeline(req, proxyReq, () => {});
 });
+
 server.listen(port);
 console.log("listening on port %s", port);
+
 if (config.SERVICE_REGISTRY_HOST) {
   let ip = os.networkInterfaces()?.eth0?.[0]?.address;
   if (config.EXTERNAL) {
