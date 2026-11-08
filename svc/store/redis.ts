@@ -1,6 +1,6 @@
 import { Redis } from "ioredis";
 import config from "../../config.ts";
-import moment from "moment";
+import { getStartOfBlockMinutes } from "../util/time.ts";
 
 let redis: Redis | null = null;
 if (config.REDIS_URL) {
@@ -12,29 +12,21 @@ export async function getRedisCountDay(prefix: MetricName) {
   // Get counts for last 24 hour keys (including current partial hour)
   const keyArr = [];
   for (let i = 0; i < 24; i += 1) {
-    keyArr.push(
-      `${prefix}:v2:${moment
-        .utc()
-        .startOf("hour")
-        .subtract(i, "hour")
-        .format("X")}`,
-    );
+    keyArr.push(`${prefix}:v2:${getStartOfBlockMinutes(60, -i)}`);
   }
   const counts = await redis?.mget(...keyArr);
   return counts?.reduce((a, b) => Number(a) + Number(b), 0);
 }
 
 export async function getRedisCountHour(prefix: MetricName) {
-  const result = await redis?.get(
-    `${prefix}:v2:${moment.utc().startOf("hour").format("X")}`,
-  );
+  const result = await redis?.get(`${prefix}:v2:${getStartOfBlockMinutes(60)}`);
   return Number(result);
 }
 
 export async function getRedisCountLastHour(prefix: MetricName) {
   // Get counts for previous full hour (not current)
   const result = await redis?.get(
-    `${prefix}:v2:${moment.utc().startOf("hour").subtract(1, "hour").format("X")}`,
+    `${prefix}:v2:${getStartOfBlockMinutes(60, -1)}`,
   );
   return Number(result);
 }
@@ -43,13 +35,7 @@ export async function getRedisCountDayDistinct(prefix: MetricName) {
   // Get counts for last 24 hour keys (including current partial hour)
   const keyArr = [];
   for (let i = 0; i < 24; i += 1) {
-    keyArr.push(
-      `${prefix}:v2:${moment
-        .utc()
-        .startOf("hour")
-        .subtract(i, "hour")
-        .format("X")}`,
-    );
+    keyArr.push(`${prefix}:v2:${getStartOfBlockMinutes(60, -i)}`);
   }
   return redis?.pfcount(...keyArr);
 }
@@ -59,11 +45,7 @@ export async function getRedisCountDayHash(
 ): Promise<Record<string, number>> {
   const result = new Map<string, number>();
   for (let i = 0; i < 24; i += 1) {
-    const key = `${prefix}:${moment
-      .utc()
-      .startOf("hour")
-      .subtract(i, "hour")
-      .format("X")}`;
+    const key = `${prefix}:${getStartOfBlockMinutes(60, -i)}`;
     const hash = await redis?.hgetall(key);
     for (let key in hash) {
       result.set(key, (result.get(key) ?? 0) + Number(hash[key]));
@@ -81,12 +63,9 @@ export async function redisCount(prefix: MetricName, incrBy = 1) {
     return;
   }
   try {
-    const key = `${prefix}:v2:${moment.utc().startOf("hour").format("X")}`;
+    const key = `${prefix}:v2:${getStartOfBlockMinutes(60)}`;
     await redis.incrby(key, incrBy);
-    await redis.expireat(
-      key,
-      moment.utc().startOf("hour").add(1, "day").format("X"),
-    );
+    await redis.expireat(key, getStartOfBlockMinutes(60, 24));
   } catch (e) {
     console.log(e);
   }
@@ -97,12 +76,9 @@ export async function redisCountDistinct(prefix: MetricName, value: string) {
     return;
   }
   try {
-    const key = `${prefix}:v2:${moment.utc().startOf("hour").format("X")}`;
+    const key = `${prefix}:v2:${getStartOfBlockMinutes(60)}`;
     await redis.pfadd(key, value);
-    await redis.expireat(
-      key,
-      moment.utc().startOf("hour").add(1, "day").format("X"),
-    );
+    await redis.expireat(key, getStartOfBlockMinutes(60, 24));
   } catch (e) {
     console.log(e);
   }
@@ -117,12 +93,9 @@ export async function redisCountHash(
     return;
   }
   try {
-    const key = `${prefix}:${moment.utc().startOf("hour").format("X")}`;
+    const key = `${prefix}:${getStartOfBlockMinutes(60)}`;
     await redis.hincrby(key, field, incrBy);
-    await redis.expireat(
-      key,
-      moment.utc().startOf("hour").add(1, "day").format("X"),
-    );
+    await redis.expireat(key, getStartOfBlockMinutes(60, 24));
   } catch (e) {
     console.log(e);
   }

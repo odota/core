@@ -1,4 +1,3 @@
-import moment from "moment";
 import config from "../config.ts";
 import db, { upsert, upsertPlayer } from "./store/db.ts";
 import { runReliableQueue } from "./store/queue.ts";
@@ -170,8 +169,8 @@ runReliableQueue("counts", 2, async (job: CountsJob, metadata) => {
       if (!tier) {
         return;
       }
-      const timestamp = moment.utc().startOf("day").unix();
-      const expire = moment.utc().startOf("day").add(8, "day").unix();
+      const timestamp = getStartOfBlockMinutes(60 * 24);
+      const expire = getStartOfBlockMinutes(60 * 24, 8);
       for (let player of match.players) {
         const heroId = player.hero_id;
         if (heroId) {

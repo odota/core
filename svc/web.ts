@@ -4,7 +4,6 @@
  * */
 import compression from "compression";
 import session from "cookie-session";
-import moment from "moment";
 import express from "express";
 import passport from "passport";
 import { SteamOpenIdStrategy } from "passport-steam-openid";
@@ -21,7 +20,11 @@ import redis, {
 import config from "../config.ts";
 import stripe from "./store/stripe.ts";
 import { buildStatus } from "./util/buildStatus.ts";
-import { getEndOfDay, getStartOfBlockMinutes } from "./util/time.ts";
+import {
+  getEndOfDay,
+  getStartOfBlockMinutes,
+  getStartOfMonth,
+} from "./util/time.ts";
 import { convert64to32 } from "./util/utility.ts";
 
 const admins = config.ADMIN_ACCOUNT_IDS.split(",").map((e) => Number(e));
@@ -89,7 +92,7 @@ const onResFinish = async (
   ) {
     if (res.locals.isAPIRequest) {
       const apiKey = res.locals.usageIdentifier;
-      const apiTimestamp = moment.utc().startOf("month");
+      const apiTimestamp = getStartOfMonth();
       const { rows } = await db.query(
         "SELECT * FROM api_keys WHERE api_key = $1",
         [apiKey],
@@ -125,11 +128,15 @@ const onResFinish = async (
     redisCountHash("api_origins", req.headers.origin);
   }
   if (req.user && req.user.account_id) {
-    await redis.zadd("visitors", moment.utc().format("X"), req.user.account_id);
+    await redis.zadd(
+      "visitors",
+      Math.floor(Date.now() / 1000),
+      req.user.account_id,
+    );
     await redis.zremrangebyscore(
       "visitors",
       "-inf",
-      moment.utc().subtract(30, "day").format("X"),
+      Math.floor(Date.now() / 1000) - 30 * 86400,
     );
   }
   await redis.lpush("load_times", elapsed);

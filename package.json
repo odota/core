@@ -34,7 +34,6 @@
     "express": "^5.2.1",
     "http-proxy": "^1.18.1",
     "ioredis": "^5.8.2",
-    "moment": "^2.30.1",
     "passport": "^0.7.0",
     "passport-steam-openid": "^1.1.12",
     "pg": "^8.16.3",

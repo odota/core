@@ -1,9 +1,9 @@
 import express from "express";
-import moment from "moment";
 import stripe from "../store/stripe.ts";
 import db from "../store/db.ts";
 import config from "../../config.ts";
 import { redisCount } from "../store/redis.ts";
+import { getEndOfMonth, getStartOfMonth } from "../util/time.ts";
 import type Stripe from "stripe";
 
 const stripeAPIPlan = config.STRIPE_API_PLAN;
@@ -111,8 +111,8 @@ keys
               ORDER BY month_start DESC
             `,
         [
-          moment.utc().subtract(5, "month").startOf("month"),
-          moment.utc().endOf("month"),
+          getStartOfMonth(-5),
+          getEndOfMonth(),
           req.user?.account_id,
         ],
       );
@@ -193,11 +193,7 @@ keys.post("/checkout", async (req, res, next) => {
       },
     ],
     subscription_data: {
-      billing_cycle_anchor: moment
-        .utc()
-        .add(1, "month")
-        .startOf("month")
-        .unix(),
+      billing_cycle_anchor: getStartOfMonth(1).getTime() / 1000,
       metadata: {
         account_id: req.user?.account_id ?? "",
       },

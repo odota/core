@@ -1,9 +1,9 @@
 // Runs background processes related to API keys and billing/usage
-import moment from "moment";
 import stripe from "./store/stripe.ts";
 import db from "./store/db.ts";
 import config from "../config.ts";
 import { runInLoop } from "./store/queue.ts";
+import { getMonthRange } from "./util/time.ts";
 import type Stripe from "stripe";
 
 await runInLoop(
@@ -32,16 +32,11 @@ await runInLoop(
         );
         continue;
       }
-      // Use UTC: usage rows are bucketed by moment.utc().startOf("month") in web.ts,
+      // Use UTC: usage rows are bucketed by start of month in web.ts,
       // so a non-UTC server timezone would otherwise select the wrong month near boundaries
-      const startTime = moment
-        .unix(sub.current_period_end - 1)
-        .utc()
-        .startOf("month");
-      const endTime = moment
-        .unix(sub.current_period_end - 1)
-        .utc()
-        .endOf("month");
+      const [startTime, endTime] = getMonthRange(
+        new Date((sub.current_period_end - 1) * 1000),
+      );
       const res = await db.query(
         `
               SELECT
@@ -60,7 +55,7 @@ await runInLoop(
                 GROUP BY api_key_usage.api_key, api_key_usage.ip
               ) as t1
             `,
-        [startTime.format("YYYY-MM-DD"), endTime.format("YYYY-MM-DD"), sub.id],
+        [startTime, endTime, sub.id],
       );
       if (res.rows.length > 0 && res.rows[0].usage_count) {
         const usageCount = res.rows[0].usage_count;

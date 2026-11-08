@@ -1,4 +1,3 @@
-import moment from "moment";
 import db from "../store/db.ts";
 import redis, {
   getRedisCountDay,
@@ -7,6 +6,7 @@ import redis, {
   getRedisCountLastHour,
 } from "../store/redis.ts";
 import { parallelPromise } from "./utility.ts";
+import { getMonthRange } from "./time.ts";
 import { game_mode, lobby_type, region, cluster } from "dotaconstants";
 import os from "node:os";
 
@@ -324,8 +324,7 @@ export async function buildStatus(isAdmin: boolean) {
     apiMetrics: async () => {
       let result = new Map<string, number>();
       if (isAdmin) {
-        const startTime = moment.utc().startOf("month").format("YYYY-MM-DD");
-        const endTime = moment.utc().endOf("month").format("YYYY-MM-DD");
+        const [startTime, endTime] = getMonthRange();
         const { rows } = await db.query(
           `
     SELECT

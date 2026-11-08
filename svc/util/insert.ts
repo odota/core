@@ -1,4 +1,3 @@
-import moment from "moment";
 import { patch } from "dotaconstants";
 import util from "node:util";
 import fs from "node:fs/promises";
@@ -19,6 +18,7 @@ import {
   isRecentlyVisited,
 } from "./queries.ts";
 import { getPGroup } from "./pgroup.ts";
+import { fromNow } from "./time.ts";
 import { blobArchive } from "../store/archive.ts";
 import cassandra, { getCassandraColumns } from "../store/cassandra.ts";
 import {
@@ -31,8 +31,6 @@ import {
 } from "./compute.ts";
 import type pg from "pg";
 import { PRIORITY } from "./priority.ts";
-
-moment.relativeTimeThreshold("ss", 0);
 
 /**
  * Inserts a piece of match data into storage
@@ -714,7 +712,7 @@ async function telemetry(
   const name = process.env.APP_NAME || process.argv[1];
   const message = `[${new Date().toISOString()}] [${name}] [insert: ${
     options.type
-  }] [ended: ${moment.unix(endedAt ?? 0).fromNow()}] ${match.match_id}`;
+  }] [ended: ${fromNow(endedAt ?? 0)}] ${match.match_id}`;
   redis?.publish(options.type, message);
   if (options.type === "parsed") {
     redisCount("parser");
@@ -735,7 +733,7 @@ async function telemetry(
     //     'distinct_match_player_user',
     //     p.account_id.toString(),
     //   );
-    //   if (visitTime > Number(moment.utc().subtract(30, 'day').format('X'))) {
+    //   if (visitTime > Math.floor(Date.now() / 1000) - 30 * 86400) {
     //     redisCountDistinct(
     //       'distinct_match_player_recent_user',
     //       p.account_id.toString(),

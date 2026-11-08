@@ -12,9 +12,9 @@ import { buildReplayUrl } from "./util/utility.ts";
 import redis, { redisCount } from "./store/redis.ts";
 import { apiFetcher, gcFetcher, parsedFetcher } from "./fetcher/allFetchers.ts";
 import { getPGroup } from "./util/pgroup.ts";
-import moment from "moment";
 import db from "./store/db.ts";
 import { getParserCapacity } from "./util/registry.ts";
+import { fromNow } from "./util/time.ts";
 
 await runReliableQueue(
   "parse",
@@ -200,9 +200,9 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
       colors[type],
       `[${new Date().toISOString()}] [parser] [${type}: ${
         end - start
-      }ms] [api: ${apiTime}ms] [gcdata: ${gcTime}ms] [parse: ${parseTime}ms] [queued: ${moment
-        .utc(metadata.timestamp)
-        .fromNow()}] [pri: ${metadata.priority}] [att: ${metadata.attempts}] ${
+      }ms] [api: ${apiTime}ms] [gcdata: ${gcTime}ms] [parse: ${parseTime}ms] [queued: ${fromNow(
+        metadata.timestamp,
+      )}] [pri: ${metadata.priority}] [att: ${metadata.attempts}] ${
         job.match_id
       } ${displayMsg ?? ""}`,
     );

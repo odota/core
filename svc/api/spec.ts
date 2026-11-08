@@ -1,10 +1,10 @@
 import constants, { heroes, cluster } from "dotaconstants";
-import moment from "moment";
 import { Pool } from "pg";
 import config from "../../config.ts";
 import { addJob, addReliableJob, getReliableJob } from "../store/queue.ts";
 import { buildMatch } from "../util/buildMatch.ts";
 import { getPlayerMatches } from "../util/buildPlayer.ts";
+import { getStartOfBlockMinutes } from "../util/time.ts";
 import {
   countPeers,
   isRadiant,
@@ -1837,11 +1837,7 @@ You can use the API without a key, but registering for a key allows increased ra
                   keyArr.push(
                     // Redis keys are in the format `${heroId}:${tier}:${name}:${timestamp}`
                     // Get the unix timestamps for the start of the last 7 days
-                    `${heroId}:${tier}:${name}:${moment
-                      .utc()
-                      .startOf("day")
-                      .subtract(i, "day")
-                      .format("X")}`,
+                    `${heroId}:${tier}:${name}:${getStartOfBlockMinutes(60 * 24, -i)}`,
                   );
                 }
                 // mget the 7 keys for this hero and sum them
@@ -1950,7 +1946,7 @@ You can use the API without a key, but registering for a key allows increased ra
             AND matches.start_time > $2
             GROUP BY pm2.hero_id
             ORDER BY games_played DESC`,
-            [heroId, moment.utc().subtract(1, "year").format("X")],
+            [heroId, Math.floor(Date.now() / 1000) - 365 * 86400],
           );
           return res.json(rows);
         },

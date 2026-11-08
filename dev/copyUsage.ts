@@ -1,8 +1,7 @@
 import db from "../svc/store/db.ts";
-import moment from "moment";
+import { getMonthRange, getStartOfMonth } from "../svc/util/time.ts";
 
-const startTime = moment.utc().startOf("month").format("YYYY-MM-DD");
-const endTime = moment.utc().endOf("month").format("YYYY-MM-DD");
+const [startTime, endTime] = getMonthRange();
 const { rows } = await db.query(
   `
         SELECT
@@ -20,7 +19,7 @@ const { rows } = await db.query(
   [startTime, endTime],
 );
 // console.log(rows);
-const apiTimestamp = moment.utc().startOf("month");
+const apiTimestamp = getStartOfMonth();
 for (let row of rows) {
   const curr = await db.query(
     "select * from api_key_usage where api_key = $1 and timestamp = $2",

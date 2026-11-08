@@ -1,12 +1,9 @@
-import moment from "moment";
 import redis, { redisCount } from "./redis.ts";
 import db from "./db.ts";
 import config from "../../config.ts";
 import { Client } from "pg";
 import { styleText } from "node:util";
 import { exhaustive } from "../util/utility.ts";
-
-moment.relativeTimeThreshold("ss", 0);
 
 export async function runQueue<T>(
   queueName: QueueName,
@@ -89,7 +86,7 @@ export async function runReliableQueue(
       )
       RETURNING *
       `,
-        [moment.utc().add(3, "minute"), queueName],
+        [new Date(Date.now() + 3 * 60 * 1000), queueName],
       );
       const job = result?.rows?.[0];
       if (job) {

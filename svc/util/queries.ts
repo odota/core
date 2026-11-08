@@ -14,7 +14,6 @@ import {
   convert64to32,
 } from "./utility.ts";
 import contributors, { isContributor } from "../../CONTRIBUTORS.ts";
-import moment from "moment";
 import type pg from "pg";
 import { getStartOfBlockMinutes } from "./time.ts";
 
@@ -487,7 +486,7 @@ export async function cacheTrackedPlayers() {
   // At one point we tracked players based on visits to OpenDota and updated expire based on that
   await Promise.all(
     tracked.map((id) =>
-      command.zadd("tracked", moment.utc().add(1, "day").format("X"), id),
+      command.zadd("tracked", Math.floor(Date.now() / 1000) + 86400, id),
     ),
   );
   await command.exec();

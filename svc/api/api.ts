@@ -4,7 +4,6 @@ import spec from "./spec.ts";
 import db from "../store/db.ts";
 import { alwaysCols } from "./playerFields.ts";
 import { queryParamToArray } from "../util/utility.ts";
-import moment from "moment";
 import redis, { redisCount } from "../store/redis.ts";
 
 //@ts-expect-error
@@ -67,11 +66,11 @@ api.use("/players/:account_id{/:info}", async (req, res, next) => {
     isPrivate,
   };
   // Keep track of recently visited account IDs for caching
-  // redis.zadd("visitedIds", moment.utc().format("X"), req.params.account_id);
+  // redis.zadd("visitedIds", Math.floor(Date.now() / 1000), req.params.account_id);
   redis.zremrangebyscore(
     "visitedIds",
     "-inf",
-    moment.utc().subtract(30, "day").format("X"),
+    Math.floor(Date.now() / 1000) - 30 * 86400,
   );
   return next();
 });
