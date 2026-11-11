@@ -569,6 +569,16 @@ export default {
                       "Seconds spent dead after this death. Absent if the match ended before the respawn",
                     type: "integer",
                   },
+                  ally_distance: {
+                    description:
+                      "Distance in world units from the player to the closest living teammate at the moment of death. Absent when no teammate was alive",
+                    type: "integer",
+                  },
+                  allies_died_nearby: {
+                    description:
+                      "Teammates who died within 1200 units of the same spot in the 10 seconds before. Together with ally_distance it tells a death alone from a death in a fight: with no teammate in range and none fallen nearby, the player died alone",
+                    type: "integer",
+                  },
                 },
               },
             },
