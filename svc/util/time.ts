@@ -45,7 +45,9 @@ export function getEndOfWeek() {
 }
 
 export function getEndOfDay() {
-  return Number(getStartOfBlockMinutes(60 * 24, 1));
+  const d = new Date();
+  d.setUTCHours(23, 59, 59, 999);
+  return Math.floor(d.getTime() / 1000);
 }
 
 /**
