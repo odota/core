@@ -14,6 +14,11 @@ export default {
         description: "Number of games won",
         type: "integer",
       },
+      advantage: {
+        description:
+          "Lower bound of the Wilson score interval for the win rate, as a percentage. What the hero matchups page sorts by",
+        type: "integer",
+      },
     },
   },
 };
