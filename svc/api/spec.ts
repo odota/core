@@ -511,8 +511,10 @@ You can use the API without a key, but registering for a key allows increased ra
                   if (tm.account_id === m.account_id) {
                     counts[tmHero].games += 1;
                     counts[tmHero].win += playerWin ? 1 : 0;
-                    if (m.start_time > counts[tmHero].last_played) {
-                      counts[tmHero].last_played = m.start_time;
+                    // when the match ended, the time the match lists show
+                    const ended = m.start_time + (m.duration || 0);
+                    if (ended > counts[tmHero].last_played) {
+                      counts[tmHero].last_played = ended;
                     }
                   } else {
                     counts[tmHero].with_games += 1;

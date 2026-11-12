@@ -96,7 +96,12 @@ export const recentMatchesCols = [
   "hero_variant",
 ] as (keyof ParsedPlayerMatch)[];
 
-export const heroesCols = ["heroes", "account_id", "start_time"] as const;
+export const heroesCols = [
+  "heroes",
+  "account_id",
+  "start_time",
+  "duration",
+] as const;
 export const significantCols = filterDeps.significant;
 export const peersCols = [
   "heroes",
