@@ -15,7 +15,7 @@ import {
   getPlayerWordcloud,
 } from "../util/buildPlayer.ts";
 import { getStartOfBlockMinutes } from "../util/time.ts";
-import { queryParamToArray } from "../util/utility.ts";
+import { queryParamToArray, wilsonScore } from "../util/utility.ts";
 import {
   matchesCols,
   histogramCols,
@@ -1775,7 +1775,14 @@ You can use the API without a key, but registering for a key allows increased ra
             ORDER BY games_played DESC`,
             [heroId, Math.floor(Date.now() / 1000) - 365 * 86400],
           );
-          return res.json(rows);
+          return res.json(
+            rows.map((row) => ({
+              ...row,
+              advantage: Math.round(
+                wilsonScore(Number(row.wins), Number(row.games_played)) * 100,
+              ),
+            })),
+          );
         },
       },
     },
