@@ -8,7 +8,8 @@ export default {
     properties: {
       hero_id: commonProperties.hero_id,
       last_played: {
-        description: "last_played",
+        description:
+          "Unix time the player's last match with this hero ended (start_time + duration)",
         type: "integer",
       },
       games: {

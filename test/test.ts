@@ -495,6 +495,20 @@ suite(styleText("blue", "PLAYERS"), async () => {
   test("players should have rank_tier data", async () => {
     assert.equal(playerData.rank_tier, 80);
   });
+  test("hero last_played is when the player's last match on it ended", async () => {
+    const heroes = await supertest(app).get("/api/players/120269134/heroes");
+    const matches = await supertest(app).get(
+      "/api/players/120269134/matches?project=hero_id&project=start_time&project=duration",
+    );
+    const played = heroes.body.filter((h: any) => h.games > 0);
+    assert.ok(played.length > 0);
+    for (const hero of played) {
+      const ends = matches.body
+        .filter((m: any) => m.hero_id === hero.hero_id)
+        .map((m: any) => m.start_time + m.duration);
+      assert.equal(hero.last_played, Math.max(...ends));
+    }
+  });
   test("players should return 404 for nonexistent player", async () => {
     const res = await supertest(app).get("/api/players/666");
     assert.equal(res.statusCode, 404);
