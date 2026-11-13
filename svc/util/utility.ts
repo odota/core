@@ -159,6 +159,24 @@ export function averageMedal(values: number[]) {
 }
 
 /**
+ * Lower bound of the Wilson score interval for wins out of games, the
+ * "advantage" the hero matchups page shows (z for a 95% one-sided bound)
+ * */
+export function wilsonScore(wins: number, games: number) {
+  if (!wins) {
+    return 0;
+  }
+  const z = 1.64485;
+  const phat = wins / games;
+  return (
+    (phat +
+      (z * z) / (2 * games) -
+      z * Math.sqrt((phat * (1 - phat) + (z * z) / (4 * games)) / games)) /
+    (1 + (z * z) / games)
+  );
+}
+
+/**
  * Finds the standard deviation of the input array
  * */
 export function stdDev(data: number[]) {
