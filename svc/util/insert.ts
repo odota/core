@@ -80,14 +80,6 @@ export async function insertMatch(
     isProTier = rows?.length > 0;
   }
 
-  // Write to non-postgres stores outside transaction
-  // All of these operations should be idempotent (fine to repeat)
-  await Promise.all([
-    upsertPlayerCaches(match, average_rank, pgroup, options.type),
-    upsertMatchBlobs(match, options.type),
-    telemetry(match, options),
-    resetMatchCache(match),
-  ]);
   // Make sure player_caches is updated first
   await resetPlayerTemp(match, pgroup);
 
@@ -112,6 +104,13 @@ export async function insertMatch(
     await postParsedMatch(trx);
     await delInsertQueue(trx);
     const parseJob = await queueParse(trx);
+    // Write to non-postgres stores within transaction so we roll back if any fail
+    await Promise.all([
+      upsertPlayerCaches(match, average_rank, pgroup, options.type),
+      upsertMatchBlobs(match, options.type),
+      telemetry(match, options),
+      resetMatchCache(match),
+    ]);
     await trx.query("COMMIT");
     return { parseJob, pgroup };
   } catch (e) {
