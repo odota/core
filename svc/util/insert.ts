@@ -127,7 +127,7 @@ export async function insertMatch(
       "leagueid" in match &&
       match.leagueid
     ) {
-      await db.query(
+      await trx.query(
         "INSERT INTO league_match(leagueid, match_id) VALUES($1, $2) ON CONFLICT DO NOTHING",
         [match.leagueid, match.match_id],
       );
