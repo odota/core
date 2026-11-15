@@ -188,13 +188,32 @@ export async function addReliableJob(
   // Workers keep a job's row locked in a transaction while they process it, and ON CONFLICT (even DO NOTHING)
   // waits for that transaction to end. So check for an existing job first (a plain read doesn't wait),
   // otherwise requesting a job that is being processed (e.g. POST /request for a match being parsed)
-  // blocks until it finishes and then inserts and runs it again
-  const { rows } = await dbToUse.query<ReliableQueueRow>(
-    `INSERT INTO queue(type, timestamp, attempts, data, next_attempt_time, priority, job_key)
-    SELECT $1, $2, $3, $4, $5, $6, $7
-    WHERE NOT EXISTS (SELECT 1 FROM queue WHERE job_key = $7)
-    ON CONFLICT(job_key) DO NOTHING
-    RETURNING id`,
+  // blocks until it finishes and then inserts and runs it again.
+  // Use a CTE to simulate RETURNING OLD (Postgres 18+) by returning either the inserted id or existing id,
+  // and update priority with SKIP LOCKED if an unlocked existing job has a lower (numerically higher) priority
+  const { rows } = await dbToUse.query<
+    ReliableQueueRow & { inserted: boolean }
+  >(
+    `WITH ins AS (
+      INSERT INTO queue(type, timestamp, attempts, data, next_attempt_time, priority, job_key)
+      SELECT $1, $2, $3, $4, $5, $6, $7
+      WHERE NOT EXISTS (SELECT 1 FROM queue WHERE job_key = $7)
+      ON CONFLICT(job_key) DO NOTHING
+      RETURNING id
+    ),
+    upd AS (
+      UPDATE queue
+      SET priority = $6
+      WHERE priority > $6
+        AND id = (SELECT id FROM queue WHERE job_key = $7 FOR UPDATE SKIP LOCKED)
+    ),
+    existing AS (
+      SELECT id FROM queue WHERE job_key = $7
+    )
+    SELECT id, TRUE AS inserted FROM ins
+    UNION ALL
+    SELECT id, FALSE AS inserted FROM existing
+    LIMIT 1`,
     [
       name,
       new Date(),
@@ -205,9 +224,12 @@ export async function addReliableJob(
       jobKey,
     ],
   );
-  let job = rows[0];
+  const row = rows[0];
+  const job: ReliableQueueRow | undefined = row
+    ? ({ id: row.id } as ReliableQueueRow)
+    : undefined;
   const source = options.caller ?? config.APP_NAME;
-  if (job && source === "web") {
+  if (row?.inserted && source === "web") {
     const message = styleText(
       "magenta",
       `[${new Date().toISOString()}] [${
@@ -218,23 +240,9 @@ export async function addReliableJob(
     );
     await redis.publish("queue", message);
   }
-  // No rows are returned if a job with the same key already exists. Try to find it
-  // May not exist anymore if the job finished in the meantime
-  // Note: In Postgres 18+ we can use RETURNING with OLD to fetch the old id and return it
-  if (!job) {
+  // No row was inserted if a job with the same key already exists
+  if (!row?.inserted) {
     redisCount("dedupe_queue");
-    const { rows } = await dbToUse.query<ReliableQueueRow>(
-      "SELECT id from queue WHERE job_key = $1",
-      [jobKey],
-    );
-    job = rows[0];
-    // If we use INSERT ON CONFLICT DO UPDATE for priority, it will block on jobs being processed and then insert after completion
-    // This could lead to consuming all available clients if the same ID gets requested repeatedly
-    // So we use DO NOTHING and UPDATE with SKIP LOCKED here to update the priority only if not being processed
-    await db.query(
-      `UPDATE queue SET priority = $1 WHERE queue.priority > $2 AND id = (select id from queue where job_key = $3 FOR UPDATE SKIP LOCKED)`,
-      [priority, priority, jobKey],
-    );
   }
   return job;
 }
