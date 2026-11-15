@@ -16,6 +16,7 @@ const inFlight = new Map<number, Promise<void>>();
 
 function startJob(r: { match_seq_num: number; data: any }) {
   const seqNum = r.match_seq_num;
+  const start = Date.now();
   const timeout = setTimeout(() => {
     redisCount("inserter_timeout");
     console.error(`insert job ${seqNum} timed out after 30s`);
@@ -38,6 +39,7 @@ function startJob(r: { match_seq_num: number; data: any }) {
     } finally {
       clearTimeout(timeout);
       inFlight.delete(seqNum);
+      console.log("insert %s: %dms", seqNum, Date.now() - start);
     }
   })();
   inFlight.set(seqNum, promise);

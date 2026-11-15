@@ -150,7 +150,7 @@ export async function insertMatch(
     }
     if (!isProTier) {
       // Skip if not in a pro league (premium or professional tier)
-      console.log("[UPSERTMATCHPOSTGRES]: skipping league match due to tier");
+      // console.log("[UPSERTMATCHPOSTGRES]: skipping league match due to tier");
       return;
     }
     // If parsed data, we want to make sure the match exists in DB
