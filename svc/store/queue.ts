@@ -185,9 +185,14 @@ export async function addReliableJob(
   const attempts = options.attempts || 1;
   const priority = options.priority || 0;
   const dbToUse = options.trx ?? db;
+  // Workers keep a job's row locked in a transaction while they process it, and ON CONFLICT (even DO NOTHING)
+  // waits for that transaction to end. So check for an existing job first (a plain read doesn't wait),
+  // otherwise requesting a job that is being processed (e.g. POST /request for a match being parsed)
+  // blocks until it finishes and then inserts and runs it again
   const { rows } = await dbToUse.query<ReliableQueueRow>(
     `INSERT INTO queue(type, timestamp, attempts, data, next_attempt_time, priority, job_key)
-    VALUES ($1, $2, $3, $4, $5, $6, $7)
+    SELECT $1, $2, $3, $4, $5, $6, $7
+    WHERE NOT EXISTS (SELECT 1 FROM queue WHERE job_key = $7)
     ON CONFLICT(job_key) DO NOTHING
     RETURNING id`,
     [
