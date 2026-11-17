@@ -495,6 +495,19 @@ suite(styleText("blue", "PLAYERS"), async () => {
   test("players should have rank_tier data", async () => {
     assert.equal(playerData.rank_tier, 80);
   });
+  test("hero players carry the notable player's name and team", async () => {
+    await db.query(
+      `INSERT INTO notable_players (account_id, name, team_id, team_name, team_tag)
+      VALUES (87382579, 'Test Pro', 15, 'Test Team', 'TT')
+      ON CONFLICT (account_id) DO UPDATE SET name = EXCLUDED.name`,
+    );
+    const res = await supertest(app).get("/api/heroes/107/players");
+    const row = res.body.find((r: any) => r.account_id === 87382579);
+    assert.ok(row, "the pro match fixture has 87382579 on hero 107");
+    assert.equal(row.name, "Test Pro");
+    assert.equal(row.team_tag, "TT");
+    assert.ok(row.games_played > 0);
+  });
   test("players should return 404 for nonexistent player", async () => {
     const res = await supertest(app).get("/api/players/666");
     assert.equal(res.statusCode, 404);

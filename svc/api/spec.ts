@@ -65,6 +65,7 @@ import PlayerCountsResponse from "./responses/PlayerCountsResponse.ts";
 import PlayerHeroesResponse from "./responses/PlayerHeroesResponse.ts";
 import PlayerMatchesResponse from "./responses/PlayerMatchesResponse.ts";
 import PlayerObjectResponse from "./responses/PlayerObjectResponse.ts";
+import HeroPlayersResponse from "./responses/HeroPlayersResponse.ts";
 import PlayerPeersResponse from "./responses/PlayerPeersResponse.ts";
 import PlayerProsResponse from "./responses/PlayerProsResponse.ts";
 import PlayerRankingsResponse from "./responses/PlayerRankingsResponse.ts";
@@ -128,6 +129,7 @@ const schemas = {
   ...PlayerHeroesResponse,
   ...PlayerMatchesResponse,
   ...PlayerObjectResponse,
+  ...HeroPlayersResponse,
   ...PlayerPeersResponse,
   ...PlayerProsResponse,
   ...PlayerRankingsResponse,
@@ -2007,10 +2009,7 @@ You can use the API without a key, but registering for a key allows increased ra
                 schema: {
                   type: "array",
                   items: {
-                    type: "array",
-                    items: {
-                      $ref: "#/components/schemas/PlayerObjectResponse",
-                    },
+                    $ref: "#/components/schemas/HeroPlayersResponse",
                   },
                 },
               },
@@ -2023,12 +2022,17 @@ You can use the API without a key, but registering for a key allows increased ra
           const { rows } = await db.query(
             `SELECT
             account_id,
+            notable_players.name,
+            notable_players.team_id,
+            notable_players.team_name,
+            notable_players.team_tag,
             count(match_id) games_played,
             sum(case when (player_matches.player_slot < 128) = matches.radiant_win then 1 else 0 end) wins
             FROM matches
             JOIN player_matches using(match_id)
+            LEFT JOIN notable_players using(account_id)
             WHERE player_matches.hero_id = $1
-            GROUP BY account_id
+            GROUP BY account_id, notable_players.name, notable_players.team_id, notable_players.team_name, notable_players.team_tag
             ORDER BY games_played DESC`,
             [heroId],
           );
