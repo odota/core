@@ -22,7 +22,7 @@ import db, { upsertPlayer } from "../svc/store/db.ts";
 import cassandra from "../svc/store/cassandra.ts";
 import { suite, test, before, beforeEach, after } from "node:test";
 import { S3Client } from "@bradenmacdonald/s3-lite-client";
-import { averageMedal, styleText } from "../svc/util/utility.ts";
+import { averageMedal, styleText, wilsonScore } from "../svc/util/utility.ts";
 import { addReliableJob } from "../svc/store/queue.ts";
 
 const { RETRIEVER_HOST, POSTGRES_URL, CASSANDRA_URL } = config;
@@ -188,6 +188,12 @@ suite(styleText("blue", "AVERAGE MEDAL"), async () => {
     assert.equal(averageMedal(test1), 15);
     const test2 = [80, 80, 80];
     assert.equal(averageMedal(test2), 75);
+  });
+  test("wilsonScore gives the matchups page advantage", () => {
+    // same as the wilsonScore the web matchups page uses
+    assert.equal(Math.round(wilsonScore(38, 79) * 100), 39);
+    assert.equal(Math.round(wilsonScore(39, 71) * 100), 45);
+    assert.equal(wilsonScore(0, 10), 0);
   });
 });
 
