@@ -30,7 +30,7 @@
     "compression": "^1.8.1",
     "cookie-session": "^2.1.1",
     "cors": "^2.8.5",
-    "dotaconstants": "^10.8.0",
+    "dotaconstants": "^10.9.0",
     "express": "^5.2.1",
     "ioredis": "^5.8.2",
     "passport": "^0.7.0",
