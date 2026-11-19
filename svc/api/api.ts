@@ -64,7 +64,6 @@ api.use("/players/:account_id{/:info}", async (req, res, next) => {
     offset: Number(req.query.offset),
     having: Number(req.query.having),
     isPrivate,
-    clickhouse: req.query.clickhouse !== "0",
   };
   // Keep track of recently visited account IDs for caching
   // redis.zadd("visitedIds", Math.floor(Date.now() / 1000), req.params.account_id);

@@ -1,13 +1,10 @@
-import util from "node:util";
 import {
   buildFilterConditions,
   filterDeps,
-  filterMatches,
   getPatchSqlExpr,
   getRegionSqlExpr,
 } from "./filter.ts";
 import { redisCount } from "../store/redis.ts";
-import cassandra, { getCassandraColumns } from "../store/cassandra.ts";
 import clickhouse, { getClickhouseColumns } from "../store/clickhouse.ts";
 import { deserialize } from "./utility.ts";
 import {
@@ -32,81 +29,20 @@ export async function getPlayerMatches(
   }
   redisCount("player_matches");
 
-  if (queryObj.clickhouse !== false) {
-    const columns = await getClickhouseColumns("player_caches");
-    const sanitizedProject = [
-      ...new Set(queryObj.project.filter((f: string) => columns[f])),
-    ];
-    const projection = queryObj.projectAll ? ["*"] : sanitizedProject;
-    const sortCol =
-      queryObj.sort && columns[queryObj.sort] ? queryObj.sort : "match_id";
-    return readPlayerCachesClickhouse(accountId, projection, {
-      dbLimit: queryObj.dbLimit,
-      filter: queryObj.filter,
-      sort: sortCol,
-      limit: queryObj.limit,
-      offset: queryObj.offset,
-      columns,
-    });
-  }
-
-  const columns = await getCassandraColumns("player_caches");
-  const sanitizedProject = queryObj.project.filter((f: string) => columns[f]);
+  const columns = await getClickhouseColumns("player_caches");
+  const sanitizedProject = [
+    ...new Set(queryObj.project.filter((f: string) => columns[f])),
+  ];
   const projection = queryObj.projectAll ? ["*"] : sanitizedProject;
-
-  const matches = await readPlayerCachesCassandra(
-    accountId,
-    projection,
-    queryObj.dbLimit,
-  );
-  const filtered = filterMatches(matches, queryObj.filter);
-  const sort = queryObj.sort;
-  if (sort) {
-    filtered.sort((a, b) => b[sort] - a[sort]);
-  } else {
-    // Default sort by match_id desc
-    filtered.sort((a, b) => b.match_id - a.match_id);
-  }
-  const offset = filtered.slice(queryObj.offset || 0);
-  const final = offset.slice(0, queryObj.limit || offset.length);
-  return final;
-}
-
-async function readPlayerCachesCassandra(
-  accountId: number,
-  project: string[],
-  limit?: number,
-) {
-  const query = util.format(
-    `
-      SELECT %s FROM player_caches
-      WHERE account_id = ?
-      ORDER BY match_id DESC
-      ${limit ? `LIMIT ${limit}` : ""}
-    `,
-    project.join(","),
-  );
-  return new Promise<ParsedPlayerMatch[]>((resolve, reject) => {
-    let result: ParsedPlayerMatch[] = [];
-    cassandra.eachRow(
-      query,
-      [accountId],
-      {
-        prepare: true,
-        fetchSize: 1000,
-        autoPage: true,
-      },
-      (n, row) => {
-        const m = deserialize(row);
-        result.push(m);
-      },
-      (err) => {
-        if (err) {
-          return reject(err);
-        }
-        return resolve(result);
-      },
-    );
+  const sortCol =
+    queryObj.sort && columns[queryObj.sort] ? queryObj.sort : "match_id";
+  return readPlayerCachesClickhouse(accountId, projection, {
+    dbLimit: queryObj.dbLimit,
+    filter: queryObj.filter,
+    sort: sortCol,
+    limit: queryObj.limit,
+    offset: queryObj.offset,
+    columns,
   });
 }
 

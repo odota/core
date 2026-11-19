@@ -26,7 +26,6 @@
   },
   "dependencies": {
     "@bradenmacdonald/s3-lite-client": "^0.9.6",
-    "cassandra-driver": "^4.8.0",
     "compression": "^1.8.1",
     "cookie-session": "^2.1.1",
     "cors": "^2.8.5",

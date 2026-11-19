@@ -1,5 +1,3 @@
-import { filterDeps } from "../util/filter.ts";
-
 /**
  * List of columns to support for histograms and totals
  */
@@ -96,15 +94,6 @@ export const recentMatchesCols = [
   "hero_variant",
 ] as (keyof ParsedPlayerMatch)[];
 
-export const heroesCols = ["heroes", "account_id", "start_time"] as const;
-export const significantCols = filterDeps.significant;
-export const peersCols = [
-  "heroes",
-  "start_time",
-  "gold_per_min",
-  "xp_per_min",
-] as const;
-export const prosCols = ["heroes", "start_time"] as const;
 export const wardmapCols = ["obs", "sen"] as const;
 export const wordcloudCols = ["all_word_counts", "my_word_counts"] as const;
 
@@ -118,4 +107,3 @@ export const countsCats = [
   "patch",
   "is_radiant",
 ] as const;
-export const countsCols = countsCats.map((name) => filterDeps[name]).flat();
