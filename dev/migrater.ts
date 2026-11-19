@@ -181,10 +181,11 @@ export async function runShardWorker(
     totalShardCount += count;
     const elapsed = Date.now() - startTime;
 
-    const pct =
-      Number(((end - shardStart) * 10000n) / (shardEnd - shardStart)) / 100;
+    const pct = (
+      Number(((end - shardStart) * 10000n) / (shardEnd - shardStart)) / 100
+    ).toFixed(2);
     console.log(
-      "[MIGRATE shard %d/%d (%.2f%%)] token range [%s, %s]: migrated %s rows in %sms (total: %s)",
+      "[MIGRATE shard %d/%d (%s%%)] token range [%s, %s]: migrated %s rows in %sms (total: %s)",
       shardIndex,
       numShards,
       pct,
