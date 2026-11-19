@@ -1,10 +1,8 @@
 import config from "../../config.ts";
-import { matchArchive, playerArchive } from "../store/archive.ts";
+import { matchArchive } from "../store/archive.ts";
 import QueryStream from "pg-query-stream";
 import { Client } from "pg";
 import db from "../store/db.ts";
-import cassandra from "../store/cassandra.ts";
-import { getFullPlayerMatchesWithMetadata } from "./buildPlayer.ts";
 import { isDataComplete, randomInt } from "./utility.ts";
 import { getMatchBlob } from "./getMatchBlob.ts";
 import { ApiFetcher } from "../fetcher/ApiFetcher.ts";
@@ -96,48 +94,6 @@ export async function getCurrentMaxArchiveID() {
     ?.rows?.[0]?.max;
   const limit = max - 100000000;
   return limit;
-}
-
-export async function doArchivePlayerMatches(accountId: number): Promise<void> {
-  if (!config.ENABLE_PLAYER_ARCHIVE || !playerArchive) {
-    return;
-  }
-  // Fetch our combined list of archive and current, selecting all fields
-  const full = await getFullPlayerMatchesWithMetadata(accountId);
-  const toArchive = full[0];
-  const metadata = full[1];
-  console.log(metadata);
-  toArchive.forEach((m) => {
-    Object.keys(m).forEach((key) => {
-      if (m[key as keyof ParsedPlayerMatch] === null) {
-        // Remove any null values from the matches for storage
-        delete m[key as keyof ParsedPlayerMatch];
-      }
-    });
-  });
-  // Make sure we're archiving at least 1 match and not shrinking the archive
-  if (
-    !toArchive.length ||
-    (metadata && toArchive.length < metadata.archivedLength)
-  ) {
-    return;
-  }
-  // Put the compressed blob into PostgreSQL player_match_archive
-  await playerArchive.archivePut(
-    accountId.toString(),
-    Buffer.from(JSON.stringify(toArchive)),
-  );
-  // Keep the 20 highest match IDs in player_caches for recentMatches (hot delta) and delete older archived rows
-  // toArchive is sorted in descending order by match_id
-  if (toArchive.length > 20) {
-    const thresholdMatchId = toArchive[19].match_id;
-    await cassandra.execute(
-      "DELETE FROM player_caches WHERE account_id = ? AND match_id < ?",
-      [accountId, thresholdMatchId],
-      { prepare: true },
-    );
-  }
-  redisCount("player_archive_write" as MetricName);
 }
 
 /**
