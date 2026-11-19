@@ -9,6 +9,11 @@ services:
     container_name: odota-cassandra
     environment:
       JVM_EXTRA_OPTS: -Dcassandra.skip_wait_for_gossip_to_settle=0
+  clickhouse:
+    image: clickhouse/clickhouse-server:26.10
+    container_name: odota-clickhouse
+    environment:
+      CLICKHOUSE_SKIP_USER_SETUP: "1"
   rustfs:
     image: rustfs/rustfs:latest
     container_name: odota-rustfs
@@ -34,6 +39,7 @@ services:
       READONLY_POSTGRES_URL: postgresql://readonly:readonly@odota-postgres/yasp
       REDIS_URL: redis://odota-redis:6379/0
       CASSANDRA_URL: cassandra://odota-cassandra/yasp
+      CLICKHOUSE_URL: http://odota-clickhouse:8123/yasp
       ARCHIVE_S3_ENDPOINT: http://odota-rustfs:9000
     links:
       - postgres
@@ -41,4 +47,5 @@ services:
       - parser
       - rustfs
       - cassandra
+      - clickhouse
     container_name: odota-core

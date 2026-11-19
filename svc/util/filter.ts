@@ -1,8 +1,169 @@
 import { getPatchIndex, isSignificant } from "./compute.ts";
-import { cluster } from "dotaconstants";
+import { cluster, game_mode, lobby_type, patch } from "dotaconstants";
 import { isRadiant } from "./utility.ts";
 
 type FilterType = keyof typeof filterDeps;
+
+const balancedGameModes = Object.entries(game_mode)
+  .filter(([, v]) => (v as any).balanced)
+  .map(([k]) => Number(k));
+
+const balancedLobbyTypes = Object.entries(lobby_type)
+  .filter(([, v]) => (v as any).balanced)
+  .map(([k]) => Number(k));
+
+const patchTimestamps = patch.map((p) =>
+  Math.floor(new Date(p.date).getTime() / 1000),
+);
+
+export function getPatchSqlExpr(col = "start_time"): string {
+  const parts: string[] = [];
+  for (let i = patchTimestamps.length - 1; i >= 1; i--) {
+    parts.push(`${col} >= ${patchTimestamps[i]}, ${i}`);
+  }
+  return `multiIf(${parts.join(", ")}, 0)`;
+}
+
+export function getRegionSqlExpr(col = "cluster"): string {
+  const entries = Object.entries(cluster)
+    .map(([k, v]) => `${col} = ${Number(k)}, ${Number(v)}`)
+    .join(", ");
+  return `multiIf(${entries}, 0)`;
+}
+
+export function buildFilterConditions(
+  filters?: Map<string, (string | number)[]>,
+): string[] {
+  const conditions: string[] = [];
+  if (!filters) {
+    return conditions;
+  }
+  const curtime = Math.floor(Date.now() / 1000);
+  const winExpr = "((ifNull(player_slot, 0) < 128) = ifNull(radiant_win, false))";
+  const isRadiantExpr = "(ifNull(player_slot, 0) < 128)";
+  const heroesKv = "JSONExtractKeysAndValuesRaw(ifNull(heroes, '{}'))";
+
+  for (const [key, arr] of filters.entries()) {
+    const first = arr?.[0];
+    if (first === undefined || !arr || !arr.length) {
+      continue;
+    }
+    const numVal = Number(first);
+    switch (key as FilterType) {
+      case "win":
+        conditions.push(`toUInt8(${winExpr}) = ${numVal}`);
+        break;
+      case "is_radiant":
+        conditions.push(`toUInt8(${isRadiantExpr}) = ${numVal}`);
+        break;
+      case "patch": {
+        const idx = numVal;
+        if (idx >= 0 && idx < patchTimestamps.length) {
+          const minTs = patchTimestamps[idx];
+          const maxTs = patchTimestamps[idx + 1];
+          if (maxTs !== undefined) {
+            conditions.push(`(start_time >= ${minTs} AND start_time < ${maxTs})`);
+          } else {
+            conditions.push(`(start_time >= ${minTs})`);
+          }
+        } else {
+          conditions.push("0");
+        }
+        break;
+      }
+      case "game_mode":
+        conditions.push(`game_mode = ${numVal}`);
+        break;
+      case "lobby_type":
+        conditions.push(`lobby_type = ${numVal}`);
+        break;
+      case "region": {
+        const clusters = Object.entries(cluster)
+          .filter(([, reg]) => Number(reg) === numVal)
+          .map(([c]) => Number(c));
+        if (clusters.length) {
+          conditions.push(`cluster IN (${clusters.join(",")})`);
+        } else {
+          conditions.push("0");
+        }
+        break;
+      }
+      case "date":
+        conditions.push(`start_time > ${curtime - numVal * 86400}`);
+        break;
+      case "lane_role":
+        conditions.push(`lane_role = ${numVal}`);
+        break;
+      case "hero_id":
+        conditions.push(`hero_id = ${numVal}`);
+        break;
+      case "party_size":
+        conditions.push(`party_size = ${numVal}`);
+        break;
+      case "leaver_status":
+        conditions.push(`leaver_status = ${numVal}`);
+        break;
+      case "significant": {
+        const sigExpr = `(game_mode IN (${balancedGameModes.join(",")}) AND lobby_type IN (${balancedLobbyTypes.join(",")}) AND isNotNull(radiant_win) AND duration > 360)`;
+        conditions.push(`toUInt8(${sigExpr}) = ${numVal}`);
+        break;
+      }
+      case "included_account_id":
+        for (const k of arr) {
+          const id = Number(k);
+          conditions.push(
+            `arrayExists(x -> JSONExtractInt(x.2, 'account_id') = ${id}, ${heroesKv})`,
+          );
+        }
+        break;
+      case "excluded_account_id":
+        for (const k of arr) {
+          const id = Number(k);
+          conditions.push(
+            `NOT arrayExists(x -> JSONExtractInt(x.2, 'account_id') = ${id}, ${heroesKv})`,
+          );
+        }
+        break;
+      case "with_account_id":
+        for (const k of arr) {
+          const id = Number(k);
+          conditions.push(
+            `arrayExists(x -> JSONExtractInt(x.2, 'account_id') = ${id} AND ((toInt32OrZero(x.1) < 128) = ${isRadiantExpr}), ${heroesKv})`,
+          );
+        }
+        break;
+      case "against_account_id":
+        for (const k of arr) {
+          const id = Number(k);
+          conditions.push(
+            `arrayExists(x -> JSONExtractInt(x.2, 'account_id') = ${id} AND ((toInt32OrZero(x.1) < 128) != ${isRadiantExpr}), ${heroesKv})`,
+          );
+        }
+        break;
+      case "with_hero_id":
+        for (const k of arr) {
+          const id = Number(k);
+          conditions.push(
+            `arrayExists(x -> JSONExtractInt(x.2, 'hero_id') = ${id} AND ((toInt32OrZero(x.1) < 128) = ${isRadiantExpr}), ${heroesKv})`,
+          );
+        }
+        break;
+      case "against_hero_id":
+        for (const k of arr) {
+          const id = Number(k);
+          conditions.push(
+            `arrayExists(x -> JSONExtractInt(x.2, 'hero_id') = ${id} AND ((toInt32OrZero(x.1) < 128) != ${isRadiantExpr}), ${heroesKv})`,
+          );
+        }
+        break;
+      case "leagueid":
+        // leagueid is not stored in player_caches
+        conditions.push("0");
+        break;
+    }
+  }
+  return conditions;
+}
 /**
  * Object listing dependent columns for each filter
  * */

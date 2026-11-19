@@ -26,6 +26,19 @@ services:
         "-c",
         "sleep 45 && cqlsh -f /usr/src/sql/init.cql odota-cassandra && cqlsh -f /usr/src/sql/create_tables.cql -k yasp odota-cassandra",
       ]
+  clickhouseinit:
+    image: clickhouse/clickhouse-server:26.10
+    depends_on:
+      - clickhouse
+    volumes:
+      - .:/usr/src
+    container_name: odota-clickhouseinit
+    entrypoint:
+      [
+        "bash",
+        "-c",
+        "sleep 10 && clickhouse-client --host odota-clickhouse --queries-file /usr/src/sql/init.ch.sql && clickhouse-client --host odota-clickhouse --database yasp --queries-file /usr/src/sql/create_tables.ch.sql",
+      ]
   rustfsinit:
     image: rustfs/rc:latest
     depends_on:
