@@ -1,6 +1,5 @@
 FROM node:24-alpine
 
-COPY proto /usr/src/proto
 COPY svc/retriever.ts /usr/src/svc/retriever.ts
 COPY config.ts /usr/src/config.ts
 COPY index.ts /usr/src/index.ts
