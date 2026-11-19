@@ -127,13 +127,43 @@ export function serialize(row: AnyDict): AnyDict {
 }
 
 /**
- * Deserializes a row to JSON object read from Cassandra
+ * Serializes a JSON object to row for storage in ClickHouse
+ * Keeps primitives (numbers, booleans) native and stringifies nested objects
+ * */
+export function serializeClickhouse(row: AnyDict): AnyDict {
+  const obj: AnyDict = {};
+  Object.keys(row).forEach((key) => {
+    if (
+      row[key] !== null &&
+      !Number.isNaN(row[key]) &&
+      row[key] !== undefined
+    ) {
+      if (typeof row[key] === "object") {
+        obj[key] = JSON.stringify(row[key]);
+      } else {
+        obj[key] = row[key];
+      }
+    }
+  });
+  return obj;
+}
+
+/**
+ * Deserializes a row to JSON object read from Cassandra/ClickHouse
  * */
 export function deserialize(row: AnyDict): any {
   const obj: AnyDict = {};
-  const keys = row.keys();
+  const keys = typeof row.keys === "function" ? row.keys() : Object.keys(row);
   for (let key of keys) {
-    obj[key] = JSON.parse(row[key]);
+    if (typeof row[key] === "string") {
+      try {
+        obj[key] = JSON.parse(row[key]);
+      } catch {
+        obj[key] = row[key];
+      }
+    } else {
+      obj[key] = row[key];
+    }
   }
   return obj;
 }

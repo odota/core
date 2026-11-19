@@ -32,6 +32,7 @@ const defaults = {
   POSTGRES_MAX_CONNECTIONS: "10", // Number of maximum connections in pool for postgres (per process)
   REDIS_URL: "redis://127.0.0.1:6379/0", // connection string for Redis
   CASSANDRA_URL: "cassandra://localhost/yasp", // connection string for Cassandra
+  CLICKHOUSE_URL: "http://localhost:8123/yasp", // connection string for ClickHouse
   RETRIEVER_SECRET: "", // string to use as shared secret with retriever/parser
   SESSION_SECRET: "secret to encrypt cookies with", // string to encrypt cookies
   COOKIE_DOMAIN: "", // domain to use for the cookie.  Use e.g. '.opendota.com' to share cookie across subdomains
@@ -87,12 +88,15 @@ const defaults = {
   HEALTH_TIMEOUT: "7200", // Number of seconds before a process is considered unhealthy
 };
 
-if (process.env.NODE_TEST_CONTEXT) {
+if (process.env.NODE_TEST_CONTEXT && !process.env.TEST_CONFIG_INITIALIZED) {
   console.log("[TEST MODE] setting config to test values");
+  process.env.TEST_CONFIG_INITIALIZED = "1";
   process.env.PORT = ""; // use service defaults
   process.env.NODE_ENV = "test";
   process.env.POSTGRES_URL = process.env.POSTGRES_URL + "_test";
   process.env.CASSANDRA_URL = process.env.CASSANDRA_URL + "_test";
+  process.env.CLICKHOUSE_URL =
+    (process.env.CLICKHOUSE_URL || defaults.CLICKHOUSE_URL) + "_test";
   process.env.REDIS_URL = process.env.REDIS_URL?.slice(0, -1) + "1";
   process.env.BLOB_ARCHIVE_S3_BUCKET = "opendota-test" + Date.now();
   process.env.ARCHIVE_S3_KEY_ID = "rustfsadmin";

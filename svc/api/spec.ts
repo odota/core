@@ -3,7 +3,17 @@ import { Pool } from "pg";
 import config from "../../config.ts";
 import { addJob, addReliableJob, getReliableJob } from "../store/queue.ts";
 import { buildMatch } from "../util/buildMatch.ts";
-import { getPlayerMatches } from "../util/buildPlayer.ts";
+import {
+  getPlayerCounts,
+  getPlayerHeroes,
+  getPlayerHistogram,
+  getPlayerMatches,
+  getPlayerPeersCount,
+  getPlayerTotals,
+  getPlayerWardmap,
+  getPlayerWinLoss,
+  getPlayerWordcloud,
+} from "../util/buildPlayer.ts";
 import { getStartOfBlockMinutes } from "../util/time.ts";
 import {
   countPeers,
@@ -342,6 +352,13 @@ You can use the API without a key, but registering for a key allows increased ra
         },
         route: () => "/players/:account_id/wl",
         func: async (req, res, next) => {
+          if (res.locals.queryObj.clickhouse) {
+            const result = await getPlayerWinLoss(
+              Number(req.params.account_id),
+              res.locals.queryObj,
+            );
+            return res.json(result);
+          }
           const result = {
             win: 0,
             lose: 0,
@@ -477,6 +494,13 @@ You can use the API without a key, but registering for a key allows increased ra
         },
         route: () => "/players/:account_id/heroes",
         func: async (req, res, next) => {
+          if (res.locals.queryObj.clickhouse) {
+            const result = await getPlayerHeroes(
+              Number(req.params.account_id),
+              res.locals.queryObj,
+            );
+            return res.json(result);
+          }
           const counts: AnyDict = {};
           // prefill heroes with every hero
           Object.keys(heroes).forEach((heroId) => {
@@ -561,13 +585,21 @@ You can use the API without a key, but registering for a key allows increased ra
         },
         route: () => "/players/:account_id/peers",
         func: async (req, res, next) => {
-          res.locals.queryObj.project =
-            res.locals.queryObj.project.concat(peersCols);
-          const cache = await getPlayerMatches(
-            Number(req.params.account_id),
-            res.locals.queryObj,
-          );
-          const teammates = countPeers(cache);
+          let teammates: PeersCount;
+          if (res.locals.queryObj.clickhouse) {
+            teammates = await getPlayerPeersCount(
+              Number(req.params.account_id),
+              res.locals.queryObj,
+            );
+          } else {
+            res.locals.queryObj.project =
+              res.locals.queryObj.project.concat(peersCols);
+            const cache = await getPlayerMatches(
+              Number(req.params.account_id),
+              res.locals.queryObj,
+            );
+            teammates = countPeers(cache);
+          }
           const result = await getPeers(teammates, {
             account_id: Number(req.params.account_id),
           });
@@ -599,13 +631,21 @@ You can use the API without a key, but registering for a key allows increased ra
         },
         route: () => "/players/:account_id/pros",
         func: async (req, res, next) => {
-          res.locals.queryObj.project =
-            res.locals.queryObj.project.concat(prosCols);
-          const cache = await getPlayerMatches(
-            Number(req.params.account_id),
-            res.locals.queryObj,
-          );
-          const teammates = countPeers(cache);
+          let teammates: PeersCount;
+          if (res.locals.queryObj.clickhouse) {
+            teammates = await getPlayerPeersCount(
+              Number(req.params.account_id),
+              res.locals.queryObj,
+            );
+          } else {
+            res.locals.queryObj.project =
+              res.locals.queryObj.project.concat(prosCols);
+            const cache = await getPlayerMatches(
+              Number(req.params.account_id),
+              res.locals.queryObj,
+            );
+            teammates = countPeers(cache);
+          }
           const result = await getProPeers(teammates, {
             account_id: Number(req.params.account_id),
           });
@@ -637,6 +677,13 @@ You can use the API without a key, but registering for a key allows increased ra
         },
         route: () => "/players/:account_id/totals",
         func: async (req, res, next) => {
+          if (res.locals.queryObj.clickhouse) {
+            const result = await getPlayerTotals(
+              Number(req.params.account_id),
+              res.locals.queryObj,
+            );
+            return res.json(result);
+          }
           const result: AnyDict = {};
           histogramCols.forEach((key) => {
             result[key] = {
@@ -684,6 +731,13 @@ You can use the API without a key, but registering for a key allows increased ra
         },
         route: () => "/players/:account_id/counts",
         func: async (req, res, next) => {
+          if (res.locals.queryObj.clickhouse) {
+            const result = await getPlayerCounts(
+              Number(req.params.account_id),
+              res.locals.queryObj,
+            );
+            return res.json(result);
+          }
           const result = {} as Record<(typeof countsCats)[number], any>;
           countsCats.forEach((key) => {
             result[key] = {};
@@ -758,12 +812,19 @@ You can use the API without a key, but registering for a key allows increased ra
         route: () => "/players/:account_id/histograms/:field",
         func: async (req, res, next) => {
           const field = histogramCols.find((key) => key === req.params.field);
-          if (field) {
-            res.locals.queryObj.project =
-              res.locals.queryObj.project.concat(field);
-          } else {
+          if (!field) {
             return res.json([]);
           }
+          if (res.locals.queryObj.clickhouse) {
+            const bucketArray = await getPlayerHistogram(
+              Number(req.params.account_id),
+              res.locals.queryObj,
+              field,
+            );
+            return res.json(bucketArray);
+          }
+          res.locals.queryObj.project =
+            res.locals.queryObj.project.concat(field);
           const cache = await getPlayerMatches(
             Number(req.params.account_id),
             res.locals.queryObj,
@@ -821,6 +882,13 @@ You can use the API without a key, but registering for a key allows increased ra
         },
         route: () => "/players/:account_id/wardmap",
         func: async (req, res, next) => {
+          if (res.locals.queryObj.clickhouse) {
+            const result = await getPlayerWardmap(
+              Number(req.params.account_id),
+              res.locals.queryObj,
+            );
+            return res.json(result);
+          }
           const result = {} as Record<(typeof wardmapCols)[number], any>;
           wardmapCols.forEach((key) => {
             result[key] = {};
@@ -867,6 +935,13 @@ You can use the API without a key, but registering for a key allows increased ra
         },
         route: () => "/players/:account_id/wordcloud",
         func: async (req, res, next) => {
+          if (res.locals.queryObj.clickhouse) {
+            const result = await getPlayerWordcloud(
+              Number(req.params.account_id),
+              res.locals.queryObj,
+            );
+            return res.json(result);
+          }
           const result = {} as Record<(typeof wordcloudCols)[number], any>;
           wordcloudCols.forEach((key) => {
             result[key] = {};

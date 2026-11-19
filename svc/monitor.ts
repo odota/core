@@ -2,6 +2,7 @@
 import redis from "./store/redis.ts";
 import db from "./store/db.ts";
 import cassandra from "./store/cassandra.ts";
+import clickhouse from "./store/clickhouse.ts";
 import { runInLoop } from "./store/queue.ts";
 import { apps } from "../ecosystem.config.js";
 import { config } from "../config.ts";
@@ -13,6 +14,7 @@ const health: Record<string, () => Promise<Metric>> = {
   postgresUsage,
   redisUsage,
   cassandraUsage,
+  clickhouseUsage,
   diskUsage,
   seqNumDelay,
   gcDelay,
@@ -184,6 +186,19 @@ WHERE keyspace_name = 'yasp';
   );
   return {
     metric: result.rows[0]?.size,
+    limit: 6.3 * 10 ** 12,
+  };
+}
+async function clickhouseUsage() {
+  const rows = await clickhouse.query<{ size: number }>(
+    `
+SELECT sum(bytes_on_disk) as size
+FROM system.parts
+WHERE database = 'yasp' AND active;
+`,
+  );
+  return {
+    metric: Number(rows[0]?.size || 0),
     limit: 6.3 * 10 ** 12,
   };
 }

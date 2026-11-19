@@ -8,6 +8,7 @@ import redis, { redisCount } from "../store/redis.ts";
 import {
   getAnonymousAccountId,
   serialize,
+  serializeClickhouse,
   isRadiant,
   isRanked,
   isTurbo,
@@ -21,6 +22,7 @@ import { getPGroup } from "./pgroup.ts";
 import { fromNow } from "./time.ts";
 import { blobArchive } from "../store/archive.ts";
 import cassandra, { getCassandraColumns } from "../store/cassandra.ts";
+import clickhouse, { getClickhouseColumns } from "../store/clickhouse.ts";
 import {
   computeMatchData,
   createMatchCopy,
@@ -556,8 +558,13 @@ export async function upsertPlayerCaches(
   if (averageRank) {
     copy.average_rank = averageRank;
   }
-  const columns = await getCassandraColumns("player_caches");
-  return Promise.all(
+  const [columns, chColumns] = await Promise.all([
+    getCassandraColumns("player_caches"),
+    getClickhouseColumns("player_caches"),
+  ]);
+  const chRowsToInsert: AnyDict[] = [];
+  const cassWrites: Promise<any>[] = [];
+  const results = await Promise.all(
     copy.players.map(async (p) => {
       // add account id to each player so we know what caches to update
       const account_id = pgroup[p.player_slot]?.account_id;
@@ -584,11 +591,12 @@ export async function upsertPlayerCaches(
       computeMatchData(playerMatch as ParsedPlayerMatch);
       // Remove extra properties
       Object.keys(playerMatch).forEach((key) => {
-        if (!columns[key]) {
+        if (!columns[key] && !chColumns[key]) {
           delete playerMatch[key as keyof ParsedPlayerMatch];
         }
       });
       const serializedMatch: any = serialize(playerMatch);
+      const chSerializedMatch: any = serializeClickhouse(playerMatch);
       if (
         (config.NODE_ENV === "development" || config.NODE_ENV === "test") &&
         (playerMatch.player_slot === 0 || type === "reconcile")
@@ -616,12 +624,22 @@ export async function upsertPlayerCaches(
           .join(","),
       );
       const arr = Object.keys(serializedMatch).map((k) => serializedMatch[k]);
-      await cassandra.execute(query, arr, {
-        prepare: true,
-      });
+      cassWrites.push(
+        cassandra.execute(query, arr, {
+          prepare: true,
+        }),
+      );
+      chRowsToInsert.push(chSerializedMatch);
       return true;
     }),
   );
+  await Promise.all([
+    ...cassWrites,
+    chRowsToInsert.length
+      ? clickhouse.insert("player_caches", chRowsToInsert)
+      : Promise.resolve(),
+  ]);
+  return results;
 }
 
 async function upsertMatchBlobs(

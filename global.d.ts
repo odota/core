@@ -20,6 +20,7 @@ type QueryObj = {
   dbLimit?: number;
   isPrivate?: boolean;
   cacheSeconds?: number;
+  clickhouse?: boolean;
 };
 
 type AnyDict = Record<string, any>;
