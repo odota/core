@@ -12,7 +12,7 @@
 ## Tech Stack
 
 - Microservices: Node.js
-- Databases: PostgreSQL/Redis/Cassandra
+- Databases: PostgreSQL/Redis/ClickHouse
 - Parser: Java (powered by [clarity](https://github.com/skadistats/clarity))
 
 ## Quickstart (Docker)

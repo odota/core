@@ -13,19 +13,6 @@ services:
         "-c",
         "sleep 10 && psql --file /usr/src/sql/init.sql postgres://postgres:postgres@odota-postgres/postgres && psql --file /usr/src/sql/create_tables.sql postgres://postgres:postgres@odota-postgres/yasp",
       ]
-  cassandrainit:
-    image: cassandra
-    depends_on:
-      - cassandra
-    volumes:
-      - .:/usr/src
-    container_name: odota-cassandrainit
-    entrypoint:
-      [
-        "bash",
-        "-c",
-        "sleep 45 && cqlsh -f /usr/src/sql/init.cql odota-cassandra && cqlsh -f /usr/src/sql/create_tables.cql -k yasp odota-cassandra",
-      ]
   clickhouseinit:
     image: clickhouse/clickhouse-server:26.10
     depends_on:

@@ -1,4 +1,4 @@
-import constants, { heroes, cluster } from "dotaconstants";
+import constants, { heroes } from "dotaconstants";
 import { Pool } from "pg";
 import config from "../../config.ts";
 import { addJob, addReliableJob, getReliableJob } from "../store/queue.ts";
@@ -15,22 +15,10 @@ import {
   getPlayerWordcloud,
 } from "../util/buildPlayer.ts";
 import { getStartOfBlockMinutes } from "../util/time.ts";
-import {
-  countPeers,
-  isRadiant,
-  mergeObjects,
-  queryParamToArray,
-} from "../util/utility.ts";
+import { queryParamToArray } from "../util/utility.ts";
 import {
   matchesCols,
-  countsCats,
-  countsCols,
-  heroesCols,
   histogramCols,
-  peersCols,
-  prosCols,
-  wardmapCols,
-  wordcloudCols,
   recentMatchesCols,
 } from "./playerFields.ts";
 import db from "../store/db.ts";
@@ -98,7 +86,6 @@ import TeamMatchObjectResponse from "./responses/TeamMatchObjectResponse.ts";
 import TeamObjectResponse from "./responses/TeamObjectResponse.ts";
 import TeamPlayersResponse from "./responses/TeamPlayersResponse.ts";
 import { PRIORITY } from "../util/priority.ts";
-import { getPatchIndex } from "../util/compute.ts";
 import { matchupToString } from "../util/matchups.ts";
 import { apiFetcher } from "../fetcher/allFetchers.ts";
 
@@ -352,28 +339,10 @@ You can use the API without a key, but registering for a key allows increased ra
         },
         route: () => "/players/:account_id/wl",
         func: async (req, res, next) => {
-          if (res.locals.queryObj.clickhouse) {
-            const result = await getPlayerWinLoss(
-              Number(req.params.account_id),
-              res.locals.queryObj,
-            );
-            return res.json(result);
-          }
-          const result = {
-            win: 0,
-            lose: 0,
-          };
-          const cache = await getPlayerMatches(
+          const result = await getPlayerWinLoss(
             Number(req.params.account_id),
             res.locals.queryObj,
           );
-          cache.forEach((m) => {
-            if (isRadiant(m) === m.radiant_win) {
-              result.win += 1;
-            } else {
-              result.lose += 1;
-            }
-          });
           return res.json(result);
         },
       },
@@ -494,69 +463,10 @@ You can use the API without a key, but registering for a key allows increased ra
         },
         route: () => "/players/:account_id/heroes",
         func: async (req, res, next) => {
-          if (res.locals.queryObj.clickhouse) {
-            const result = await getPlayerHeroes(
-              Number(req.params.account_id),
-              res.locals.queryObj,
-            );
-            return res.json(result);
-          }
-          const counts: AnyDict = {};
-          // prefill heroes with every hero
-          Object.keys(heroes).forEach((heroId) => {
-            const hero_id_int = parseInt(heroId);
-            const hero = {
-              hero_id: hero_id_int,
-              last_played: 0,
-              games: 0,
-              win: 0,
-              with_games: 0,
-              with_win: 0,
-              against_games: 0,
-              against_win: 0,
-            };
-            counts[hero_id_int] = hero;
-          });
-          res.locals.queryObj.project =
-            res.locals.queryObj.project.concat(heroesCols);
-          const cache = await getPlayerMatches(
+          const result = await getPlayerHeroes(
             Number(req.params.account_id),
             res.locals.queryObj,
           );
-          cache.forEach((m) => {
-            const playerWin = isRadiant(m) === m.radiant_win;
-            const group: PGroup = m.heroes || {};
-            Object.keys(group).forEach((key) => {
-              const tm = group[key];
-              const tmHero = tm.hero_id;
-              // don't count invalid heroes
-              if (tmHero in counts) {
-                if (isRadiant({ player_slot: Number(key) }) === isRadiant(m)) {
-                  if (tm.account_id === m.account_id) {
-                    counts[tmHero].games += 1;
-                    counts[tmHero].win += playerWin ? 1 : 0;
-                    if (m.start_time > counts[tmHero].last_played) {
-                      counts[tmHero].last_played = m.start_time;
-                    }
-                  } else {
-                    counts[tmHero].with_games += 1;
-                    counts[tmHero].with_win += playerWin ? 1 : 0;
-                  }
-                } else {
-                  counts[tmHero].against_games += 1;
-                  counts[tmHero].against_win += playerWin ? 1 : 0;
-                }
-              }
-            });
-          });
-          const result = Object.keys(counts)
-            .map((k) => counts[k])
-            .filter(
-              (hero) =>
-                !res.locals.queryObj.having ||
-                hero.games >= Number(res.locals.queryObj.having),
-            )
-            .sort((a, b) => b.games - a.games);
           return res.json(result);
         },
       },
@@ -585,21 +495,10 @@ You can use the API without a key, but registering for a key allows increased ra
         },
         route: () => "/players/:account_id/peers",
         func: async (req, res, next) => {
-          let teammates: PeersCount;
-          if (res.locals.queryObj.clickhouse) {
-            teammates = await getPlayerPeersCount(
-              Number(req.params.account_id),
-              res.locals.queryObj,
-            );
-          } else {
-            res.locals.queryObj.project =
-              res.locals.queryObj.project.concat(peersCols);
-            const cache = await getPlayerMatches(
-              Number(req.params.account_id),
-              res.locals.queryObj,
-            );
-            teammates = countPeers(cache);
-          }
+          const teammates = await getPlayerPeersCount(
+            Number(req.params.account_id),
+            res.locals.queryObj,
+          );
           const result = await getPeers(teammates, {
             account_id: Number(req.params.account_id),
           });
@@ -631,21 +530,10 @@ You can use the API without a key, but registering for a key allows increased ra
         },
         route: () => "/players/:account_id/pros",
         func: async (req, res, next) => {
-          let teammates: PeersCount;
-          if (res.locals.queryObj.clickhouse) {
-            teammates = await getPlayerPeersCount(
-              Number(req.params.account_id),
-              res.locals.queryObj,
-            );
-          } else {
-            res.locals.queryObj.project =
-              res.locals.queryObj.project.concat(prosCols);
-            const cache = await getPlayerMatches(
-              Number(req.params.account_id),
-              res.locals.queryObj,
-            );
-            teammates = countPeers(cache);
-          }
+          const teammates = await getPlayerPeersCount(
+            Number(req.params.account_id),
+            res.locals.queryObj,
+          );
           const result = await getProPeers(teammates, {
             account_id: Number(req.params.account_id),
           });
@@ -677,36 +565,11 @@ You can use the API without a key, but registering for a key allows increased ra
         },
         route: () => "/players/:account_id/totals",
         func: async (req, res, next) => {
-          if (res.locals.queryObj.clickhouse) {
-            const result = await getPlayerTotals(
-              Number(req.params.account_id),
-              res.locals.queryObj,
-            );
-            return res.json(result);
-          }
-          const result: AnyDict = {};
-          histogramCols.forEach((key) => {
-            result[key] = {
-              field: key,
-              n: 0,
-              sum: 0,
-            };
-          });
-          res.locals.queryObj.project =
-            res.locals.queryObj.project.concat(histogramCols);
-          const cache = await getPlayerMatches(
+          const result = await getPlayerTotals(
             Number(req.params.account_id),
             res.locals.queryObj,
           );
-          cache.forEach((m) => {
-            histogramCols.forEach((key) => {
-              if (m[key] !== null && m[key] !== undefined) {
-                result[key].n += 1;
-                result[key].sum += Number(m[key]);
-              }
-            });
-          });
-          return res.json(Object.keys(result).map((key) => result[key]));
+          return res.json(result);
         },
       },
     },
@@ -731,49 +594,10 @@ You can use the API without a key, but registering for a key allows increased ra
         },
         route: () => "/players/:account_id/counts",
         func: async (req, res, next) => {
-          if (res.locals.queryObj.clickhouse) {
-            const result = await getPlayerCounts(
-              Number(req.params.account_id),
-              res.locals.queryObj,
-            );
-            return res.json(result);
-          }
-          const result = {} as Record<(typeof countsCats)[number], any>;
-          countsCats.forEach((key) => {
-            result[key] = {};
-          });
-          res.locals.queryObj.project =
-            res.locals.queryObj.project.concat(countsCols);
-          const cache = await getPlayerMatches(
+          const result = await getPlayerCounts(
             Number(req.params.account_id),
             res.locals.queryObj,
           );
-          cache.forEach((m) => {
-            // Compute the needed fields
-            const record: Record<
-              (typeof countsCats)[number],
-              number | boolean | null
-            > = {
-              is_radiant: isRadiant(m),
-              patch: getPatchIndex(m.start_time),
-              region: cluster[String(m.cluster) as keyof typeof cluster],
-              leaver_status: m.leaver_status,
-              game_mode: m.game_mode,
-              lobby_type: m.lobby_type,
-              lane_role: m.lane_role,
-            };
-            countsCats.forEach((key) => {
-              if (!result[key][Math.floor(Number(record[key]))]) {
-                result[key][Math.floor(Number(record[key]))] = {
-                  games: 0,
-                  win: 0,
-                };
-              }
-              result[key][Math.floor(Number(record[key]))].games += 1;
-              const won = Number(m.radiant_win === isRadiant(m));
-              result[key][Math.floor(Number(record[key]))].win += won;
-            });
-          });
           return res.json(result);
         },
       },
@@ -815,45 +639,11 @@ You can use the API without a key, but registering for a key allows increased ra
           if (!field) {
             return res.json([]);
           }
-          if (res.locals.queryObj.clickhouse) {
-            const bucketArray = await getPlayerHistogram(
-              Number(req.params.account_id),
-              res.locals.queryObj,
-              field,
-            );
-            return res.json(bucketArray);
-          }
-          res.locals.queryObj.project =
-            res.locals.queryObj.project.concat(field);
-          const cache = await getPlayerMatches(
+          const bucketArray = await getPlayerHistogram(
             Number(req.params.account_id),
             res.locals.queryObj,
+            field,
           );
-          const buckets = 40;
-          // Find the maximum value to determine how large each bucket should be
-          const max = Math.max(...cache.map((m) => m[field]));
-          // Round the bucket size up to the nearest integer
-          const bucketSize = Math.ceil((max + 1) / buckets);
-          const bucketArray = Array.from(
-            {
-              length: buckets,
-            },
-            (value, index) => ({
-              x: bucketSize * index,
-              games: 0,
-              win: 0,
-            }),
-          );
-          cache.forEach((m) => {
-            if (m[field] || m[field] === 0) {
-              const index = Math.floor(m[field] / bucketSize);
-              if (bucketArray[index]) {
-                bucketArray[index].games += 1;
-                bucketArray[index].win +=
-                  isRadiant(m) === m.radiant_win ? 1 : 0;
-              }
-            }
-          });
           return res.json(bucketArray);
         },
       },
@@ -882,31 +672,10 @@ You can use the API without a key, but registering for a key allows increased ra
         },
         route: () => "/players/:account_id/wardmap",
         func: async (req, res, next) => {
-          if (res.locals.queryObj.clickhouse) {
-            const result = await getPlayerWardmap(
-              Number(req.params.account_id),
-              res.locals.queryObj,
-            );
-            return res.json(result);
-          }
-          const result = {} as Record<(typeof wardmapCols)[number], any>;
-          wardmapCols.forEach((key) => {
-            result[key] = {};
-          });
-          res.locals.queryObj.project =
-            res.locals.queryObj.project.concat(wardmapCols);
-          const cache = await getPlayerMatches(
+          const result = await getPlayerWardmap(
             Number(req.params.account_id),
             res.locals.queryObj,
           );
-          cache.forEach((m) => {
-            Object.keys(result).forEach((key) => {
-              mergeObjects(
-                result[key as keyof typeof result],
-                m[key as keyof ParsedPlayerMatch],
-              );
-            });
-          });
           return res.json(result);
         },
       },
@@ -935,31 +704,10 @@ You can use the API without a key, but registering for a key allows increased ra
         },
         route: () => "/players/:account_id/wordcloud",
         func: async (req, res, next) => {
-          if (res.locals.queryObj.clickhouse) {
-            const result = await getPlayerWordcloud(
-              Number(req.params.account_id),
-              res.locals.queryObj,
-            );
-            return res.json(result);
-          }
-          const result = {} as Record<(typeof wordcloudCols)[number], any>;
-          wordcloudCols.forEach((key) => {
-            result[key] = {};
-          });
-          res.locals.queryObj.project =
-            res.locals.queryObj.project.concat(wordcloudCols);
-          const cache = await getPlayerMatches(
+          const result = await getPlayerWordcloud(
             Number(req.params.account_id),
             res.locals.queryObj,
           );
-          cache.forEach((m) => {
-            Object.keys(result).forEach((key) => {
-              mergeObjects(
-                result[key as keyof typeof result],
-                m[key as keyof ParsedPlayerMatch],
-              );
-            });
-          });
           return res.json(result);
         },
       },

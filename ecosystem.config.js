@@ -119,10 +119,6 @@ let arr = [
     name: "counts",
     group: "backend",
   },
-  // {
-  //   name: 'cacher',
-  //   group: 'backend',
-  // },
   {
     name: "monitor",
     group: "backend",
@@ -175,10 +171,6 @@ let arr = [
     name: "syncSubs",
     group: "backend",
   },
-  // {
-  //   name: 'archiver',
-  //   group: 'backend',
-  // },
   {
     name: "reconcile",
     group: "backend",

@@ -1,5 +1,4 @@
 import { patch } from "dotaconstants";
-import util from "node:util";
 import fs from "node:fs/promises";
 import config from "../../config.ts";
 import { addJob, addReliableJob } from "../store/queue.ts";
@@ -7,7 +6,6 @@ import db, { upsert, upsertPlayer } from "../store/db.ts";
 import redis, { redisCount } from "../store/redis.ts";
 import {
   getAnonymousAccountId,
-  serialize,
   serializeClickhouse,
   isRadiant,
   isRanked,
@@ -21,7 +19,6 @@ import {
 import { getPGroup } from "./pgroup.ts";
 import { fromNow } from "./time.ts";
 import { blobArchive } from "../store/archive.ts";
-import cassandra, { getCassandraColumns } from "../store/cassandra.ts";
 import clickhouse, { getClickhouseColumns } from "../store/clickhouse.ts";
 import {
   computeMatchData,
@@ -558,12 +555,8 @@ export async function upsertPlayerCaches(
   if (averageRank) {
     copy.average_rank = averageRank;
   }
-  const [columns, chColumns] = await Promise.all([
-    getCassandraColumns("player_caches"),
-    getClickhouseColumns("player_caches"),
-  ]);
+  const chColumns = await getClickhouseColumns("player_caches");
   const chRowsToInsert: AnyDict[] = [];
-  const cassWrites: Promise<any>[] = [];
   const results = await Promise.all(
     copy.players.map(async (p) => {
       // add account id to each player so we know what caches to update
@@ -591,11 +584,10 @@ export async function upsertPlayerCaches(
       computeMatchData(playerMatch as ParsedPlayerMatch);
       // Remove extra properties
       Object.keys(playerMatch).forEach((key) => {
-        if (!columns[key] && !chColumns[key]) {
+        if (!chColumns[key]) {
           delete playerMatch[key as keyof ParsedPlayerMatch];
         }
       });
-      const serializedMatch: any = serialize(playerMatch);
       const chSerializedMatch: any = serializeClickhouse(playerMatch);
       if (
         (config.NODE_ENV === "development" || config.NODE_ENV === "test") &&
@@ -605,7 +597,7 @@ export async function upsertPlayerCaches(
           "./json/" +
             copy.match_id +
             `_playercache_${type}_${playerMatch.player_slot}.json`,
-          JSON.stringify(serializedMatch, null, 2),
+          JSON.stringify(chSerializedMatch, null, 2),
         );
       }
       if (type === "reconcile") {
@@ -616,29 +608,13 @@ export async function upsertPlayerCaches(
         );
         redisCount("reconcile");
       }
-      const query = util.format(
-        "INSERT INTO player_caches (%s) VALUES (%s)",
-        Object.keys(serializedMatch).join(","),
-        Object.keys(serializedMatch)
-          .map(() => "?")
-          .join(","),
-      );
-      const arr = Object.keys(serializedMatch).map((k) => serializedMatch[k]);
-      cassWrites.push(
-        cassandra.execute(query, arr, {
-          prepare: true,
-        }),
-      );
       chRowsToInsert.push(chSerializedMatch);
       return true;
     }),
   );
-  await Promise.all([
-    ...cassWrites,
-    chRowsToInsert.length
-      ? clickhouse.insert("player_caches", chRowsToInsert)
-      : Promise.resolve(),
-  ]);
+  if (chRowsToInsert.length) {
+    await clickhouse.insert("player_caches", chRowsToInsert);
+  }
   return results;
 }
 
