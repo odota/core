@@ -360,20 +360,30 @@ export async function getPlayerCounts(
     game_mode: "toInt32(ifNull(game_mode, 0))",
     lobby_type: "toInt32(ifNull(lobby_type, 0))",
     lane_role: "toInt32(ifNull(lane_role, 0))",
-    region: `toInt32(${getRegionSqlExpr("cluster")})`,
-    patch: `toInt32(${getPatchSqlExpr("start_time")})`,
+    region: `toInt32(ifNull(${getRegionSqlExpr("cluster")}, 0))`,
+    patch: `toInt32(ifNull(${getPatchSqlExpr("start_time")}, 0))`,
     is_radiant: "toInt32(ifNull(player_slot, 0) < 128)",
   };
-  const unions = countsCats.map(
-    (cat) =>
-      `SELECT '${cat}' AS cat, ${catExprs[cat]} AS k, toInt32(count()) AS games, toInt32(countIf(${winExpr})) AS win FROM ${sub} GROUP BY k`,
-  );
+  const catTuples = countsCats.map((cat) => `('${cat}', ${catExprs[cat]})`);
   const rows = await clickhouse.query<{
     cat: (typeof countsCats)[number];
     k: number;
     games: number;
     win: number;
-  }>(unions.join(" UNION ALL "));
+  }>(`
+    SELECT
+      pair.1 AS cat,
+      pair.2 AS k,
+      toInt32(count()) AS games,
+      toInt32(countIf(win)) AS win
+    FROM (
+      SELECT
+        ${winExpr} AS win,
+        arrayJoin([${catTuples.join(", ")}]) AS pair
+      FROM ${sub}
+    )
+    GROUP BY cat, k
+  `);
   for (const r of rows) {
     result[r.cat][r.k] = {
       games: Number(r.games),
