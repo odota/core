@@ -69,9 +69,7 @@ const defaults = {
   ARCHIVE_S3_KEY_SECRET: "rustfsadmin", // S3-compatible key secret to archive
   ARCHIVE_PUBLIC_URL: "", // base URL to use for public archive reading (if not set, uses s3 client with endpoint)
   MATCH_ARCHIVE_S3_BUCKET: "opendota", // name of the S3 bucket to archive parsed match blobs
-  PLAYER_ARCHIVE_S3_BUCKET: "opendota-players", // name of the S3 bucket to archive player match blobs
   BLOB_ARCHIVE_S3_BUCKET: "opendota-blobs", // name of the S3 bucket to use for match data blobs
-  ENABLE_PLAYER_ARCHIVE: "", // Allow reading/writing player match blobs to S3 storage
   DISABLE_REPARSE: "", // Disable reparsing matches that are already parsed
   DISABLE_REGCDATA: "", // Disable refetching new GC data on every request (cache it)
   DISABLE_REAPI: "1", // Disable refetching new API data on every request (enabled by default as SteamGetMatchDetails is broken)

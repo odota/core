@@ -7,7 +7,7 @@ import {
   type S3Errors,
 } from "@bradenmacdonald/s3-lite-client";
 
-type ArchiveType = "match" | "player" | "blob";
+type ArchiveType = "match" | "blob";
 class Archive {
   private endpoint: string = "";
   private accessKeyId: string = "";
@@ -22,8 +22,6 @@ class Archive {
     this.type = type;
     if (type === "match") {
       this.bucket = config.MATCH_ARCHIVE_S3_BUCKET;
-    } else if (type === "player") {
-      this.bucket = config.PLAYER_ARCHIVE_S3_BUCKET;
     } else if (type === "blob") {
       this.bucket = config.BLOB_ARCHIVE_S3_BUCKET;
     }
@@ -147,7 +145,4 @@ class Archive {
 }
 
 export const blobArchive = new Archive("blob");
-export const playerArchive = config.ENABLE_PLAYER_ARCHIVE
-  ? new Archive("player")
-  : null;
 export const matchArchive = new Archive("match");

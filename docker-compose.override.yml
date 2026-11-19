@@ -37,7 +37,6 @@ services:
       rc alias set rustfs http://odota-rustfs:9000 rustfsadmin rustfsadmin;
       rc bucket create rustfs/opendota-blobs;
       rc bucket create rustfs/opendota;
-      rc bucket create rustfs/opendota-players;
       exit 0;
       "
   core:

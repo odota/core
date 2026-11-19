@@ -7,72 +7,33 @@ import { deserialize, pick } from "./utility.ts";
 import { zstdCompressSync, zstdDecompressSync } from "node:zlib";
 import { cacheableCols } from "../api/playerFields.ts";
 import fs from "node:fs/promises";
-import { playerArchive } from "../store/archive.ts";
 
 export async function getPlayerMatches(
   accountId: number,
   queryObj: QueryObj,
 ): Promise<ParsedPlayerMatch[]> {
-  return (await getPlayerMatchesWithMetadata(accountId, queryObj))[0];
-}
-
-type PlayerMatchesMetadata = {
-  finalLength: number;
-  localLength: number;
-  archivedLength: number;
-  mergedLength: number;
-};
-
-export async function getPlayerMatchesWithMetadata(
-  accountId: number,
-  queryObj: QueryObj,
-): Promise<[ParsedPlayerMatch[], PlayerMatchesMetadata | null]> {
   // Validate accountId
   if (!accountId || !Number.isInteger(accountId) || accountId <= 0) {
-    return [[], null];
+    return [];
   }
   if (queryObj.isPrivate) {
     // User disabled public match history from Dota, so don't return matches
-    return [[], null];
+    return [];
   }
   redisCount("player_matches");
   const columns = await getCassandraColumns("player_caches");
   const sanitizedProject = queryObj.project.filter((f: string) => columns[f]);
   const projection = queryObj.projectAll ? ["*"] : sanitizedProject;
 
-  // Archive model
-  // For inactive, unvisited players with a large number of matches, get all columns for their player_caches and store in single blob in archive
-  // Record some metadata indicating this player is archived
-  // Delete the data from player_caches
-  // On read, check metadata to see whether this player is archived
-  // if so reinsert the data into player_caches from archive
-  // Maybe want to track the reinsert time as well so we don't fetch and merge from archive every time?
-  // maybe we can merge rows on reinsert? But need to decide whether to keep current or archived if both are present, use in-memory merge
-  // Background process continually rechecks for players eligible to be archived and re-archives the data from player_caches
-  // This should help keep player_caches size under control (and may avoid the need to maintain player_temp)
-
   const canUseTemp =
     config.ENABLE_PLAYER_CACHE &&
     !Boolean(queryObj.dbLimit) &&
     projection.every((field) => cacheableCols.has(field as any));
-  // Don't use temp table if dbLimit (recentMatches) or projectAll (archiving)
+  // Don't use temp table if dbLimit (recentMatches) or projectAll
   // Check if every requested column can be satisified by temp
-  const localMatches = canUseTemp
+  const matches = canUseTemp
     ? await readPlayerTemp(accountId, projection)
     : await readPlayerCaches(accountId, projection, queryObj.dbLimit);
-  // if dbLimit (recentMatches), don't use archive
-  const archivedMatches =
-    config.ENABLE_PLAYER_ARCHIVE && !queryObj.dbLimit
-      ? await readArchivedPlayerMatches(accountId)
-      : [];
-  const localLength = localMatches.length;
-  const archivedLength = archivedMatches.length;
-
-  const keys = queryObj.projectAll
-    ? (Object.keys(columns) as (keyof ParsedPlayerMatch)[])
-    : queryObj.project;
-  // Merge the two sets of matches
-  let matches = mergeMatches(localMatches, archivedMatches, keys);
   const filtered = filterMatches(matches, queryObj.filter);
   const sort = queryObj.sort;
   if (sort) {
@@ -83,60 +44,7 @@ export async function getPlayerMatchesWithMetadata(
   }
   const offset = filtered.slice(queryObj.offset || 0);
   const final = offset.slice(0, queryObj.limit || offset.length);
-  return [
-    final,
-    {
-      finalLength: final.length,
-      localLength,
-      archivedLength,
-      mergedLength: matches.length,
-    },
-  ];
-}
-
-function mergeMatches(
-  localMatches: ParsedPlayerMatch[],
-  archivedMatches: ParsedPlayerMatch[],
-  keys: (keyof ParsedPlayerMatch)[],
-): ParsedPlayerMatch[] {
-  if (archivedMatches.length) {
-    const matches: ParsedPlayerMatch[] = [];
-    // Merge together the results
-    // Sort both lists into descending order
-    localMatches.sort((a, b) => b.match_id - a.match_id);
-    archivedMatches.sort((a, b) => b.match_id - a.match_id);
-    while (localMatches.length || archivedMatches.length) {
-      const localMatch = localMatches[0];
-      const archivedMatch = archivedMatches[0];
-      // If the IDs of the first elements match, pop both and then merge them together
-      if (localMatch?.match_id === archivedMatch?.match_id) {
-        // Only pick selected columns from those matches
-        // Local match has the desired columns
-        Object.keys(localMatch).forEach((key) => {
-          const typedKey = key as keyof ParsedPlayerMatch;
-          // For each key prefer nonnull value, with precedence to local store
-          //@ts-expect-error
-          localMatch[typedKey] =
-            localMatch[typedKey] ?? archivedMatch[typedKey] ?? null;
-        });
-        // Output the merged version
-        matches.push(localMatch);
-        // Pop both from array
-        localMatches.shift();
-        archivedMatches.shift();
-      } else {
-        // Otherwise just push the higher ID element into the merge
-        if ((localMatch?.match_id ?? 0) > (archivedMatch?.match_id ?? 0)) {
-          matches.push(localMatches.shift()!);
-        } else {
-          // Pick only specified columns of the archived match
-          matches.push(pick(archivedMatches.shift(), keys));
-        }
-      }
-    }
-    return matches;
-  }
-  return localMatches;
+  return final;
 }
 
 async function readPlayerTemp(
@@ -246,24 +154,4 @@ async function readPlayerCaches(
       },
     );
   });
-}
-
-export async function getFullPlayerMatchesWithMetadata(
-  accountId: number,
-): Promise<[ParsedPlayerMatch[], PlayerMatchesMetadata | null]> {
-  return getPlayerMatchesWithMetadata(accountId, {
-    project: [],
-    projectAll: true,
-  });
-}
-
-async function readArchivedPlayerMatches(
-  accountId: number,
-): Promise<ParsedPlayerMatch[]> {
-  if (!playerArchive) {
-    return [];
-  }
-  const blob = await playerArchive.archiveGet(accountId.toString());
-  const arr = blob ? JSON.parse(blob.toString()) : [];
-  return arr;
 }
