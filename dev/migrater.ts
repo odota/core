@@ -144,10 +144,36 @@ export async function migrateRange(
   return count;
 }
 
+function formatDuration(ms: number): string {
+  if (!Number.isFinite(ms) || ms <= 0) {
+    return "0s";
+  }
+  const totalSec = Math.round(ms / 1000);
+  const days = Math.floor(totalSec / 86400);
+  const hours = Math.floor((totalSec % 86400) / 3600);
+  const mins = Math.floor((totalSec % 3600) / 60);
+  const secs = totalSec % 60;
+  const parts: string[] = [];
+  if (days > 0) parts.push(`${days}d`);
+  if (hours > 0 || days > 0) parts.push(`${hours}h`);
+  if (mins > 0 || hours > 0 || days > 0) parts.push(`${mins}m`);
+  parts.push(`${secs}s`);
+  return parts.join(" ");
+}
+
+type ShardProgress = {
+  shardIndex: number;
+  rows: number;
+  runTokensDone: bigint;
+  totalTokensDone: bigint;
+  shardSpan: bigint;
+};
+
 export async function runShardWorker(
   shardIndex: number,
   numShards: number,
   stepSize = STEP_SIZE,
+  onProgress?: (progress: ShardProgress) => void,
 ): Promise<number> {
   const shardSpan = TOTAL_TOKEN_SPACE / BigInt(numShards);
   const shardStart = MIN_TOKEN + shardSpan * BigInt(shardIndex);
@@ -155,19 +181,32 @@ export async function runShardWorker(
   const shardEnd = isFinalShard
     ? MAX_TOKEN
     : MIN_TOKEN + shardSpan * BigInt(shardIndex + 1);
+  const actualShardSpan = shardEnd - shardStart;
   const checkpointKey = `${CHECKPOINT_PREFIX}:${numShards}:${shardIndex}`;
 
   let totalShardCount = 0;
+  const shardRunStartTime = Date.now();
+  let shardInitialBegin: bigint | null = null;
 
   while (true) {
     const saved = await redis.get(checkpointKey);
     const begin = saved ? BigInt(saved) : shardStart;
+    if (shardInitialBegin === null) {
+      shardInitialBegin = begin;
+    }
     if (begin > shardEnd || (!isFinalShard && begin >= shardEnd)) {
       console.log(
         "[MIGRATE shard %d/%d] Already complete.",
         shardIndex,
         numShards,
       );
+      onProgress?.({
+        shardIndex,
+        rows: totalShardCount,
+        runTokensDone: 0n,
+        totalTokensDone: actualShardSpan,
+        shardSpan: actualShardSpan,
+      });
       break;
     }
 
@@ -179,13 +218,23 @@ export async function runShardWorker(
     const startTime = Date.now();
     const count = await migrateRange(begin, end, inclusiveUpper);
     totalShardCount += count;
-    const elapsed = Date.now() - startTime;
+    const now = Date.now();
+    const elapsed = now - startTime;
+    const totalShardElapsed = now - shardRunStartTime;
+
+    const rangeRate = elapsed > 0 ? Math.round((count * 1000) / elapsed) : 0;
+    const runTokensDone = end - shardInitialBegin;
+    const remainingTokens = shardEnd - end;
+    const shardEtaMs =
+      runTokensDone > 0n
+        ? Number((remainingTokens * BigInt(totalShardElapsed)) / runTokensDone)
+        : 0;
 
     const pct = (
-      Number(((end - shardStart) * 10000n) / (shardEnd - shardStart)) / 100
+      Number(((end - shardStart) * 10000n) / actualShardSpan) / 100
     ).toFixed(2);
     console.log(
-      "[MIGRATE shard %d/%d (%s%%)] token range [%s, %s]: migrated %s rows in %sms (total: %s)",
+      "[MIGRATE shard %d/%d (%s%%)] token range [%s, %s]: %s rows in %sms (%s rows/s, shard ETA: %s, total: %s)",
       shardIndex,
       numShards,
       pct,
@@ -193,18 +242,29 @@ export async function runShardWorker(
       end.toString(),
       count,
       elapsed,
+      rangeRate,
+      formatDuration(shardEtaMs),
       totalShardCount,
     );
+
+    onProgress?.({
+      shardIndex,
+      rows: totalShardCount,
+      runTokensDone,
+      totalTokensDone: end - shardStart,
+      shardSpan: actualShardSpan,
+    });
 
     const nextBegin = isLastRangeInShard ? shardEnd + 1n : end;
     await redis.set(checkpointKey, nextBegin.toString());
 
     if (isLastRangeInShard) {
       console.log(
-        "[MIGRATE shard %d/%d] Finished shard (%s rows).",
+        "[MIGRATE shard %d/%d] Finished shard (%s rows in %s).",
         shardIndex,
         numShards,
         totalShardCount,
+        formatDuration(totalShardElapsed),
       );
       break;
     }
@@ -217,6 +277,7 @@ function spawnShardWorkerThread(
   shardIndex: number,
   numShards: number,
   stepSize: bigint,
+  onProgress?: (progress: ShardProgress) => void,
 ): Promise<number> {
   return new Promise((resolve, reject) => {
     const worker = new Worker(new URL(import.meta.url), {
@@ -228,7 +289,15 @@ function spawnShardWorkerThread(
     });
     let resultCount = 0;
     worker.on("message", (msg) => {
-      if (typeof msg?.count === "number") {
+      if (msg?.type === "progress") {
+        onProgress?.({
+          shardIndex: msg.shardIndex,
+          rows: msg.rows,
+          runTokensDone: BigInt(msg.runTokensDone),
+          totalTokensDone: BigInt(msg.totalTokensDone),
+          shardSpan: BigInt(msg.shardSpan),
+        });
+      } else if (typeof msg?.count === "number") {
         resultCount = msg.count;
       }
     });
@@ -254,20 +323,69 @@ export async function runMigration(
     useWorkerThreads,
     BATCH_SIZE,
   );
-  const counts = await Promise.all(
-    Array.from({ length: concurrency }, (_, i) =>
-      useWorkerThreads
-        ? spawnShardWorkerThread(i, concurrency, stepSize)
-        : runShardWorker(i, concurrency, stepSize),
-    ),
-  );
-  const total = counts.reduce((acc, c) => acc + c, 0);
-  console.log(
-    "[MIGRATE] All %d shards completed. Total rows migrated: %d",
-    concurrency,
-    total,
-  );
-  return total;
+  const runStartTime = Date.now();
+  const shardStates = new Map<number, ShardProgress>();
+  const handleProgress = (p: ShardProgress) => {
+    shardStates.set(p.shardIndex, p);
+  };
+
+  const logOverallProgress = () => {
+    if (shardStates.size === 0) return;
+    let totalRows = 0;
+    let totalRunTokens = 0n;
+    let totalDoneTokens = 0n;
+    for (const s of shardStates.values()) {
+      totalRows += s.rows;
+      totalRunTokens += s.runTokensDone;
+      totalDoneTokens += s.totalTokensDone;
+    }
+    const elapsedMs = Date.now() - runStartTime;
+    const rowsPerSec =
+      elapsedMs > 0 ? Math.round((totalRows * 1000) / elapsedMs) : 0;
+    const pct = (
+      Number((totalDoneTokens * 10000n) / TOTAL_TOKEN_SPACE) / 100
+    ).toFixed(2);
+    const remainingTokens = TOTAL_TOKEN_SPACE - totalDoneTokens;
+    const etaMs =
+      totalRunTokens > 0n
+        ? Number((remainingTokens * BigInt(elapsedMs)) / totalRunTokens)
+        : 0;
+    console.log(
+      "[MIGRATE OVERALL %s%%] %s rows migrated | %s rows/s | elapsed: %s | ETA: %s",
+      pct,
+      totalRows,
+      rowsPerSec,
+      formatDuration(elapsedMs),
+      formatDuration(etaMs),
+    );
+  };
+
+  const progressTimer = setInterval(logOverallProgress, 10000);
+  progressTimer.unref();
+
+  try {
+    const counts = await Promise.all(
+      Array.from({ length: concurrency }, (_, i) =>
+        useWorkerThreads
+          ? spawnShardWorkerThread(i, concurrency, stepSize, handleProgress)
+          : runShardWorker(i, concurrency, stepSize, handleProgress),
+      ),
+    );
+    const total = counts.reduce((acc, c) => acc + c, 0);
+    const totalElapsed = Date.now() - runStartTime;
+    const avgRate =
+      totalElapsed > 0 ? Math.round((total * 1000) / totalElapsed) : 0;
+    console.log(
+      "[MIGRATE] All %d shards completed. Total rows migrated: %d in %s (%d rows/s)",
+      concurrency,
+      total,
+      formatDuration(totalElapsed),
+      avgRate,
+    );
+    return total;
+  } finally {
+    clearInterval(progressTimer);
+  }
 }
 
 if (!isMainThread && workerData) {
@@ -275,6 +393,16 @@ if (!isMainThread && workerData) {
     workerData.shardIndex,
     workerData.numShards,
     BigInt(workerData.stepSize),
+    (p) => {
+      parentPort?.postMessage({
+        type: "progress",
+        shardIndex: p.shardIndex,
+        rows: p.rows,
+        runTokensDone: p.runTokensDone.toString(),
+        totalTokensDone: p.totalTokensDone.toString(),
+        shardSpan: p.shardSpan.toString(),
+      });
+    },
   );
   parentPort?.postMessage({ count });
   process.exit(0);
