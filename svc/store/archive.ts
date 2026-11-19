@@ -1,13 +1,19 @@
 import config from "../../config.ts";
-import { gzipSync, gunzipSync } from "node:zlib";
+import {
+  gzipSync,
+  gunzipSync,
+  zstdCompressSync,
+  zstdDecompressSync,
+} from "node:zlib";
 import redis, { redisCount } from "./redis.ts";
+import db from "./db.ts";
 import {
   S3Client,
   type S3UploadedObjectInfo,
   type S3Errors,
 } from "@bradenmacdonald/s3-lite-client";
 
-type ArchiveType = "match" | "player" | "blob";
+type ArchiveType = "match" | "blob";
 class Archive {
   private endpoint: string = "";
   private accessKeyId: string = "";
@@ -22,8 +28,6 @@ class Archive {
     this.type = type;
     if (type === "match") {
       this.bucket = config.MATCH_ARCHIVE_S3_BUCKET;
-    } else if (type === "player") {
-      this.bucket = config.PLAYER_ARCHIVE_S3_BUCKET;
     } else if (type === "blob") {
       this.bucket = config.BLOB_ARCHIVE_S3_BUCKET;
     }
@@ -146,8 +150,68 @@ class Archive {
   };
 }
 
+class PostgresPlayerArchive {
+  public archiveGet = async (key: string): Promise<Buffer | null> => {
+    try {
+      const { rows } = await db.query(
+        "SELECT data FROM player_match_archive WHERE account_id = $1",
+        [key],
+      );
+      const buffer: Buffer | undefined = rows[0]?.data;
+      if (!buffer) {
+        redisCount("archive_miss");
+        return null;
+      }
+      redisCount("archive_hit");
+      redisCount("archive_read_bytes", buffer.length);
+      const unzip = zstdDecompressSync(buffer);
+      if (config.NODE_ENV === "development" || config.NODE_ENV === "test") {
+        console.log(
+          "[PLAYER_ARCHIVE] %s: read %s bytes, decompressed %s bytes",
+          key,
+          buffer.length,
+          unzip.length,
+        );
+      }
+      return unzip;
+    } catch (e) {
+      redisCount("archive_get_error");
+      throw e;
+    }
+  };
+
+  public archivePut = async (
+    key: string,
+    blob: Buffer,
+  ): Promise<{ etag: string } | null> => {
+    if (blob.length < 2) {
+      throw new Error(
+        "[PLAYER_ARCHIVE] Tried to archive empty blob so something is probably wrong",
+      );
+    }
+    const comp = zstdCompressSync(blob);
+    try {
+      await db.query(
+        "INSERT INTO player_match_archive(account_id, data) VALUES ($1, $2) ON CONFLICT (account_id) DO UPDATE SET data = EXCLUDED.data",
+        [key, comp],
+      );
+    } catch (e) {
+      redisCount("archive_put_error");
+      throw e;
+    }
+    redisCount("archive_write_bytes", comp.length);
+    if (config.NODE_ENV === "development" || config.NODE_ENV === "test") {
+      console.log(
+        "[PLAYER_ARCHIVE] %s: original %s bytes, archived %s bytes",
+        key,
+        blob.length,
+        comp.length,
+      );
+    }
+    return { etag: "" };
+  };
+}
+
 export const blobArchive = new Archive("blob");
-export const playerArchive = config.ENABLE_PLAYER_ARCHIVE
-  ? new Archive("player")
-  : null;
+export const playerArchive = new PostgresPlayerArchive();
 export const matchArchive = new Archive("match");

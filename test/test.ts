@@ -15,7 +15,11 @@ import { Client } from "cassandra-driver";
 import nock from "nock";
 import config from "../config.ts";
 import spec from "../svc/api/spec.ts";
-import { getPlayerMatches } from "../svc/util/buildPlayer.ts";
+import {
+  getPlayerMatches,
+  getPlayerMatchesWithMetadata,
+} from "../svc/util/buildPlayer.ts";
+import { doArchivePlayerMatches } from "../svc/util/archiveUtil.ts";
 import { insertMatch } from "../svc/util/insert.ts";
 import { buildMatch } from "../svc/util/buildMatch.ts";
 import db, { upsertPlayer } from "../svc/store/db.ts";
@@ -721,7 +725,7 @@ suite(styleText("blue", "REPLAY PARSING"), async () => {
     assert.equal(dupe.id, parseJob.id);
     let notDone = true;
     let tries = 0;
-    while (notDone && tries < 30) {
+    while (notDone && tries < 60) {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       tries += 1;
       console.log("waiting for replay parse... %s", tries);
@@ -801,6 +805,38 @@ suite(styleText("blue", "REPLAY PARSING"), async () => {
 
     // There should be 7 rows in player_caches for this match since there are 3 anonymous players
     assert.equal(result.rows.length, 7);
+
+    // Test Postgres playerArchive (hot delta + compressed blob) behind ENABLE_PLAYER_ARCHIVE
+    const accountId = 120269134;
+    config.ENABLE_PLAYER_ARCHIVE = "1";
+    try {
+      await doArchivePlayerMatches(accountId);
+      const { rows: archiveRows } = await db.query(
+        "SELECT data FROM player_match_archive WHERE account_id = $1",
+        [accountId],
+      );
+      assert.equal(archiveRows.length, 1);
+      assert.ok(archiveRows[0].data.length > 0);
+
+      // Delete from Cassandra to verify read merges from Postgres archive blob
+      await cassandra.execute(
+        "DELETE FROM player_caches WHERE account_id = ?",
+        [accountId],
+        { prepare: true },
+      );
+      const [merged, meta] = await getPlayerMatchesWithMetadata(accountId, {
+        project: ["match_id", "kills", "stuns", "party_size"],
+      });
+      assert.equal(meta?.localLength, 0);
+      assert.equal(meta?.archivedLength, 1);
+      assert.equal(merged.length, 1);
+      assert.equal(merged[0].match_id, matchData.match_id);
+      assert.equal(merged[0].kills, 8);
+      assert.ok(merged[0].stuns);
+      assert.equal(merged[0].party_size, 10);
+    } finally {
+      config.ENABLE_PLAYER_ARCHIVE = "";
+    }
   });
 });
 

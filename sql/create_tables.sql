@@ -499,6 +499,12 @@ CREATE TABLE IF NOT EXISTS aliases(
   name_since timestamp with time zone
 );
 
+CREATE TABLE IF NOT EXISTS player_match_archive(
+  PRIMARY KEY(account_id),
+  account_id bigint,
+  data bytea
+);
+
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'readonly') THEN
