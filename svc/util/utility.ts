@@ -161,6 +161,12 @@ export function deserialize(row: AnyDict): any {
       } catch {
         obj[key] = row[key];
       }
+    } else if (
+      row[key] !== null &&
+      typeof row[key] === "object" &&
+      typeof row[key].toNumber === "function"
+    ) {
+      obj[key] = row[key].toNumber();
     } else {
       obj[key] = row[key];
     }
