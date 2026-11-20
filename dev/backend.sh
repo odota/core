@@ -13,12 +13,6 @@ sudo mount -o discard,defaults /dev/disk/by-id/google-disk-postgres-4 /var/lib/p
 sudo docker run -d --name postgres --log-opt max-size=1g -e "PGDATA=/var/lib/postgresql/data/pgdata" -v /var/lib/postgresql/data:/var/lib/postgresql/data --net=host postgres:9.5
 sudo docker start postgres
 
-sudo mkdir -p /var/lib/cassandra
-sudo mount -o discard,defaults /dev/disk/by-id/google-disk-cassandra-3 /var/lib/cassandra
-#-e CASSANDRA_SEEDS=cassandra-1
-sudo docker run --name cassandra --log-opt max-size=1g -d --net=host -e CASSANDRA_NUM_TOKENS=256 -v /var/lib/cassandra:/var/lib/cassandra cassandra:5
-sudo docker start cassandra
-
 sudo mkdir -p /var/lib/clickhouse
 sudo mount -o discard,defaults /dev/disk/by-id/google-disk-clickhouse /var/lib/clickhouse
 sudo docker run --name clickhouse --log-opt max-size=1g -d --net=host -e CLICKHOUSE_SKIP_USER_SETUP=1 -v /var/lib/clickhouse:/var/lib/clickhouse clickhouse/clickhouse-server:26.10

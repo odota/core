@@ -13,12 +13,6 @@ gcloud compute instances delete --quiet redis-1
 gcloud compute instances create redis-1 --machine-type n1-standard-1 --image-family ubuntu-1404-lts --image-project ubuntu-os-cloud --disk name=disk-redis --boot-disk-size 10GB --boot-disk-type pd-ssd
 gcloud compute instances add-metadata redis-1 --metadata-from-file startup-script=./scripts/redis.sh
 
-#cassandra
-gcloud compute --project "peaceful-parity-87002" disks create "disk-cassandra-5" --size "2000" --zone "us-central1-b" --type "pd-standard"
-gcloud compute instances delete --quiet cassandra-5
-gcloud compute instances create cassandra-5 --machine-type n1-highmem-2 --image-family ubuntu-1404-lts --image-project ubuntu-os-cloud --boot-disk-size 10GB --boot-disk-type pd-ssd --disk "name=disk-cassandra-5,device-name=persistent-disk-1" 
-gcloud compute instances add-metadata cassandra-5 --metadata-from-file startup-script=./scripts/cassandra.sh
-
 #web, health check, loadbalancer
 gcloud compute forwarding-rules delete --quiet lb-rule
 gcloud compute target-pools delete --quiet lb-pool

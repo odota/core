@@ -1,7 +1,6 @@
 // Runs health checks periodically and writes result to Redis
 import redis from "./store/redis.ts";
 import db from "./store/db.ts";
-import cassandra from "./store/cassandra.ts";
 import clickhouse from "./store/clickhouse.ts";
 import { runInLoop } from "./store/queue.ts";
 import { apps } from "../ecosystem.config.js";
@@ -13,7 +12,6 @@ const health: Record<string, () => Promise<Metric>> = {
   // steamApi,
   postgresUsage,
   redisUsage,
-  cassandraUsage,
   clickhouseUsage,
   diskUsage,
   seqNumDelay,
@@ -174,19 +172,6 @@ async function postgresUsage() {
   return {
     metric: result.rows[0]?.pg_database_size,
     limit: 3.5 * 10 ** 11,
-  };
-}
-async function cassandraUsage() {
-  const result = await cassandra.execute(
-    `
-SELECT sum(mebibytes) * 1048576 as size
-FROM system_views.disk_usage
-WHERE keyspace_name = 'yasp';
-`,
-  );
-  return {
-    metric: result.rows[0]?.size,
-    limit: 6.3 * 10 ** 12,
   };
 }
 async function clickhouseUsage() {

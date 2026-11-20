@@ -110,23 +110,6 @@ export function min(array: number[]) {
 }
 
 /**
- * Serializes a JSON object to row for storage in Cassandra
- * */
-export function serialize(row: AnyDict): AnyDict {
-  const obj: AnyDict = {};
-  Object.keys(row).forEach((key) => {
-    if (
-      row[key] !== null &&
-      !Number.isNaN(row[key]) &&
-      row[key] !== undefined
-    ) {
-      obj[key] = JSON.stringify(row[key]);
-    }
-  });
-  return obj;
-}
-
-/**
  * Serializes a JSON object to row for storage in ClickHouse
  * Keeps primitives (numbers, booleans) native and stringifies nested objects
  * */
@@ -149,7 +132,7 @@ export function serializeClickhouse(row: AnyDict): AnyDict {
 }
 
 /**
- * Deserializes a row to JSON object read from Cassandra/ClickHouse
+ * Deserializes a row to JSON object read from ClickHouse
  * */
 export function deserialize(row: AnyDict): any {
   const obj: AnyDict = {};
@@ -271,55 +254,6 @@ export function countItemPopularity(items: any[]) {
   }, {});
 }
 
-/**
- * Counts the peer account_ids in the input match array
- * */
-export function countPeers(matches: PlayerMatch[]) {
-  const teammates: PeersCount = {};
-  matches.forEach((m) => {
-    const playerWin = isRadiant(m) === m.radiant_win;
-    const group: PGroup = m.heroes || {};
-    Object.keys(group).forEach((key) => {
-      const tm = group[key];
-      if (!tm.account_id) {
-        return;
-      }
-      // count teammate players
-      if (!teammates[tm.account_id]) {
-        teammates[tm.account_id] = {
-          account_id: tm.account_id,
-          last_played: 0,
-          win: 0,
-          games: 0,
-          with_win: 0,
-          with_games: 0,
-          against_win: 0,
-          against_games: 0,
-          with_gpm_sum: 0,
-          with_xpm_sum: 0,
-        };
-      }
-      if (m.start_time > teammates[tm.account_id].last_played) {
-        teammates[tm.account_id].last_played = m.start_time;
-      }
-      // played with
-      teammates[tm.account_id].games += 1;
-      teammates[tm.account_id].win += playerWin ? 1 : 0;
-      if (isRadiant({ player_slot: Number(key) }) === isRadiant(m)) {
-        // played with
-        teammates[tm.account_id].with_games += 1;
-        teammates[tm.account_id].with_win += playerWin ? 1 : 0;
-        teammates[tm.account_id].with_gpm_sum += m.gold_per_min;
-        teammates[tm.account_id].with_xpm_sum += m.xp_per_min;
-      } else {
-        // played against
-        teammates[tm.account_id].against_games += 1;
-        teammates[tm.account_id].against_win += playerWin ? 1 : 0;
-      }
-    });
-  });
-  return teammates;
-}
 /**
  * The anonymous account ID used as a placeholder for player with match privacy settings on
  * */
