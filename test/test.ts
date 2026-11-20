@@ -828,40 +828,47 @@ suite(styleText("blue", "REPLAY PARSING"), async () => {
     // There should be 7 rows in player_caches for this match since there are 3 anonymous players
     assert.equal(rows.length, 7);
 
-    // Verify ClickHouse SQL filtering and aggregation endpoints return expected data when clickhouse=1
+    // Verify ClickHouse SQL filtering and aggregation endpoints return expected data by default
     const accountId = 120269134;
     await db.query(
       "UPDATE players SET fh_unavailable = FALSE WHERE account_id = $1",
       [String(accountId)],
     );
     const matchesChRes = await supertest(app).get(
-      `/api/players/${accountId}/matches?clickhouse=1&api_key=${testKey}`,
+      `/api/players/${accountId}/matches?api_key=${testKey}`,
     );
     assert.equal(matchesChRes.statusCode, 200);
     assert.equal(matchesChRes.body.length, 1);
 
+    // Verify Cassandra fallback still works when clickhouse=0
+    const matchesCassRes = await supertest(app).get(
+      `/api/players/${accountId}/matches?clickhouse=0&api_key=${testKey}`,
+    );
+    assert.equal(matchesCassRes.statusCode, 200);
+    assert.equal(matchesCassRes.body.length, 1);
+
     const recentChRes = await supertest(app).get(
-      `/api/players/${accountId}/recentMatches?clickhouse=1&api_key=${testKey}`,
+      `/api/players/${accountId}/recentMatches?api_key=${testKey}`,
     );
     assert.equal(recentChRes.statusCode, 200);
     assert.equal(recentChRes.body.length, 1);
 
     const wlRes = await supertest(app).get(
-      `/api/players/${accountId}/wl?clickhouse=1&api_key=${testKey}`,
+      `/api/players/${accountId}/wl?api_key=${testKey}`,
     );
     assert.equal(wlRes.statusCode, 200);
     assert.equal(wlRes.body.win, 1);
     assert.equal(wlRes.body.lose, 0);
 
     const wlFilteredRes = await supertest(app).get(
-      `/api/players/${accountId}/wl?win=0&clickhouse=1&api_key=${testKey}`,
+      `/api/players/${accountId}/wl?win=0&api_key=${testKey}`,
     );
     assert.equal(wlFilteredRes.statusCode, 200);
     assert.equal(wlFilteredRes.body.win, 0);
     assert.equal(wlFilteredRes.body.lose, 0);
 
     const totalsRes = await supertest(app).get(
-      `/api/players/${accountId}/totals?clickhouse=1&api_key=${testKey}`,
+      `/api/players/${accountId}/totals?api_key=${testKey}`,
     );
     assert.equal(totalsRes.statusCode, 200);
     const killsTotal = totalsRes.body.find((t: any) => t.field === "kills");
@@ -869,7 +876,7 @@ suite(styleText("blue", "REPLAY PARSING"), async () => {
     assert.equal(killsTotal.sum, 8);
 
     const countsRes = await supertest(app).get(
-      `/api/players/${accountId}/counts?clickhouse=1&api_key=${testKey}`,
+      `/api/players/${accountId}/counts?api_key=${testKey}`,
     );
     assert.equal(countsRes.statusCode, 200);
     assert.equal(countsRes.body.game_mode["22"].games, 1);
@@ -877,7 +884,7 @@ suite(styleText("blue", "REPLAY PARSING"), async () => {
     assert.equal(countsRes.body.is_radiant["1"].games, 1);
 
     const heroesRes = await supertest(app).get(
-      `/api/players/${accountId}/heroes?clickhouse=1&api_key=${testKey}`,
+      `/api/players/${accountId}/heroes?api_key=${testKey}`,
     );
     assert.equal(heroesRes.statusCode, 200);
     const playedHero = heroesRes.body.find((h: any) => h.hero_id === 100);
@@ -885,13 +892,13 @@ suite(styleText("blue", "REPLAY PARSING"), async () => {
     assert.equal(playedHero.win, 1);
 
     const peersRes = await supertest(app).get(
-      `/api/players/${accountId}/peers?clickhouse=1&api_key=${testKey}`,
+      `/api/players/${accountId}/peers?api_key=${testKey}`,
     );
     assert.equal(peersRes.statusCode, 200);
     assert.ok(peersRes.body.length > 0);
 
     const histRes = await supertest(app).get(
-      `/api/players/${accountId}/histograms/kills?clickhouse=1&api_key=${testKey}`,
+      `/api/players/${accountId}/histograms/kills?api_key=${testKey}`,
     );
     assert.equal(histRes.statusCode, 200);
     assert.equal(
@@ -900,7 +907,7 @@ suite(styleText("blue", "REPLAY PARSING"), async () => {
     );
 
     const wcRes = await supertest(app).get(
-      `/api/players/${accountId}/wordcloud?clickhouse=1&api_key=${testKey}`,
+      `/api/players/${accountId}/wordcloud?api_key=${testKey}`,
     );
     assert.equal(wcRes.statusCode, 200);
     assert.equal(wcRes.body.my_word_counts.mad, 3);
