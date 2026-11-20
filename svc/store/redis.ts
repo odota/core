@@ -223,10 +223,15 @@ class PgKvClient {
     return this.incrby(key, 1);
   }
 
-  async incrby(key: string, increment: number): Promise<number> {
+  async incrby(
+    key: string,
+    increment: number,
+    expiresAt?: number | string,
+  ): Promise<number> {
+    const exp = expiresAt !== undefined ? Math.floor(Number(expiresAt)) : null;
     const { rows } = await db.query(
       `INSERT INTO kv_store (key, val, expires_at)
-       VALUES ($1, convert_to($2::text, 'UTF8'), NULL)
+       VALUES ($1, convert_to($2::text, 'UTF8'), $4)
        ON CONFLICT (key) DO UPDATE SET
          val = convert_to(
            (CASE
@@ -236,11 +241,12 @@ class PgKvClient {
            'UTF8'
          ),
          expires_at = CASE
+           WHEN $4::bigint IS NOT NULL THEN $4::bigint
            WHEN kv_store.expires_at IS NOT NULL AND kv_store.expires_at <= $3 THEN NULL
            ELSE kv_store.expires_at
          END
        RETURNING convert_from(val, 'UTF8')::bigint AS val`,
-      [key, Math.trunc(increment), nowSec()],
+      [key, Math.trunc(increment), nowSec(), exp],
     );
     return Number(rows[0].val);
   }
@@ -318,21 +324,24 @@ class PgKvClient {
     key: string,
     field: string,
     increment: number,
+    expiresAt?: number | string,
   ): Promise<number> {
+    const exp = expiresAt !== undefined ? Math.floor(Number(expiresAt)) : null;
     const { rows } = await db.query(
       `INSERT INTO kv_hash (key, field, val, expires_at)
-       VALUES ($1, $2, $3::text, NULL)
+       VALUES ($1, $2, $3::text, $5)
        ON CONFLICT (key, field) DO UPDATE SET
          val = (CASE
            WHEN kv_hash.expires_at IS NOT NULL AND kv_hash.expires_at <= $4 THEN 0
            ELSE COALESCE(NULLIF(kv_hash.val, ''), '0')::bigint
          END + $3::bigint)::text,
          expires_at = CASE
+           WHEN $5::bigint IS NOT NULL THEN $5::bigint
            WHEN kv_hash.expires_at IS NOT NULL AND kv_hash.expires_at <= $4 THEN NULL
            ELSE kv_hash.expires_at
          END
        RETURNING val::bigint AS val`,
-      [key, field, Math.trunc(increment), nowSec()],
+      [key, field, Math.trunc(increment), nowSec(), exp],
     );
     return Number(rows[0].val);
   }
@@ -428,6 +437,27 @@ class PgKvClient {
     withScores: boolean,
   ): Promise<string[]> {
     const order = rev ? "score DESC, member DESC" : "score ASC, member ASC";
+    if (start >= 0 && stop >= 0) {
+      if (start > stop) {
+        return [];
+      }
+      const limit = stop - start + 1;
+      const { rows } = await db.query(
+        `SELECT member, score FROM kv_zset
+         WHERE key = $1 AND (expires_at IS NULL OR expires_at > $2)
+         ORDER BY ${order}
+         LIMIT $3 OFFSET $4`,
+        [key, nowSec(), limit, start],
+      );
+      if (!withScores) {
+        return rows.map((r) => r.member);
+      }
+      const out: string[] = [];
+      for (const r of rows) {
+        out.push(r.member, String(r.score));
+      }
+      return out;
+    }
     const { rows } = await db.query(
       `SELECT member, score FROM kv_zset WHERE key = $1 AND (expires_at IS NULL OR expires_at > $2) ORDER BY ${order}`,
       [key, nowSec()],
@@ -512,6 +542,25 @@ class PgKvClient {
       [key, nowSec()],
     );
     return rows.length ? rows[0].member : null;
+  }
+
+  async saddWithExpiry(
+    key: string,
+    members: (string | number)[],
+    expiresAt: number | string,
+  ): Promise<number> {
+    if (!members.length) {
+      return 0;
+    }
+    const vals = members.map((m) => String(m));
+    const { rowCount } = await db.query(
+      `INSERT INTO kv_set (key, member, expires_at)
+       SELECT $1, m, $3 FROM unnest($2::text[]) AS m
+       ON CONFLICT (key, member) DO UPDATE SET
+         expires_at = $3`,
+      [key, vals, Math.floor(Number(expiresAt))],
+    );
+    return rowCount ?? 0;
   }
 
   async sadd(key: string, ...members: (string | number)[]): Promise<number> {
@@ -710,8 +759,7 @@ export async function getRedisCountDayHash(
 export async function redisCount(prefix: MetricName, incrBy = 1) {
   try {
     const key = `${prefix}:v2:${getStartOfBlockMinutes(60)}`;
-    await redis.incrby(key, incrBy);
-    await redis.expireat(key, getStartOfBlockMinutes(60, 24));
+    await redis.incrby(key, incrBy, getStartOfBlockMinutes(60, 24));
   } catch (e) {
     console.log(e);
   }
@@ -720,8 +768,7 @@ export async function redisCount(prefix: MetricName, incrBy = 1) {
 export async function redisCountDistinct(prefix: MetricName, value: string) {
   try {
     const key = `${prefix}:v2:${getStartOfBlockMinutes(60)}`;
-    await redis.pfadd(key, value);
-    await redis.expireat(key, getStartOfBlockMinutes(60, 24));
+    await redis.saddWithExpiry(key, [value], getStartOfBlockMinutes(60, 24));
   } catch (e) {
     console.log(e);
   }
@@ -734,8 +781,7 @@ export async function redisCountHash(
 ) {
   try {
     const key = `${prefix}:${getStartOfBlockMinutes(60)}`;
-    await redis.hincrby(key, field, incrBy);
-    await redis.expireat(key, getStartOfBlockMinutes(60, 24));
+    await redis.hincrby(key, field, incrBy, getStartOfBlockMinutes(60, 24));
   } catch (e) {
     console.log(e);
   }

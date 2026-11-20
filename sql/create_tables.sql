@@ -503,6 +503,10 @@ CREATE UNLOGGED TABLE IF NOT EXISTS kv_store (
   key text PRIMARY KEY,
   val bytea,
   expires_at bigint
+) WITH (
+  fillfactor = 50,
+  autovacuum_vacuum_scale_factor = 0.01,
+  autovacuum_analyze_scale_factor = 0.01
 );
 CREATE INDEX IF NOT EXISTS kv_store_expires_at_idx ON kv_store(expires_at) WHERE expires_at IS NOT NULL;
 
@@ -512,6 +516,10 @@ CREATE UNLOGGED TABLE IF NOT EXISTS kv_hash (
   val text NOT NULL,
   expires_at bigint,
   PRIMARY KEY (key, field)
+) WITH (
+  fillfactor = 50,
+  autovacuum_vacuum_scale_factor = 0.01,
+  autovacuum_analyze_scale_factor = 0.01
 );
 CREATE INDEX IF NOT EXISTS kv_hash_expires_at_idx ON kv_hash(expires_at) WHERE expires_at IS NOT NULL;
 

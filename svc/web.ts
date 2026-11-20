@@ -478,16 +478,20 @@ app.use(async (req, res, next) => {
     if (req.method === "POST" && /^\/api\/request\/[^/]+\/?$/.test(req.path)) {
       rateCost = 10;
     }
-    const command = redis.multi();
-    command
-      .hincrby("rate_limit", res.locals.usageIdentifier, rateCost)
-      .expireat("rate_limit", getStartOfBlockMinutes(1, 1));
-    command
-      .hincrby("daily_rate_limit", res.locals.usageIdentifier, rateCost)
-      .expireat("daily_rate_limit", getEndOfDay());
-    const resp = await command.exec();
-    const incrValue = resp?.[0]?.[1];
-    const dailyIncrValue = resp?.[2]?.[1];
+    const [incrValue, dailyIncrValue] = await Promise.all([
+      redis.hincrby(
+        "rate_limit",
+        res.locals.usageIdentifier,
+        rateCost,
+        getStartOfBlockMinutes(1, 1),
+      ),
+      redis.hincrby(
+        "daily_rate_limit",
+        res.locals.usageIdentifier,
+        rateCost,
+        getEndOfDay(),
+      ),
+    ]);
     if (config.NODE_ENV === "development" || config.NODE_ENV === "test") {
       // console.log(resp);
       console.log(
