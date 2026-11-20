@@ -5,9 +5,11 @@ import { epochWeek } from "./util/utility.ts";
 import { runInLoop } from "./store/queue.ts";
 import fs from "node:fs/promises";
 import { isRecentVisitor, isRecentlyVisited } from "./util/queries.ts";
+import { cleanupExpiredKv } from "./store/redis.ts";
 
 await runInLoop(
   async function cleanup() {
+    await cleanupExpiredKv();
     const currentWeek = epochWeek();
     await db.query(
       "DELETE FROM team_scenarios WHERE epoch_week IS NULL OR epoch_week <= $1",

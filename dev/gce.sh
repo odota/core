@@ -7,12 +7,6 @@ gcloud compute instances delete --quiet postgres-1
 gcloud compute instances create postgres-1 --machine-type n1-highmem-4 --image-family ubuntu-1404-lts --image-project ubuntu-os-cloud --disk name=disk-postgres-2 --boot-disk-size 10GB --boot-disk-type pd-ssd
 gcloud compute instances add-metadata postgres-1 --metadata-from-file startup-script=./scripts/postgres.sh
 
-#redis
-gcloud compute --project "peaceful-parity-87002" disks create "disk-redis" --size "50" --zone "us-central1-b" --type "pd-ssd"
-gcloud compute instances delete --quiet redis-1
-gcloud compute instances create redis-1 --machine-type n1-standard-1 --image-family ubuntu-1404-lts --image-project ubuntu-os-cloud --disk name=disk-redis --boot-disk-size 10GB --boot-disk-type pd-ssd
-gcloud compute instances add-metadata redis-1 --metadata-from-file startup-script=./scripts/redis.sh
-
 #cassandra
 gcloud compute --project "peaceful-parity-87002" disks create "disk-cassandra-5" --size "2000" --zone "us-central1-b" --type "pd-standard"
 gcloud compute instances delete --quiet cassandra-5

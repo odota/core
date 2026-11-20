@@ -12,7 +12,6 @@ import { statfs } from "node:fs/promises";
 const health: Record<string, () => Promise<Metric>> = {
   // steamApi,
   postgresUsage,
-  redisUsage,
   cassandraUsage,
   clickhouseUsage,
   diskUsage,
@@ -207,15 +206,5 @@ async function diskUsage() {
   return {
     metric: (result.blocks - result.bavail) * result.bsize,
     limit: result.blocks * result.bsize,
-  };
-}
-async function redisUsage() {
-  const info = await redis.info();
-  const line = info
-    .split("\n")
-    .find((line: string) => line.startsWith("used_memory"));
-  return {
-    metric: Number(line?.split(":")[1]),
-    limit: 10 * 10 ** 9,
   };
 }
