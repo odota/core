@@ -110,66 +110,122 @@ export async function getPlayerBenchmarks(m: Match) {
   // write side does in counts.ts (turbo only has global benchmarks)
   const { avg } = turbo ? { avg: null } : await getMatchRankTier(db, m.players);
   const bracket = avg ? Math.floor(avg / 10) : null;
-  return Promise.all(
-    m.players.map(async (p) => {
-      const result: Record<
-        string,
-        { raw?: number; pct?: number; pct_bracket?: number }
-      > = {};
-      for (let metric of Object.keys(benchmarks)) {
-        result[metric] = {};
-        // Use data from previous epoch
-        let key = [
-          "benchmarks",
-          getStartOfBlockMinutes(
-            Number(config.BENCHMARK_RETENTION_MINUTES),
-            -1,
-          ),
-          metric,
-          p.hero_id,
-          turbo ? "turbo" : "",
-        ].join(":");
-        const backupKey = [
-          "benchmarks",
-          getStartOfBlockMinutes(Number(config.BENCHMARK_RETENTION_MINUTES), 0),
-          metric,
-          p.hero_id,
-          turbo ? "turbo" : "",
-        ].join(":");
-        const raw = benchmarks[metric](m, p);
-        result[metric] = {
-          raw,
-        };
-        const exists = await redis.exists(key);
-        if (exists === 0) {
-          // No data, use backup key (current epoch)
-          key = backupKey;
-        }
-        const card = await redis.zcard(key);
-        if (raw !== undefined && raw !== null && !Number.isNaN(Number(raw))) {
-          const count = await redis.zcount(key, "0", raw);
-          // deaths_per_min is the one metric where lower is better, so its
-          // percentile is the share of players with a higher value
-          const pct =
-            metric === "deaths_per_min" ? 1 - count / card : count / card;
-          result[metric].pct = pct;
-          if (bracket) {
-            // Same distribution restricted to this match's rank bracket
-            const bracketKey = `${key}:${bracket}`;
-            const bracketCard = await redis.zcard(bracketKey);
-            if (bracketCard > 0) {
-              const bracketCount = await redis.zcount(bracketKey, "0", raw);
-              result[metric].pct_bracket =
-                metric === "deaths_per_min"
-                  ? 1 - bracketCount / bracketCard
-                  : bracketCount / bracketCard;
-            }
+  const retention = Number(config.BENCHMARK_RETENTION_MINUTES);
+  const prevBlock = getStartOfBlockMinutes(retention, -1);
+  const currBlock = getStartOfBlockMinutes(retention, 0);
+  const turboSuffix = turbo ? "turbo" : "";
+  const metricNames = Object.keys(benchmarks);
+
+  // Collect all (key, raw) pairs to evaluate in a single SQL query
+  const queryKeys: string[] = [];
+  const queryRaws: (number | null)[] = [];
+  const seenPairs = new Set<string>();
+  const addPair = (key: string, raw: number | null) => {
+    const dedupKey = `${key}\0${raw}`;
+    if (!seenPairs.has(dedupKey)) {
+      seenPairs.add(dedupKey);
+      queryKeys.push(key);
+      queryRaws.push(raw);
+    }
+  };
+
+  const playerMetrics = m.players.map((p) => {
+    const entries: {
+      metric: string;
+      raw: number | undefined;
+      numRaw: number | null;
+      primaryKey: string;
+      backupKey: string;
+    }[] = [];
+    for (const metric of metricNames) {
+      const raw = benchmarks[metric](m, p);
+      const numRaw =
+        raw !== undefined && raw !== null && !Number.isNaN(Number(raw))
+          ? Number(raw)
+          : null;
+      const primaryKey = [
+        "benchmarks",
+        prevBlock,
+        metric,
+        p.hero_id,
+        turboSuffix,
+      ].join(":");
+      const backupKey = [
+        "benchmarks",
+        currBlock,
+        metric,
+        p.hero_id,
+        turboSuffix,
+      ].join(":");
+      addPair(primaryKey, numRaw);
+      addPair(backupKey, numRaw);
+      if (bracket) {
+        addPair(`${primaryKey}:${bracket}`, numRaw);
+        addPair(`${backupKey}:${bracket}`, numRaw);
+      }
+      entries.push({ metric, raw, numRaw, primaryKey, backupKey });
+    }
+    return entries;
+  });
+
+  const statsMap = new Map<string, { card: number; count: number }>();
+  if (queryKeys.length) {
+    const now = Math.floor(Date.now() / 1000);
+    const { rows } = await db.query(
+      `SELECT
+         q.key,
+         q.raw,
+         count(z.member)::int AS card,
+         count(z.member) FILTER (WHERE q.raw IS NOT NULL AND z.score >= 0 AND z.score <= q.raw)::int AS cnt
+       FROM unnest($1::text[], $2::double precision[]) AS q(key, raw)
+       LEFT JOIN kv_zset z
+         ON z.key = q.key AND (z.expires_at IS NULL OR z.expires_at > $3)
+       GROUP BY q.key, q.raw`,
+      [queryKeys, queryRaws, now],
+    );
+    for (const r of rows) {
+      statsMap.set(`${r.key}\0${r.raw === null ? null : Number(r.raw)}`, {
+        card: Number(r.card),
+        count: Number(r.cnt),
+      });
+    }
+  }
+
+  return playerMetrics.map((entries) => {
+    const result: Record<
+      string,
+      { raw?: number; pct?: number; pct_bracket?: number }
+    > = {};
+    for (const { metric, raw, numRaw, primaryKey, backupKey } of entries) {
+      result[metric] = { raw };
+      const primaryStats = statsMap.get(`${primaryKey}\0${numRaw}`);
+      const usePrimary = Boolean(primaryStats && primaryStats.card > 0);
+      const chosenKey = usePrimary ? primaryKey : backupKey;
+      const chosenStats = statsMap.get(`${chosenKey}\0${numRaw}`) ?? {
+        card: 0,
+        count: 0,
+      };
+      if (numRaw !== null) {
+        const pct =
+          metric === "deaths_per_min"
+            ? 1 - chosenStats.count / chosenStats.card
+            : chosenStats.count / chosenStats.card;
+        result[metric].pct = pct;
+        if (bracket) {
+          const bracketStats = statsMap.get(
+            `${chosenKey}:${bracket}\0${numRaw}`,
+          );
+          if (bracketStats && bracketStats.card > 0) {
+            result[metric].pct_bracket =
+              metric === "deaths_per_min"
+                ? 1 - bracketStats.count / bracketStats.card
+                : bracketStats.count / bracketStats.card;
           }
         }
       }
-      return result;
-    }),
-  );
+    }
+    return result;
+  });
 }
 
 async function getPlayerDetails(match: Match | ParsedMatch) {

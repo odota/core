@@ -8,7 +8,7 @@ import express from "express";
 import passport from "passport";
 import { SteamOpenIdStrategy } from "passport-steam-openid";
 import cors from "cors";
-import { Redis } from "ioredis";
+import pg from "pg";
 import keys from "./api/keyManagement.ts";
 import api from "./api/api.ts";
 import db, { upsertPlayer } from "./store/db.ts";
@@ -187,28 +187,31 @@ app.use(
 );
 
 app.get("/logs{/:jobId}", async (req, res) => {
-  let logSub = new Redis(config.REDIS_URL);
-  if (req.params.jobId) {
-    await logSub.subscribe(req.params.jobId);
-  } else {
-    await logSub.subscribe("api", "parsed", "gcdata", "queue");
+  const logSub = new pg.Client({ connectionString: config.POSTGRES_URL });
+  await logSub.connect();
+  const channels = req.params.jobId
+    ? [req.params.jobId]
+    : ["api", "parsed", "gcdata", "queue"];
+  for (const ch of channels) {
+    const safeChannel = ch.replace(/"/g, '""');
+    await logSub.query(`LISTEN "${safeChannel}"`);
   }
   res.writeHead(200, {
     "Content-Type": "text/event-stream",
     "Cache-Control": "no-cache",
     Connection: "keep-alive",
   });
-  const messageHandler = (channel: string, message: string) => {
+  const messageHandler = (msg: pg.Notification) => {
     // Write as a Server Sent Event
-    res.write("data: " + message + "\n\n");
+    res.write("data: " + (msg.payload ?? "") + "\n\n");
     // Flush needed when using with compression
     // res.flush();
   };
-  logSub.on("message", messageHandler);
+  logSub.on("notification", messageHandler);
   req.once("close", async () => {
     // Client disconnected, shut down the subscribe
-    logSub.off("message", messageHandler);
-    await logSub.quit();
+    logSub.off("notification", messageHandler);
+    await logSub.end();
   });
 });
 
@@ -237,10 +240,8 @@ app.use((req, res, next) => {
 });
 
 // Health check
-app.get("/healthz", (req, res) => {
-  if (redis.status !== "ready") {
-    throw new Error('redis not ready');
-  }
+app.get("/healthz", async (req, res) => {
+  await db.query("SELECT 1");
   res.end("ok");
 });
 
@@ -477,16 +478,20 @@ app.use(async (req, res, next) => {
     if (req.method === "POST" && /^\/api\/request\/[^/]+\/?$/.test(req.path)) {
       rateCost = 10;
     }
-    const command = redis.multi();
-    command
-      .hincrby("rate_limit", res.locals.usageIdentifier, rateCost)
-      .expireat("rate_limit", getStartOfBlockMinutes(1, 1));
-    command
-      .hincrby("daily_rate_limit", res.locals.usageIdentifier, rateCost)
-      .expireat("daily_rate_limit", getEndOfDay());
-    const resp = await command.exec();
-    const incrValue = resp?.[0]?.[1];
-    const dailyIncrValue = resp?.[2]?.[1];
+    const [incrValue, dailyIncrValue] = await Promise.all([
+      redis.hincrby(
+        "rate_limit",
+        res.locals.usageIdentifier,
+        rateCost,
+        getStartOfBlockMinutes(1, 1),
+      ),
+      redis.hincrby(
+        "daily_rate_limit",
+        res.locals.usageIdentifier,
+        rateCost,
+        getEndOfDay(),
+      ),
+    ]);
     if (config.NODE_ENV === "development" || config.NODE_ENV === "test") {
       // console.log(resp);
       console.log(

@@ -499,6 +499,64 @@ CREATE TABLE IF NOT EXISTS aliases(
   name_since timestamp with time zone
 );
 
+CREATE UNLOGGED TABLE IF NOT EXISTS kv_store (
+  key text PRIMARY KEY,
+  val bytea,
+  expires_at bigint
+) WITH (
+  fillfactor = 50,
+  autovacuum_vacuum_scale_factor = 0.01,
+  autovacuum_analyze_scale_factor = 0.01
+);
+CREATE INDEX IF NOT EXISTS kv_store_expires_at_idx ON kv_store(expires_at) WHERE expires_at IS NOT NULL;
+
+CREATE UNLOGGED TABLE IF NOT EXISTS kv_hash (
+  key text NOT NULL,
+  field text NOT NULL,
+  val text NOT NULL,
+  expires_at bigint,
+  PRIMARY KEY (key, field)
+) WITH (
+  fillfactor = 50,
+  autovacuum_vacuum_scale_factor = 0.01,
+  autovacuum_analyze_scale_factor = 0.01
+);
+CREATE INDEX IF NOT EXISTS kv_hash_expires_at_idx ON kv_hash(expires_at) WHERE expires_at IS NOT NULL;
+
+CREATE UNLOGGED TABLE IF NOT EXISTS kv_zset (
+  key text NOT NULL,
+  member text NOT NULL,
+  score double precision NOT NULL,
+  expires_at bigint,
+  PRIMARY KEY (key, member)
+);
+CREATE INDEX IF NOT EXISTS kv_zset_key_score_idx ON kv_zset(key, score);
+CREATE INDEX IF NOT EXISTS kv_zset_expires_at_idx ON kv_zset(expires_at) WHERE expires_at IS NOT NULL;
+
+CREATE UNLOGGED TABLE IF NOT EXISTS kv_set (
+  key text NOT NULL,
+  member text NOT NULL,
+  expires_at bigint,
+  PRIMARY KEY (key, member)
+);
+CREATE INDEX IF NOT EXISTS kv_set_expires_at_idx ON kv_set(expires_at) WHERE expires_at IS NOT NULL;
+
+CREATE UNLOGGED TABLE IF NOT EXISTS kv_list (
+  id bigserial PRIMARY KEY,
+  key text NOT NULL,
+  val text NOT NULL,
+  expires_at bigint
+);
+CREATE INDEX IF NOT EXISTS kv_list_key_id_idx ON kv_list(key, id DESC);
+CREATE INDEX IF NOT EXISTS kv_list_expires_at_idx ON kv_list(expires_at) WHERE expires_at IS NOT NULL;
+
+CREATE UNLOGGED TABLE IF NOT EXISTS kv_hll (
+  key text PRIMARY KEY,
+  val bytea NOT NULL,
+  expires_at bigint
+);
+CREATE INDEX IF NOT EXISTS kv_hll_expires_at_idx ON kv_hll(expires_at) WHERE expires_at IS NOT NULL;
+
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'readonly') THEN
