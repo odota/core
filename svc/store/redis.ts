@@ -1,5 +1,24 @@
+import crypto from "node:crypto";
 import db from "./db.ts";
 import { getStartOfBlockMinutes } from "../util/time.ts";
+
+const HLL_P = 14;
+const HLL_M = 1 << HLL_P; // 16384 registers (16 KB, ~0.81% std error)
+const HLL_ALPHA_M = 0.7213 / (1 + 1.079 / HLL_M);
+
+function hllBucketAndRank(value: string): [number, number] {
+  const hash = crypto.createHash("sha256").update(value).digest();
+  const h = hash.readBigUInt64BE(0);
+  const idx = Number(h >> 50n); // top 14 bits: 0..16383
+  const w = h & ((1n << 50n) - 1n); // remaining 50 bits
+  let rho = 1;
+  let mask = 1n << 49n;
+  while (rho <= 50 && (w & mask) === 0n) {
+    rho += 1;
+    mask >>= 1n;
+  }
+  return [idx, rho];
+}
 
 function nowSec(): number {
   return Math.floor(Date.now() / 1000);
@@ -261,6 +280,7 @@ class PgKvClient {
       db.query("DELETE FROM kv_zset WHERE key = ANY($1)", [keys]),
       db.query("DELETE FROM kv_set WHERE key = ANY($1)", [keys]),
       db.query("DELETE FROM kv_list WHERE key = ANY($1)", [keys]),
+      db.query("DELETE FROM kv_hll WHERE key = ANY($1)", [keys]),
     ]);
     return results.reduce((acc, r) => acc + (r.rowCount ?? 0), 0);
   }
@@ -278,6 +298,8 @@ class PgKvClient {
          SELECT 1 FROM kv_set WHERE key = $1 AND (expires_at IS NULL OR expires_at > $2)
          UNION ALL
          SELECT 1 FROM kv_list WHERE key = $1 AND (expires_at IS NULL OR expires_at > $2)
+         UNION ALL
+         SELECT 1 FROM kv_hll WHERE key = $1 AND (expires_at IS NULL OR expires_at > $2)
        ) t LIMIT 1`,
       [key, now],
     );
@@ -296,6 +318,7 @@ class PgKvClient {
       db.query("UPDATE kv_zset SET expires_at = $2 WHERE key = $1", [key, ts]),
       db.query("UPDATE kv_set SET expires_at = $2 WHERE key = $1", [key, ts]),
       db.query("UPDATE kv_list SET expires_at = $2 WHERE key = $1", [key, ts]),
+      db.query("UPDATE kv_hll SET expires_at = $2 WHERE key = $1", [key, ts]),
     ]);
     return results.some((r) => (r.rowCount ?? 0) > 0) ? 1 : 0;
   }
@@ -665,8 +688,46 @@ class PgKvClient {
     return "OK";
   }
 
+  async pfaddWithExpiry(
+    key: string,
+    values: string[],
+    expiresAt?: number | string,
+  ): Promise<number> {
+    if (!values.length) {
+      return 0;
+    }
+    const exp = expiresAt !== undefined ? Math.floor(Number(expiresAt)) : null;
+    const now = nowSec();
+    let updated = 0;
+    for (const value of values) {
+      const [idx, rho] = hllBucketAndRank(String(value));
+      const { rowCount } = await db.query(
+        `INSERT INTO kv_hll (key, val, expires_at)
+         VALUES ($1, set_byte(decode(repeat('00', ${HLL_M}), 'hex'), $2, $3), $4)
+         ON CONFLICT (key) DO UPDATE
+           SET val = CASE
+                 WHEN kv_hll.expires_at IS NOT NULL AND kv_hll.expires_at <= $5
+                   THEN set_byte(decode(repeat('00', ${HLL_M}), 'hex'), $2, $3)
+                 ELSE set_byte(kv_hll.val, $2, $3)
+               END,
+               expires_at = CASE
+                 WHEN $4::bigint IS NOT NULL THEN $4::bigint
+                 WHEN kv_hll.expires_at IS NOT NULL AND kv_hll.expires_at <= $5 THEN NULL
+                 ELSE kv_hll.expires_at
+               END
+           WHERE (kv_hll.expires_at IS NOT NULL AND kv_hll.expires_at <= $5)
+              OR get_byte(kv_hll.val, $2) < $3`,
+        [key, idx, rho, exp, now],
+      );
+      if ((rowCount ?? 0) > 0) {
+        updated = 1;
+      }
+    }
+    return updated;
+  }
+
   async pfadd(key: string, ...values: string[]): Promise<number> {
-    return this.sadd(key, ...values);
+    return this.pfaddWithExpiry(key, values);
   }
 
   async pfcount(...keys: string[]): Promise<number> {
@@ -674,10 +735,36 @@ class PgKvClient {
       return 0;
     }
     const { rows } = await db.query(
-      "SELECT count(DISTINCT member)::int AS cnt FROM kv_set WHERE key = ANY($1) AND (expires_at IS NULL OR expires_at > $2)",
+      "SELECT val FROM kv_hll WHERE key = ANY($1) AND (expires_at IS NULL OR expires_at > $2)",
       [keys, nowSec()],
     );
-    return Number(rows[0]?.cnt ?? 0);
+    if (!rows.length) {
+      return 0;
+    }
+    const regs = new Uint8Array(HLL_M);
+    for (const r of rows) {
+      const buf: Buffer = Buffer.isBuffer(r.val) ? r.val : Buffer.from(r.val);
+      const len = Math.min(buf.length, HLL_M);
+      for (let i = 0; i < len; i += 1) {
+        if (buf[i] > regs[i]) {
+          regs[i] = buf[i];
+        }
+      }
+    }
+    let sum = 0;
+    let zeros = 0;
+    for (let i = 0; i < HLL_M; i += 1) {
+      const v = regs[i];
+      sum += Math.pow(2, -v);
+      if (v === 0) {
+        zeros += 1;
+      }
+    }
+    let est = (HLL_ALPHA_M * HLL_M * HLL_M) / sum;
+    if (est <= 2.5 * HLL_M && zeros > 0) {
+      est = HLL_M * Math.log(HLL_M / zeros);
+    }
+    return Math.round(est);
   }
 
   async publish(channel: string, message: string): Promise<number> {
@@ -687,7 +774,7 @@ class PgKvClient {
 
   async flushdb(): Promise<string> {
     await db.query(
-      "TRUNCATE TABLE kv_store, kv_hash, kv_zset, kv_set, kv_list",
+      "TRUNCATE TABLE kv_store, kv_hash, kv_zset, kv_set, kv_list, kv_hll",
     );
     return "OK";
   }
@@ -703,6 +790,7 @@ export async function cleanupExpiredKv() {
     db.query("DELETE FROM kv_zset WHERE expires_at IS NOT NULL AND expires_at <= $1", [now]),
     db.query("DELETE FROM kv_set WHERE expires_at IS NOT NULL AND expires_at <= $1", [now]),
     db.query("DELETE FROM kv_list WHERE expires_at IS NOT NULL AND expires_at <= $1", [now]),
+    db.query("DELETE FROM kv_hll WHERE expires_at IS NOT NULL AND expires_at <= $1", [now]),
   ]);
 }
 
@@ -768,7 +856,7 @@ export async function redisCount(prefix: MetricName, incrBy = 1) {
 export async function redisCountDistinct(prefix: MetricName, value: string) {
   try {
     const key = `${prefix}:v2:${getStartOfBlockMinutes(60)}`;
-    await redis.saddWithExpiry(key, [value], getStartOfBlockMinutes(60, 24));
+    await redis.pfaddWithExpiry(key, [value], getStartOfBlockMinutes(60, 24));
   } catch (e) {
     console.log(e);
   }

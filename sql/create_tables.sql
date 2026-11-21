@@ -550,6 +550,13 @@ CREATE UNLOGGED TABLE IF NOT EXISTS kv_list (
 CREATE INDEX IF NOT EXISTS kv_list_key_id_idx ON kv_list(key, id DESC);
 CREATE INDEX IF NOT EXISTS kv_list_expires_at_idx ON kv_list(expires_at) WHERE expires_at IS NOT NULL;
 
+CREATE UNLOGGED TABLE IF NOT EXISTS kv_hll (
+  key text PRIMARY KEY,
+  val bytea NOT NULL,
+  expires_at bigint
+);
+CREATE INDEX IF NOT EXISTS kv_hll_expires_at_idx ON kv_hll(expires_at) WHERE expires_at IS NOT NULL;
+
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'readonly') THEN
