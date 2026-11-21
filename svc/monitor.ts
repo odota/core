@@ -199,7 +199,7 @@ WHERE database = 'yasp' AND active;
   );
   return {
     metric: Number(rows[0]?.size || 0),
-    limit: 6.3 * 10 ** 12,
+    limit: 2.8 * 10 ** 12,
   };
 }
 async function diskUsage() {
