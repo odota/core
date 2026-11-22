@@ -175,7 +175,12 @@ async function readPlayerCachesClickhouse(
   return rows.map((row) => deserialize(row));
 }
 
-function buildFilteredSubquery(accountId: number, queryObj: QueryObj): string {
+function buildFilteredSubquery(
+  accountId: number,
+  queryObj: QueryObj,
+  cols: readonly string[],
+): string {
+  const selectCols = [...new Set(cols)].join(", ");
   const filterConds = buildFilterConditions(queryObj.filter);
   const whereClause = [`account_id = ${Number(accountId)}`, ...filterConds].join(
     " AND ",
@@ -196,9 +201,9 @@ function buildFilteredSubquery(accountId: number, queryObj: QueryObj): string {
   }
 
   if (limitClause) {
-    return `(SELECT * FROM player_caches FINAL WHERE ${whereClause} ORDER BY ${sortCol} DESC NULLS LAST ${limitClause})`;
+    return `(SELECT ${selectCols} FROM player_caches FINAL WHERE ${whereClause} ORDER BY ${sortCol} DESC NULLS LAST ${limitClause})`;
   }
-  return `(SELECT * FROM player_caches FINAL WHERE ${whereClause})`;
+  return `(SELECT ${selectCols} FROM player_caches FINAL WHERE ${whereClause})`;
 }
 
 export async function getPlayerWinLoss(
@@ -214,7 +219,10 @@ export async function getPlayerWinLoss(
     return { win: 0, lose: 0 };
   }
   redisCount("player_matches");
-  const sub = buildFilteredSubquery(accountId, queryObj);
+  const sub = buildFilteredSubquery(accountId, queryObj, [
+    "player_slot",
+    "radiant_win",
+  ]);
   const winExpr =
     "((ifNull(player_slot, 0) < 128) = ifNull(radiant_win, false))";
   const rows = await clickhouse.query<{ win: number; lose: number }>(
@@ -237,7 +245,7 @@ export async function getPlayerTotals(
     return empty;
   }
   redisCount("player_matches");
-  const sub = buildFilteredSubquery(accountId, queryObj);
+  const sub = buildFilteredSubquery(accountId, queryObj, histogramCols);
   const selectParts = histogramCols.map(
     (k) =>
       `toInt32(count(${k})) AS ${k}_n, toFloat64(ifNull(sum(${k}), 0)) AS ${k}_sum`,
@@ -270,7 +278,16 @@ export async function getPlayerCounts(
     return result;
   }
   redisCount("player_matches");
-  const sub = buildFilteredSubquery(accountId, queryObj);
+  const sub = buildFilteredSubquery(accountId, queryObj, [
+    "player_slot",
+    "radiant_win",
+    "leaver_status",
+    "game_mode",
+    "lobby_type",
+    "lane_role",
+    "cluster",
+    "start_time",
+  ]);
   const winExpr =
     "((ifNull(player_slot, 0) < 128) = ifNull(radiant_win, false))";
   const catExprs: Record<(typeof countsCats)[number], string> = {
@@ -330,14 +347,19 @@ export async function getPlayerHistogram(
     }));
   }
   redisCount("player_matches");
-  const sub = buildFilteredSubquery(accountId, queryObj);
+  const maxSub = buildFilteredSubquery(accountId, queryObj, [field]);
+  const histSub = buildFilteredSubquery(accountId, queryObj, [
+    field,
+    "player_slot",
+    "radiant_win",
+  ]);
   const winExpr =
     "((ifNull(player_slot, 0) < 128) = ifNull(radiant_win, false))";
   const maxRows = await clickhouse.query<{
     cnt: number;
     max_val: number | null;
   }>(
-    `SELECT toInt32(count()) AS cnt, max(ifNull(toFloat64(${field}), 0)) AS max_val FROM ${sub}`,
+    `SELECT toInt32(count()) AS cnt, max(ifNull(toFloat64(${field}), 0)) AS max_val FROM ${maxSub}`,
   );
   const cnt = Number(maxRows[0]?.cnt ?? 0);
   if (cnt === 0) {
@@ -362,7 +384,7 @@ export async function getPlayerHistogram(
     games: number;
     win: number;
   }>(
-    `SELECT toInt32(floor(toFloat64(${field}) / ${bucketSize})) AS idx, toInt32(count()) AS games, toInt32(countIf(${winExpr})) AS win FROM ${sub} WHERE isNotNull(${field}) GROUP BY idx`,
+    `SELECT toInt32(floor(toFloat64(${field}) / ${bucketSize})) AS idx, toInt32(count()) AS games, toInt32(countIf(${winExpr})) AS win FROM ${histSub} WHERE isNotNull(${field}) GROUP BY idx`,
   );
   for (const r of histRows) {
     if (bucketArray[r.idx]) {
@@ -398,7 +420,13 @@ export async function getPlayerHeroes(
     !queryObj.isPrivate
   ) {
     redisCount("player_matches");
-    const sub = buildFilteredSubquery(accountId, queryObj);
+    const sub = buildFilteredSubquery(accountId, queryObj, [
+      "account_id",
+      "start_time",
+      "player_slot",
+      "radiant_win",
+      "heroes",
+    ]);
     const rows = await clickhouse.query<{
       tm_hero: number;
       last_played: number;
@@ -465,7 +493,14 @@ export async function getPlayerPeersCount(
     return teammates;
   }
   redisCount("player_matches");
-  const sub = buildFilteredSubquery(accountId, queryObj);
+  const sub = buildFilteredSubquery(accountId, queryObj, [
+    "start_time",
+    "gold_per_min",
+    "xp_per_min",
+    "player_slot",
+    "radiant_win",
+    "heroes",
+  ]);
   const rows = await clickhouse.query<{
     peer_id: number;
     last_played: number;
@@ -537,7 +572,7 @@ export async function getPlayerWordcloud(
     return result;
   }
   redisCount("player_matches");
-  const sub = buildFilteredSubquery(accountId, queryObj);
+  const sub = buildFilteredSubquery(accountId, queryObj, wordcloudCols);
   const rows = await clickhouse.query<{
     all_word_counts: AnyDict;
     my_word_counts: AnyDict;
@@ -570,7 +605,8 @@ export async function getPlayerWardmap(
     return result;
   }
   redisCount("player_matches");
-  const sub = buildFilteredSubquery(accountId, queryObj);
+  const obsSub = buildFilteredSubquery(accountId, queryObj, ["obs"]);
+  const senSub = buildFilteredSubquery(accountId, queryObj, ["sen"]);
   const rows = await clickhouse.query<{
     kind: "obs" | "sen";
     x: string;
@@ -580,7 +616,7 @@ export async function getPlayerWardmap(
     SELECT 'obs' AS kind, x_kv.1 AS x, y_kv.1 AS y, toInt32(sum(toInt64OrZero(y_kv.2))) AS cnt
     FROM (
       SELECT arrayJoin(JSONExtractKeysAndValuesRaw(ifNull(obs, '{}'))) AS x_kv
-      FROM ${sub}
+      FROM ${obsSub}
       WHERE isNotNull(obs) AND obs != '{}'
     )
     ARRAY JOIN JSONExtractKeysAndValuesRaw(x_kv.2) AS y_kv
@@ -589,7 +625,7 @@ export async function getPlayerWardmap(
     SELECT 'sen' AS kind, x_kv.1 AS x, y_kv.1 AS y, toInt32(sum(toInt64OrZero(y_kv.2))) AS cnt
     FROM (
       SELECT arrayJoin(JSONExtractKeysAndValuesRaw(ifNull(sen, '{}'))) AS x_kv
-      FROM ${sub}
+      FROM ${senSub}
       WHERE isNotNull(sen) AND sen != '{}'
     )
     ARRAY JOIN JSONExtractKeysAndValuesRaw(x_kv.2) AS y_kv
