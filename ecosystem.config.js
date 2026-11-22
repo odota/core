@@ -119,10 +119,6 @@ let arr = [
     name: "counts",
     group: "backend",
   },
-  // {
-  //   name: 'cacher',
-  //   group: 'backend',
-  // },
   {
     name: "monitor",
     group: "backend",

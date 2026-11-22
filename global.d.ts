@@ -293,9 +293,6 @@ type CountsJob = ApiData & {
 type ScenariosJob = {
   match_id: number;
 };
-type CacheJob = {
-  account_id: number;
-};
 type GcDataJob = {
   match_id: number;
   origin?: DataOrigin;
@@ -328,10 +325,6 @@ type QueueInput =
   | {
       name: "parse";
       data: ParseJob;
-    }
-  | {
-      name: "cacheQueue";
-      data: CacheJob;
     }
   | {
       name: "gcdata";
@@ -459,17 +452,6 @@ type MetricName =
   | "player_matches"
   | "self_profile_view"
   | "match_cache_hit"
-  | "player_temp_hit"
-  | "player_temp_miss"
-  | "player_temp_skip"
-  | "player_temp_wait"
-  | "player_temp_write"
-  | "player_temp_write_bytes"
-  | "distinct_player_temp"
-  | "auto_player_temp"
-  | "auto_player_temp_hit"
-  | "auto_player_temp_miss"
-  | "distinct_auto_player_temp"
   | "steam_api_backfill"
   | "steam_api_notfound"
   | "steam_gc_backfill"

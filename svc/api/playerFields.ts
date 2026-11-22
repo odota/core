@@ -119,14 +119,3 @@ export const countsCats = [
   "is_radiant",
 ] as const;
 export const countsCols = countsCats.map((name) => filterDeps[name]).flat();
-
-// Cache a set of columns for the frontpage and matches queries
-export const cacheableCols = new Set([
-  ...alwaysCols,
-  ...significantCols,
-  ...peersCols,
-  ...heroesCols,
-  ...countsCols,
-  ...matchesCols,
-  ...itemsCols,
-]);

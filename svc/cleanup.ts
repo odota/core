@@ -3,8 +3,6 @@ import db from "./store/db.ts";
 import config from "../config.ts";
 import { epochWeek } from "./util/utility.ts";
 import { runInLoop } from "./store/queue.ts";
-import fs from "node:fs/promises";
-import { isRecentVisitor, isRecentlyVisited } from "./util/queries.ts";
 
 await runInLoop(
   async function cleanup() {
@@ -25,24 +23,6 @@ await runInLoop(
       "DELETE from insert_queue where match_seq_num < (select max(match_seq_num) - 100000 from insert_queue) AND processed = TRUE",
     );
     console.log(result.command, result.rowCount);
-    let files: string[] = [];
-    try {
-      files = await fs.readdir("./cache");
-    } catch (e) {
-      // ignore if doesn't exist
-    }
-    for (let file of files) {
-      try {
-        // Check if the ID is of a recent visitor or recently visited profile, if so, don't delete
-        const isVisitor = await isRecentVisitor(Number(file));
-        const isVisited = await isRecentlyVisited(Number(file));
-        if (!isVisited && !isVisitor) {
-          await fs.unlink("./cache/" + file);
-        }
-      } catch (e) {
-        console.log(e);
-      }
-    }
   },
   1 * 60 * 60 * 1000,
 );

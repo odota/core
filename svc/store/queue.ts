@@ -174,8 +174,6 @@ export async function addReliableJob(
     jobKey = `${name}:${data.account_id}`;
   } else if (name === "mmrQueue") {
     jobKey = `${name}:${data.account_id}`;
-  } else if (name === "cacheQueue") {
-    jobKey = `${name}:${data.account_id}`;
   } else if (name === "counts") {
     jobKey = `${name}:${data.match_id}`;
   } else {

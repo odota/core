@@ -21,7 +21,6 @@ const health: Record<string, () => Promise<Metric>> = {
   parseDelay,
   fhDelay,
   mmrDelay,
-  cacheDelay,
   scenariosDelay,
   profileDelay,
   rateDelay,
@@ -118,15 +117,6 @@ async function mmrDelay() {
   const result = await redis.scard("mmrQueue");
   return {
     metric: result,
-    limit: 50000,
-  };
-}
-async function cacheDelay() {
-  const result = await db.query(
-    "select count(*) from queue where type = 'cacheQueue'",
-  );
-  return {
-    metric: result.rows[0]?.count,
     limit: 50000,
   };
 }

@@ -180,18 +180,6 @@ export async function buildStatus(isAdmin: boolean) {
 
         match_cache_hit_last_day: async () =>
           getRedisCountDay("match_cache_hit"),
-        // player_temp_hit_last_day: async () => countDay('player_temp_hit'),
-        // player_temp_miss_last_day: async () => countDay('player_temp_miss'),
-        // player_temp_skip_last_day: async () => countDay('player_temp_skip'),
-        // player_temp_wait_last_day: async () => countDay('player_temp_wait'),
-        // player_temp_write_last_day: async () => countDay('player_temp_write'),
-        // player_temp_write_bytes_last_day: async () =>
-        //   countDay('player_temp_write_bytes'),
-        // distinct_player_temp_read_last_day: async () =>
-        //   countDayDistinct('distinct_player_temp'),
-        // auto_player_temp_last_day: async () => countDay('auto_player_temp'),
-        // distinct_auto_player_temp_last_day: async () =>
-        //   countDayDistinct('distinct_auto_player_temp'),
 
         error_last_day: async () => getRedisCountDay("500_error"),
         web_crash_last_day: async () => getRedisCountDay("web_crash"),

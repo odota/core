@@ -13,11 +13,7 @@ import {
   isRanked,
   isTurbo,
 } from "./utility.ts";
-import {
-  getMatchRankTier,
-  isRecentVisitor,
-  isRecentlyVisited,
-} from "./queries.ts";
+import { getMatchRankTier } from "./queries.ts";
 import { getPGroup } from "./pgroup.ts";
 import { fromNow } from "./time.ts";
 import { blobArchive } from "../store/archive.ts";
@@ -82,14 +78,8 @@ export async function insertMatch(
     isProTier = rows?.length > 0;
   }
 
-  await Promise.all([
-    upsertPlayerCaches(match, average_rank, pgroup, options.type),
-    upsertMatchBlobs(match, options.type),
-    telemetry(match, options),
-    resetMatchCache(match),
-  ]);
-  // Make sure player_caches is updated first
-  await resetPlayerTemp(match, pgroup);
+  await upsertPlayerCaches(match, average_rank, pgroup, options.type);
+  await upsertMatchBlobs(match, options.type);
 
   let doGcData = false;
   const trx = await db.connect();
@@ -113,6 +103,9 @@ export async function insertMatch(
     await delInsertQueue(trx);
     const parseJob = await queueParse(trx);
     await trx.query("COMMIT");
+
+    await telemetry(match, options);
+    await resetMatchCache(match);
     return { parseJob, pgroup };
   } catch (e) {
     await trx.query("ROLLBACK");
@@ -120,6 +113,8 @@ export async function insertMatch(
   } finally {
     trx.release();
   }
+
+
 
   async function upsertLeagueMatch(trx: pg.PoolClient) {
     // Index the matchid to the league
@@ -679,39 +674,6 @@ async function upsertMatchBlobs(
 async function resetMatchCache(match: InsertMatchInput | ParsedMatch | Match) {
   if (config.ENABLE_MATCH_CACHE) {
     await redis?.del(`match:${match.match_id}`);
-  }
-}
-
-async function resetPlayerTemp(
-  match: InsertMatchInput | ParsedMatch | Match,
-  pgroup: PGroup,
-) {
-  if (config.ENABLE_PLAYER_CACHE) {
-    await Promise.allSettled(
-      match.players.map(async (p) => {
-        const account_id = pgroup[p.player_slot]?.account_id ?? p.account_id;
-        if (account_id) {
-          try {
-            // Try deleting the tempfile ince it's now out of date
-            await fs.unlink("./cache/" + account_id);
-          } catch (e) {
-            // File didn't exist, ignore
-          }
-          const isVisitor = await isRecentVisitor(account_id);
-          const isVisited = await isRecentlyVisited(account_id);
-          if (isVisitor || isVisited) {
-            // If OpenDota visitor or profile was recently visited by anyone, pre-compute the tempfile
-            await addReliableJob(
-              {
-                name: "cacheQueue",
-                data: { account_id },
-              },
-              {},
-            );
-          }
-        }
-      }),
-    );
   }
 }
 
