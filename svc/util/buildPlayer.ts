@@ -31,7 +31,7 @@ export async function getPlayerMatches(
   }
   redisCount("player_matches");
 
-  if (queryObj.clickhouse) {
+  if (queryObj.clickhouse !== false) {
     const columns = await getClickhouseColumns("player_caches");
     const sanitizedProject = [
       ...new Set(queryObj.project.filter((f: string) => columns[f])),
