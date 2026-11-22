@@ -19,6 +19,7 @@ export const clickhouse = {
     }
     url.searchParams.set("default_format", "JSONEachRow");
     url.searchParams.set("output_format_json_quote_64bit_integers", "0");
+    url.searchParams.set("max_execution_time", "10");
     if (params) {
       for (const [k, v] of Object.entries(params)) {
         url.searchParams.set(`param_${k}`, String(v));
