@@ -1,3 +1,5 @@
+import http from "node:http";
+import https from "node:https";
 import config from "../../config.ts";
 
 console.log("[CLICKHOUSE] connecting %s", config.CLICKHOUSE_URL);
@@ -6,6 +8,46 @@ const parsedUrl = new URL(config.CLICKHOUSE_URL);
 const defaultDb = parsedUrl.pathname.substring(1) || "yasp";
 parsedUrl.pathname = "/";
 const baseUrl = parsedUrl.toString();
+
+const isHttps = parsedUrl.protocol === "https:";
+const maxConnections = Number(config.CLICKHOUSE_MAX_CONNECTIONS) || 10;
+const agent = isHttps
+  ? new https.Agent({ keepAlive: true, maxSockets: maxConnections })
+  : new http.Agent({ keepAlive: true, maxSockets: maxConnections });
+
+function post(
+  url: URL,
+  body: string,
+): Promise<{ ok: boolean; status: number; text: string }> {
+  return new Promise((resolve, reject) => {
+    const mod = isHttps ? https : http;
+    const req = mod.request(
+      url,
+      {
+        method: "POST",
+        agent,
+        headers: {
+          "Content-Length": Buffer.byteLength(body),
+        },
+      },
+      (res) => {
+        const chunks: Buffer[] = [];
+        res.on("data", (chunk: Buffer) => chunks.push(chunk));
+        res.on("end", () => {
+          const status = res.statusCode ?? 0;
+          resolve({
+            ok: status >= 200 && status < 300,
+            status,
+            text: Buffer.concat(chunks).toString("utf8"),
+          });
+        });
+        res.on("error", reject);
+      },
+    );
+    req.on("error", reject);
+    req.end(body);
+  });
+}
 
 export const clickhouse = {
   async query<T = AnyDict>(
@@ -26,15 +68,11 @@ export const clickhouse = {
         url.searchParams.set(`param_${k}`, String(v));
       }
     }
-    const res = await fetch(url, {
-      method: "POST",
-      body: sql,
-    });
-    const text = await res.text();
+    const res = await post(url, sql);
     if (!res.ok) {
-      throw new Error(`[CLICKHOUSE] query error (${res.status}): ${text}`);
+      throw new Error(`[CLICKHOUSE] query error (${res.status}): ${res.text}`);
     }
-    const trimmed = text.trim();
+    const trimmed = res.text.trim();
     if (!trimmed) {
       return [];
     }
@@ -46,13 +84,9 @@ export const clickhouse = {
     if (database) {
       url.searchParams.set("database", database);
     }
-    const res = await fetch(url, {
-      method: "POST",
-      body: sql,
-    });
+    const res = await post(url, sql);
     if (!res.ok) {
-      const text = await res.text();
-      throw new Error(`[CLICKHOUSE] exec error (${res.status}): ${text}`);
+      throw new Error(`[CLICKHOUSE] exec error (${res.status}): ${res.text}`);
     }
   },
 
@@ -71,13 +105,9 @@ export const clickhouse = {
     }
     url.searchParams.set("query", `INSERT INTO ${table} FORMAT JSONEachRow`);
     const body = rowArr.map((r) => JSON.stringify(r)).join("\n");
-    const res = await fetch(url, {
-      method: "POST",
-      body,
-    });
+    const res = await post(url, body);
     if (!res.ok) {
-      const text = await res.text();
-      throw new Error(`[CLICKHOUSE] insert error (${res.status}): ${text}`);
+      throw new Error(`[CLICKHOUSE] insert error (${res.status}): ${res.text}`);
     }
   },
 
@@ -99,14 +129,10 @@ export const clickhouse = {
       `INSERT INTO ${table} (${columns.join(",")}) FORMAT JSONCompactEachRow`,
     );
     const body = rows.map((r) => JSON.stringify(r)).join("\n");
-    const res = await fetch(url, {
-      method: "POST",
-      body,
-    });
+    const res = await post(url, body);
     if (!res.ok) {
-      const text = await res.text();
       throw new Error(
-        `[CLICKHOUSE] insertCompact error (${res.status}): ${text}`,
+        `[CLICKHOUSE] insertCompact error (${res.status}): ${res.text}`,
       );
     }
   },
