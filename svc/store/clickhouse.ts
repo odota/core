@@ -18,6 +18,7 @@ const agent = isHttps
 function post(
   url: URL,
   body: string,
+  timeoutMs = 30_000,
 ): Promise<{ ok: boolean; status: number; text: string }> {
   return new Promise((resolve, reject) => {
     const mod = isHttps ? https : http;
@@ -26,6 +27,7 @@ function post(
       {
         method: "POST",
         agent,
+        signal: AbortSignal.timeout(timeoutMs),
         headers: {
           "Content-Length": Buffer.byteLength(body),
         },
@@ -61,14 +63,14 @@ export const clickhouse = {
     }
     url.searchParams.set("default_format", "JSONEachRow");
     url.searchParams.set("output_format_json_quote_64bit_integers", "0");
-    url.searchParams.set("max_execution_time", "10");
+    url.searchParams.set("max_execution_time", "20");
     url.searchParams.set("cancel_http_readonly_queries_on_client_close", "1");
     if (params) {
       for (const [k, v] of Object.entries(params)) {
         url.searchParams.set(`param_${k}`, String(v));
       }
     }
-    const res = await post(url, sql);
+    const res = await post(url, sql, 12_000);
     if (!res.ok) {
       throw new Error(`[CLICKHOUSE] query error (${res.status}): ${res.text}`);
     }
