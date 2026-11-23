@@ -105,11 +105,6 @@ export const clickhouse = {
     if (database) {
       url.searchParams.set("database", database);
     }
-    url.searchParams.set("async_insert", "1");
-    url.searchParams.set("wait_for_async_insert", "1");
-    if (config.NODE_ENV !== "test") {
-      url.searchParams.set("async_insert_busy_timeout_ms", "1000");
-    }
     url.searchParams.set("query", `INSERT INTO ${table} FORMAT JSONEachRow`);
     const body = rowArr.map((r) => JSON.stringify(r)).join("\n");
     const res = await post(url, body);
