@@ -438,33 +438,40 @@ export async function isRecentlyVisited(accountId: number): Promise<boolean> {
 
 export async function search(query: string) {
   let accountIdMatch: any[] = [];
-  if (Number.isInteger(Number(query)) && /^\d+$/.test(query)) {
-    let query32 = isSteamID64(query) ? convert64to32(query) : query;
+  const trim = query.trim();
+  if (Number.isInteger(Number(trim)) && /^\d+$/.test(trim)) {
+    let query32 = isSteamID64(trim) ? convert64to32(trim) : trim;
     const { rows } = await db.query(
       "SELECT account_id, personaname, avatarfull FROM players WHERE account_id = $1",
       [Number(query32)],
     );
     accountIdMatch = rows;
+    if (accountIdMatch.length > 0) {
+      return accountIdMatch;
+    }
   }
-  // Set similarity threshold
-  // await db.query('SELECT set_limit(0.5)');
   let rows = [];
-  const trim = query.trim();
-  if (trim.length >= 3) {
+  // Require at least 3 contiguous alphanumeric chars so pg_trgm can use the index
+  if (/[\p{L}\p{N}]{3}/u.test(trim)) {
+    // Escape LIKE wildcards before replacing whitespace with %
+    const escaped = trim.replace(/[\\%_]/g, "\\$&").replace(/\s+/g, "%");
     const personaNameMatch = await db.query(
       `
-      SELECT account_id, avatarfull, personaname, last_match_time, similarity($1, personaname) as sml
-      FROM players
-      WHERE personaname ilike $2
+      SELECT account_id, avatarfull, personaname, last_match_time, similarity($1, personaname) AS sml
+      FROM (
+        SELECT account_id, avatarfull, personaname, last_match_time
+        FROM players
+        WHERE personaname ILIKE $2
+        ORDER BY personaname <-> $1
+        LIMIT 200
+      ) sub
       ORDER BY sml DESC, last_match_time DESC NULLS LAST
       LIMIT 50;
       `,
-      // replace spaces with % so we trigram search around them
-      [trim, `%${trim.replaceAll(" ", "%")}%`],
+      [trim, `%${escaped}%`],
     );
     rows = personaNameMatch.rows;
   }
-  // Later versions of postgres have strict_word_similarity / <<% which may be more accurate
   return [...accountIdMatch, ...rows];
 }
 
