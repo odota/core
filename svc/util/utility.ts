@@ -136,22 +136,15 @@ export function serializeClickhouse(row: AnyDict): AnyDict {
  * */
 export function deserialize(row: AnyDict): any {
   const obj: AnyDict = {};
-  const keys = typeof row.keys === "function" ? row.keys() : Object.keys(row);
-  for (let key of keys) {
-    if (typeof row[key] === "string") {
+  for (const [key, val] of Object.entries(row)) {
+    if (typeof val === "string") {
       try {
-        obj[key] = JSON.parse(row[key]);
+        obj[key] = JSON.parse(val);
       } catch {
-        obj[key] = row[key];
+        obj[key] = val;
       }
-    } else if (
-      row[key] !== null &&
-      typeof row[key] === "object" &&
-      typeof row[key].toNumber === "function"
-    ) {
-      obj[key] = row[key].toNumber();
     } else {
-      obj[key] = row[key];
+      obj[key] = val;
     }
   }
   return obj;

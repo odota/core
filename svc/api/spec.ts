@@ -381,7 +381,9 @@ You can use the API without a key, but registering for a key allows increased ra
           // Endpoint is limited to last 20 server results only
           // Endpoint doesn't support projection and always returns the same set of columns
           queryObj.project = recentMatchesCols;
-          queryObj.dbLimit = 20;
+          queryObj.limit = 20;
+          queryObj.offset = 0;
+          queryObj.sort = undefined;
           // Disable significance filter since we want to show turbo matches by default
           queryObj.filter?.delete("significant");
           const cache = await getPlayerMatches(

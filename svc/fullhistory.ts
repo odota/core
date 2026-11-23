@@ -77,7 +77,7 @@ async function processFullHistory(job: FullHistoryJob, metadata: JobMetadata) {
       (await getPlayerMatches(player.account_id, {
         project: ["match_id"],
         // Only need to check against recent matches since we get back the most recent 500 or 100 matches from Steam API
-        dbLimit: 1000,
+        limit: 1000,
       })) ?? [];
     const origCount = Object.keys(matchesToProcess).length;
     // iterate through db results, delete match_id key if this player has this match already
