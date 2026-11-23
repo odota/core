@@ -1,6 +1,7 @@
 import util from "node:util";
 import {
   buildFilterConditions,
+  filterDeps,
   filterMatches,
   getPatchSqlExpr,
   getRegionSqlExpr,
@@ -45,6 +46,7 @@ export async function getPlayerMatches(
       sort: sortCol,
       limit: queryObj.limit,
       offset: queryObj.offset,
+      columns,
     });
   }
 
@@ -117,6 +119,7 @@ async function readPlayerCachesClickhouse(
     sort?: string;
     limit?: number;
     offset?: number;
+    columns?: Record<string, string>;
   },
 ) {
   const selectCols = project.length ? project.join(",") : "*";
@@ -138,28 +141,42 @@ async function readPlayerCachesClickhouse(
 
   let query: string;
   if (options?.dbLimit) {
+    const filterDepCols: string[] = [];
+    if (options.filter) {
+      for (const k of options.filter.keys()) {
+        const deps = filterDeps[k as keyof typeof filterDeps];
+        if (deps) {
+          for (const d of deps) {
+            if (!options.columns || options.columns[d]) {
+              filterDepCols.push(d);
+            }
+          }
+        }
+      }
+    }
     const innerCols =
       selectCols === "*"
         ? "*"
         : [
             ...new Set([
               ...project,
+              ...filterDepCols,
               ...(options.sort ? [options.sort] : []),
               "match_id",
             ]),
           ].join(",");
-    const innerWhere = ["account_id = {account_id:Int64}", ...filterConds].join(
-      " AND ",
-    );
+    const outerWhere = filterConds.length
+      ? `WHERE ${filterConds.join(" AND ")}`
+      : "";
     query = `
       SELECT ${selectCols}
       FROM (
-        SELECT * FROM player_caches FINAL
+        SELECT ${innerCols} FROM player_caches FINAL
         WHERE account_id = {account_id:Int64}
         ORDER BY match_id DESC
         LIMIT ${Number(options.dbLimit)}
       )
-      WHERE ${innerWhere}
+      ${outerWhere}
       ORDER BY ${sortCol} DESC NULLS LAST
       ${limitClause}
     `;
@@ -347,21 +364,28 @@ export async function getPlayerHistogram(
     }));
   }
   redisCount("player_matches");
-  const maxSub = buildFilteredSubquery(accountId, queryObj, [field]);
-  const histSub = buildFilteredSubquery(accountId, queryObj, [
+  const sub = buildFilteredSubquery(accountId, queryObj, [
     field,
     "player_slot",
     "radiant_win",
   ]);
   const winExpr =
     "((ifNull(player_slot, 0) < 128) = ifNull(radiant_win, false))";
-  const maxRows = await clickhouse.query<{
+  const rows = await clickhouse.query<{
     cnt: number;
     max_val: number | null;
-  }>(
-    `SELECT toInt32(count()) AS cnt, max(ifNull(toFloat64(${field}), 0)) AS max_val FROM ${maxSub}`,
-  );
-  const cnt = Number(maxRows[0]?.cnt ?? 0);
+    vals: number[];
+    wins: number[];
+  }>(`
+    SELECT
+      toInt32(count()) AS cnt,
+      max(ifNull(toFloat64(${field}), 0)) AS max_val,
+      groupArrayIf(toFloat64(${field}), isNotNull(${field})) AS vals,
+      groupArrayIf(toUInt8(${winExpr}), isNotNull(${field})) AS wins
+    FROM ${sub}
+  `);
+  const row = rows[0];
+  const cnt = Number(row?.cnt ?? 0);
   if (cnt === 0) {
     return Array.from({ length: buckets }, () => ({
       x: null as any,
@@ -369,7 +393,7 @@ export async function getPlayerHistogram(
       win: 0,
     }));
   }
-  const maxVal = Number(maxRows[0]?.max_val ?? 0);
+  const maxVal = Number(row?.max_val ?? 0);
   const bucketSize = Math.ceil((maxVal + 1) / buckets);
   const bucketArray = Array.from({ length: buckets }, (_, index) => ({
     x: bucketSize * index,
@@ -379,17 +403,13 @@ export async function getPlayerHistogram(
   if (bucketSize <= 0) {
     return bucketArray;
   }
-  const histRows = await clickhouse.query<{
-    idx: number;
-    games: number;
-    win: number;
-  }>(
-    `SELECT toInt32(floor(toFloat64(${field}) / ${bucketSize})) AS idx, toInt32(count()) AS games, toInt32(countIf(${winExpr})) AS win FROM ${histSub} WHERE isNotNull(${field}) GROUP BY idx`,
-  );
-  for (const r of histRows) {
-    if (bucketArray[r.idx]) {
-      bucketArray[r.idx].games = Number(r.games);
-      bucketArray[r.idx].win = Number(r.win);
+  const vals = row?.vals ?? [];
+  const wins = row?.wins ?? [];
+  for (let i = 0; i < vals.length; i++) {
+    const idx = Math.floor(vals[i] / bucketSize);
+    if (bucketArray[idx]) {
+      bucketArray[idx].games += 1;
+      bucketArray[idx].win += Number(wins[i]);
     }
   }
   return bucketArray;

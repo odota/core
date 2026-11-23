@@ -65,12 +65,13 @@ export const clickhouse = {
     url.searchParams.set("output_format_json_quote_64bit_integers", "0");
     url.searchParams.set("max_execution_time", "20");
     url.searchParams.set("cancel_http_readonly_queries_on_client_close", "1");
+    url.searchParams.set("max_threads", "1");
     if (params) {
       for (const [k, v] of Object.entries(params)) {
         url.searchParams.set(`param_${k}`, String(v));
       }
     }
-    const res = await post(url, sql, 12_000);
+    const res = await post(url, sql, 22_000);
     if (!res.ok) {
       throw new Error(`[CLICKHOUSE] query error (${res.status}): ${res.text}`);
     }
@@ -104,6 +105,11 @@ export const clickhouse = {
     const url = new URL(baseUrl);
     if (database) {
       url.searchParams.set("database", database);
+    }
+    url.searchParams.set("async_insert", "1");
+    url.searchParams.set("wait_for_async_insert", "1");
+    if (config.NODE_ENV !== "test") {
+      url.searchParams.set("async_insert_busy_timeout_ms", "1000");
     }
     url.searchParams.set("query", `INSERT INTO ${table} FORMAT JSONEachRow`);
     const body = rowArr.map((r) => JSON.stringify(r)).join("\n");
