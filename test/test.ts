@@ -11,7 +11,6 @@ import retrieverMatch from "../json/retriever_match.json" with { type: "json" };
 import detailsApi from "../json/details_api.json" with { type: "json" };
 import { Client as DBClient } from "pg";
 import { readFileSync } from "node:fs";
-import { Client } from "cassandra-driver";
 import nock from "nock";
 import config from "../config.ts";
 import spec from "../svc/api/spec.ts";
@@ -19,17 +18,14 @@ import { getPlayerMatches } from "../svc/util/buildPlayer.ts";
 import { insertMatch } from "../svc/util/insert.ts";
 import { buildMatch } from "../svc/util/buildMatch.ts";
 import db, { upsertPlayer } from "../svc/store/db.ts";
-import cassandra from "../svc/store/cassandra.ts";
 import clickhouse from "../svc/store/clickhouse.ts";
 import { suite, test, before, beforeEach, after } from "node:test";
 import { S3Client } from "@bradenmacdonald/s3-lite-client";
 import { averageMedal, styleText } from "../svc/util/utility.ts";
 import { addReliableJob } from "../svc/store/queue.ts";
-import { runMigration } from "../dev/migrater.ts";
 
-const { RETRIEVER_HOST, POSTGRES_URL, CASSANDRA_URL } = config;
+const { RETRIEVER_HOST, POSTGRES_URL } = config;
 const initPostgresHost = POSTGRES_URL.replace("/yasp_test", "/postgres");
-const initCassandraHost = new URL(CASSANDRA_URL).host;
 const testKey = "56bc4c35-586c-4f58-a55b-7a5247613872";
 let app: Express;
 
@@ -75,7 +71,6 @@ nock(`http://${RETRIEVER_HOST}`)
 
 await initPostgres();
 await initRedis();
-await initCassandra();
 await initClickhouse();
 await initRustfs();
 await loadMatches();
@@ -110,27 +105,6 @@ async function initPostgres() {
   await db.query(
     "INSERT INTO leagues(leagueid, tier) VALUES(5399, 'professional')",
   );
-}
-
-async function initCassandra() {
-  const init = new Client({
-    contactPoints: [initCassandraHost],
-    localDataCenter: "datacenter1",
-  });
-  console.log("drop cassandra test keyspace");
-  await init.execute("DROP KEYSPACE IF EXISTS yasp_test");
-  console.log("create cassandra test keyspace");
-  await init.execute(
-    "CREATE KEYSPACE yasp_test WITH REPLICATION = { 'class': 'NetworkTopologyStrategy', 'datacenter1': 1 };",
-  );
-  console.log("create cassandra tables");
-  const tables = readFileSync("./sql/create_tables.cql", "utf8")
-    .split(";")
-    .filter((cql) => cql.length > 1);
-  for (let cql of tables) {
-    await init.execute("USE yasp_test");
-    await init.execute(cql);
-  }
 }
 
 async function initClickhouse() {
@@ -806,15 +780,6 @@ suite(styleText("blue", "REPLAY PARSING"), async () => {
     assert.equal(teamRankings.rows.length, 2);
   });
   test("should have parse data for non-anonymous players in player_caches", async () => {
-    const cassResult = await cassandra.execute(
-      "SELECT * from player_caches WHERE match_id = ? ALLOW FILTERING",
-      [matchData.match_id],
-      { prepare: true },
-    );
-    assert.ok(cassResult.rows[0].stuns);
-    assert.ok(cassResult.rows[0].party_size);
-    assert.equal(cassResult.rows.length, 7);
-
     const rows = await clickhouse.query(
       "SELECT * FROM player_caches FINAL WHERE match_id = {match_id:Int64}",
       { match_id: matchData.match_id },
@@ -828,7 +793,7 @@ suite(styleText("blue", "REPLAY PARSING"), async () => {
     // There should be 7 rows in player_caches for this match since there are 3 anonymous players
     assert.equal(rows.length, 7);
 
-    // Verify ClickHouse SQL filtering and aggregation endpoints return expected data by default
+    // Verify ClickHouse SQL filtering and aggregation endpoints return expected data
     const accountId = 120269134;
     await db.query(
       "UPDATE players SET fh_unavailable = FALSE WHERE account_id = $1",
@@ -839,13 +804,6 @@ suite(styleText("blue", "REPLAY PARSING"), async () => {
     );
     assert.equal(matchesChRes.statusCode, 200);
     assert.equal(matchesChRes.body.length, 1);
-
-    // Verify Cassandra fallback still works when clickhouse=0
-    const matchesCassRes = await supertest(app).get(
-      `/api/players/${accountId}/matches?clickhouse=0&api_key=${testKey}`,
-    );
-    assert.equal(matchesCassRes.statusCode, 200);
-    assert.equal(matchesCassRes.body.length, 1);
 
     const recentChRes = await supertest(app).get(
       `/api/players/${accountId}/recentMatches?api_key=${testKey}`,
@@ -912,18 +870,6 @@ suite(styleText("blue", "REPLAY PARSING"), async () => {
     assert.equal(wcRes.statusCode, 200);
     assert.equal(wcRes.body.my_word_counts.mad, 3);
     assert.equal(wcRes.body.all_word_counts.huskar, 8);
-
-    // Test parallel sharded migration from Cassandra to ClickHouse
-    await clickhouse.exec("TRUNCATE TABLE player_caches");
-    const migratedCount = await runMigration(4, 2n ** 63n, true);
-    assert.ok(migratedCount >= 7);
-    const migratedRows = await clickhouse.query(
-      "SELECT * FROM player_caches FINAL WHERE match_id = {match_id:Int64}",
-      { match_id: matchData.match_id },
-    );
-    assert.equal(migratedRows.length, 7);
-    assert.ok(migratedRows[0].stuns);
-    assert.ok(migratedRows[0].party_size);
   });
 });
 

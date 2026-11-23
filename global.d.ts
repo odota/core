@@ -12,15 +12,12 @@ type QueryObj = {
   projectAll?: boolean;
   filter?: Map<string, (string | number)[]>;
   sort?: keyof ParsedPlayerMatch;
-  // Number of results to return after client filter/sort
+  // Number of results to return
   limit?: number;
   offset?: number;
   having?: number;
-  // Number of results to fetch from the database (before filter/sort)
-  dbLimit?: number;
   isPrivate?: boolean;
   cacheSeconds?: number;
-  clickhouse?: boolean;
 };
 
 type AnyDict = Record<string, any>;

@@ -171,10 +171,6 @@ let arr = [
     name: "syncSubs",
     group: "backend",
   },
-  // {
-  //   name: 'archiver',
-  //   group: 'backend',
-  // },
   {
     name: "reconcile",
     group: "backend",

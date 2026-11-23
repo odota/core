@@ -1,13 +1,9 @@
-import util from "node:util";
 import {
   buildFilterConditions,
-  filterDeps,
-  filterMatches,
   getPatchSqlExpr,
   getRegionSqlExpr,
 } from "./filter.ts";
 import { redisCount } from "../store/redis.ts";
-import cassandra, { getCassandraColumns } from "../store/cassandra.ts";
 import clickhouse, { getClickhouseColumns } from "../store/clickhouse.ts";
 import { deserialize } from "./utility.ts";
 import {
@@ -32,178 +28,30 @@ export async function getPlayerMatches(
   }
   redisCount("player_matches");
 
-  if (queryObj.clickhouse !== false) {
-    const columns = await getClickhouseColumns("player_caches");
-    const sanitizedProject = [
-      ...new Set(queryObj.project.filter((f: string) => columns[f])),
-    ];
-    const projection = queryObj.projectAll ? ["*"] : sanitizedProject;
-    const sortCol =
-      queryObj.sort && columns[queryObj.sort] ? queryObj.sort : "match_id";
-    return readPlayerCachesClickhouse(accountId, projection, {
-      dbLimit: queryObj.dbLimit,
-      filter: queryObj.filter,
-      sort: sortCol,
-      limit: queryObj.limit,
-      offset: queryObj.offset,
-      columns,
-    });
-  }
-
-  const columns = await getCassandraColumns("player_caches");
-  const sanitizedProject = queryObj.project.filter((f: string) => columns[f]);
+  const columns = await getClickhouseColumns("player_caches");
+  const sanitizedProject = [
+    ...new Set(queryObj.project.filter((f: string) => Object.hasOwn(columns, f))),
+  ];
   const projection = queryObj.projectAll ? ["*"] : sanitizedProject;
-
-  const matches = await readPlayerCachesCassandra(
-    accountId,
-    projection,
-    queryObj.dbLimit,
-  );
-  const filtered = filterMatches(matches, queryObj.filter);
-  const sort = queryObj.sort;
-  if (sort) {
-    filtered.sort((a, b) => b[sort] - a[sort]);
-  } else {
-    // Default sort by match_id desc
-    filtered.sort((a, b) => b.match_id - a.match_id);
-  }
-  const offset = filtered.slice(queryObj.offset || 0);
-  const final = offset.slice(0, queryObj.limit || offset.length);
-  return final;
-}
-
-async function readPlayerCachesCassandra(
-  accountId: number,
-  project: string[],
-  limit?: number,
-) {
-  const query = util.format(
-    `
-      SELECT %s FROM player_caches
-      WHERE account_id = ?
-      ORDER BY match_id DESC
-      ${limit ? `LIMIT ${limit}` : ""}
-    `,
-    project.join(","),
-  );
-  return new Promise<ParsedPlayerMatch[]>((resolve, reject) => {
-    let result: ParsedPlayerMatch[] = [];
-    cassandra.eachRow(
-      query,
-      [accountId],
-      {
-        prepare: true,
-        fetchSize: 1000,
-        autoPage: true,
-      },
-      (n, row) => {
-        const m = deserialize(row);
-        result.push(m);
-      },
-      (err) => {
-        if (err) {
-          return reject(err);
-        }
-        return resolve(result);
-      },
-    );
-  });
-}
-
-async function readPlayerCachesClickhouse(
-  accountId: number,
-  project: string[],
-  options?: {
-    dbLimit?: number;
-    filter?: Map<string, (string | number)[]>;
-    sort?: string;
-    limit?: number;
-    offset?: number;
-    columns?: Record<string, string>;
-  },
-) {
-  const selectCols = project.length ? project.join(",") : "*";
-  const filterConds = buildFilterConditions(options?.filter);
-  const whereClause = ["account_id = {account_id:Int64}", ...filterConds].join(
-    " AND ",
-  );
-  const sortCol = options?.sort || "match_id";
-  const limitVal = options?.limit ? Number(options.limit) : 0;
-  const offsetVal = options?.offset ? Number(options.offset) : 0;
-  let limitClause = "";
-  if (limitVal > 0 && offsetVal > 0) {
-    limitClause = `LIMIT ${limitVal} OFFSET ${offsetVal}`;
-  } else if (limitVal > 0) {
-    limitClause = `LIMIT ${limitVal}`;
-  } else if (offsetVal > 0) {
-    limitClause = `OFFSET ${offsetVal}`;
-  }
-
-  let query: string;
-  if (options?.dbLimit) {
-    const filterDepCols: string[] = [];
-    if (options.filter) {
-      for (const k of options.filter.keys()) {
-        const deps = filterDeps[k as keyof typeof filterDeps];
-        if (deps) {
-          for (const d of deps) {
-            if (!options.columns || options.columns[d]) {
-              filterDepCols.push(d);
-            }
-          }
-        }
-      }
-    }
-    const innerCols =
-      selectCols === "*"
-        ? "*"
-        : [
-            ...new Set([
-              ...project,
-              ...filterDepCols,
-              ...(options.sort ? [options.sort] : []),
-              "match_id",
-            ]),
-          ].join(",");
-    const outerWhere = filterConds.length
-      ? `WHERE ${filterConds.join(" AND ")}`
-      : "";
-    query = `
-      SELECT ${selectCols}
-      FROM (
-        SELECT ${innerCols} FROM player_caches FINAL
-        WHERE account_id = {account_id:Int64}
-        ORDER BY match_id DESC
-        LIMIT ${Number(options.dbLimit)}
-      )
-      ${outerWhere}
-      ORDER BY ${sortCol} DESC NULLS LAST
-      ${limitClause}
-    `;
-  } else {
-    query = `
-      SELECT ${selectCols} FROM player_caches FINAL
-      WHERE ${whereClause}
-      ORDER BY ${sortCol} DESC NULLS LAST
-      ${limitClause}
-    `;
-  }
-  const rows = await clickhouse.query(query, { account_id: accountId });
+  const query = await buildPlayerQuery(accountId, queryObj, projection, true);
+  const rows = await clickhouse.query(query);
   return rows.map((row) => deserialize(row));
 }
 
-function buildFilteredSubquery(
+async function buildPlayerQuery(
   accountId: number,
   queryObj: QueryObj,
   cols: readonly string[],
-): string {
-  const selectCols = [...new Set(cols)].join(", ");
+  alwaysOrder = false,
+): Promise<string> {
+  const columns = await getClickhouseColumns("player_caches");
+  const selectCols = cols.length ? [...new Set(cols)].join(", ") : "*";
   const filterConds = buildFilterConditions(queryObj.filter);
   const whereClause = [`account_id = ${Number(accountId)}`, ...filterConds].join(
     " AND ",
   );
   const sortCol =
-    queryObj.sort && /^[a-z0-9_]+$/i.test(queryObj.sort)
+    queryObj.sort && Object.hasOwn(columns, queryObj.sort)
       ? queryObj.sort
       : "match_id";
   const limitVal = queryObj.limit ? Number(queryObj.limit) : 0;
@@ -216,11 +64,11 @@ function buildFilteredSubquery(
   } else if (offsetVal > 0) {
     limitClause = `OFFSET ${offsetVal}`;
   }
-
-  if (limitClause) {
-    return `(SELECT ${selectCols} FROM player_caches FINAL WHERE ${whereClause} ORDER BY ${sortCol} DESC NULLS LAST ${limitClause})`;
-  }
-  return `(SELECT ${selectCols} FROM player_caches FINAL WHERE ${whereClause})`;
+  const orderClause =
+    alwaysOrder || limitClause
+      ? `ORDER BY ${sortCol} DESC NULLS LAST ${limitClause}`
+      : "";
+  return `SELECT ${selectCols} FROM player_caches FINAL WHERE ${whereClause} ${orderClause}`;
 }
 
 export async function getPlayerWinLoss(
@@ -236,14 +84,14 @@ export async function getPlayerWinLoss(
     return { win: 0, lose: 0 };
   }
   redisCount("player_matches");
-  const sub = buildFilteredSubquery(accountId, queryObj, [
+  const sub = await buildPlayerQuery(accountId, queryObj, [
     "player_slot",
     "radiant_win",
   ]);
   const winExpr =
     "((ifNull(player_slot, 0) < 128) = ifNull(radiant_win, false))";
   const rows = await clickhouse.query<{ win: number; lose: number }>(
-    `SELECT toInt32(countIf(${winExpr})) AS win, toInt32(countIf(NOT ${winExpr})) AS lose FROM ${sub}`,
+    `SELECT toInt32(countIf(${winExpr})) AS win, toInt32(countIf(NOT ${winExpr})) AS lose FROM (${sub})`,
   );
   return rows[0] ?? { win: 0, lose: 0 };
 }
@@ -262,13 +110,13 @@ export async function getPlayerTotals(
     return empty;
   }
   redisCount("player_matches");
-  const sub = buildFilteredSubquery(accountId, queryObj, histogramCols);
+  const sub = await buildPlayerQuery(accountId, queryObj, histogramCols);
   const selectParts = histogramCols.map(
     (k) =>
       `toInt32(count(${k})) AS ${k}_n, toFloat64(ifNull(sum(${k}), 0)) AS ${k}_sum`,
   );
   const rows = await clickhouse.query(
-    `SELECT ${selectParts.join(", ")} FROM ${sub}`,
+    `SELECT ${selectParts.join(", ")} FROM (${sub})`,
   );
   const row = rows[0] || {};
   return histogramCols.map((key) => ({
@@ -295,7 +143,7 @@ export async function getPlayerCounts(
     return result;
   }
   redisCount("player_matches");
-  const sub = buildFilteredSubquery(accountId, queryObj, [
+  const sub = await buildPlayerQuery(accountId, queryObj, [
     "player_slot",
     "radiant_win",
     "leaver_status",
@@ -332,7 +180,7 @@ export async function getPlayerCounts(
       SELECT
         ${winExpr} AS win,
         arrayJoin([${catTuples.join(", ")}]) AS pair
-      FROM ${sub}
+      FROM (${sub})
     )
     GROUP BY cat, k
   `);
@@ -364,7 +212,7 @@ export async function getPlayerHistogram(
     }));
   }
   redisCount("player_matches");
-  const sub = buildFilteredSubquery(accountId, queryObj, [
+  const sub = await buildPlayerQuery(accountId, queryObj, [
     field,
     "player_slot",
     "radiant_win",
@@ -382,7 +230,7 @@ export async function getPlayerHistogram(
       max(ifNull(toFloat64(${field}), 0)) AS max_val,
       groupArrayIf(toFloat64(${field}), isNotNull(${field})) AS vals,
       groupArrayIf(toUInt8(${winExpr}), isNotNull(${field})) AS wins
-    FROM ${sub}
+    FROM (${sub})
   `);
   const row = rows[0];
   const cnt = Number(row?.cnt ?? 0);
@@ -440,7 +288,7 @@ export async function getPlayerHeroes(
     !queryObj.isPrivate
   ) {
     redisCount("player_matches");
-    const sub = buildFilteredSubquery(accountId, queryObj, [
+    const sub = await buildPlayerQuery(accountId, queryObj, [
       "account_id",
       "start_time",
       "player_slot",
@@ -475,7 +323,7 @@ export async function getPlayerHeroes(
           arrayJoin(JSONExtractKeysAndValuesRaw(ifNull(heroes, '{}'))) AS kv,
           ((toInt32OrZero(kv.1) < 128) = player_rad) AS same_team,
           (JSONExtractInt(kv.2, 'account_id') = account_id) AS is_self
-        FROM ${sub}
+        FROM (${sub})
       )
       GROUP BY tm_hero
     `);
@@ -513,7 +361,7 @@ export async function getPlayerPeersCount(
     return teammates;
   }
   redisCount("player_matches");
-  const sub = buildFilteredSubquery(accountId, queryObj, [
+  const sub = await buildPlayerQuery(accountId, queryObj, [
     "start_time",
     "gold_per_min",
     "xp_per_min",
@@ -553,7 +401,7 @@ export async function getPlayerPeersCount(
         (ifNull(player_slot, 0) < 128) AS player_rad,
         arrayJoin(JSONExtractKeysAndValuesRaw(ifNull(heroes, '{}'))) AS kv,
         ((toInt32OrZero(kv.1) < 128) = player_rad) AS same_team
-      FROM ${sub}
+      FROM (${sub})
     )
     WHERE peer_id > 0
     GROUP BY peer_id
@@ -592,7 +440,7 @@ export async function getPlayerWordcloud(
     return result;
   }
   redisCount("player_matches");
-  const sub = buildFilteredSubquery(accountId, queryObj, wordcloudCols);
+  const sub = await buildPlayerQuery(accountId, queryObj, wordcloudCols);
   const rows = await clickhouse.query<{
     all_word_counts: AnyDict;
     my_word_counts: AnyDict;
@@ -600,7 +448,7 @@ export async function getPlayerWordcloud(
     SELECT
       sumMap(JSONExtract(ifNull(all_word_counts, '{}'), 'Map(String, Int64)')) AS all_word_counts,
       sumMap(JSONExtract(ifNull(my_word_counts, '{}'), 'Map(String, Int64)')) AS my_word_counts
-    FROM ${sub}
+    FROM (${sub})
   `);
   return {
     all_word_counts: rows[0]?.all_word_counts ?? {},
@@ -625,8 +473,8 @@ export async function getPlayerWardmap(
     return result;
   }
   redisCount("player_matches");
-  const obsSub = buildFilteredSubquery(accountId, queryObj, ["obs"]);
-  const senSub = buildFilteredSubquery(accountId, queryObj, ["sen"]);
+  const obsSub = await buildPlayerQuery(accountId, queryObj, ["obs"]);
+  const senSub = await buildPlayerQuery(accountId, queryObj, ["sen"]);
   const rows = await clickhouse.query<{
     kind: "obs" | "sen";
     x: string;
@@ -636,7 +484,7 @@ export async function getPlayerWardmap(
     SELECT 'obs' AS kind, x_kv.1 AS x, y_kv.1 AS y, toInt32(sum(toInt64OrZero(y_kv.2))) AS cnt
     FROM (
       SELECT arrayJoin(JSONExtractKeysAndValuesRaw(ifNull(obs, '{}'))) AS x_kv
-      FROM ${obsSub}
+      FROM (${obsSub})
       WHERE isNotNull(obs) AND obs != '{}'
     )
     ARRAY JOIN JSONExtractKeysAndValuesRaw(x_kv.2) AS y_kv
@@ -645,7 +493,7 @@ export async function getPlayerWardmap(
     SELECT 'sen' AS kind, x_kv.1 AS x, y_kv.1 AS y, toInt32(sum(toInt64OrZero(y_kv.2))) AS cnt
     FROM (
       SELECT arrayJoin(JSONExtractKeysAndValuesRaw(ifNull(sen, '{}'))) AS x_kv
-      FROM ${senSub}
+      FROM (${senSub})
       WHERE isNotNull(sen) AND sen != '{}'
     )
     ARRAY JOIN JSONExtractKeysAndValuesRaw(x_kv.2) AS y_kv
