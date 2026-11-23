@@ -63,7 +63,7 @@ export const clickhouse = {
     }
     url.searchParams.set("default_format", "JSONEachRow");
     url.searchParams.set("output_format_json_quote_64bit_integers", "0");
-    url.searchParams.set("max_execution_time", "15");
+    url.searchParams.set("max_execution_time", "10");
     url.searchParams.set("cancel_http_readonly_queries_on_client_close", "1");
     url.searchParams.set("max_threads", "1");
     if (params) {
@@ -71,7 +71,7 @@ export const clickhouse = {
         url.searchParams.set(`param_${k}`, String(v));
       }
     }
-    const res = await post(url, sql, 15_000);
+    const res = await post(url, sql, 10_000);
     if (!res.ok) {
       throw new Error(`[CLICKHOUSE] query error (${res.status}): ${res.text}`);
     }
