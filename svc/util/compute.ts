@@ -221,7 +221,11 @@ export function computeMatchData(pm: ParsedPlayerMatch) {
     Object.keys(pm.actions).forEach((key) => {
       actionsSum += pm.actions[key];
     });
-    pm.actions_per_min = Math.floor((actionsSum / pm.duration) * 60);
+    // The parser counts actions from before the horn too, so divide by that
+    // time as well (pre_game_duration is 0 or missing in old matches)
+    pm.actions_per_min = Math.floor(
+      (actionsSum / (pm.duration + (pm.pre_game_duration || 0))) * 60,
+    );
   }
   // compute throw/comeback levels
   if (pm.radiant_gold_adv && pm.radiant_win !== undefined) {

@@ -28,6 +28,7 @@ function extendPlayerData(
     radiant_win: match.radiant_win,
     start_time: match.start_time,
     duration: match.duration,
+    pre_game_duration: match.pre_game_duration,
     cluster: match.cluster,
     lobby_type: match.lobby_type,
     game_mode: match.game_mode,

@@ -23,6 +23,7 @@ import { suite, test, before, beforeEach, after } from "node:test";
 import { S3Client } from "@bradenmacdonald/s3-lite-client";
 import { averageMedal, styleText } from "../svc/util/utility.ts";
 import { addReliableJob } from "../svc/store/queue.ts";
+import { computeMatchData } from "../svc/util/compute.ts";
 
 const { RETRIEVER_HOST, POSTGRES_URL } = config;
 const initPostgresHost = POSTGRES_URL.replace("/yasp_test", "/postgres");
@@ -180,6 +181,26 @@ suite(styleText("blue", "AVERAGE MEDAL"), async () => {
     assert.equal(averageMedal(test1), 15);
     const test2 = [80, 80, 80];
     assert.equal(averageMedal(test2), 75);
+  });
+});
+
+suite(styleText("blue", "ACTIONS PER MINUTE"), async () => {
+  test("should count the time before the horn", () => {
+    const pm = {
+      actions: { "1": 300, "4": 100 },
+      duration: 1110,
+      pre_game_duration: 90,
+    } as unknown as ParsedPlayerMatch;
+    computeMatchData(pm);
+    assert.equal(pm.actions_per_min, 20);
+  });
+  test("should use only the duration when pre_game_duration is missing", () => {
+    const pm = {
+      actions: { "1": 300, "4": 100 },
+      duration: 1110,
+    } as unknown as ParsedPlayerMatch;
+    computeMatchData(pm);
+    assert.equal(pm.actions_per_min, 21);
   });
 });
 
@@ -705,8 +726,16 @@ suite(styleText("blue", "RATE LIMITING"), async () => {
 });
 
 suite(styleText("blue", "REPLAY PARSING"), async () => {
-  const tests = [detailsApi.result];
+  // The fixture is from 2015 and has no pre_game_duration (the API gives 0 for
+  // it), but the replay has the usual 90s of pre-game, so set it for the APM
+  const tests = [{ ...detailsApi.result, pre_game_duration: 90 }];
   const matchData = tests[0];
+  const expectedApm = (actions: NumberDict) =>
+    Math.floor(
+      (Object.values(actions).reduce((a, b) => a + b, 0) /
+        (matchData.duration + 90)) *
+        60,
+    );
   before(async () => {
     // The test match is not a pro match, but we set the leagueid to 5399 so we get data in postgres
     // We could do this with a real pro match but we'd have to upload a new replay file
@@ -769,6 +798,11 @@ suite(styleText("blue", "REPLAY PARSING"), async () => {
     assert.ok(match.draft_timings);
     assert.ok(match.radiant_gold_adv);
     assert.ok(match.radiant_gold_adv.length);
+    assert.ok(match.players[0].actions_per_min);
+    assert.equal(
+      match.players[0].actions_per_min,
+      expectedApm(match.players[0].actions),
+    );
   });
   test("should have parse match data in postgres", async () => {
     // Assert that the pro data (with parsed info) is in postgres
@@ -802,6 +836,16 @@ suite(styleText("blue", "REPLAY PARSING"), async () => {
 
     // Assert that gc data is in player_caches
     assert.ok(rows[0].party_size);
+
+    // Assert that the APM in player_caches counts the pre-game too
+    const match = (await buildMatch(matchData.match_id, {})) as ParsedMatch;
+    rows.forEach((row: AnyDict) => {
+      const player = match.players.find(
+        (p) => p.player_slot === row.player_slot,
+      );
+      assert.ok(player);
+      assert.equal(row.actions_per_min, expectedApm(player.actions));
+    });
 
     // There should be 7 rows in player_caches for this match since there are 3 anonymous players
     assert.equal(rows.length, 7);
