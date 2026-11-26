@@ -189,9 +189,8 @@ suite(styleText("blue", "ACTIONS PER MINUTE"), async () => {
     const pm = {
       actions: { "1": 300, "4": 100 },
       duration: 1110,
-      pre_game_duration: 90,
     } as unknown as ParsedPlayerMatch;
-    computeMatchData(pm);
+    computeMatchData(pm, { pre_game_duration: 90 });
     assert.equal(pm.actions_per_min, 20);
   });
   test("should use only the duration when pre_game_duration is missing", () => {
@@ -799,6 +798,8 @@ suite(styleText("blue", "REPLAY PARSING"), async () => {
     assert.ok(match.radiant_gold_adv);
     assert.ok(match.radiant_gold_adv.length);
     assert.ok(match.players[0].actions_per_min);
+    // pre_game_duration stays on the match, not copied into each player
+    assert.equal((match.players[0] as AnyDict).pre_game_duration, undefined);
     assert.equal(
       match.players[0].actions_per_min,
       expectedApm(match.players[0].actions),

@@ -28,7 +28,6 @@ function extendPlayerData(
     radiant_win: match.radiant_win,
     start_time: match.start_time,
     duration: match.duration,
-    pre_game_duration: match.pre_game_duration,
     cluster: match.cluster,
     lobby_type: match.lobby_type,
     game_mode: match.game_mode,
@@ -36,7 +35,7 @@ function extendPlayerData(
       player.account_id && isContributor(player.account_id),
     ),
   };
-  computeMatchData(p as ParsedPlayerMatch);
+  computeMatchData(p as ParsedPlayerMatch, match);
   // Note: Type is bad here, we're adding properties that shouldn't be there but changing will affect external API
   return p as Player | ParsedPlayer;
 }
