@@ -12,6 +12,7 @@ import { Redis } from "ioredis";
 import keys from "./api/keyManagement.ts";
 import api from "./api/api.ts";
 import db, { upsertPlayer } from "./store/db.ts";
+import clickhouse from "./store/clickhouse.ts";
 import redis, {
   getRedisCountDayHash,
   redisCount,
@@ -237,10 +238,11 @@ app.use((req, res, next) => {
 });
 
 // Health check
-app.get("/healthz", (req, res) => {
+app.get("/healthz", async (req, res) => {
   if (redis.status !== "ready") {
-    throw new Error('redis not ready');
+    throw new Error("redis not ready");
   }
+  await Promise.all([db.query("SELECT 1"), clickhouse.query("SELECT 1")]);
   res.end("ok");
 });
 
