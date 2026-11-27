@@ -84,7 +84,7 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
       styleText("green", `Fetched API data in ${apiTime}ms`),
     );
 
-    const { leagueid, duration, start_time } = apiMatch;
+    const { leagueid, duration, pre_game_duration, start_time } = apiMatch;
     // if (!leagueid && Date.now() / 1000 - start_time > 30 * 24 * 60 * 60) {
     //   redisCount('oldparse');
     //   if (config.DISABLE_OLD_PARSE) {
@@ -146,6 +146,7 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
       {
         start_time,
         duration,
+        pre_game_duration,
         leagueid,
         pgroup,
         origin: job.origin,

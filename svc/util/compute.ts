@@ -56,7 +56,10 @@ export function countWords(
 /**
  * Computes additional properties from a match/player_match
  * */
-export function computeMatchData(pm: ParsedPlayerMatch) {
+export function computeMatchData(
+  pm: ParsedPlayerMatch,
+  match?: { pre_game_duration?: number },
+) {
   const selfHero = heroes[String(pm.hero_id) as keyof typeof heroes];
   // Compute patch based on start_time
   if (pm.start_time) {
@@ -221,7 +224,11 @@ export function computeMatchData(pm: ParsedPlayerMatch) {
     Object.keys(pm.actions).forEach((key) => {
       actionsSum += pm.actions[key];
     });
-    pm.actions_per_min = Math.floor((actionsSum / pm.duration) * 60);
+    // The parser counts actions from before the horn too, so divide by that
+    // time as well (pre_game_duration is 0 or missing in old matches)
+    pm.actions_per_min = Math.floor(
+      (actionsSum / (pm.duration + (match?.pre_game_duration || 0))) * 60,
+    );
   }
   // compute throw/comeback levels
   if (pm.radiant_gold_adv && pm.radiant_win !== undefined) {

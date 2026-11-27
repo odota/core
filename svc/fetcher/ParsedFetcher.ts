@@ -20,7 +20,15 @@ export class ParsedFetcher extends MatchFetcherBase<ParsedData> {
   };
   fetchData = async (
     matchId: number,
-    { leagueid, start_time, duration, origin, pgroup, url }: ParseExtraData,
+    {
+      leagueid,
+      start_time,
+      duration,
+      pre_game_duration,
+      origin,
+      pgroup,
+      url,
+    }: ParseExtraData,
   ) => {
     try {
       // Make a HEAD request for the replay to see if it's available
@@ -67,6 +75,7 @@ export class ParsedFetcher extends MatchFetcherBase<ParsedData> {
       // start_time and duration used for calculating dust adjustments and APM
       start_time,
       duration,
+      pre_game_duration,
     };
     await insertMatch(result, {
       type: "parsed",

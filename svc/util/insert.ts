@@ -576,7 +576,7 @@ export async function upsertPlayerCaches(
         // When reconciling after gcdata we will update this with non-anonymized data (but we won't reconcile for players with open match history so their peers may be incomplete)
         playerMatch.heroes = pgroup;
       }
-      computeMatchData(playerMatch as ParsedPlayerMatch);
+      computeMatchData(playerMatch as ParsedPlayerMatch, copy);
       // Remove extra properties
       Object.keys(playerMatch).forEach((key) => {
         if (!chColumns[key]) {

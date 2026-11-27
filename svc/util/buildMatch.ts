@@ -35,7 +35,7 @@ function extendPlayerData(
       player.account_id && isContributor(player.account_id),
     ),
   };
-  computeMatchData(p as ParsedPlayerMatch);
+  computeMatchData(p as ParsedPlayerMatch, match);
   // Note: Type is bad here, we're adding properties that shouldn't be there but changing will affect external API
   return p as Player | ParsedPlayer;
 }

@@ -32,6 +32,8 @@ type Match = {
   players: Player[];
   start_time: number;
   duration: number;
+  // Seconds between the start of PRE_GAME and the horn, 0 in old matches
+  pre_game_duration?: number;
   leagueid?: number;
   radiant_win: boolean;
   lobby_type: number;
@@ -227,6 +229,7 @@ interface ParsedData {
   // Used for dust and apm calculation
   start_time: number;
   duration: number;
+  pre_game_duration?: number;
 
   // Parsed fields
   version: number;
@@ -527,6 +530,7 @@ type ParseExtraData = {
   leagueid: number;
   start_time: number;
   duration: number;
+  pre_game_duration?: number;
   origin?: DataOrigin;
   pgroup: PGroup;
   url: string;
@@ -564,6 +568,7 @@ type ApiData = MatchDetails["result"] & {
   }[];
   radiant_team_id?: number;
   dire_team_id?: number;
+  pre_game_duration?: number;
 };
 type ApiDataPlayer = ApiData["players"][number] & {
   ability_upgrades_arr?: number[];
