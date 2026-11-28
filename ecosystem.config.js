@@ -21,21 +21,9 @@ let arr = [
     group: "proxy",
   },
   {
-    name: "autoprofiler",
+    name: "worker",
     group: "backend",
   },
-  {
-    name: "autofullhistory",
-    group: "backend",
-  },
-  {
-    name: "autommr",
-    group: "backend",
-  },
-  // {
-  //   name: 'autoreconcile',
-  //   group: 'backend',
-  // },
   // {
   //   // Alternative way of getting matches if GetMatchHistoryBySequenceNum is broken
   //   name: 'backupscanner',
@@ -53,7 +41,7 @@ let arr = [
     name: "web",
     group: "backend",
     exec_mode: prod ? "cluster" : undefined,
-    instances: prod ? 15 : undefined,
+    instances: prod ? 8 : undefined,
   },
   // One local instance of retriever for getting player profiles since this isn't rate limited
   {
@@ -76,10 +64,6 @@ let arr = [
   },
   {
     name: "fullhistory",
-    group: "backend",
-  },
-  {
-    name: "apiadmin",
     group: "backend",
   },
   {
@@ -120,51 +104,7 @@ let arr = [
     group: "backend",
   },
   {
-    name: "monitor",
-    group: "backend",
-  },
-  {
-    name: "cosmetics",
-    group: "backend",
-  },
-  {
-    name: "distributions",
-    group: "backend",
-  },
-  {
-    name: "heroes",
-    group: "backend",
-  },
-  {
-    name: "items",
-    group: "backend",
-  },
-  {
-    name: "leagues",
-    group: "backend",
-  },
-  {
-    name: "livegames",
-    group: "backend",
-  },
-  {
-    name: "proplayers",
-    group: "backend",
-  },
-  {
-    name: "teams",
-    group: "backend",
-  },
-  {
     name: "scenarios",
-    group: "backend",
-  },
-  {
-    name: "cleanup",
-    group: "backend",
-  },
-  {
-    name: "syncSubs",
     group: "backend",
   },
   {
@@ -175,10 +115,6 @@ let arr = [
     name: "rater",
     group: "backend",
   },
-  // {
-  //   name: 'repair',
-  //   group: 'backend',
-  // },
   {
     name: "cycler",
     group: "backend",
