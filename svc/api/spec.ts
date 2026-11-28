@@ -1560,9 +1560,21 @@ You can use the API without a key, but registering for a key allows increased ra
         },
         route: () => "/findMatches",
         func: async (req, res, next) => {
-          // accept as input two arrays of up to 5
-          const t0 = queryParamToArray(req.query.teamA).map(Number).slice(0, 5);
-          const t1 = queryParamToArray(req.query.teamB).map(Number).slice(0, 5);
+          // accept as input two arrays of up to 5 hero IDs
+          const rawT0 = queryParamToArray(req.query.teamA).slice(0, 5);
+          const rawT1 = queryParamToArray(req.query.teamB).slice(0, 5);
+          const isValidHeroId = (v: string) => {
+            if (!/^\d+$/.test(v)) {
+              return false;
+            }
+            const n = Number(v);
+            return Number.isInteger(n) && n > 0 && n <= 2147483647;
+          };
+          if (!rawT0.every(isValidHeroId) || !rawT1.every(isValidHeroId)) {
+            return res.status(400).json({ error: "invalid hero id" });
+          }
+          const t0 = rawT0.map(Number);
+          const t1 = rawT1.map(Number);
           // Construct key for redis
           const key = `combos:${matchupToString(t0, t1, true)}`;
           const reply = await redis.get(key);
