@@ -1,5 +1,5 @@
 import redis, { redisCount } from "./redis.ts";
-import db from "./db.ts";
+import db, { publishLog } from "./db.ts";
 import config from "../../config.ts";
 import { Client } from "pg";
 import { exhaustive, styleText } from "../util/utility.ts";
@@ -236,7 +236,7 @@ export async function addReliableJob(
         name === "parse" ? data.match_id : ""
       }`,
     );
-    await redis.publish("queue", message);
+    await publishLog("queue", message);
   }
   // No row was inserted if a job with the same key already exists
   if (!row?.inserted) {

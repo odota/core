@@ -11,7 +11,7 @@ import { buildReplayUrl, styleText } from "./util/utility.ts";
 import redis, { redisCount } from "./store/redis.ts";
 import { apiFetcher, gcFetcher, parsedFetcher } from "./fetcher/allFetchers.ts";
 import { getPGroup } from "./util/pgroup.ts";
-import db from "./store/db.ts";
+import db, { publishLog } from "./store/db.ts";
 import { getParserCapacity } from "./util/registry.ts";
 import { fromNow } from "./util/time.ts";
 
@@ -32,7 +32,7 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
   let parseTime = 0;
   try {
     redisCount("parser_job");
-    await redis.publish(
+    await publishLog(
       String(metadata.jobId),
       styleText(
         "magenta",
@@ -53,7 +53,7 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
     }
 
     // Fetch the API data
-    await redis.publish(
+    await publishLog(
       String(metadata.jobId),
       styleText("blue", `Fetching API data...`),
     );
@@ -79,7 +79,7 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
       return false;
     }
     apiTime = Date.now() - apiStart;
-    await redis.publish(
+    await publishLog(
       String(metadata.jobId),
       styleText("green", `Fetched API data in ${apiTime}ms`),
     );
@@ -96,7 +96,7 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
     // }
 
     // Fetch the gcdata and construct a replay URL
-    await redis.publish(
+    await publishLog(
       String(metadata.jobId),
       styleText("blue", `Fetching replay data...`),
     );
@@ -125,7 +125,7 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
       }
     }
     gcTime = Date.now() - gcStart;
-    await redis.publish(
+    await publishLog(
       String(metadata.jobId),
       styleText("green", `Fetched replay data in ${gcTime}ms`),
     );
@@ -136,7 +136,7 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
       gcMatch.replay_salt,
     );
 
-    await redis.publish(
+    await publishLog(
       String(metadata.jobId),
       styleText("blue", `Parsing replay...`),
     );
@@ -155,7 +155,7 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
       },
     );
     parseTime = Date.now() - parseStart;
-    await redis.publish(
+    await publishLog(
       String(metadata.jobId),
       styleText("green", `Parsed replay in ${parseTime}ms`),
     );
@@ -206,8 +206,8 @@ async function parseProcessor(job: ParseJob, metadata: JobMetadata) {
         job.match_id
       } ${displayMsg ?? ""}`,
     );
-    await redis.publish("parsed", message);
-    await redis.publish(
+    await publishLog("parsed", message);
+    await publishLog(
       String(metadata.jobId),
       styleText(
         colors[type],

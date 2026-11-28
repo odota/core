@@ -79,4 +79,160 @@ export async function upsertPlayer(
   });
 }
 
+export function getLogChannel(channel: string) {
+  const normalized = /^\d+$/.test(channel) ? `job_${channel}` : channel;
+  if (!/^[a-zA-Z_][a-zA-Z0-9_]{0,62}$/.test(normalized)) {
+    throw new Error(`Invalid notification channel: ${channel}`);
+  }
+  return normalized;
+}
+
+export async function publishLog(channel: string, message: string) {
+  try {
+    await db.query("SELECT pg_notify($1, $2)", [
+      getLogChannel(channel),
+      message.slice(0, 7500),
+    ]);
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+type LogListener = (payload: string) => void;
+const logChannelListeners = new Map<string, Set<LogListener>>();
+let listenClient: pg.Client | null = null;
+let listenConnectPromise: Promise<pg.Client> | null = null;
+let listenReconnectTimer: ReturnType<typeof setTimeout> | null = null;
+
+function scheduleListenReconnect() {
+  if (logChannelListeners.size > 0 && !listenReconnectTimer) {
+    listenReconnectTimer = setTimeout(async () => {
+      listenReconnectTimer = null;
+      if (logChannelListeners.size > 0) {
+        try {
+          await getListenClient();
+        } catch (err) {
+          console.log("[LOGS] pg listen reconnect failed:", err);
+          scheduleListenReconnect();
+        }
+      }
+    }, 1000);
+  }
+}
+
+function resetListenClient(client: pg.Client) {
+  if (listenClient !== client) {
+    return;
+  }
+  listenClient = null;
+  scheduleListenReconnect();
+}
+
+async function getListenClient(): Promise<pg.Client> {
+  if (listenClient) {
+    return listenClient;
+  }
+  if (!listenConnectPromise) {
+    listenConnectPromise = (async () => {
+      try {
+        const client = new pg.Client({
+          connectionString: config.POSTGRES_URL,
+          application_name: `odota-${config.APP_NAME || "unknown"}-logs`,
+        });
+        client.on("notification", (msg) => {
+          const listeners = logChannelListeners.get(msg.channel);
+          if (!listeners) {
+            return;
+          }
+          const payload = msg.payload ?? "";
+          for (const listener of listeners) {
+            listener(payload);
+          }
+        });
+        client.on("error", (err) => {
+          console.log("[LOGS] pg listen client error:", err);
+          resetListenClient(client);
+        });
+        client.on("end", () => {
+          resetListenClient(client);
+        });
+        await client.connect();
+        listenClient = client;
+        // Re-subscribe any active channels (e.g. after reconnect)
+        for (const channel of logChannelListeners.keys()) {
+          await client.query(`LISTEN ${channel}`);
+        }
+        return client;
+      } finally {
+        listenConnectPromise = null;
+      }
+    })();
+  }
+  return listenConnectPromise;
+}
+
+export async function subscribeLogs(
+  rawChannels: string[],
+  listener: LogListener,
+): Promise<() => Promise<void>> {
+  const channels = Array.from(new Set(rawChannels.map(getLogChannel)));
+  const client = await getListenClient();
+  for (const channel of channels) {
+    let listeners = logChannelListeners.get(channel);
+    const isFirst = !listeners || listeners.size === 0;
+    if (!listeners) {
+      listeners = new Set();
+      logChannelListeners.set(channel, listeners);
+    }
+    listeners.add(listener);
+    if (isFirst) {
+      await client.query(`LISTEN ${channel}`);
+    }
+  }
+  let closed = false;
+  return async () => {
+    if (closed) {
+      return;
+    }
+    closed = true;
+    for (const channel of channels) {
+      const listeners = logChannelListeners.get(channel);
+      if (!listeners) {
+        continue;
+      }
+      listeners.delete(listener);
+      if (listeners.size === 0) {
+        logChannelListeners.delete(channel);
+        if (listenClient) {
+          try {
+            await listenClient.query(`UNLISTEN ${channel}`);
+          } catch {}
+        }
+      }
+    }
+  };
+}
+
+export async function withTransaction<T>(
+  fn: (trx: pg.PoolClient) => Promise<T>,
+): Promise<T> {
+  const trx = await db.connect();
+  let releaseErr: any;
+  try {
+    await trx.query("BEGIN");
+    const result = await fn(trx);
+    await trx.query("COMMIT");
+    return result;
+  } catch (e) {
+    try {
+      await trx.query("ROLLBACK");
+    } catch (rollbackErr) {
+      releaseErr = rollbackErr;
+    }
+    throw e;
+  } finally {
+    trx.release(releaseErr);
+  }
+}
+
 export default db;

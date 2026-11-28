@@ -1,11 +1,12 @@
 // Syncs the list of subscribers from Stripe to the database
-import db from "./store/db.ts";
+import type Stripe from "stripe";
+import { withTransaction } from "./store/db.ts";
 import stripe from "./store/stripe.ts";
 import { runInLoop } from "./store/queue.ts";
 
 await runInLoop(async function doSyncSubs() {
   // Get list of current subscribers
-  const result = [];
+  const result: Stripe.Subscription[] = [];
   for await (const sub of stripe.subscriptions.list({
     limit: 100,
     status: "active",
@@ -14,9 +15,7 @@ await runInLoop(async function doSyncSubs() {
     result.push(sub);
   }
   console.log(result.length, "subs");
-  const trx = await db.connect();
-  await trx.query("BEGIN");
-  try {
+  await withTransaction(async (trx) => {
     // Delete all status from subscribers
     await trx.query("DELETE FROM subscriber");
     for (let sub of result) {
@@ -49,11 +48,5 @@ await runInLoop(async function doSyncSubs() {
         );
       }
     }
-    await trx.query("COMMIT");
-  } catch (e) {
-    await trx.query("ROLLBACK");
-    throw e;
-  } finally {
-    trx.release();
-  }
+  });
 }, 60 * 1000);

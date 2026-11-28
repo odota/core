@@ -65,13 +65,6 @@ api.use("/players/:account_id{/:info}", async (req, res, next) => {
     having: Number(req.query.having),
     isPrivate,
   };
-  // Keep track of recently visited account IDs for caching
-  // redis.zadd("visitedIds", Math.floor(Date.now() / 1000), req.params.account_id);
-  redis.zremrangebyscore(
-    "visitedIds",
-    "-inf",
-    Math.floor(Date.now() / 1000) - 30 * 86400,
-  );
   return next();
 });
 api.use("/teams/:team_id{/:info}", (req, res, next) => {

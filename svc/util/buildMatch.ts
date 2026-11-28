@@ -50,39 +50,29 @@ type ProMatchInfo = {
 };
 
 async function getProMatchInfo(match: Match): Promise<ProMatchInfo> {
-  const resultPromise = match.leagueid
-    ? db
-        .query(
+  const [resultRes, leagueRes, radiantTeamRes, direTeamRes] = await Promise.all([
+    match.leagueid
+      ? db.query(
           "SELECT series_id, series_type, replay_salt FROM matches WHERE match_id = $1",
           [match.match_id],
         )
-        .then((r) => r.rows[0])
-    : Promise.resolve(undefined);
-  const leaguePromise = match.leagueid
-    ? db
-        .query("SELECT * FROM leagues WHERE leagueid = $1", [match.leagueid])
-        .then((r) => r.rows[0])
-    : Promise.resolve(undefined);
-  const radiantTeamPromise =
+      : undefined,
+    match.leagueid
+      ? db.query("SELECT * FROM leagues WHERE leagueid = $1", [match.leagueid])
+      : undefined,
     "radiant_team_id" in match
-      ? db
-          .query("SELECT * FROM teams WHERE team_id = $1", [
-            match.radiant_team_id,
-          ])
-          .then((r) => r.rows[0])
-      : Promise.resolve(undefined);
-  const direTeamPromise =
+      ? db.query("SELECT * FROM teams WHERE team_id = $1", [
+          match.radiant_team_id,
+        ])
+      : undefined,
     "dire_team_id" in match
-      ? db
-          .query("SELECT * FROM teams WHERE team_id = $1", [match.dire_team_id])
-          .then((r) => r.rows[0])
-      : Promise.resolve(undefined);
-  const [result, league, radiantTeam, direTeam] = await Promise.all([
-    resultPromise,
-    leaguePromise,
-    radiantTeamPromise,
-    direTeamPromise,
+      ? db.query("SELECT * FROM teams WHERE team_id = $1", [match.dire_team_id])
+      : undefined,
   ]);
+  const result = resultRes?.rows[0];
+  const league = leagueRes?.rows[0];
+  const radiantTeam = radiantTeamRes?.rows[0];
+  const direTeam = direTeamRes?.rows[0];
   const final: ProMatchInfo = {};
   if (result) {
     final.series_id = result.series_id;
@@ -207,11 +197,13 @@ async function getPlayerDetails(match: Match | ParsedMatch) {
 async function getCosmetics(match: Match | ParsedMatch) {
   if ("cosmetics" in match && match.cosmetics) {
     return Promise.all(
-      Object.keys(match.cosmetics).map((itemId) =>
-        db
-          .query("SELECT * FROM cosmetics WHERE item_id = $1", [itemId])
-          .then((r) => r.rows[0]),
-      ),
+      Object.keys(match.cosmetics).map(async (itemId) => {
+        const { rows } = await db.query(
+          "SELECT * FROM cosmetics WHERE item_id = $1",
+          [itemId],
+        );
+        return rows[0];
+      }),
     );
   }
   return null;

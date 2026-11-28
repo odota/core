@@ -2,7 +2,7 @@ import { patch } from "dotaconstants";
 import fs from "node:fs/promises";
 import config from "../../config.ts";
 import { addJob, addReliableJob } from "../store/queue.ts";
-import db, { upsert, upsertPlayer } from "../store/db.ts";
+import db, { publishLog, upsert, withTransaction } from "../store/db.ts";
 import redis, { redisCount } from "../store/redis.ts";
 import {
   getAnonymousAccountId,
@@ -11,7 +11,7 @@ import {
   isRanked,
   isTurbo,
 } from "./utility.ts";
-import { getMatchRankTier } from "./queries.ts";
+import { getMatchRankTier, getTrackedPlayers } from "./queries.ts";
 import { getPGroup } from "./pgroup.ts";
 import { fromNow } from "./time.ts";
 import { blobArchive } from "../store/archive.ts";
@@ -79,9 +79,7 @@ export async function insertMatch(
   await upsertMatchBlobs(match, options.type);
 
   let doGcData = false;
-  const trx = await db.connect();
-  await trx.query("BEGIN");
-  try {
+  const parseJob = await withTransaction(async (trx) => {
     await upsertLeagueMatch(trx);
     await upsertMatchPostgres(trx, isProTier);
     await discoverPlayers(trx);
@@ -98,18 +96,11 @@ export async function insertMatch(
     await queueScenarios(trx);
     await postParsedMatch(trx);
     await delInsertQueue(trx);
-    const parseJob = await queueParse(trx);
-    await trx.query("COMMIT");
-
-    await telemetry(match, options);
-    await resetMatchCache(match);
-    return { parseJob, pgroup };
-  } catch (e) {
-    await trx.query("ROLLBACK");
-    throw e;
-  } finally {
-    trx.release();
-  }
+    return queueParse(trx);
+  });
+  await telemetry(match, options);
+  await resetMatchCache(match);
+  return { parseJob, pgroup };
 
 
 
@@ -474,12 +465,10 @@ export async function insertMatch(
       return null;
     }
     // determine if any player in the match is tracked
-    const trackedScores = await Promise.all(
-      match.players.map((p) => {
-        return redis.zscore("tracked", String(p.account_id));
-      }),
+    const tracked = await getTrackedPlayers();
+    const hasTrackedPlayer = match.players.some(
+      (p) => p.account_id != null && tracked.has(Number(p.account_id)),
     );
-    let hasTrackedPlayer = trackedScores.filter(Boolean).length > 0;
     const isLeagueMatch = Boolean("leagueid" in match && match.leagueid);
     const doParse = hasTrackedPlayer || isLeagueMatch;
     // By default, lower priority than requests
@@ -667,7 +656,7 @@ async function telemetry(
   const message = `[${new Date().toISOString()}] [${name}] [insert: ${
     options.type
   }] [ended: ${fromNow(endedAt ?? 0)}] ${match.match_id}`;
-  redis?.publish(options.type, message);
+  publishLog(options.type, message);
   if (options.type === "parsed") {
     redisCount("parser");
   }

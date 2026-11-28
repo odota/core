@@ -2,15 +2,8 @@ import config from "../config.ts";
 import db from "./store/db.ts";
 import redis, { redisCount } from "./store/redis.ts";
 import { insertMatch } from "./util/insert.ts";
-import { cacheTrackedPlayers } from "./util/queries.ts";
 
-// Make sure we have tracked players loaded
-const trackedExists = await redis.exists("tracked");
-if (!trackedExists) {
-  await cacheTrackedPlayers();
-}
-
-const parallelism = 75;
+const parallelism = Number(config.INSERTER_PARALLELISM) || 1;
 const skipRating = false;
 const inFlight = new Map<number, Promise<void>>();
 

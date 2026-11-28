@@ -392,6 +392,18 @@ CREATE TABLE IF NOT EXISTS rank_tier (
   rating int
 );
 
+CREATE MATERIALIZED VIEW IF NOT EXISTS rank_tier_distribution AS
+SELECT
+  rating AS bin,
+  rating AS bin_name,
+  count(*)::bigint AS count,
+  SUM(count(*)) OVER (ORDER BY rating)::bigint AS cumulative_sum
+FROM rank_tier
+WHERE rating IS NOT NULL
+GROUP BY rating
+ORDER BY rating;
+CREATE UNIQUE INDEX IF NOT EXISTS rank_tier_distribution_bin_idx ON rank_tier_distribution(bin);
+
 CREATE TABLE IF NOT EXISTS leaderboard_rank (
   PRIMARY KEY (account_id),
   account_id bigint,

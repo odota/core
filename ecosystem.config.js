@@ -124,10 +124,6 @@ let arr = [
     group: "backend",
   },
   {
-    name: "buildsets",
-    group: "backend",
-  },
-  {
     name: "cosmetics",
     group: "backend",
   },

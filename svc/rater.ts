@@ -1,5 +1,5 @@
 import { gcFetcher } from "./fetcher/allFetchers.ts";
-import db from "./store/db.ts";
+import db, { withTransaction } from "./store/db.ts";
 import { redisCount } from "./store/redis.ts";
 import { average, isRadiant, isTurbo } from "./util/utility.ts";
 import { addReliableJob, runInLoop } from "./store/queue.ts";
@@ -83,10 +83,7 @@ await runInLoop(async function rate() {
   const win2 = Number(!row.radiant_win);
   const ratingDiff1 = kFactor * (win1 - e1);
   const ratingDiff2 = kFactor * (win2 - e2);
-  // Start transaction
-  const trx = await db.connect();
-  await trx.query("BEGIN");
-  try {
+  await withTransaction(async (trx) => {
     // Rate each player
     console.log("match %s, radiant_win: %s", row.match_id, row.radiant_win);
     for (let p of gcMatch.players) {
@@ -112,13 +109,6 @@ await runInLoop(async function rate() {
       "DELETE FROM rating_queue WHERE match_seq_num = $1",
       [row.match_seq_num],
     );
-    // Commit transaction
-    await trx.query("COMMIT");
-    redisCount("rater");
-  } catch (e) {
-    await trx.query("ROLLBACK");
-    throw e;
-  } finally {
-    trx.release();
-  }
+  });
+  redisCount("rater");
 }, 0);

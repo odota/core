@@ -8,10 +8,9 @@ import express from "express";
 import passport from "passport";
 import { SteamOpenIdStrategy } from "passport-steam-openid";
 import cors from "cors";
-import { Redis } from "ioredis";
 import keys from "./api/keyManagement.ts";
 import api from "./api/api.ts";
-import db, { upsertPlayer } from "./store/db.ts";
+import db, { getLogChannel, subscribeLogs, upsertPlayer } from "./store/db.ts";
 import clickhouse from "./store/clickhouse.ts";
 import redis, {
   getRedisCountDayHash,
@@ -125,9 +124,6 @@ const onResFinish = async (
   const normPath = req.route?.path;
   redisCountHash("api_paths", req.method + " " + normPath);
   redisCountHash("api_status", String(res.statusCode));
-  if (req.headers.origin) {
-    redisCountHash("api_origins", req.headers.origin);
-  }
   if (req.user && req.user.account_id) {
     await redis.zadd(
       "visitors",
@@ -187,30 +183,60 @@ app.use(
   }),
 );
 
+const MAX_LOG_READERS = 10;
+let activeLogReaders = 0;
+
 app.get("/logs{/:jobId}", async (req, res) => {
-  let logSub = new Redis(config.REDIS_URL);
-  if (req.params.jobId) {
-    await logSub.subscribe(req.params.jobId);
-  } else {
-    await logSub.subscribe("api", "parsed", "gcdata", "queue");
+  if (activeLogReaders >= MAX_LOG_READERS) {
+    return res.status(503).json({ error: "Too many log readers" });
+  }
+  let channels: string[];
+  try {
+    channels = req.params.jobId
+      ? [getLogChannel(req.params.jobId)]
+      : ["api", "parsed", "gcdata", "queue"];
+  } catch (e) {
+    return res.status(400).json({ error: "Invalid job ID" });
+  }
+  activeLogReaders += 1;
+  let cleanedUp = false;
+  let unsubscribe: (() => Promise<void>) | null = null;
+  const cleanup = async () => {
+    if (cleanedUp) {
+      return;
+    }
+    cleanedUp = true;
+    activeLogReaders = Math.max(0, activeLogReaders - 1);
+    if (unsubscribe) {
+      await unsubscribe();
+    }
+  };
+  let ready = false;
+  try {
+    unsubscribe = await subscribeLogs(channels, (payload) => {
+      if (!ready || res.writableEnded) {
+        return;
+      }
+      // Write as a Server Sent Event
+      res.write("data: " + payload + "\n\n");
+      // Flush needed when using with compression
+      // res.flush();
+    });
+  } catch (e) {
+    await cleanup();
+    throw e;
+  }
+  if (req.destroyed || res.writableEnded) {
+    await cleanup();
+    return;
   }
   res.writeHead(200, {
     "Content-Type": "text/event-stream",
     "Cache-Control": "no-cache",
     Connection: "keep-alive",
   });
-  const messageHandler = (channel: string, message: string) => {
-    // Write as a Server Sent Event
-    res.write("data: " + message + "\n\n");
-    // Flush needed when using with compression
-    // res.flush();
-  };
-  logSub.on("message", messageHandler);
-  req.once("close", async () => {
-    // Client disconnected, shut down the subscribe
-    logSub.off("message", messageHandler);
-    await logSub.quit();
-  });
+  ready = true;
+  req.once("close", cleanup);
 });
 
 // This is for passing the IP through if behind load balancer https://expressjs.com/en/guide/behind-proxies.html

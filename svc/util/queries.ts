@@ -18,13 +18,20 @@ import type pg from "pg";
 import { getStartOfBlockMinutes } from "./time.ts";
 
 export async function getDistributions() {
-  const result = new Map<string, any>();
-  const keys = ["distribution:ranks"];
-  for (let r of keys) {
-    const blob = await redis.get(r);
-    result.set(r.split(":")[1], blob ? JSON.parse(blob) : null);
-  }
-  return Object.fromEntries(result);
+  const { rows } = await db.query<{
+    bin: number;
+    bin_name: number;
+    count: number;
+    cumulative_sum: number;
+  }>(
+    "SELECT bin, bin_name, count, cumulative_sum FROM rank_tier_distribution ORDER BY bin",
+  );
+  return {
+    ranks: {
+      rows,
+      sum: { count: rows[rows.length - 1]?.cumulative_sum ?? 0 },
+    },
+  };
 }
 
 export async function getHeroRankings(heroId: string) {
@@ -429,13 +436,6 @@ export async function isRecentVisitor(accountId: number): Promise<boolean> {
   return Boolean(visitTime);
 }
 
-export async function isRecentlyVisited(accountId: number): Promise<boolean> {
-  const visitTime = Number(
-    await redis.zscore("visitedIds", accountId.toString()),
-  );
-  return Boolean(visitTime);
-}
-
 export async function search(query: string) {
   let accountIdMatch: any[] = [];
   const trim = query.trim();
@@ -475,26 +475,35 @@ export async function search(query: string) {
   return [...accountIdMatch, ...rows];
 }
 
-export async function cacheTrackedPlayers() {
-  const { rows: subs } = await db.query<{ account_id: string }>(
-    "SELECT account_id FROM subscriber WHERE status = 'active'",
-  );
-  const subIds = subs.map((sub) => sub.account_id);
-  const contribs = Object.keys(contributors);
-  console.log(
-    "[TRACKED] %s subscribers, %s contributors",
-    subIds.length,
-    contribs.length,
-  );
-  const tracked: string[] = [...subIds, ...contribs];
-  const command = redis.multi();
-  command.del("tracked");
-  // Refresh tracked players with expire date in the future
-  // At one point we tracked players based on visits to OpenDota and updated expire based on that
-  await Promise.all(
-    tracked.map((id) =>
-      command.zadd("tracked", Math.floor(Date.now() / 1000) + 86400, id),
-    ),
-  );
-  await command.exec();
+let trackedPlayers: Set<number> = new Set();
+let trackedPlayersUpdatedAt = 0;
+let trackedPlayersPromise: Promise<Set<number>> | null = null;
+
+export async function getTrackedPlayers(): Promise<Set<number>> {
+  const now = Date.now();
+  if (trackedPlayersUpdatedAt && now - trackedPlayersUpdatedAt <= 60 * 1000) {
+    return trackedPlayers;
+  }
+  if (!trackedPlayersPromise) {
+    trackedPlayersPromise = (async () => {
+      try {
+        const { rows: subs } = await db.query<{ account_id: string }>(
+          "SELECT account_id FROM subscriber WHERE status = 'active'",
+        );
+        const subIds = subs.map((sub) => Number(sub.account_id));
+        const contribs = Object.keys(contributors).map(Number);
+        console.log(
+          "[TRACKED] %s subscribers, %s contributors",
+          subIds.length,
+          contribs.length,
+        );
+        trackedPlayers = new Set([...subIds, ...contribs]);
+        trackedPlayersUpdatedAt = Date.now();
+        return trackedPlayers;
+      } finally {
+        trackedPlayersPromise = null;
+      }
+    })();
+  }
+  return trackedPlayersPromise;
 }

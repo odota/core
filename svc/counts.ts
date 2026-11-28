@@ -1,5 +1,6 @@
+import type pg from "pg";
 import config from "../config.ts";
-import db, { upsert, upsertPlayer } from "./store/db.ts";
+import db, { upsert, upsertPlayer, withTransaction } from "./store/db.ts";
 import { runReliableQueue } from "./store/queue.ts";
 import redis, { redisCount } from "./store/redis.ts";
 import { isSignificant } from "./util/compute.ts";
@@ -11,28 +12,20 @@ runReliableQueue("counts", 2, async (job: CountsJob, metadata) => {
     const match = job;
     console.time(match.match_id.toString());
     const { avg, num, isProTier } = job;
-    const trx = await db.connect();
-    await trx.query("BEGIN");
-    try {
-      await updateHeroRankings();
-      await upsertMatchSample();
-      await updateLastPlayed();
+    await withTransaction(async (trx) => {
+      await updateHeroRankings(trx);
+      await upsertMatchSample(trx);
+      await updateLastPlayed(trx);
       await updateRecords();
       await updateHeroCounts(isProTier);
       await updateMatchCounts();
       await updateBenchmarks();
-      await trx.query("COMMIT");
-    } catch (e) {
-      await trx.query("ROLLBACK");
-      throw e;
-    } finally {
-      trx.release();
-    }
+    });
     console.timeEnd(match.match_id.toString());
 
     return true;
 
-    async function updateHeroRankings() {
+    async function updateHeroRankings(trx: pg.PoolClient) {
       if (!isSignificant(match)) {
         return;
       }
@@ -74,7 +67,7 @@ runReliableQueue("counts", 2, async (job: CountsJob, metadata) => {
       );
     }
 
-    async function upsertMatchSample() {
+    async function upsertMatchSample(trx: pg.PoolClient) {
       if (match.match_id % 100 < Number(config.PUBLIC_SAMPLE_PERCENT)) {
         const radiant_team = match.players
           .filter((p) => isRadiant(p))
@@ -130,7 +123,7 @@ runReliableQueue("counts", 2, async (job: CountsJob, metadata) => {
       }
     }
 
-    async function updateLastPlayed() {
+    async function updateLastPlayed(trx: pg.PoolClient) {
       const filteredPlayers = match.players.filter(
         (player) =>
           player.account_id && player.account_id !== getAnonymousAccountId(),

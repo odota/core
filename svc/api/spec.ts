@@ -273,41 +273,36 @@ You can use the API without a key, but registering for a key allows increased ra
             return next();
           }
           const [
-            rankTier,
-            leaderboardRank,
-            computedRating,
-            computedRatingTurbo,
-            aliases,
+            rankTierRes,
+            leaderboardRankRes,
+            computedRatingRes,
+            computedRatingTurboRes,
+            aliasesRes,
           ] = await Promise.all([
-            db
-              .query("SELECT * FROM rank_tier WHERE account_id = $1", [
-                accountId,
-              ])
-              .then((r) => r.rows[0]),
-            db
-              .query("SELECT * FROM leaderboard_rank WHERE account_id = $1", [
-                accountId,
-              ])
-              .then((r) => r.rows[0]),
-            db
-              .query(
-                "SELECT * FROM player_computed_mmr WHERE account_id = $1",
-                [accountId],
-              )
-              .then((r) => r.rows[0]),
-            db
-              .query(
-                "SELECT * FROM player_computed_mmr_turbo WHERE account_id = $1",
-                [accountId],
-              )
-              .then((r) => r.rows[0]),
-            db
-              .query(
-                "SELECT personaname, name_since FROM aliases WHERE account_id = $1",
-                [accountId],
-              )
-              .then((r) => r.rows),
+            db.query("SELECT * FROM rank_tier WHERE account_id = $1", [
+              accountId,
+            ]),
+            db.query("SELECT * FROM leaderboard_rank WHERE account_id = $1", [
+              accountId,
+            ]),
+            db.query(
+              "SELECT * FROM player_computed_mmr WHERE account_id = $1",
+              [accountId],
+            ),
+            db.query(
+              "SELECT * FROM player_computed_mmr_turbo WHERE account_id = $1",
+              [accountId],
+            ),
+            db.query(
+              "SELECT personaname, name_since FROM aliases WHERE account_id = $1",
+              [accountId],
+            ),
           ]);
+          const rankTier = rankTierRes.rows[0];
+          const leaderboardRank = leaderboardRankRes.rows[0];
+          const computedRating = computedRatingRes.rows[0];
+          const computedRatingTurbo = computedRatingTurboRes.rows[0];
+          const aliases = aliasesRes.rows;
           const result = {
             profile: playerData,
             rank_tier: rankTier?.rating ?? null,

@@ -6,6 +6,7 @@ import redis, {
   getRedisCountLastHour,
 } from "../store/redis.ts";
 import { parallelPromise } from "./utility.ts";
+import { getTrackedPlayers } from "./queries.ts";
 import { getMonthRange } from "./time.ts";
 import { game_mode, lobby_type, region, cluster } from "dotaconstants";
 import os from "node:os";
@@ -69,7 +70,6 @@ export async function buildStatus(isAdmin: boolean) {
 
         login_last_day: async () => getRedisCountDay("login"),
         user_players_recent: async () => redis.zcard("visitors"),
-        visited_players_recent: async () => redis.zcard("visitedIds"),
 
         matches_last_day: async () => getRedisCountDay("added_match"),
         matches_prev_hour: async () => getRedisCountLastHour("added_match"),
@@ -102,7 +102,7 @@ export async function buildStatus(isAdmin: boolean) {
           getRedisCountDay("request_api_fail"),
         dedupe_queue_last_day: async () => getRedisCountDay("dedupe_queue"),
         add_queue_fail_last_day: async () => getRedisCountDay("add_queue_fail"),
-        tracked_players: async () => redis.zcard("tracked"),
+        tracked_players: async () => (await getTrackedPlayers()).size,
         auto_parse_last_day: async () => getRedisCountDay("auto_parse"),
         meta_parsed_last_day: async () => getRedisCountDay("meta_parse"),
 
@@ -342,14 +342,6 @@ export async function buildStatus(isAdmin: boolean) {
       }
       return Object.fromEntries(result);
     },
-    // api_origins: async () => {
-    //   if (isAdmin) {
-    //     const result = await getRedisCountDayHash('api_origins');
-    //     const sorted = Object.entries(result).sort((a, b) => b[1] - a[1]);
-    //     return Object.fromEntries(sorted);
-    //   }
-    //   return {};
-    // },
     game_mode: async () => {
       const result = new Map<string, number>();
       for (let key of Object.keys(game_mode)) {
