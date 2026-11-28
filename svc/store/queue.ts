@@ -4,41 +4,86 @@ import config from "../../config.ts";
 import { Client } from "pg";
 import { exhaustive, styleText } from "../util/utility.ts";
 
-export async function runQueue<T>(
+export async function runReliableQueueBatch<T>(
   queueName: QueueName,
   parallelism: number,
   batchSize: number,
-  processor: (batch: T[], i: number) => Promise<void>,
+  processor: (batch: T[], i: number) => Promise<boolean>,
   getCapacity?: () => Promise<number>,
 ) {
   const executor = async (i: number) => {
+    let consumer: Client | null = null;
     while (true) {
       // If we have a way to measure capacity, throttle the processing speed based on capacity
       if (getCapacity && i >= (await getCapacity())) {
+        if (consumer) {
+          await consumer.end();
+          consumer = null;
+        }
         await new Promise((resolve) => setTimeout(resolve, 3000));
         continue;
       }
-      const resp = await redis.spop(queueName, batchSize);
-      const batch = resp.map((el) => JSON.parse(el) as T);
+      if (!consumer) {
+        consumer = new Client({
+          connectionString: config.POSTGRES_URL,
+          application_name: `odota-${config.APP_NAME || "unknown"}-queue`,
+        });
+        await consumer.connect();
+      }
       const start = Date.now();
-      if (batch?.length) {
+      await consumer.query("BEGIN TRANSACTION");
+      const result = await consumer.query(
+        `
+      UPDATE queue SET attempts = attempts - 1, next_attempt_time = $1
+      WHERE id IN (
+      SELECT id
+      FROM queue
+      WHERE type = $2
+      AND (next_attempt_time IS NULL OR next_attempt_time < now())
+      ORDER BY priority ASC NULLS LAST, id ASC
+      FOR UPDATE SKIP LOCKED
+      LIMIT $3
+      )
+      RETURNING *
+      `,
+        [new Date(Date.now() + 3 * 60 * 1000), queueName, batchSize],
+      );
+      const jobs = result?.rows ?? [];
+      if (jobs.length) {
         try {
-          // NOTE: If we fail here we will not retry the job since this is an unreliable queue
-          // Just log the error and continue
-          await processor(batch, i);
+          const success = await processor(
+            jobs.map((j) => j.data as T),
+            i,
+          );
+          const deleteIds = success
+            ? jobs.map((j) => j.id)
+            : jobs.filter((j) => j.attempts <= 0).map((j) => j.id);
+          if (deleteIds.length) {
+            await consumer.query(
+              "DELETE FROM queue WHERE id = ANY($1::bigint[])",
+              [deleteIds],
+            );
+          }
+          await consumer.query("COMMIT");
+          try {
+            const end = Date.now();
+            await redis.setex(
+              "lastRun:" + config.APP_NAME,
+              config.HEALTH_TIMEOUT,
+              end - start,
+            );
+          } catch (e) {
+            console.log("Failed to update Redis with lastRun");
+          }
         } catch (e) {
           console.log(e);
+          await consumer.query("ROLLBACK");
+          await new Promise((resolve) => setTimeout(resolve, 1000));
         }
       } else {
-        // Wait before trying again
+        await consumer.query("COMMIT");
         await new Promise((resolve) => setTimeout(resolve, 1000));
       }
-      const end = Date.now();
-      await redis.setex(
-        "lastRun:" + config.APP_NAME,
-        config.HEALTH_TIMEOUT,
-        end - start,
-      );
     }
   };
   await Promise.all([...Array(parallelism).keys()].map((_, i) => executor(i)));
@@ -149,11 +194,6 @@ export async function runInLoop(func: () => Promise<void>, delay: number) {
     );
     await new Promise((resolve) => setTimeout(resolve, delay));
   }
-}
-
-export async function addJob(input: QueueInput) {
-  const { name, data } = input;
-  return redis.sadd(name, JSON.stringify(data));
 }
 
 export async function addReliableJob(

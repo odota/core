@@ -1,6 +1,6 @@
 // Updates rank tier data for players periodically
 import db from "./store/db.ts";
-import { addJob, runInLoop } from "./store/queue.ts";
+import { addReliableJob, runInLoop } from "./store/queue.ts";
 
 await runInLoop(async function autoMmr() {
   const { rows } = await db.query(
@@ -8,9 +8,12 @@ await runInLoop(async function autoMmr() {
   );
   console.log(rows);
   for (let row of rows) {
-    await addJob({
-      name: "mmrQueue",
-      data: { account_id: row.account_id },
-    });
+    await addReliableJob(
+      {
+        name: "mmrQueue",
+        data: { account_id: row.account_id },
+      },
+      { attempts: 1 },
+    );
   }
 }, 5000);

@@ -1,6 +1,6 @@
 // Updates Steam profile data for players periodically
 import db from "./store/db.ts";
-import { addJob, runInLoop } from "./store/queue.ts";
+import { addReliableJob, runInLoop } from "./store/queue.ts";
 
 await runInLoop(async function autoProfile() {
   // To optimize the api call we need to do 100 players at a time
@@ -9,9 +9,12 @@ await runInLoop(async function autoProfile() {
   );
   console.log(rows);
   for (let row of rows) {
-    await addJob({
-      name: "profileQueue",
-      data: { account_id: row.account_id },
-    });
+    await addReliableJob(
+      {
+        name: "profileQueue",
+        data: { account_id: row.account_id },
+      },
+      { attempts: 1 },
+    );
   }
 }, 10000);

@@ -1,7 +1,7 @@
 import constants, { heroes } from "dotaconstants";
 import { Pool } from "pg";
 import config from "../../config.ts";
-import { addJob, addReliableJob, getReliableJob } from "../store/queue.ts";
+import { addReliableJob, getReliableJob } from "../store/queue.ts";
 import { buildMatch } from "../util/buildMatch.ts";
 import {
   getPlayerCounts,
@@ -811,19 +811,25 @@ You can use the API without a key, but registering for a key allows increased ra
             {},
           );
           // Also queue a refresh of the user's rank/medal
-          await addJob({
-            name: "mmrQueue",
-            data: {
-              account_id: Number(req.params.account_id),
+          await addReliableJob(
+            {
+              name: "mmrQueue",
+              data: {
+                account_id: Number(req.params.account_id),
+              },
             },
-          });
+            { priority: PRIORITY.REQUEST_DEFAULT },
+          );
           // Queue a refresh of the player name
-          await addJob({
-            name: "profileQueue",
-            data: {
-              account_id: Number(req.params.account_id),
+          await addReliableJob(
+            {
+              name: "profileQueue",
+              data: {
+                account_id: Number(req.params.account_id),
+              },
             },
-          });
+            { priority: PRIORITY.REQUEST_DEFAULT },
+          );
           return res.json({});
         },
       },

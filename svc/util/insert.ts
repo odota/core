@@ -1,7 +1,7 @@
 import { patch } from "dotaconstants";
 import fs from "node:fs/promises";
 import config from "../../config.ts";
-import { addJob, addReliableJob } from "../store/queue.ts";
+import { addReliableJob } from "../store/queue.ts";
 import db, { publishLog, upsert, withTransaction } from "../store/db.ts";
 import redis, { redisCount } from "../store/redis.ts";
 import {
@@ -336,19 +336,25 @@ export async function insertMatch(
         if (rows.length) {
           redisCount("player_discover");
           if (p.account_id) {
-            await addJob({
-              name: "profileQueue",
-              data: {
-                account_id: p.account_id,
+            await addReliableJob(
+              {
+                name: "profileQueue",
+                data: {
+                  account_id: p.account_id,
+                },
               },
-            });
+              { trx, attempts: 1 },
+            );
             // Also queue a refresh of the user's rank/medal
-            await addJob({
-              name: "mmrQueue",
-              data: {
-                account_id: p.account_id,
+            await addReliableJob(
+              {
+                name: "mmrQueue",
+                data: {
+                  account_id: p.account_id,
+                },
               },
-            });
+              { trx, attempts: 1 },
+            );
           }
         }
       }),
@@ -369,12 +375,15 @@ export async function insertMatch(
     });
     await Promise.all(
       arr.map((p) =>
-        addJob({
-          name: "mmrQueue",
-          data: {
-            account_id: p.account_id,
+        addReliableJob(
+          {
+            name: "mmrQueue",
+            data: {
+              account_id: p.account_id,
+            },
           },
-        }),
+          { trx, attempts: 1 },
+        ),
       ),
     );
   }

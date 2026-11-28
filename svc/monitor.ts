@@ -112,9 +112,11 @@ async function fhDelay() {
   };
 }
 async function mmrDelay() {
-  const result = await redis.scard("mmrQueue");
+  const result = await db.query(
+    "select count(*) from queue where type = 'mmrQueue'",
+  );
   return {
-    metric: result,
+    metric: result.rows[0]?.count,
     limit: 50000,
   };
 }
@@ -128,9 +130,11 @@ async function scenariosDelay() {
   };
 }
 async function profileDelay() {
-  const result = await redis.scard("profileQueue");
+  const result = await db.query(
+    "select count(*) from queue where type = 'profileQueue'",
+  );
   return {
-    metric: result,
+    metric: result.rows[0]?.count,
     limit: 50000,
   };
 }

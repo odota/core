@@ -1,33 +1,29 @@
 // Processes a queue of requests to update MMR/rank medal for players
-import { runQueue } from "./store/queue.ts";
+import { runReliableQueue } from "./store/queue.ts";
 import db from "./store/db.ts";
 import config from "../config.ts";
 import { redisCount } from "./store/redis.ts";
 import { getRandomRetrieverUrl } from "./util/registry.ts";
 
-await runQueue<MmrJob>(
+await runReliableQueue(
   "mmrQueue",
   Number(config.MMR_PARALLELISM) || 1,
-  1,
-  async (batch: MmrJob[], i: number) => {
-    const job = batch[0];
+  async (job: MmrJob) => {
     const accountId = job.account_id;
     const url = await getRandomRetrieverUrl(`/profile/${accountId}`);
     console.log(url);
-    let data: RetrieverPlayer | undefined = undefined;
-    while (!data) {
-      try {
-        const resp = await fetch(url, {
-          signal: AbortSignal.timeout(2000),
-        });
-        if (!resp.ok) {
-          throw new Error(`Failed to fetch MMR data: ${resp.status}`);
-        }
-        data = await resp.json();
-      } catch (e) {
-        console.log("[MMR] Error fetching data for %s, retrying...", accountId);
-        await new Promise((resolve) => setTimeout(resolve, 500));
+    let data: RetrieverPlayer;
+    try {
+      const resp = await fetch(url, {
+        signal: AbortSignal.timeout(2000),
+      });
+      if (!resp.ok) {
+        throw new Error(`Failed to fetch MMR data: ${resp.status}`);
       }
+      data = await resp.json();
+    } catch (e) {
+      console.log("[MMR] Error fetching data for %s", accountId);
+      return false;
     }
     redisCount("retriever_player");
 
@@ -67,5 +63,6 @@ await runQueue<MmrJob>(
       new Date(),
       job.account_id,
     ]);
+    return true;
   },
 );
