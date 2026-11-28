@@ -147,10 +147,7 @@ CREATE TABLE IF NOT EXISTS players (
   account_id bigint PRIMARY KEY,
   steamid text,
   avatar text,
-  avatarmedium text,
-  avatarfull text,
   profileurl text,
-  personaname text,
   plus boolean DEFAULT false,
   last_login timestamp with time zone,
   full_history_time timestamp with time zone,
@@ -174,11 +171,16 @@ CREATE TABLE IF NOT EXISTS players (
   "timecreated" : 1332289262,
 */
 CREATE INDEX IF NOT EXISTS players_cheese_idx on players(cheese) WHERE cheese IS NOT NULL AND cheese > 0;
---only GIST indexes support ordering by similarity
-CREATE INDEX IF NOT EXISTS players_personaname_idx_gist ON players USING GIST(personaname gist_trgm_ops);
 CREATE INDEX IF NOT EXISTS players_full_history_time_idx ON players(full_history_time ASC NULLS FIRST);
 CREATE INDEX IF NOT EXISTS players_profile_time_idx ON players(profile_time ASC NULLS FIRST);
 CREATE INDEX IF NOT EXISTS players_rank_tier_time_idx ON players(rank_tier_time ASC NULLS FIRST);
+
+CREATE TABLE IF NOT EXISTS player_names (
+  account_id bigint PRIMARY KEY,
+  personaname text NOT NULL
+);
+--only GIST indexes support ordering by similarity
+CREATE INDEX IF NOT EXISTS player_names_personaname_idx_gist ON player_names USING GIST(personaname gist_trgm_ops);
 
 CREATE TABLE IF NOT EXISTS player_ratings (
   PRIMARY KEY(account_id, time),

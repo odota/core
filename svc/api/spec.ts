@@ -15,7 +15,12 @@ import {
   getPlayerWordcloud,
 } from "../util/buildPlayer.ts";
 import { getStartOfBlockMinutes } from "../util/time.ts";
-import { queryParamToArray, wilsonScore } from "../util/utility.ts";
+import {
+  getAvatarFull,
+  getAvatarMedium,
+  queryParamToArray,
+  wilsonScore,
+} from "../util/utility.ts";
 import {
   matchesCols,
   histogramCols,
@@ -876,12 +881,19 @@ You can use the API without a key, but registering for a key allows increased ra
             `SELECT *, players.account_id as account_id, rank_tier.rating as rank_tier
              FROM ${tableName}
              JOIN players ON players.account_id = ${tableName}.account_id
+             LEFT JOIN player_names ON players.account_id = player_names.account_id
              LEFT JOIN notable_players ON players.account_id = notable_players.account_id
              LEFT JOIN rank_tier ON players.account_id = rank_tier.account_id
              ORDER BY ${tableName}.computed_mmr DESC
              LIMIT 100`,
           );
-          return res.json(result);
+          return res.json(
+            result.map((r) => ({
+              ...r,
+              avatarmedium: getAvatarMedium(r.avatar),
+              avatarfull: getAvatarFull(r.avatar),
+            })),
+          );
         },
       },
     },
@@ -910,11 +922,19 @@ You can use the API without a key, but registering for a key allows increased ra
         route: () => "/proPlayers",
         func: async (req, res, next) => {
           const { rows: result } = await db.query(
-            `SELECT * FROM players
-             RIGHT JOIN notable_players ON players.account_id = notable_players.account_id
+            `SELECT *, notable_players.account_id
+             FROM notable_players
+             LEFT JOIN players ON players.account_id = notable_players.account_id
+             LEFT JOIN player_names ON player_names.account_id = notable_players.account_id
              ORDER BY notable_players.account_id ASC`,
           );
-          return res.json(result);
+          return res.json(
+            result.map((r) => ({
+              ...r,
+              avatarmedium: getAvatarMedium(r.avatar),
+              avatarfull: getAvatarFull(r.avatar),
+            })),
+          );
         },
       },
     },

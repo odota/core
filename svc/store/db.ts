@@ -74,9 +74,19 @@ export async function upsertPlayer(
   if (!player.account_id || player.account_id === getAnonymousAccountId()) {
     return;
   }
-  return upsert(db, "players", player, {
+  const result = await upsert(db, "players", player, {
     account_id: player.account_id,
   });
+  if (player.personaname != null) {
+    await db.query(
+      `INSERT INTO player_names(account_id, personaname)
+       VALUES($1, $2)
+       ON CONFLICT(account_id) DO UPDATE SET personaname = EXCLUDED.personaname
+       WHERE player_names.personaname IS DISTINCT FROM EXCLUDED.personaname`,
+      [player.account_id, player.personaname],
+    );
+  }
+  return result;
 }
 
 export function getLogChannel(channel: string) {

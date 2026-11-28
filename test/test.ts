@@ -631,12 +631,12 @@ suite(styleText("blue", "API ROUTES"), async () => {
     const {
       rows: [player],
     } = await db.query(
-      "SELECT personaname FROM players WHERE account_id = $1",
+      "SELECT personaname FROM player_names WHERE account_id = $1",
       [accountId],
     );
     try {
       await db.query(
-        "UPDATE players SET personaname = $1 WHERE account_id = $2",
+        "UPDATE player_names SET personaname = $1 WHERE account_id = $2",
         ["1e3", accountId],
       );
       const res = await supertest(app).get("/api/search").query({ q: "1e3" });
@@ -644,7 +644,7 @@ suite(styleText("blue", "API ROUTES"), async () => {
       assert.ok(res.body.some((p: User) => p.account_id === accountId));
     } finally {
       await db.query(
-        "UPDATE players SET personaname = $1 WHERE account_id = $2",
+        "UPDATE player_names SET personaname = $1 WHERE account_id = $2",
         [player.personaname, accountId],
       );
     }

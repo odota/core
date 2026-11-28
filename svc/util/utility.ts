@@ -437,3 +437,15 @@ export function parseJSONWithBigInts(text: string): any {
     } as any,
   );
 }
+
+export function getAvatarMedium(
+  avatar: string | null | undefined,
+): string | null {
+  return avatar ? avatar.replace(/\.jpg$/, "_medium.jpg") : null;
+}
+
+export function getAvatarFull(
+  avatar: string | null | undefined,
+): string | null {
+  return avatar ? avatar.replace(/\.jpg$/, "_full.jpg") : null;
+}

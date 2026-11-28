@@ -8,5 +8,7 @@ ON pr.account_id = grouped.account_id
 AND pr.time = grouped.MaxTime
 JOIN players
 ON pr.account_id = players.account_id
+LEFT JOIN player_names
+ON pr.account_id = player_names.account_id
 ORDER BY solo_competitive_rank desc nulls last
 LIMIT 1000;

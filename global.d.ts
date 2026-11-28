@@ -255,7 +255,9 @@ type User = {
   fh_unavailable: boolean;
   steamid: string;
   personaname: string;
-  avatarfull: string;
+  avatar: string | null;
+  avatarmedium: string | null;
+  avatarfull: string | null;
   last_match_time: Date;
   profile_time: Date;
 

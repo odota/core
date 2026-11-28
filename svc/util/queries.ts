@@ -12,6 +12,8 @@ import {
   parallelPromise,
   isSteamID64,
   convert64to32,
+  getAvatarMedium,
+  getAvatarFull,
 } from "./utility.ts";
 import contributors, { isContributor } from "../../CONTRIBUTORS.ts";
 import type pg from "pg";
@@ -40,6 +42,7 @@ export async function getHeroRankings(heroId: string) {
   SELECT players.account_id, score, personaname, name, avatar, last_login, rating as rank_tier
   from hero_ranking
   join players using(account_id)
+  left join player_names using(account_id)
   left join notable_players using(account_id)
   left join rank_tier using(account_id)
   WHERE hero_id = $1
@@ -215,14 +218,13 @@ export async function getPlayer(accountId: number): Promise<User | undefined> {
       cheese,
       steamid,
       avatar,
-      avatarmedium,
-      avatarfull,
       profileurl,
       last_login,
       loccountrycode,
       subscriber.status,
       fh_unavailable
     FROM players
+    LEFT JOIN player_names ON players.account_id = player_names.account_id
     LEFT JOIN notable_players ON players.account_id = notable_players.account_id
     LEFT JOIN subscriber ON players.account_id = subscriber.account_id
     WHERE players.account_id = $1
@@ -232,6 +234,8 @@ export async function getPlayer(accountId: number): Promise<User | undefined> {
   );
   const playerData = rows[0];
   if (playerData) {
+    playerData.avatarmedium = getAvatarMedium(playerData.avatar);
+    playerData.avatarfull = getAvatarFull(playerData.avatar);
     playerData.is_contributor = isContributor(accountId.toString());
     playerData.is_subscriber = Boolean(playerData?.status);
   }
@@ -268,10 +272,10 @@ export async function getPeers(
       personaname,
       name,
       avatar,
-      avatarfull,
       last_login,
       subscriber.status
     FROM players
+    LEFT JOIN player_names ON players.account_id = player_names.account_id
     LEFT JOIN notable_players ON players.account_id = notable_players.account_id
     LEFT JOIN subscriber ON players.account_id = subscriber.account_id
     WHERE players.account_id = ANY($1)
@@ -294,7 +298,7 @@ export async function getPeers(
       is_subscriber: Boolean(row.status),
       last_login: row.last_login,
       avatar: row.avatar,
-      avatarfull: row.avatarfull,
+      avatarfull: getAvatarFull(row.avatar),
     };
   });
 }
@@ -308,10 +312,17 @@ export async function getProPeers(
           FROM notable_players
           LEFT JOIN players
           ON notable_players.account_id = players.account_id
+          LEFT JOIN player_names
+          ON notable_players.account_id = player_names.account_id
           `,
   );
   const arr: PeersCount[string][] = rows
-    .map((r) => ({ ...r, ...teammates[r.account_id] }))
+    .map((r) => ({
+      ...r,
+      avatarmedium: getAvatarMedium(r.avatar),
+      avatarfull: getAvatarFull(r.avatar),
+      ...teammates[r.account_id],
+    }))
     .filter((r) => Number(r.account_id) !== player.account_id && r.games)
     .sort((a, b) => b.games - a.games);
   return arr;
@@ -442,35 +453,50 @@ export async function search(query: string) {
   if (Number.isInteger(Number(trim)) && /^\d+$/.test(trim)) {
     let query32 = isSteamID64(trim) ? convert64to32(trim) : trim;
     const { rows } = await db.query(
-      "SELECT account_id, personaname, avatarfull FROM players WHERE account_id = $1",
+      `SELECT players.account_id, player_names.personaname, players.avatar
+       FROM players
+       LEFT JOIN player_names USING(account_id)
+       WHERE players.account_id = $1`,
       [Number(query32)],
     );
-    accountIdMatch = rows;
+    accountIdMatch = rows.map((r) => ({
+      account_id: r.account_id,
+      personaname: r.personaname,
+      avatar: r.avatar,
+      avatarfull: getAvatarFull(r.avatar),
+    }));
     if (accountIdMatch.length > 0) {
       return accountIdMatch;
     }
   }
-  let rows = [];
+  let rows: any[] = [];
   // Require at least 3 contiguous alphanumeric chars so pg_trgm can use the index
   if (/[\p{L}\p{N}]{3}/u.test(trim)) {
     // Escape LIKE wildcards before replacing whitespace with %
     const escaped = trim.replace(/[\\%_]/g, "\\$&").replace(/\s+/g, "%");
     const personaNameMatch = await db.query(
       `
-      SELECT account_id, avatarfull, personaname, last_match_time, similarity($1, personaname) AS sml
+      SELECT sub.account_id, players.avatar, sub.personaname, players.last_match_time, similarity($1, sub.personaname) AS sml
       FROM (
-        SELECT account_id, avatarfull, personaname, last_match_time
-        FROM players
+        SELECT account_id, personaname
+        FROM player_names
         WHERE personaname ILIKE $2
         ORDER BY personaname <-> $1
         LIMIT 200
       ) sub
-      ORDER BY sml DESC, last_match_time DESC NULLS LAST
+      LEFT JOIN players USING(account_id)
+      ORDER BY sml DESC, players.last_match_time DESC NULLS LAST
       LIMIT 50;
       `,
       [trim, `%${escaped}%`],
     );
-    rows = personaNameMatch.rows;
+    rows = personaNameMatch.rows.map((r) => ({
+      account_id: r.account_id,
+      avatarfull: getAvatarFull(r.avatar),
+      personaname: r.personaname,
+      last_match_time: r.last_match_time,
+      sml: r.sml,
+    }));
   }
   return [...accountIdMatch, ...rows];
 }

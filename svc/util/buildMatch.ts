@@ -169,6 +169,7 @@ async function getPlayerDetails(match: Match | ParsedMatch) {
     `
     SELECT players.account_id, personaname, name, last_login, rating, status, computed_mmr
     FROM players
+    LEFT JOIN player_names USING(account_id)
     LEFT JOIN notable_players USING(account_id)
     LEFT JOIN rank_tier USING(account_id)
     LEFT JOIN player_computed_mmr USING(account_id)
